@@ -1,14 +1,9 @@
 global-include *.py
 
-include *.txt CHANGELOG.md LICENSE README.rst
-recursive-include docs *.rst
-recursive-include social/tests *.txt
+include *.txt CHANGELOG.md LICENSE README.md
+recursive-include social_core/tests *.txt
 
 graft examples
 
 recursive-exclude .tox *
-recursive-exclude social *.pyc
-recursive-exclude examples *.pyc
-recursive-exclude examples *.db
-recursive-exclude examples local_settings.py
-recursive-exclude examples/webpy_example/sessions *
+recursive-exclude social_core *.pyc
