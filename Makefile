@@ -32,6 +32,17 @@ setup-pyenv: check-pyenv
 run-tox:
 	@ tox
 
+docker-tox-build:
+	@ docker inspect omab/psa-social-core >/dev/null 2>&1 || ( \
+		docker build -t omab/psa-social-core . \
+	)
+
+docker-tox: docker-tox-build
+	@ docker run -it --rm \
+		     --name psa-social-core-test \
+		     -v "`pwd`:/code" \
+		     -w /code omab/psa-social-core tox
+
 tests: setup-pyenv run-tox clean
 
 clean:
