@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
 
 ### Added
+- Add support for MailChimp as an OAuth v2 backend (port from [#1037](https://github.com/omab/python-social-auth/pull/1037)
+  by svvitale)
 - Added Shimmering backend (port from [#1054](https://github.com/omab/python-social-auth/pull/1054)
   by iamkhush)
 - Added Quizlet backend (port from [#1012](https://github.com/omab/python-social-auth/pull/1012)
