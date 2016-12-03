@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
 
 ### Added
+- Added Shimmering backend (port from [#1054](https://github.com/omab/python-social-auth/pull/1054)
+  by iamkhush)
 - Added Quizlet backend (port from [#1012](https://github.com/omab/python-social-auth/pull/1012)
   by s-alexey)
 - Added Dockerfile to simplify the running of tests (`make docker-tox`)
