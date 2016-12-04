@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added Dockerfile to simplify the running of tests (`make docker-tox`)
 
 ### Changed
+- change username, email and fullname keys (port from [#1028](https://github.com/omab/python-social-auth/pull/1028)
+  by inlanger)
 - Moves fix convert username to string (port from [#1021](https://github.com/omab/python-social-auth/pull/1021)
   by WarmongeR1)
 - Fix auth_params for Stripe backend (port from [#1034](https://github.com/omab/python-social-auth/pull/1034)
