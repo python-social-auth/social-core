@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
 
 ### Added
+- Added the ability to specify a pipeline on a per backend basis (port from [#1019](https://github.com/omab/python-social-auth/pull/1019)
+  by keattang)
 - Add support for MailChimp as an OAuth v2 backend (port from [#1037](https://github.com/omab/python-social-auth/pull/1037)
   by svvitale)
 - Added Shimmering backend (port from [#1054](https://github.com/omab/python-social-auth/pull/1054)
