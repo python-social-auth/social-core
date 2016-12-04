@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added Dockerfile to simplify the running of tests (`make docker-tox`)
 
 ### Changed
+- Preserve order of backends in BACKENDSCACHE (port from [#1004](https://github.com/omab/python-social-auth/pull/1004)
+  by tsouvarev)
 - Don't lose custom exception message on raising AuthCanceled (port from [#1062](https://github.com/omab/python-social-auth/pull/1062)
   by dotsbb)
 - Fixed VK backend (port from [#1007](https://github.com/omab/python-social-auth/pull/1007)
