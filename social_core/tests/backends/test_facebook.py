@@ -1,5 +1,6 @@
 import json
 
+from ...backends.facebook import GRAPH_BASE_URL
 from ...exceptions import AuthUnknownError, AuthCanceled
 
 from .oauth import OAuth2Test
@@ -7,7 +8,7 @@ from .oauth import OAuth2Test
 
 class FacebookOAuth2Test(OAuth2Test):
     backend_path = 'social_core.backends.facebook.FacebookOAuth2'
-    user_data_url = 'https://graph.facebook.com/v2.7/me'
+    user_data_url = GRAPH_BASE_URL + '/me'
     expected_username = 'foobar'
     access_token_body = json.dumps({
         'access_token': 'foobar',

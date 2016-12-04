@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added Dockerfile to simplify the running of tests (`make docker-tox`)
 
 ### Changed
+- Update Facebook api version to v2.8 (port from [#1047](https://github.com/omab/python-social-auth/pull/1047)
+  by browniebroke)
 - Remove Facebook2OAuth2 and Facebook2AppOAuth2 backends (port from [#1046](https://github.com/omab/python-social-auth/pull/1046)
   by browniebroke)
 - change username, email and fullname keys (port from [#1028](https://github.com/omab/python-social-auth/pull/1028)
