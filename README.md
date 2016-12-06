@@ -1,5 +1,7 @@
 # Python Social Auth - Core
 
+[![Build Status](https://travis-ci.org/python-social-auth/social-core.svg?branch=master)](https://travis-ci.org/python-social-auth/social-core)
+
 Python Social Auth is an easy to setup social authentication/registration
 mechanism with support for several frameworks and auth providers.
 
