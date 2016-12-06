@@ -7,7 +7,7 @@ mechanism with support for several frameworks and auth providers.
 
 ## Description
 
-This is the core component of the python-socia-auth ecosystem, it
+This is the core component of the python-social-auth ecosystem, it
 implements the common interface to define new authentication backends
 to third parties services, implement integrations with web frameworks
 and storage solutions.
