@@ -1,13 +1,17 @@
 import datetime
 from calendar import timegm
 
-from jwt import InvalidTokenError, decode as jwt_decode
+import six
+
+from jwkest import JWKESTException
+from jwkest.jwk import KEYS
+from jwkest.jws import JWS
 
 from openid.consumer.consumer import Consumer, SUCCESS, CANCEL, FAILURE
 from openid.consumer.discover import DiscoveryFailure
 from openid.extensions import sreg, ax, pape
 
-from ..utils import url_add_parameters
+from ..utils import url_add_parameters, cache
 from .base import BaseAuth
 from .oauth import BaseOAuth2
 from ..exceptions import AuthException, AuthFailed, AuthCanceled, \
@@ -271,32 +275,63 @@ class OpenIdConnectAssociation(object):
         self.assoc_type = assoc_type  # as state
 
 
+def oidc_conf(name):
+    """
+    fget helper function to fetch the value of a property from the OIDC
+    configuration
+    """
+    def getter(self):
+        """Get property 'name' from OIDC conf"""
+        return self.oidc_config().get(name)
+    return getter
+
+
 class OpenIdConnectAuth(BaseOAuth2):
     """
     Base class for Open ID Connect backends.
-
     Currently only the code response type is supported.
     """
-    ID_TOKEN_ISSUER = None
+    # Override OIDC_ENDPOINT in your subclass to enable autoconfig of OIDC
+    OIDC_ENDPOINT = None
     ID_TOKEN_MAX_AGE = 600
-    DEFAULT_SCOPE = ['openid']
+    DEFAULT_SCOPE = ['openid', 'profile', 'email']
     EXTRA_DATA = ['id_token', 'refresh_token', ('sub', 'id')]
-    # Set after access_token is retrieved
-    id_token = None
+    REDIRECT_STATE = False
+    ACCESS_TOKEN_METHOD = 'POST'
+    REVOKE_TOKEN_METHOD = 'GET'
+    ID_KEY = 'sub'
+    USERNAME_KEY = 'preferred_username'
+    ID_TOKEN_ISSUER = property(oidc_conf('issuer'))
+    ACCESS_TOKEN_URL = property(oidc_conf('token_endpoint'))
+    AUTHORIZATION_URL = property(oidc_conf('authorization_endpoint'))
+    REVOKE_TOKEN_URL = property(oidc_conf('revocation_endpoint'))
+    USERINFO_URL = property(oidc_conf('userinfo_endpoint'))
+    JWKS_URI = property(oidc_conf('jwks_uri'))
+
+    def __init__(self, *args, **kwargs):
+        self.id_token = None
+        super(OpenIdConnectAuth, self).__init__(*args, **kwargs)
+
+    @cache(ttl=86400)
+    def oidc_config(self):
+        return self.get_json(self.OIDC_ENDPOINT +
+                             '/.well-known/openid-configuration')
+
+    @cache(ttl=86400)
+    def get_jwks_keys(self):
+        keys = KEYS()
+        keys.load_from_url(self.JWKS_URI)
+
+        # Add client secret as oct key so it can be used for HMAC signatures
+        client_id, client_secret = self.get_key_and_secret()
+        keys.add({'key': client_secret, 'kty': 'oct'})
+        return keys
 
     def auth_params(self, state=None):
         """Return extra arguments needed on auth process."""
         params = super(OpenIdConnectAuth, self).auth_params(state)
         params['nonce'] = self.get_and_store_nonce(
             self.AUTHORIZATION_URL, state
-        )
-        return params
-
-    def auth_complete_params(self, state=None):
-        params = super(OpenIdConnectAuth, self).auth_complete_params(state)
-        # Add a nonce to the request so that to help counter CSRF
-        params['nonce'] = self.get_and_store_nonce(
-            self.ACCESS_TOKEN_URL, state
         )
         return params
 
@@ -311,7 +346,7 @@ class OpenIdConnectAuth(BaseOAuth2):
     def get_nonce(self, nonce):
         try:
             return self.strategy.storage.association.get(
-                server_url=self.ACCESS_TOKEN_URL,
+                server_url=self.AUTHORIZATION_URL,
                 handle=nonce
             )[0]
         except IndexError:
@@ -320,41 +355,34 @@ class OpenIdConnectAuth(BaseOAuth2):
     def remove_nonce(self, nonce_id):
         self.strategy.storage.association.remove([nonce_id])
 
-    def validate_and_return_id_token(self, id_token):
-        """
-        Validates the id_token according to the steps at
-        http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation.
-        """
-        client_id, _client_secret = self.get_key_and_secret()
+    def validate_claims(self, id_token):
+        if id_token['iss'] != self.ID_TOKEN_ISSUER:
+            raise AuthTokenError(self, 'Token error: Invalid issuer')
 
-        decode_kwargs = {
-            'algorithms': ['HS256'],
-            'audience': client_id,
-            'issuer': self.ID_TOKEN_ISSUER,
-            'key': self.setting('ID_TOKEN_DECRYPTION_KEY'),
-            'options': {
-                'verify_signature': True,
-                'verify_exp': True,
-                'verify_iat': True,
-                'verify_aud': True,
-                'verify_iss': True,
-                'require_exp': True,
-                'require_iat': True,
-            },
-        }
-        decode_kwargs.update(self.setting('ID_TOKEN_JWT_DECODE_KWARGS', {}))
+        client_id, client_secret = self.get_key_and_secret()
 
-        try:
-            # Decode the JWT and raise an error if the secret is invalid or
-            # the response has expired.
-            id_token = jwt_decode(id_token, **decode_kwargs)
-        except InvalidTokenError as err:
-            raise AuthTokenError(self, err)
+        if isinstance(id_token['aud'], six.string_types):
+            id_token['aud'] = [id_token['aud']]
 
-        # Verify the token was issued within a specified amount of time
-        iat_leeway = self.setting('ID_TOKEN_MAX_AGE', self.ID_TOKEN_MAX_AGE)
+        if client_id not in id_token['aud']:
+            raise AuthTokenError(self, 'Token error: Invalid audience')
+
+        if len(id_token['aud']) > 1 and 'azp' not in id_token:
+            raise AuthTokenError(self, 'Incorrect id_token: azp')
+
+        if 'azp' in id_token and id_token['azp'] != client_id:
+            raise AuthTokenError(self, 'Incorrect id_token: azp')
+
         utc_timestamp = timegm(datetime.datetime.utcnow().utctimetuple())
-        if id_token['iat'] < (utc_timestamp - iat_leeway):
+        if utc_timestamp > id_token['exp']:
+            raise AuthTokenError(self, 'Token error: Signature has expired')
+
+        if 'nbf' in id_token and utc_timestamp < id_token['nbf']:
+            raise AuthTokenError(self, 'Incorrect id_token: nbf')
+
+        # Verify the token was issued in the last 10 minutes
+        iat_leeway = self.setting('ID_TOKEN_MAX_AGE', self.ID_TOKEN_MAX_AGE)
+        if utc_timestamp > id_token['iat'] + iat_leeway:
             raise AuthTokenError(self, 'Incorrect id_token: iat')
 
         # Validate the nonce to ensure the request was not modified
@@ -367,6 +395,22 @@ class OpenIdConnectAuth(BaseOAuth2):
             self.remove_nonce(nonce_obj.id)
         else:
             raise AuthTokenError(self, 'Incorrect id_token: nonce')
+
+    def validate_and_return_id_token(self, jws):
+        """
+        Validates the id_token according to the steps at
+        http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation.
+        """
+        try:
+            # Decode the JWT and raise an error if the sig is invalid
+            id_token = JWS().verify_compact(jws.encode('utf-8'),
+                                            self.get_jwks_keys())
+        except JWKESTException:
+            raise AuthTokenError(self,
+                                 'Token error: Signature verification failed')
+
+        self.validate_claims(id_token)
+
         return id_token
 
     def request_access_token(self, *args, **kwargs):
@@ -377,3 +421,18 @@ class OpenIdConnectAuth(BaseOAuth2):
         response = self.get_json(*args, **kwargs)
         self.id_token = self.validate_and_return_id_token(response['id_token'])
         return response
+
+    def user_data(self, access_token, *args, **kwargs):
+        return self.get_json(self.USERINFO_URL,
+                             headers={'Authorization':
+                                          'Bearer {0}'.format(access_token)})
+
+    def get_user_details(self, response):
+        username_key = self.setting('USERNAME_KEY', default=self.USERNAME_KEY)
+        return {
+            'username': response.get(username_key),
+            'email': response.get('email'),
+            'fullname': response.get('name'),
+            'first_name': response.get('given_name'),
+            'last_name': response.get('family_name'),
+        }

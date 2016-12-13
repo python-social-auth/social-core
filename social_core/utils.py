@@ -1,5 +1,6 @@
 import re
 import sys
+import time
 import unicodedata
 import collections
 import functools
@@ -290,3 +291,36 @@ def get_current_strategy():
     global _current_strategy_getter
     if _current_strategy_getter is not None:
         return _current_strategy_getter()
+
+
+class cache(object):
+    """
+    Cache decorator that caches the return value of a method for a
+    specified time.
+
+    It maintains a cache per class, so subclasses have a different cache entry
+    for the same cached method.
+
+    Does not work for methods with arguments.
+    """
+    def __init__(self, ttl):
+        self.ttl = ttl
+        self.cache = {}
+
+    def __call__(self, fn):
+        def wrapped(this):
+            now = time.time()
+            last_updated = None
+            cached_value = None
+            if this.__class__ in self.cache:
+                last_updated, cached_value = self.cache[this.__class__]
+            if not cached_value or now - last_updated > self.ttl:
+                try:
+                    cached_value = fn(this)
+                    self.cache[this.__class__] = (now, cached_value)
+                except:
+                    # Use previously cached value when call fails, if available
+                    if not cached_value:
+                        raise
+            return cached_value
+        return wrapped
