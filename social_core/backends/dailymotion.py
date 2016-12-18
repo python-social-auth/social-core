@@ -20,5 +20,5 @@ class DailymotionOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Return user data provided"""
-        return self.get_json('https://api.dailymotion.com/me/',
+        return self.get_json('https://api.dailymotion.com/auth/',
                              params={'access_token': access_token})
