@@ -84,7 +84,7 @@ def user_details(strategy, details, user=None, *args, **kwargs):
         # example username and id fields. It's also possible to disable update
         # on fields defined in SOCIAL_AUTH_PROTECTED_FIELDS.
         for name, value in details.items():
-            if value and hasattr(user, name):
+            if value is not None and hasattr(user, name):
                 # Check https://github.com/omab/python-social-auth/issues/671
                 current_value = getattr(user, name, None)
                 if not current_value or name not in protected:
