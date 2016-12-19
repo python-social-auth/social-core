@@ -15,7 +15,8 @@ from .utils import get_current_strategy
 from .backends.utils import get_backend
 
 
-CLEAN_USERNAME_REGEX = re.compile(r'[^\w.@+_-]+', re.UNICODE)
+NO_ASCII_REGEX = re.compile(r'[^\x00-\x7F]+')
+NO_SPECIAL_REGEX = re.compile(r'[^\w.@+_-]+', re.UNICODE)
 
 
 class UserMixin(object):
@@ -91,7 +92,9 @@ class UserMixin(object):
     @classmethod
     def clean_username(cls, value):
         """Clean username removing any unsupported character"""
-        return CLEAN_USERNAME_REGEX.sub('', value)
+        value = NO_ASCII_REGEX.sub('', value)
+        value = NO_SPECIAL_REGEX.sub('', value)
+        return value
 
     @classmethod
     def changed(cls, user):

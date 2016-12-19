@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
 
 ### Added
+- Added better username characters clenup rules, support for a configurable
+  cleanup function through SOCIAL_AUTH_CLEAN_USERNAME_FUNCTION (import path)
+  setting.
 - Added configurable option SOCIAL_AUTH_FACEBOOK_*_API_VERSION to
   override the default Facebook API version used.
 - Add Lyft OAuth2 implementation to Python Social Auth (port from [#1036](https://github.com/omab/python-social-auth/pull/1036/files)

@@ -19,7 +19,11 @@ def get_username(strategy, details, user=None, *args, **kwargs):
         do_clean = strategy.setting('CLEAN_USERNAMES', True)
 
         if do_clean:
-            clean_func = storage.user.clean_username
+            override_clean = strategy.setting('CLEAN_USERNAME_FUNCTION')
+            if override_clean:
+                clean_func = module_member(override_clean)
+            else:
+                clean_func = storage.user.clean_username
         else:
             clean_func = lambda val: val
 
