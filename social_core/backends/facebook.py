@@ -15,7 +15,6 @@ from ..exceptions import AuthException, AuthCanceled, AuthUnknownError, \
 
 
 API_VERSION = 2.8
-GRAPH_BASE_URL = 'https://graph.facebook.com/v{0}'.format(API_VERSION)
 
 
 class FacebookOAuth2(BaseOAuth2):
@@ -23,17 +22,23 @@ class FacebookOAuth2(BaseOAuth2):
     name = 'facebook'
     RESPONSE_TYPE = None
     SCOPE_SEPARATOR = ','
-    AUTHORIZATION_URL = 'https://www.facebook.com/v{0}/dialog/oauth'.format(
-        API_VERSION
-    )
-    ACCESS_TOKEN_URL = GRAPH_BASE_URL + '/oauth/access_token'
-    REVOKE_TOKEN_URL = GRAPH_BASE_URL + '/{uid}/permissions'
+    AUTHORIZATION_URL = 'https://www.facebook.com/v{version}/dialog/oauth'
+    ACCESS_TOKEN_URL = 'https://graph.facebook.com/v{version}/oauth/access_token'
+    REVOKE_TOKEN_URL = 'https://graph.facebook.com/v{version}/{uid}/permissions'
     REVOKE_TOKEN_METHOD = 'DELETE'
-    USER_DATA_URL = GRAPH_BASE_URL + '/me'
+    USER_DATA_URL = 'https://graph.facebook.com/v{version}/me'
     EXTRA_DATA = [
         ('id', 'id'),
         ('expires', 'expires')
     ]
+
+    def authorization_url(self):
+        version = self.setting('API_VERSION', API_VERSION)
+        return self.AUTHORIZATION_URL.format(version=version)
+
+    def access_token_url(self):
+        version = self.setting('API_VERSION', API_VERSION)
+        return self.ACCESS_TOKEN_URL.format(version=version)
 
     def get_user_details(self, response):
         """Return user details from Facebook account"""
@@ -60,7 +65,10 @@ class FacebookOAuth2(BaseOAuth2):
                 msg=access_token.encode('utf8'),
                 digestmod=hashlib.sha256
             ).hexdigest()
-        return self.get_json(self.USER_DATA_URL, params=params)
+
+        version = self.setting('API_VERSION', API_VERSION)
+        return self.get_json(self.USER_DATA_URL.format(version=version),
+                             params=params)
 
     def process_error(self, data):
         super(FacebookOAuth2, self).process_error(data)
@@ -76,7 +84,7 @@ class FacebookOAuth2(BaseOAuth2):
             raise AuthMissingParameter(self, 'code')
         state = self.validate_state()
         key, secret = self.get_key_and_secret()
-        response = self.request(self.ACCESS_TOKEN_URL, params={
+        response = self.request(self.access_token_url(), params={
             'client_id': key,
             'redirect_uri': self.get_redirect_uri(state),
             'client_secret': secret,
@@ -125,7 +133,8 @@ class FacebookOAuth2(BaseOAuth2):
         return self.strategy.authenticate(*args, **kwargs)
 
     def revoke_token_url(self, token, uid):
-        return self.REVOKE_TOKEN_URL.format(uid=uid)
+        version = self.setting('API_VERSION', API_VERSION)
+        return self.REVOKE_TOKEN_URL.format(version=version,  uid=uid)
 
     def revoke_token_params(self, token, uid):
         return {'access_token': token}
