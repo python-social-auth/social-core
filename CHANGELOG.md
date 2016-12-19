@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added Dockerfile to simplify the running of tests (`make docker-tox`)
 
 ### Changed
+- Updated slack backend implementation, update API endpoints used, add test case.
 - Changed Dailymotion user data API endpoint
 - Changed how "false" values are treated in the user attributes update pipeline
 - Fix google OpenID Connect (port from [#747](https://github.com/omab/python-social-auth/pull/747)
