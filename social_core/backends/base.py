@@ -212,7 +212,8 @@ class BaseAuth(object):
         kwargs.setdefault('timeout', self.setting('REQUESTS_TIMEOUT') or
                                      self.setting('URLOPEN_TIMEOUT'))
         if self.SEND_USER_AGENT and 'User-Agent' not in kwargs['headers']:
-            kwargs['headers']['User-Agent'] = user_agent()
+            kwargs['headers']['User-Agent'] = self.setting('USER_AGENT') or \
+                                              user_agent()
 
         try:
             if self.SSL_PROTOCOL:

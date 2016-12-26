@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
 
 ### Added
+- Added `SOCIAL_AUTH_USER_AGENT` setting to override the default User-Agent header.
+  Refs [#752](https://github.com/omab/python-social-auth/issues/752)
 - Enabled Python 3 SAML support through python3-saml package.
   Refs [#846](https://github.com/omab/python-social-auth/issues/846)
 - Added better username characters clenup rules, support for a configurable
