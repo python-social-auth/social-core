@@ -5,6 +5,8 @@ import unittest2
 import requests
 from os import path
 
+import six
+
 from mock import patch
 from httpretty import HTTPretty
 
@@ -23,9 +25,6 @@ from ...exceptions import AuthMissingParameter
 DATA_DIR = path.join(path.dirname(__file__), 'data')
 
 
-@unittest2.skipUnless(
-    sys.version_info[:2] == (2, 7),
-    'python-saml currently depends on 2.7; 3+ support coming soon')
 @unittest2.skipIf('__pypy__' in sys.builtin_module_names,
                   'dm.xmlsec not compatible with pypy')
 class SAMLTest(BaseBackendTest):
@@ -88,7 +87,7 @@ class SAMLTest(BaseBackendTest):
         """Test that we can generate the metadata without error"""
         xml, errors = self.backend.generate_metadata_xml()
         self.assertEqual(len(errors), 0)
-        self.assertEqual(xml[0], '<')
+        self.assertEqual(xml.decode()[0], '<')
 
     def test_login(self):
         """Test that we can authenticate with a SAML IdP (TestShib)"""
@@ -109,11 +108,12 @@ class SAMLTest(BaseBackendTest):
         # Parse the SAML Request URL to get the XML being sent to TestShib
         url_parts = urlparse(start_url)
         query = dict((k, v[0]) for (k, v) in
-                     parse_qs(url_parts.query).iteritems())
+                     parse_qs(url_parts.query).items())
         xml = OneLogin_Saml2_Utils.decode_base64_and_inflate(
             query['SAMLRequest']
         )
         # Modify the XML:
+        xml = xml.decode()
         xml, changed = re.subn(r'ID="[^"]+"', 'ID="TEST_ID"', xml)
         self.assertEqual(changed, 1)
         # Update the URL to use the modified query string:
