@@ -28,6 +28,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added Dockerfile to simplify the running of tests (`make docker-tox`)
 
 ### Changed
+- Disabled SAML test when running on Travis-ci on Python 3.5 since it [segfaults](https://travis-ci.org/python-social-auth/social-core/jobs/186790227)
+  probably by a bad build in one of the dependencies
 - Fixed Xing backend testing broken by previous change
 - Fixed Xing backend dropping `callback_uri` and `oauth_verifier` parameters on authenticated API calls.
   Refs [#871](https://github.com/omab/python-social-auth/issues/871)

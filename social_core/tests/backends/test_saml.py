@@ -1,3 +1,4 @@
+import os
 import re
 import json
 import sys
@@ -25,6 +26,9 @@ from ...exceptions import AuthMissingParameter
 DATA_DIR = path.join(path.dirname(__file__), 'data')
 
 
+@unittest2.skipIf('TRAVIS' in os.environ and sys.version_info[:2] == (3, 5),
+                  'Travis-ci segfaults in Python 3.5 probably due to a bad ' \
+                  'dependencies build')
 @unittest2.skipIf('__pypy__' in sys.builtin_module_names,
                   'dm.xmlsec not compatible with pypy')
 class SAMLTest(BaseBackendTest):
