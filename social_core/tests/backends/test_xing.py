@@ -9,10 +9,12 @@ class XingOAuth1Test(OAuth1Test):
     backend_path = 'social_core.backends.xing.XingOAuth'
     user_data_url = 'https://api.xing.com/v1/users/me.json'
     expected_username = 'FooBar'
-    access_token_body = json.dumps({
+    access_token_body = urlencode({
         'access_token': 'foobar',
         'token_type': 'bearer',
-        'user_id': '123456_abcdef'
+        'user_id': '123456_abcdef',
+        'oauth_token_secret': 'foobar-secret',
+        'oauth_token': 'foobar',
     })
     request_token_body = urlencode({
         'oauth_token_secret': 'foobar-secret',

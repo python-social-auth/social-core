@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added Dockerfile to simplify the running of tests (`make docker-tox`)
 
 ### Changed
+- Fixed Xing backend testing broken by previous change
 - Fixed Xing backend dropping `callback_uri` and `oauth_verifier` parameters on authenticated API calls.
   Refs [#871](https://github.com/omab/python-social-auth/issues/871)
 - Updated slack backend implementation, update API endpoints used, add test case.
