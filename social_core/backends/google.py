@@ -50,28 +50,15 @@ class BaseGoogleAuth(object):
 
 
 class BaseGoogleOAuth2API(BaseGoogleAuth):
-    def get_scope(self):
-        """Return list with needed access scope"""
-        scope = self.setting('SCOPE', [])
-        if not self.setting('IGNORE_DEFAULT_SCOPE', False):
-            default_scope = []
-            if self.setting('USE_DEPRECATED_API', False):
-                default_scope = self.DEPRECATED_DEFAULT_SCOPE
-            else:
-                default_scope = self.DEFAULT_SCOPE
-            scope = scope + (default_scope or [])
-        return scope
-
     def user_data(self, access_token, *args, **kwargs):
         """Return user data from Google API"""
-        if self.setting('USE_DEPRECATED_API', False):
-            url = 'https://www.googleapis.com/oauth2/v1/userinfo'
-        else:
-            url = 'https://www.googleapis.com/plus/v1/people/me'
-        return self.get_json(url, params={
-            'access_token': access_token,
-            'alt': 'json'
-        })
+        return self.get_json(
+            'https://www.googleapis.com/plus/v1/people/me',
+            params={
+                'access_token': access_token,
+                'alt': 'json'
+            }
+        )
 
     def revoke_token_params(self, token, uid):
         return {'token': token}
@@ -91,10 +78,6 @@ class GoogleOAuth2(BaseGoogleOAuth2API, BaseOAuth2):
     REVOKE_TOKEN_METHOD = 'GET'
     # The order of the default scope is important
     DEFAULT_SCOPE = ['openid', 'email', 'profile']
-    DEPRECATED_DEFAULT_SCOPE = [
-        'https://www.googleapis.com/auth/userinfo.email',
-        'https://www.googleapis.com/auth/userinfo.profile'
-    ]
     EXTRA_DATA = [
         ('refresh_token', 'refresh_token', True),
         ('expires_in', 'expires'),
@@ -114,11 +97,6 @@ class GooglePlusAuth(BaseGoogleOAuth2API, BaseOAuth2):
     DEFAULT_SCOPE = [
         'https://www.googleapis.com/auth/plus.login',
         'https://www.googleapis.com/auth/plus.me',
-    ]
-    DEPRECATED_DEFAULT_SCOPE = [
-        'https://www.googleapis.com/auth/plus.login',
-        'https://www.googleapis.com/auth/userinfo.email',
-        'https://www.googleapis.com/auth/userinfo.profile'
     ]
     EXTRA_DATA = [
         ('id', 'user_id'),
@@ -140,7 +118,7 @@ class GooglePlusAuth(BaseGoogleOAuth2API, BaseOAuth2):
         if 'access_token' in self.data:  # Client-side workflow
             token = self.data.get('access_token')
             response = self.get_json(
-                'https://www.googleapis.com/oauth2/v1/tokeninfo',
+                'https://www.googleapis.com/oauth2/v3/tokeninfo',
                 params={'access_token': token}
             )
             self.process_error(response)
