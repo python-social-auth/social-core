@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added Dockerfile to simplify the running of tests (`make docker-tox`)
 
 ### Changed
+- Changed Facebook refresh token processing. Refs [#866](https://github.com/omab/python-social-auth/issues/866)
 - Update Google+ Auth tokeninfo API version, drop support for deprecated API scopes.
   Refs [#791](https://github.com/omab/python-social-auth/issues/791).
 - Fixed OAuth1/2 early state validation on error responses.

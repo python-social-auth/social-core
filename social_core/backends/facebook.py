@@ -108,7 +108,10 @@ class FacebookOAuth2(BaseOAuth2):
         return self.do_auth(access_token, response, *args, **kwargs)
 
     def process_refresh_token_response(self, response, *args, **kwargs):
-        return parse_qs(response.content)
+        try:
+            return response.json()
+        except ValueError:
+            return parse_qs(response.content)
 
     def refresh_token_params(self, token, *args, **kwargs):
         client_id, client_secret = self.get_key_and_secret()
