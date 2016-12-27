@@ -7,6 +7,7 @@ from .oauth import BaseOAuth1, BaseOAuth2
 
 class BaseLinkedinAuth(object):
     EXTRA_DATA = [('id', 'id'),
+                  ('expires_in', 'expires'),
                   ('first-name', 'first_name', True),
                   ('last-name', 'last_name', True),
                   ('firstName', 'first_name', True),
