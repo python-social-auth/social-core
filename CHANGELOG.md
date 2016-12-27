@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added Dockerfile to simplify the running of tests (`make docker-tox`)
 
 ### Changed
+- Fixed OAuth1/2 early state validation on error responses.
 - Disabled SAML test when running on Travis-ci on Python 3.5 since it [segfaults](https://travis-ci.org/python-social-auth/social-core/jobs/186790227)
   probably by a bad build in one of the dependencies
 - Fixed Xing backend testing broken by previous change

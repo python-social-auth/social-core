@@ -383,8 +383,8 @@ class BaseOAuth2(OAuthAuth):
     @handle_http_errors
     def auth_complete(self, *args, **kwargs):
         """Completes login process, must return user instance"""
-        state = self.validate_state()
         self.process_error(self.data)
+        state = self.validate_state()
 
         response = self.request_access_token(
             self.access_token_url(),
