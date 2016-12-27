@@ -29,8 +29,15 @@ class FacebookOAuth2(BaseOAuth2):
     USER_DATA_URL = 'https://graph.facebook.com/v{version}/me'
     EXTRA_DATA = [
         ('id', 'id'),
-        ('expires', 'expires')
+        ('expires', 'expires'),
+        ('granted_scopes', 'granted_scopes'),
+        ('denied_scopes', 'denied_scopes')
     ]
+
+    def auth_params(self, state=None):
+        params = super(FacebookOAuth2, self).auth_params(state)
+        params['return_scopes'] = 'true'
+        return params
 
     def authorization_url(self):
         version = self.setting('API_VERSION', API_VERSION)
@@ -129,6 +136,13 @@ class FacebookOAuth2(BaseOAuth2):
         data['access_token'] = access_token
         if 'expires' in response:
             data['expires'] = response['expires']
+
+        if self.data.get('granted_scopes'):
+            data['granted_scopes'] = self.data['granted_scopes'].split(',')
+
+        if self.data.get('denied_scopes'):
+            data['denied_scopes'] = self.data['denied_scopes'].split(',')
+
         kwargs.update({'backend': self, 'response': data})
         return self.strategy.authenticate(*args, **kwargs)
 
