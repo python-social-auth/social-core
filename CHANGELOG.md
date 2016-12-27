@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
 
 ### Added
+- Added support for per-backend USER_FIELDS setting. Refs [#661](https://github.com/omab/python-social-auth/issues/661)
 - Added `expires_in` as `expires` for LinkedIn OAuth2. Refs [#666](https://github.com/omab/python-social-auth/issues/666)
 - Added `SOCIAL_AUTH_USER_AGENT` setting to override the default User-Agent header.
   Refs [#752](https://github.com/omab/python-social-auth/issues/752)
