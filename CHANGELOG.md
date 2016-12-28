@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
 
+## [0.1.0](https://github.com/python-social-auth/social-core/releases/tag/0.1.0) - 2016-12-28
+
 ### Added
 - Added support for GitLab OAuth2 backend.
   Refs [#2](https://github.com/python-social-auth/social-core/issues/2)
