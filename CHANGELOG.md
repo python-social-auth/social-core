@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
 
 ### Added
+- Added support for GitLab OAuth2 backend.
+  Refs [#2](https://github.com/python-social-auth/social-core/issues/2)
 - Added support for Facebook OAuth2 return_scopes parameter.
   Refs [#818](https://github.com/omab/python-social-auth/issues/818)
 - Added support for per-backend USER_FIELDS setting. Refs [#661](https://github.com/omab/python-social-auth/issues/661)
