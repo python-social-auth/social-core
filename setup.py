@@ -31,7 +31,7 @@ def read_version():
 
 def read_requirements(filename):
     with open(filename, 'r') as file:
-        return [line for line in file.readlines() if not file.startswith('-')]
+        return [line for line in file.readlines() if not line.startswith('-')]
 
 def read_tests_requirements(filename):
     return read_requirements('social_core/tests/{0}'.format(filename))
