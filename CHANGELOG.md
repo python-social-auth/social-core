@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - Reorganize requirements, make OpenIdConnect optional
-- Split OpenIdConnect from OpenId module
+- Split OpenIdConnect from OpenId module, install with `social-core[openidconnect]`
 
 ## [0.1.0](https://github.com/python-social-auth/social-core/releases/tag/0.1.0) - 2016-12-28
 
