@@ -1,2 +1,2 @@
+python-openid>=2.2.5
 -r requirements-base.txt
-unittest2==0.5.1
