@@ -1,5 +1,6 @@
 import datetime
 import json
+import unittest2
 
 from httpretty import HTTPretty
 
@@ -9,7 +10,8 @@ from ...actions import do_disconnect
 
 from ..models import User
 from .oauth import OAuth1Test, OAuth2Test
-from .open_id import OpenIdTest, OpenIdConnectTestMixin
+from .open_id import OpenIdTest
+from .open_id_connect import OpenIdConnectTestMixin, NO_JWKEST
 
 
 class GoogleOAuth2Test(OAuth2Test):
@@ -234,11 +236,13 @@ class GoogleRevokeTokenTest(GoogleOAuth2Test):
         do_disconnect(self.backend, user)
 
 
+@unittest2.skipIf(NO_JWKEST, 'No Jwkest installed')
 class GoogleOpenIdConnectTest(OpenIdConnectTestMixin, GoogleOAuth2Test):
-    backend_path = 'social_core.backends.google.GoogleOpenIdConnect'
+    backend_path = \
+        'social_core.backends.google_openidconnect.GoogleOpenIdConnect'
     user_data_url = \
         'https://www.googleapis.com/plus/v1/people/me/openIdConnect'
-    issuer = "accounts.google.com"
+    issuer = 'accounts.google.com'
     openid_config_body = ''.join([
         '{',
         ' "issuer": "https://accounts.google.com",',
