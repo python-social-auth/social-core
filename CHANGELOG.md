@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
 
+## [0.2.0](https://github.com/python-social-auth/social-core/releases/tag/0.2.0) - 2016-12-31
+
 ### Changed
 - Reorganize requirements, make OpenIdConnect optional
 - Split OpenIdConnect from OpenId module, install with `social-core[openidconnect]`
