@@ -40,6 +40,7 @@ requirements_base = read_requirements('requirements-base.txt')
 requirements_python2 = read_requirements('requirements-python2.txt')
 requirements_python3 = read_requirements('requirements-python3.txt')
 requirements_openidconnect = read_requirements('requirements-openidconnect.txt')
+requirements_saml = read_requirements('requirements-saml.txt')
 
 tests_requirements_base = read_tests_requirements('requirements-base.txt')
 tests_requirements_python2 = read_tests_requirements('requirements-python2.txt')
@@ -48,6 +49,10 @@ tests_requirements_pypy = read_tests_requirements('requirements-pypy.txt')
 
 requirements = []
 requirements.extend(requirements_base)
+
+requirements_all = []
+requirements.extend(requirements_openidconnect)
+requirements.extend(requirements_saml)
 
 tests_requirements = []
 tests_requirements.extend(tests_requirements_base)
@@ -82,7 +87,9 @@ setup(
     long_description=long_description() or LONG_DESCRIPTION,
     install_requires=requirements,
     extras_require={
-        'openidconnect': [requirements_openidconnect]
+        'openidconnect': [requirements_openidconnect],
+        'saml': [requirements_saml],
+        'all': [requirements_all]
     },
     classifiers=[
         'Development Status :: 4 - Beta',
