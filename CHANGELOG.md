@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Defined `extras` for SAML, and "all" that will install SAML and OpenIdConnect
 
+### Changed
+- Fixed the `extras` requirements defined in the setup.py script
+
 ## [0.2.0](https://github.com/python-social-auth/social-core/releases/tag/0.2.0) - 2016-12-31
 
 ### Changed

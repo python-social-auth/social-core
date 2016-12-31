@@ -51,8 +51,8 @@ requirements = []
 requirements.extend(requirements_base)
 
 requirements_all = []
-requirements.extend(requirements_openidconnect)
-requirements.extend(requirements_saml)
+requirements_all.extend(requirements_openidconnect)
+requirements_all.extend(requirements_saml)
 
 tests_requirements = []
 tests_requirements.extend(tests_requirements_base)
