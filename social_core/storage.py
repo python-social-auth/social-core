@@ -11,7 +11,7 @@ import six
 
 from openid.association import Association as OpenIdAssociation
 
-from .utils import get_current_strategy
+from .exceptions import MissingBackend
 from .backends.utils import get_backend
 
 
@@ -25,16 +25,16 @@ class UserMixin(object):
     uid = None
     extra_data = None
 
-    def get_backend(self, strategy=None):
-        strategy = strategy or get_current_strategy()
-        if strategy:
-            return get_backend(strategy.get_backends(), self.provider)
+    def get_backend(self, strategy):
+        return get_backend(strategy.get_backends(), self.provider)
 
-    def get_backend_instance(self, strategy=None):
-        strategy = strategy or get_current_strategy()
-        Backend = self.get_backend(strategy)
-        if Backend:
-            return Backend(strategy=strategy)
+    def get_backend_instance(self, strategy):
+        try:
+            backend_class = self.get_backend(strategy)
+        except MissingBackend:
+            return None
+        else:
+            return backend_class(strategy=strategy)
 
     @property
     def access_token(self):

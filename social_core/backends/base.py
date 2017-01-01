@@ -1,7 +1,6 @@
 from requests import request, ConnectionError
 
-from ..utils import SSLHttpAdapter, module_member, parse_qs, user_agent, \
-                    get_current_strategy
+from ..utils import SSLHttpAdapter, module_member, parse_qs, user_agent
 from ..exceptions import AuthFailed
 
 
@@ -16,15 +15,13 @@ class BaseAuth(object):
     SEND_USER_AGENT = False
     SSL_PROTOCOL = None
 
-    def __init__(self, strategy=None, redirect_uri=None):
+    def __init__(self, strategy, redirect_uri=None):
         self.strategy = strategy
         self.redirect_uri = redirect_uri
-        self.data = {}
-        if strategy:
-            self.data = self.strategy.request_data()
-            self.redirect_uri = self.strategy.absolute_uri(
-                self.redirect_uri
-            )
+        self.data = self.strategy.request_data()
+        self.redirect_uri = self.strategy.absolute_uri(
+            self.redirect_uri
+        )
 
     def setting(self, name, default=None):
         """Return setting value from strategy"""
@@ -184,8 +181,7 @@ class BaseAuth(object):
         Return user with given ID from the User model used by this backend.
         This is called by django.contrib.auth.middleware.
         """
-        strategy = self.strategy or get_current_strategy()
-        return strategy.get_user(user_id)
+        return self.strategy.get_user(user_id)
 
     def continue_pipeline(self, *args, **kwargs):
         """Continue previous halted pipeline"""

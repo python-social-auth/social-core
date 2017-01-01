@@ -1,6 +1,8 @@
 import unittest2 as unittest
 
 from ...backends.base import BaseAuth
+from ..strategy import TestStrategy
+from ..models import TestStorage
 
 
 class BrokenBackendAuth(BaseAuth):
@@ -9,7 +11,7 @@ class BrokenBackendAuth(BaseAuth):
 
 class BrokenBackendTest(unittest.TestCase):
     def setUp(self):
-        self.backend = BrokenBackendAuth()
+        self.backend = BrokenBackendAuth(TestStrategy(TestStorage))
 
     def tearDown(self):
         self.backend = None
