@@ -268,6 +268,12 @@ def append_slash(url):
     return url
 
 
+def get_strategy(strategy, storage, *args, **kwargs):
+    Strategy = module_member(strategy)
+    Storage = module_member(storage)
+    return Strategy(Storage, *args, **kwargs)
+
+
 class cache(object):
     """
     Cache decorator that caches the return value of a method for a
