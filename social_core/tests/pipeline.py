@@ -1,6 +1,7 @@
 from ..pipeline.partial import partial
 
 
+@partial
 def ask_for_password(strategy, *args, **kwargs):
     if strategy.session_get('password'):
         return {'password': strategy.session_get('password')}

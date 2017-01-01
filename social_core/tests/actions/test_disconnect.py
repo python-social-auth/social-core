@@ -38,7 +38,6 @@ class DisconnectActionTest(BaseActionTest):
     def test_disconnect_with_partial_pipeline(self):
         self.strategy.set_settings({
             'SOCIAL_AUTH_DISCONNECT_PIPELINE': (
-                'social_core.pipeline.partial.save_status_to_session',
                 'social_core.tests.pipeline.ask_for_password',
                 'social_core.tests.pipeline.set_password',
                 'social_core.pipeline.disconnect.allowed_to_disconnect',

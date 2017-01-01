@@ -85,7 +85,6 @@ class BaseBackendTest(unittest.TestCase):
                 'social_core.pipeline.social_auth.social_details',
                 'social_core.pipeline.social_auth.social_uid',
                 'social_core.pipeline.social_auth.auth_allowed',
-                'social_core.pipeline.partial.save_status_to_session',
                 'social_core.tests.pipeline.ask_for_password',
                 'social_core.tests.pipeline.ask_for_slug',
                 'social_core.pipeline.social_auth.social_user',
