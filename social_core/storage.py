@@ -248,11 +248,64 @@ class CodeMixin(object):
         raise NotImplementedError('Implement in subclass')
 
 
+class PartialMixin(object):
+    token = ''
+    data = ''
+    next_step = ''
+    backend = ''
+
+    @property
+    def args(self):
+        return self.data.get('args', [])
+
+    @args.setter
+    def args(self, value):
+        self.data['args'] = value
+
+    @property
+    def kwargs(self):
+        return self.data.get('kwargs', {})
+
+    @kwargs.setter
+    def kwargs(self, value):
+        self.data['kwargs'] = value
+
+    def extend_kwargs(self, values):
+        self.data['kwargs'].update(values)
+
+    @classmethod
+    def generate_token(cls):
+        return uuid.uuid4().hex
+
+    @classmethod
+    def load(cls, token):
+        raise NotImplementedError('Implement in subclass')
+
+    @classmethod
+    def destroy(cls, token):
+        raise NotImplementedError('Implement in subclass')
+
+    @classmethod
+    def prepare(cls, backend, next_step, data):
+        partial = cls()
+        partial.backend = backend
+        partial.next_step = next_step
+        partial.data = data
+        partial.token = cls.generate_token()
+        return partial
+
+    @classmethod
+    def store(cls, partial):
+        partial.save()
+        return partial
+
+
 class BaseStorage(object):
     user = UserMixin
     nonce = NonceMixin
     association = AssociationMixin
     code = CodeMixin
+    partial = PartialMixin
 
     @classmethod
     def is_integrity_error(cls, exception):

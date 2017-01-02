@@ -207,13 +207,9 @@ class UserPersistsInPartialPipeline(BaseActionTest):
 
         # Handle the partial pipeline
         self.strategy.session_set('attribute', 'testing')
-
-        data = self.strategy.session_pop('partial_pipeline')
-
-        idx, backend, xargs, xkwargs = self.strategy.partial_from_session(data)
-
-        self.backend.continue_pipeline(pipeline_index=idx,
-                                              *xargs, **xkwargs)
+        token = self.strategy.session_pop('partial_pipeline_token')
+        partial = self.strategy.partial_load(token)
+        self.backend.continue_pipeline(partial)
 
     def test_user_persists_in_partial_pipeline(self):
         user = User(username='foobar1')
@@ -232,10 +228,6 @@ class UserPersistsInPartialPipeline(BaseActionTest):
 
         # Handle the partial pipeline
         self.strategy.session_set('attribute', 'testing')
-
-        data = self.strategy.session_pop('partial_pipeline')
-
-        idx, backend, xargs, xkwargs = self.strategy.partial_from_session(data)
-
-        self.backend.continue_pipeline(pipeline_index=idx,
-                                              *xargs, **xkwargs)
+        token = self.strategy.session_pop('partial_pipeline_token')
+        partial = self.strategy.partial_load(token)
+        self.backend.continue_pipeline(partial)

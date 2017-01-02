@@ -25,9 +25,9 @@ class LoginActionTest(BaseActionTest):
 
     def test_login_with_invalid_partial_pipeline(self):
         def before_complete():
-            partial = self.strategy.session_get('partial_pipeline')
-            partial['backend'] = 'foobar'
-            self.strategy.session_set('partial_pipeline', partial)
+            partial_token = self.strategy.session_get('partial_pipeline_token')
+            partial = self.strategy.storage.partial.load(partial_token)
+            partial.data['backend'] = 'foobar'
         self.do_login_with_partial_pipeline(before_complete)
 
     def test_new_user(self):

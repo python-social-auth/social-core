@@ -5,9 +5,6 @@ from .utils import sanitize_redirect, user_is_authenticated, \
 
 
 def do_auth(backend, redirect_name='next'):
-    # Clean any partial pipeline data
-    backend.strategy.clean_partial_pipeline()
-
     # Save any defined next value into session
     data = backend.strategy.request_data(merge=False)
 
@@ -39,8 +36,7 @@ def do_complete(backend, login, user=None, redirect_name='next',
 
     partial = partial_pipeline_data(backend, user, *args, **kwargs)
     if partial:
-        xargs, xkwargs = partial
-        user = backend.continue_pipeline(*xargs, **xkwargs)
+        user = backend.continue_pipeline(partial)
     else:
         user = backend.complete(user=user, *args, **kwargs)
 
@@ -49,6 +45,8 @@ def do_complete(backend, login, user=None, redirect_name='next',
     redirect_value = backend.strategy.session_get(redirect_name, '') or \
                      data.get(redirect_name, '')
 
+    # check if the output value is something else than a user and just
+    # return it to the client
     user_model = backend.strategy.storage.user.user_model()
     if user and not isinstance(user, user_model):
         return user
@@ -104,10 +102,11 @@ def do_disconnect(backend, user, association_id=None, redirect_name='next',
                   *args, **kwargs):
     partial = partial_pipeline_data(backend, user, *args, **kwargs)
     if partial:
-        xargs, xkwargs = partial
-        if association_id and not xkwargs.get('association_id'):
-            xkwargs['association_id'] = association_id
-        response = backend.disconnect(*xargs, **xkwargs)
+        if association_id and not partial.kwargs.get('association_id'):
+            partial.extend_kwargs({
+                'association_id': association_id
+            })
+        response = backend.disconnect(*partial.args, **partial.kwargs)
     else:
         response = backend.disconnect(user=user, association_id=association_id,
                                       *args, **kwargs)

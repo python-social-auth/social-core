@@ -28,8 +28,6 @@ class BaseAuth(object):
         return self.strategy.setting(name, default=default, backend=self)
 
     def start(self):
-        # Clean any partial pipeline info before starting the process
-        self.strategy.clean_partial_pipeline()
         if self.uses_redirect():
             return self.strategy.redirect(self.auth_url())
         else:
@@ -73,10 +71,8 @@ class BaseAuth(object):
         self.strategy = self.strategy or kwargs.get('strategy')
         self.redirect_uri = self.redirect_uri or kwargs.get('redirect_uri')
         self.data = self.strategy.request_data()
-        pipeline = self.strategy.get_pipeline(self)
         kwargs.setdefault('is_new', False)
-        if 'pipeline_index' in kwargs:
-            pipeline = pipeline[kwargs['pipeline_index']:]
+        pipeline = self.strategy.get_pipeline(self)
         return self.pipeline(pipeline, *args, **kwargs)
 
     def pipeline(self, pipeline, pipeline_index=0, *args, **kwargs):
@@ -91,8 +87,6 @@ class BaseAuth(object):
 
     def disconnect(self, *args, **kwargs):
         pipeline = self.strategy.get_disconnect_pipeline(self)
-        if 'pipeline_index' in kwargs:
-            pipeline = pipeline[kwargs['pipeline_index']:]
         kwargs['name'] = self.name
         kwargs['user_storage'] = self.strategy.storage.user
         return self.run_pipeline(pipeline, *args, **kwargs)
@@ -104,14 +98,13 @@ class BaseAuth(object):
         out.setdefault('request', self.strategy.request_data())
         out.setdefault('details', {})
 
-        for idx, name in enumerate(pipeline):
+        for idx, name in enumerate(pipeline[pipeline_index:]):
             out['pipeline_index'] = pipeline_index + idx
             func = module_member(name)
             result = func(*args, **out) or {}
             if not isinstance(result, dict):
                 return result
             out.update(result)
-        self.strategy.clean_partial_pipeline()
         return out
 
     def extra_data(self, user, uid, response, details=None, *args, **kwargs):
@@ -183,10 +176,12 @@ class BaseAuth(object):
         """
         return self.strategy.get_user(user_id)
 
-    def continue_pipeline(self, *args, **kwargs):
+    def continue_pipeline(self, partial):
         """Continue previous halted pipeline"""
-        kwargs.update({'backend': self, 'strategy': self.strategy})
-        return self.authenticate(*args, **kwargs)
+        return self.strategy.authenticate(self,
+                                          pipeline_index=partial.next_step,
+                                          *partial.args,
+                                          **partial.kwargs)
 
     def auth_extra_arguments(self):
         """Return extra arguments needed on auth process. The defaults can be

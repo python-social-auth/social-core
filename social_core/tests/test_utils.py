@@ -9,6 +9,7 @@ except ImportError:
 from ..utils import sanitize_redirect, user_is_authenticated, \
                     user_is_active, slugify, build_absolute_uri, \
                     partial_pipeline_data
+from .models import TestPartial
 
 
 PY3 = sys.version_info[0] == 3
@@ -141,10 +142,10 @@ class PartialPipelineData(unittest.TestCase):
             backend.ID_KEY: email
         }
         key, val = ('foo', 'bar')
-        _, xkwargs = partial_pipeline_data(backend, None,
-                                           *(), **dict([(key, val)]))
-        self.assertTrue(key in xkwargs)
-        self.assertEqual(xkwargs[key], val)
+        partial = partial_pipeline_data(backend, None,
+                                        *(), **dict([(key, val)]))
+        self.assertTrue(key in partial.kwargs)
+        self.assertEqual(partial.kwargs[key], val)
         self.assertEqual(backend.strategy.clean_partial_pipeline.call_count, 0)
 
     def test_clean_pipeline_when_uid_does_not_match(self):
@@ -153,38 +154,41 @@ class PartialPipelineData(unittest.TestCase):
             backend.ID_KEY: 'bar@example.com'
         }
         key, val = ('foo', 'bar')
-        ret = partial_pipeline_data(backend, None,
-                                           *(), **dict([(key, val)]))
-        self.assertIsNone(ret)
+        partial = partial_pipeline_data(backend, None,
+                                        *(), **dict([(key, val)]))
+        self.assertIsNone(partial)
         self.assertEqual(backend.strategy.clean_partial_pipeline.call_count, 1)
 
     def test_kwargs_included_in_result(self):
         backend = self._backend()
         key, val = ('foo', 'bar')
-        _, xkwargs = partial_pipeline_data(backend, None,
-                                           *(), **dict([(key, val)]))
-        self.assertTrue(key in xkwargs)
-        self.assertEqual(xkwargs[key], val)
+        partial = partial_pipeline_data(backend, None,
+                                        *(), **dict([(key, val)]))
+        self.assertTrue(key in partial.kwargs)
+        self.assertEqual(partial.kwargs[key], val)
         self.assertEqual(backend.strategy.clean_partial_pipeline.call_count, 0)
 
     def test_update_user(self):
         user = object()
         backend = self._backend(session_kwargs={'user': None})
-        _, xkwargs = partial_pipeline_data(backend, user)
-        self.assertTrue('user' in xkwargs)
-        self.assertEqual(xkwargs['user'], user)
+        partial = partial_pipeline_data(backend, user)
+        self.assertTrue('user' in partial.kwargs)
+        self.assertEqual(partial.kwargs['user'], user)
         self.assertEqual(backend.strategy.clean_partial_pipeline.call_count, 0)
 
     def _backend(self, session_kwargs=None):
+        backend = Mock()
+        backend.ID_KEY = 'email'
+        backend.name = 'mock-backend'
+
         strategy = Mock()
         strategy.request = None
         strategy.request_data.return_value = {}
         strategy.session_get.return_value = object()
-        strategy.partial_from_session.return_value = \
-            (0, 'mock-backend', [], session_kwargs or {})
+        strategy.partial_load.return_value = TestPartial.prepare(backend.name, 0, {
+            'args': [],
+            'kwargs': session_kwargs or {}
+        })
 
-        backend = Mock()
-        backend.ID_KEY = 'email'
-        backend.name = 'mock-backend'
         backend.strategy = strategy
         return backend

@@ -6,10 +6,17 @@ SERIALIZABLE_TYPES = (dict, list, tuple, set, bool, type(None)) + \
                      (six.text_type, six.binary_type,)
 
 
-def partial_to_session(strategy, next, backend, request=None, *args, **kwargs):
-    user = kwargs.get('user')
-    social = kwargs.get('social')
-    clean_kwargs = {
+def is_dict_type(value):
+    """Treat any dict, MergeDict, MultiDict instance as dict type"""
+    # Check by class name to avoid importing Django MergeDict or
+    # Werkzeug MultiDict
+    return isinstance(value, dict) or \
+        value.__class__.__name__ in ('MergeDict', 'MultiDict')
+
+
+def partial_prepare(strategy, backend, next_step, user=None, social=None,
+                   *args, **kwargs):
+    kwargs.update({
         'response': kwargs.get('response') or {},
         'details': kwargs.get('details') or {},
         'username': kwargs.get('username'),
@@ -21,41 +28,46 @@ def partial_to_session(strategy, next, backend, request=None, *args, **kwargs):
             'provider': social.provider,
             'uid': social.uid
         } or None
-    }
+    })
 
-    kwargs.update(clean_kwargs)
+    clean_args = [strategy.to_session_value(val) for val in args]
 
     # Clean any MergeDict data type from the values
-    new_kwargs = {}
+    clean_kwargs = {}
     for name, value in kwargs.items():
-        # Check for class name to avoid importing Django MergeDict or
-        # Werkzeug MultiDict
-        if isinstance(value, dict) or \
-           value.__class__.__name__ in ('MergeDict', 'MultiDict'):
-            value = dict(value)
+        value = dict(value) if is_dict_type(value) else value
         if isinstance(value, SERIALIZABLE_TYPES):
-            new_kwargs[name] = strategy.to_session_value(value)
+            clean_kwargs[name] = strategy.to_session_value(value)
 
-    return {
-        'next': next,
-        'backend': backend.name,
-        'args': tuple(map(strategy.to_session_value, args)),
-        'kwargs': new_kwargs
-    }
+    return strategy.storage.partial.prepare(backend.name, next_step, {
+        'args': clean_args,
+        'kwargs': clean_kwargs
+    })
 
 
-def partial_from_session(strategy, session):
-    kwargs = session['kwargs'].copy()
-    user = kwargs.get('user')
-    social = kwargs.get('social')
-    if isinstance(social, dict):
-        kwargs['social'] = strategy.storage.user.get_social_auth(**social)
-    if user:
-        kwargs['user'] = strategy.storage.user.get_user(user)
-    return (
-        session['next'],
-        session['backend'],
-        list(map(strategy.from_session_value, session['args'])),
-        dict((key, strategy.from_session_value(val))
-                for key, val in kwargs.items())
-    )
+def partial_store(strategy, backend, next_step, user=None, social=None,
+                  *args, **kwargs):
+    partial = partial_prepare(strategy, backend, next_step, user=user,
+                              social=social, *args, **kwargs)
+    return strategy.storage.partial.store(partial)
+
+
+def partial_load(strategy, token):
+    partial = strategy.storage.partial.load(token)
+
+    if partial:
+        args = partial.args
+        kwargs = partial.kwargs.copy()
+        user = kwargs.get('user')
+        social = kwargs.get('social')
+
+        if isinstance(social, dict):
+            kwargs['social'] = strategy.storage.user.get_social_auth(**social)
+
+        if user:
+            kwargs['user'] = strategy.storage.user.get_user(user)
+
+        partial.args = [strategy.from_session_value(val) for val in args]
+        partial.kwargs = dict((key, strategy.from_session_value(val))
+                            for key, val in kwargs.items())
+    return partial

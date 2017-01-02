@@ -154,14 +154,18 @@ class OpenIdAuth(BaseAuth):
         return self.setting('OPENID_TRUST_ROOT') or \
                self.strategy.absolute_uri('/')
 
-    def continue_pipeline(self, *args, **kwargs):
+    def continue_pipeline(self, partial):
         """Continue previous halted pipeline"""
         response = self.consumer().complete(dict(self.data.items()),
                                             self.strategy.absolute_uri(
                                                 self.redirect_uri
                                             ))
-        kwargs.update({'response': response, 'backend': self})
-        return self.strategy.authenticate(*args, **kwargs)
+        return self.strategy.authenticate(self,
+                                          response=response,
+                                          pipeline_index=partial.next_step,
+                                          *partial.args,
+                                          **partial.kwargs)
+
 
     def auth_complete(self, *args, **kwargs):
         """Complete auth process"""
@@ -170,8 +174,8 @@ class OpenIdAuth(BaseAuth):
                                                 self.redirect_uri
                                             ))
         self.process_error(response)
-        kwargs.update({'response': response, 'backend': self})
-        return self.strategy.authenticate(*args, **kwargs)
+        return self.strategy.authenticate(self, response=response,
+                                          *args, **kwargs)
 
     def process_error(self, data):
         if not data:

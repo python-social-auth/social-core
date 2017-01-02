@@ -164,37 +164,41 @@ def drop_lists(value):
     return out
 
 
-def partial_pipeline_data(backend, user=None, *args, **kwargs):
-    partial = backend.strategy.session_get('partial_pipeline', None)
-    if partial:
-        idx, backend_name, xargs, xkwargs = \
-            backend.strategy.partial_from_session(partial)
+def partial_pipeline_data(backend, user=None, partial_token=None,
+                          *args, **kwargs):
+    request_data = backend.strategy.request_data()
 
+    partial_argument_name = backend.setting('PARTIAL_PIPELINE_TOKEN_NAME',
+                                            'partial_token')
+    partial_token = partial_token or \
+                    request_data.get(partial_argument_name) or \
+                    backend.strategy.session_get('partial_pipeline_token', None)
+
+    if partial_token:
+        partial = backend.strategy.partial_load(partial_token)
         partial_matches_request = False
 
-        if backend_name == backend.name:
+        if partial and partial.backend == backend.name:
             partial_matches_request = True
 
-            req_data = backend.strategy.request_data()
             # Normally when resuming a pipeline, request_data will be empty. We
             # only need to check for a uid match if new data was provided (i.e.
             # if current request specifies the ID_KEY).
-            if backend.ID_KEY in req_data:
-                id_from_partial = xkwargs.get('uid')
-                id_from_request = req_data.get(backend.ID_KEY)
+            if backend.ID_KEY in request_data:
+                id_from_partial = partial.kwargs.get('uid')
+                id_from_request = request_data.get(backend.ID_KEY)
 
                 if id_from_partial != id_from_request:
                     partial_matches_request = False
 
         if partial_matches_request:
-            kwargs.setdefault('pipeline_index', idx)
             if user:  # don't update user if it's None
                 kwargs.setdefault('user', user)
-            kwargs.setdefault('request', backend.strategy.request_data())
-            xkwargs.update(kwargs)
-            return xargs, xkwargs
+            kwargs.setdefault('request', request_data)
+            partial.extend_kwargs(kwargs)
+            return partial
         else:
-            backend.strategy.clean_partial_pipeline()
+            backend.strategy.clean_partial_pipeline(partial_token)
 
 
 def build_absolute_uri(host_url, path=None):

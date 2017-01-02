@@ -131,22 +131,20 @@ class BaseBackendTest(unittest.TestCase):
         self.pipeline_handlers(url)
 
         password = self.pipeline_password_handling(url)
-        data = self.strategy.session_pop('partial_pipeline')
-        idx, backend, xargs, xkwargs = self.strategy.partial_from_session(data)
-        self.assertEqual(backend, self.backend.name)
-        redirect = self.backend.continue_pipeline(pipeline_index=idx,
-                                                  *xargs, **xkwargs)
+        token = self.strategy.session_pop('partial_pipeline_token')
+        partial = self.strategy.partial_load(token)
+        self.assertEqual(partial.backend, self.backend.name)
+        redirect = self.backend.continue_pipeline(partial)
 
         url = self.strategy.build_absolute_uri('/slug')
         self.assertEqual(redirect.url, url)
         self.pipeline_handlers(url)
         slug = self.pipeline_slug_handling(url)
 
-        data = self.strategy.session_pop('partial_pipeline')
-        idx, backend, xargs, xkwargs = self.strategy.partial_from_session(data)
-        self.assertEqual(backend, self.backend.name)
-        user = self.backend.continue_pipeline(pipeline_index=idx,
-                                              *xargs, **xkwargs)
+        token = self.strategy.session_pop('partial_pipeline_token')
+        partial = self.strategy.partial_load(token)
+        self.assertEqual(partial.backend, self.backend.name)
+        user = self.backend.continue_pipeline(partial)
 
         self.assertEqual(user.username, self.expected_username)
         self.assertEqual(user.slug, slug)

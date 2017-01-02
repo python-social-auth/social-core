@@ -1,7 +1,7 @@
 import base64
 
 from ..storage import UserMixin, NonceMixin, AssociationMixin, \
-                      CodeMixin, BaseStorage
+                      CodeMixin, PartialMixin, BaseStorage
 
 
 class BaseModel(object):
@@ -202,11 +202,28 @@ class TestCode(CodeMixin, BaseModel):
                 return c
 
 
+class TestPartial(PartialMixin, BaseModel):
+    NEXT_ID = 1
+    cache = {}
+
+    def save(self):
+        TestPartial.cache[self.token] = self
+
+    @classmethod
+    def load(cls, token):
+        return cls.cache.get(token)
+
+    @classmethod
+    def destroy(cls, token):
+        cls.cache.pop(token)
+
+
 class TestStorage(BaseStorage):
     user = TestUserSocialAuth
     nonce = TestNonce
     association = TestAssociation
     code = TestCode
+    partial = TestPartial
 
     @classmethod
     def is_integrity_error(cls, exception):

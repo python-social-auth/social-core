@@ -5,7 +5,7 @@ import hashlib
 from .utils import setting_name, module_member
 from .store import OpenIdStore, OpenIdSessionWrapper
 from .pipeline import DEFAULT_AUTH_PIPELINE, DEFAULT_DISCONNECT_PIPELINE
-from .pipeline.utils import partial_from_session, partial_to_session
+from .pipeline.utils import partial_load, partial_store, partial_prepare
 
 
 class BaseTemplateStrategy(object):
@@ -81,15 +81,17 @@ class BaseStrategy(object):
     def from_session_value(self, val):
         return val
 
-    def partial_to_session(self, next, backend, request=None, *args, **kwargs):
-        return partial_to_session(self, next, backend, request=request,
-                                  *args, **kwargs)
+    def partial_save(self, next_step, backend, *args, **kwargs):
+        return partial_store(self, backend, next_step, *args, **kwargs)
 
-    def partial_from_session(self, session):
-        return partial_from_session(self, session)
+    def partial_prepare(self, next_step, backend, *args, **kwargs):
+        return partial_prepare(self, backend, next_step, *args, **kwargs)
 
-    def clean_partial_pipeline(self, name='partial_pipeline'):
-        self.session_pop(name)
+    def partial_load(self, token):
+        return partial_load(self, token)
+
+    def clean_partial_pipeline(self, token):
+        self.storage.partial.destroy(token)
 
     def openid_store(self):
         return OpenIdStore(self)
