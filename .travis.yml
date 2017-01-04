@@ -2,35 +2,22 @@ language: python
 sudo: false
 env:
   global:
-    - REQUIREMENTS=requirements.txt
-    - TEST_REQUIREMENTS=social_core/tests/requirements.txt
+    - TEST_REQUIREMENTS=social_core/tests/requirements-base.txt
 python:
   - "2.7"
 matrix:
   include:
     - python: "pypy"
-      env:
-        - TEST_REQUIREMENTS=social_core/tests/requirements-pypy.txt
     - python: "3.3"
-      env:
-        - REQUIREMENTS=requirements-python3.txt
-        - TEST_REQUIREMENTS=social_core/tests/requirements-python3.txt
     - python: "3.4"
-      env:
-        - REQUIREMENTS=requirements-python3.txt
-        - TEST_REQUIREMENTS=social_core/tests/requirements-python3.txt
     - python: "3.5"
-      env:
-        - REQUIREMENTS=requirements-python3.txt
-        - TEST_REQUIREMENTS=social_core/tests/requirements-python3.txt
 addons:
   apt:
     packages:
       - libxmlsec1-dev
       - swig
 install:
-  - "python setup.py -q install"
-  - "travis_retry pip install -r $REQUIREMENTS"
   - "travis_retry pip install -r $TEST_REQUIREMENTS"
+  - "travis_retry python setup.py nosetests -q --collect-only"
 script:
-  - "nosetests --with-coverage --cover-package=social_core --where=social_core/tests"
+  - "python setup.py nosetests --where=social_core/tests --with-coverage --cover-package=social_core"
