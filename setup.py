@@ -37,6 +37,7 @@ def read_tests_requirements(filename):
     return read_requirements('social_core/tests/{0}'.format(filename))
 
 requirements_base = read_requirements('requirements-base.txt')
+requirements_pypy = read_requirements('requirements-pypy.txt')
 requirements_python2 = read_requirements('requirements-python2.txt')
 requirements_python3 = read_requirements('requirements-python3.txt')
 requirements_openidconnect = read_requirements('requirements-openidconnect.txt')
@@ -58,6 +59,7 @@ if os.environ.get('BUILD_VERSION') == '3' or sys.version_info[0] == 3:
     requirements.extend(requirements_python3)
     tests_requirements.extend(tests_requirements_python3)
 elif '__pypy__' in sys.builtin_module_names:
+    requirements.extend(requirements_pypy)
     tests_requirements.extend(tests_requirements_pypy)
 else:
     requirements_saml = read_requirements('requirements-python2-saml.txt')
