@@ -40,7 +40,7 @@ requirements_base = read_requirements('requirements-base.txt')
 requirements_python2 = read_requirements('requirements-python2.txt')
 requirements_python3 = read_requirements('requirements-python3.txt')
 requirements_openidconnect = read_requirements('requirements-openidconnect.txt')
-requirements_saml = read_requirements('requirements-saml.txt')
+requirements_saml = []
 
 tests_requirements_base = read_tests_requirements('requirements-base.txt')
 tests_requirements_python2 = read_tests_requirements('requirements-python2.txt')
@@ -50,21 +50,24 @@ tests_requirements_pypy = read_tests_requirements('requirements-pypy.txt')
 requirements = []
 requirements.extend(requirements_base)
 
-requirements_all = []
-requirements_all.extend(requirements_openidconnect)
-requirements_all.extend(requirements_saml)
-
 tests_requirements = []
 tests_requirements.extend(tests_requirements_base)
 
 if os.environ.get('BUILD_VERSION') == '3' or sys.version_info[0] == 3:
+    requirements_saml = read_requirements('requirements-python3-saml.txt')
     requirements.extend(requirements_python3)
     tests_requirements.extend(tests_requirements_python3)
 elif '__pypy__' in sys.builtin_module_names:
     tests_requirements.extend(tests_requirements_pypy)
 else:
+    requirements_saml = read_requirements('requirements-python2-saml.txt')
     requirements.extend(requirements_python2)
     tests_requirements.extend(tests_requirements_python2)
+
+
+requirements_all = []
+requirements_all.extend(requirements_openidconnect)
+requirements_all.extend(requirements_saml)
 
 setup(
     name='social-auth-core',
