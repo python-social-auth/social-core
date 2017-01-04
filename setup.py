@@ -68,6 +68,7 @@ else:
 requirements_all = []
 requirements_all.extend(requirements_openidconnect)
 requirements_all.extend(requirements_saml)
+tests_requirements.extend(requirements_all)
 
 setup(
     name='social-auth-core',
