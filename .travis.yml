@@ -1,36 +1,40 @@
 language: python
 sudo: false
-env:
-  global:
-    - REQUIREMENTS=requirements.txt
-    - TEST_REQUIREMENTS=social_core/tests/requirements.txt
 python:
-  - "2.7"
+  - 3.6
+  - 3.5
+env:
+  matrix:
+    - TOXENV=py27
+    - TOXENV=py33
+    - TOXENV=py34
+    - TOXENV=py35
+    - TOXENV=py36
+    - TOXENV=pypy
 matrix:
-  include:
-    - python: "pypy"
-      env:
-        - TEST_REQUIREMENTS=social_core/tests/requirements-pypy.txt
-    - python: "3.3"
-      env:
-        - REQUIREMENTS=requirements-python3.txt
-        - TEST_REQUIREMENTS=social_core/tests/requirements-python3.txt
-    - python: "3.4"
-      env:
-        - REQUIREMENTS=requirements-python3.txt
-        - TEST_REQUIREMENTS=social_core/tests/requirements-python3.txt
-    - python: "3.5"
-      env:
-        - REQUIREMENTS=requirements-python3.txt
-        - TEST_REQUIREMENTS=social_core/tests/requirements-python3.txt
+  allow_failures:
+    - python: 3.6
+      env: TOXENV=py36
+  exclude:
+    - python: 3.6
+      env: TOXENV=py27
+    - python: 3.6
+      env: TOXENV=py33
+    - python: 3.6
+      env: TOXENV=py34
+    - python: 3.6
+      env: TOXENV=py35
+    - python: 3.6
+      env: TOXENV=pypy
+    - python: 3.5
+      env: TOXENV=py36
+  fast_finish: true
 addons:
   apt:
     packages:
       - libxmlsec1-dev
       - swig
 install:
-  - "python setup.py -q install"
-  - "travis_retry pip install -r $REQUIREMENTS"
-  - "travis_retry pip install -r $TEST_REQUIREMENTS"
+  - pip install tox -U pip
 script:
-  - "nosetests --with-coverage --cover-package=social_core --where=social_core/tests"
+  - tox -e $TOXENV
