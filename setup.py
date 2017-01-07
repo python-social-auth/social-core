@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
-import os
 import sys
 import re
-from os.path import join, dirname, split
+from os.path import join, dirname
 from setuptools import setup
 
 
@@ -17,11 +16,13 @@ providers from third parties. And to bring support for more frameworks
 and ORMs.
 """
 
+
 def long_description():
     try:
         return open(join(dirname(__file__), 'README.md')).read()
     except IOError:
         return None
+
 
 def read_version():
     with open('social_core/__init__.py') as file:
@@ -29,42 +30,30 @@ def read_version():
                         if line.startswith('__version__')][0]
         return VERSION_RE.match(version_line).groups()[0]
 
+
 def read_requirements(filename):
     with open(filename, 'r') as file:
         return [line for line in file.readlines() if not line.startswith('-')]
 
+
 def read_tests_requirements(filename):
     return read_requirements('social_core/tests/{0}'.format(filename))
 
+
+PY = sys.version_info[0]
 requirements_base = read_requirements('requirements-base.txt')
-requirements_python2 = read_requirements('requirements-python2.txt')
-requirements_python3 = read_requirements('requirements-python3.txt')
+requirements = requirements_base + \
+               read_requirements('requirements-python%s.txt' % PY)
 requirements_openidconnect = read_requirements('requirements-openidconnect.txt')
-requirements_saml = read_requirements('requirements-saml.txt')
+requirements_saml = read_requirements('requirements-saml-python%s.txt' % PY)
 
 tests_requirements_base = read_tests_requirements('requirements-base.txt')
-tests_requirements_python2 = read_tests_requirements('requirements-python2.txt')
-tests_requirements_python3 = read_tests_requirements('requirements-python3.txt')
-tests_requirements_pypy = read_tests_requirements('requirements-pypy.txt')
+tests_requirements = tests_requirements_base + \
+                     read_tests_requirements('requirements-python%s.txt' % PY)
 
-requirements = []
-requirements.extend(requirements_base)
+requirements_all = requirements_openidconnect + requirements_saml
 
-requirements_all = []
-requirements_all.extend(requirements_openidconnect)
-requirements_all.extend(requirements_saml)
-
-tests_requirements = []
-tests_requirements.extend(tests_requirements_base)
-
-if os.environ.get('BUILD_VERSION') == '3' or sys.version_info[0] == 3:
-    requirements.extend(requirements_python3)
-    tests_requirements.extend(tests_requirements_python3)
-elif '__pypy__' in sys.builtin_module_names:
-    tests_requirements.extend(tests_requirements_pypy)
-else:
-    requirements.extend(requirements_python2)
-    tests_requirements.extend(tests_requirements_python2)
+tests_requirements = tests_requirements + requirements_all
 
 setup(
     name='social-auth-core',

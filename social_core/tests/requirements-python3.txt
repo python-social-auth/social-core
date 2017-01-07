@@ -1,3 +1,2 @@
 -r requirements-base.txt
 unittest2py3k==0.5.1
-python3-saml>=1.2.1
