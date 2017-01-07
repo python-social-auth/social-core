@@ -1,3 +1,5 @@
+import time
+
 from requests import request, ConnectionError
 
 from ..utils import SSLHttpAdapter, module_member, parse_qs, user_agent
@@ -109,7 +111,10 @@ class BaseAuth(object):
 
     def extra_data(self, user, uid, response, details=None, *args, **kwargs):
         """Return default extra data to store in extra_data field"""
-        data = {}
+        data = {
+            # store the last time authentication toke place
+            'auth_time': int(time.time())
+        }
         for entry in (self.EXTRA_DATA or []) + self.setting('EXTRA_DATA', []):
             if not isinstance(entry, (list, tuple)):
                 entry = (entry,)

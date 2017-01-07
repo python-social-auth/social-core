@@ -56,7 +56,7 @@ class UserMixin(object):
             if self.set_extra_data(response):
                 self.save()
 
-    def expiration_datetime(self):
+    def expiration_timedelta(self):
         """Return provider session live seconds. Returns a timedelta ready to
         use with session.set_expiry().
 
@@ -74,11 +74,26 @@ class UserMixin(object):
 
             # Detect if expires is a timestamp
             if expires > time.mktime(now.timetuple()):
-                # expires is a datetime
+                # expires is a datetime, return the remaining difference
                 return datetime.fromtimestamp(expires) - now
             else:
-                # expires is a timedelta
-                return timedelta(seconds=expires)
+                # expires is the time to live seconds since creation,
+                # check against auth_time if present, otherwise return
+                # the value
+                auth_time = self.extra_data.get('auth_time')
+                if auth_time:
+                    reference = datetime.fromtimestamp(auth_time)
+                    return (reference + timedelta(seconds=expires)) - now
+                else:
+                    return timedelta(seconds=expires)
+
+    def expiration_datetime(self):
+        # backward compatible alias
+        return self.expiration_timedelta()
+
+    def access_token_expired(self):
+        expiration = self.expiration_timedelta()
+        return expiration and expiration.total_seconds() <= 0
 
     def set_extra_data(self, extra_data=None):
         if extra_data and self.extra_data != extra_data:

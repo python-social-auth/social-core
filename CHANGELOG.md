@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 - Store partial pipeline data in an storage class
+- Store `auth_time` with the last time authentication toke place, use
+  `auth_time` to determine if access token expired
 
 ### Changed
 - Removed the old `save_status_to_session` to partialize a pipeline run
@@ -17,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 - Defined `extras` for SAML, and "all" that will install SAML and OpenIdConnect
+- Added `auth_time` in extra data by default to store the time that the authentication toke place
 
 ### Changed
 - Remove set/get current strategy methods

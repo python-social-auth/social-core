@@ -127,5 +127,5 @@ class ExpirationTimeTest(DummyOAuth2Test):
     def test_expires_time(self):
         user = self.do_login()
         social = user.social[0]
-        expiration = social.expiration_datetime()
+        expiration = social.expiration_timedelta()
         self.assertEqual(expiration <= DELTA, True)
