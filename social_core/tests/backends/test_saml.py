@@ -1,14 +1,16 @@
-import os
 import re
 import json
 import sys
 import unittest2
 import requests
+import os
 from os import path
 
-import six
 
-from mock import patch
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
 from httpretty import HTTPretty
 
 from six.moves.urllib_parse import urlparse, urlunparse, urlencode, parse_qs
@@ -26,8 +28,8 @@ from ...exceptions import AuthMissingParameter
 DATA_DIR = path.join(path.dirname(__file__), 'data')
 
 
-@unittest2.skipIf('TRAVIS' in os.environ and sys.version_info[:2] == (3, 5),
-                  'Travis-ci segfaults in Python 3.5 probably due to a bad ' \
+@unittest2.skipIf('TRAVIS' in os.environ,
+                  'Travis-ci segfaults probably due to a bad '
                   'dependencies build')
 @unittest2.skipIf('__pypy__' in sys.builtin_module_names,
                   'dm.xmlsec not compatible with pypy')
