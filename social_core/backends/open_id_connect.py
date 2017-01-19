@@ -54,7 +54,7 @@ class OpenIdConnectAuth(BaseOAuth2):
 
     def access_token_url(self):
         return self.ACCESS_TOKEN_URL or \
-            self.oidc_config().get('authorization_endpoint')
+            self.oidc_config().get('token_endpoint')
 
     def revoke_token_url(self, token, uid):
         return self.REVOKE_TOKEN_URL or \
