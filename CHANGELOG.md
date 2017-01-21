@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Store partial pipeline data in an storage class
 - Store `auth_time` with the last time authentication toke place, use
   `auth_time` to determine if access token expired
+- Ensure that `testkey.pem` is distributed
 
 ### Changed
 - Removed the old `save_status_to_session` to partialize a pipeline run
