@@ -1,6 +1,6 @@
 global-include *.py
 
-include *.txt CHANGELOG.md LICENSE README.md
+include *.txt CHANGELOG.md LICENSE README.md social_core/tests/testkey.pem
 recursive-include social_core/tests *.txt
 
 graft examples

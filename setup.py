@@ -91,7 +91,10 @@ setup(
         'Programming Language :: Python :: 3'
     ],
     package_data={
-        'social_core/tests': ['social_core/tests/*.txt']
+        'social_core/tests': [
+            'social_core/tests/*.txt',
+            'social_core/tests/testkey.pem'
+        ]
     },
     include_package_data=True,
     tests_require=tests_requirements,

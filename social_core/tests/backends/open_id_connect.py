@@ -35,8 +35,8 @@ class OpenIdConnectTestMixin(object):
 
     def setUp(self):
         super(OpenIdConnectTestMixin, self).setUp()
-        here = os.path.dirname(__file__)
-        self.key = RSAKey(kid='testkey').load(os.path.join(here, '../testkey.pem'))
+        test_root = os.path.dirname(os.path.dirname(__file__))
+        self.key = RSAKey(kid='testkey').load(os.path.join(test_root, 'testkey.pem'))
         HTTPretty.register_uri(HTTPretty.GET,
           self.backend.OIDC_ENDPOINT + '/.well-known/openid-configuration',
           status=200,
