@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Store `auth_time` with the last time authentication toke place, use
   `auth_time` to determine if access token expired
 - Ensure that `testkey.pem` is distributed
+- Added Asana OAuth2 backend
 
 ### Changed
 - Removed the old `save_status_to_session` to partialize a pipeline run
