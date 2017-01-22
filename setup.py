@@ -42,8 +42,7 @@ def read_tests_requirements(filename):
 
 PY = sys.version_info[0]
 requirements_base = read_requirements('requirements-base.txt')
-requirements = requirements_base + \
-               read_requirements('requirements-python%s.txt' % PY)
+requirements = read_requirements('requirements-python%s.txt' % PY)
 requirements_openidconnect = read_requirements('requirements-openidconnect.txt')
 requirements_saml = read_requirements('requirements-saml-python%s.txt' % PY)
 
