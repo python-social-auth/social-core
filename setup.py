@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 import sys
 import re
 from os.path import join, dirname
@@ -40,7 +41,7 @@ def read_tests_requirements(filename):
     return read_requirements('social_core/tests/{0}'.format(filename))
 
 
-PY = sys.version_info[0]
+PY = os.environ.get("BUILD_VERSION") or sys.version_info[0]
 requirements_base = read_requirements('requirements-base.txt')
 requirements = requirements_base + \
                read_requirements('requirements-python%s.txt' % PY)

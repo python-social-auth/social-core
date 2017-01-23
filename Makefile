@@ -1,13 +1,13 @@
 PYTHON_VERSIONS := 2.7.12 3.3.6 3.4.4 3.5.2 pypy-4.0.1
 
 build:
-	@ python setup.py sdist
-	@ python setup.py bdist_wheel --python-tag py2
+	@ BUILD_VERSION=2 python setup.py sdist
+	@ BUILD_VERSION=2 python setup.py bdist_wheel --python-tag py2
 	@ BUILD_VERSION=3 python setup.py bdist_wheel --python-tag py3
 
 publish:
-	@ python setup.py sdist upload
-	@ python setup.py bdist_wheel --python-tag py2 upload
+	@ BUILD_VERSION=2 python setup.py sdist upload
+	@ BUILD_VERSION=2 python setup.py bdist_wheel --python-tag py2 upload
 	@ BUILD_VERSION=3 python setup.py bdist_wheel --python-tag py3 upload
 
 check-pyenv:
