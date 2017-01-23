@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
 
-## [1.0.0](https://github.com/python-social-auth/social-core/releases/tag/0.2.1) - 2016-01-22
+## [1.0.0](https://github.com/python-social-auth/social-core/releases/tag/1.0.0) - 2017-01-22
 
 ### Added
 - Store partial pipeline data in an storage class
