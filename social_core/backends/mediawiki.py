@@ -7,23 +7,26 @@ Usage
 
 In addition to the general setup you need to define the
 following parameters. In Django's settings.py you would
-use for English Wikipedia::
+use for Wikimedia Meta-Wiki::
 
     SOCIAL_AUTH_MEDIAWIKI_KEY = <consumer_key>
     SOCIAL_AUTH_MEDIAWIKI_SECRET = <consumer_secret>
-    REQUEST_TOKEN_URL =
-        'https://en.wikipedia.org/w/index.php?title=Special:OAuth/initiate'
-    AUTHORIZATION_URL =
-        'https://en.wikipedia.org/w/index.php?title=Special:Oauth/authorize'
-    ACCESS_TOKEN_URL =
-        'https://en.wikipedia.org/w/index.php?title=Special:Oauth/token'
-    IDENTIFY_URL =
-        'https://en.wikipedia.org/w/index.php'
+    SOCIAL_AUTH_MEDIAWIKI_URL = 'https://meta.wikimedia.org/w/index.php'
 
-If users should only be prompeted once for permission use:
+In the OAuth consumer registration you can choose the option to:
 
-    AUTHORIZATION_URL =
-        'https://en.wikipedia.org/w/index.php?title=Special:Oauth/authenticate'
+    Allow consumer to specify a callback in requests
+    and use "callback" URL above as a required prefix
+
+This is preferable. If your URL is `https://myurl.org/` use
+the following option::
+
+    SOCIAL_AUTH_MEDIAWIKI_CALLBACK = \
+          'https://myurl.org/oauth/complete/mediawiki'
+
+But it is also possible to use::
+
+    SOCIAL_AUTH_MEDIAWIKI_CALLBACK = 'oob'
 
 General documentation
 ---------------------
@@ -34,14 +37,21 @@ Developer documentation
 -----------------------
 
 https://www.mediawiki.org/wiki/OAuth/For_Developers
+
+Code based on
+-------------
+
+https://github.com/mediawiki-utilities/python-mwoauth
 """
 
 import jwt
+import re
 import requests
 import six
+import time
 from requests_oauthlib import OAuth1
 from six import b
-from six.moves.urllib.parse import parse_qs, urlencode
+from six.moves.urllib.parse import parse_qs, urlencode, urlparse
 from .oauth import BaseOAuth1
 
 
@@ -52,14 +62,8 @@ class MediaWiki(BaseOAuth1):
     """
 
     name = 'mediawiki'
-    REQUEST_TOKEN_URL = 'https://en.wikipedia.org/w/index.php' + \
-                        '?title=Special:OAuth/initiate'
-    AUTHORIZATION_URL = 'https://en.wikipedia.org/w/index.php' + \
-                        '?title=Special:Oauth/authorize'
-    ACCESS_TOKEN_URL = 'https://en.wikipedia.org/w/index.php' + \
-                       '?title=Special:Oauth/token'
-    IDENTIFY_URL = 'https://en.wikipedia.org/w/index.php' + \
-                   '?title=Special:OAuth/identify'
+    MEDIAWIKI_URL = 'https://meta.wikimedia.org/w/index.php'
+    SOCIAL_AUTH_MEDIAWIKI_CALLBACK = 'oob'
 
     def unauthorized_token(self):
         """
@@ -67,20 +71,20 @@ class MediaWiki(BaseOAuth1):
 
         Mediawiki request token is requested from e.g.:
          * https://en.wikipedia.org/w/index.php?title=Special:OAuth/initiate
-         * 'callback_uri' needs to be 'oob'
         """
         params = self.request_token_extra_arguments()
         params.update(self.get_scope_argument())
+        params['title'] = 'Special:OAuth/initiate'
         key, secret = self.get_key_and_secret()
         decoding = None if six.PY3 else 'utf-8'
 
         response = self.request(
-            self.setting('REQUEST_TOKEN_URL'),
+            self.setting('MEDIAWIKI_URL'),
             params=params,
-            auth=OAuth1(key, secret, callback_uri='oob',
+            auth=OAuth1(key, secret,
+                        callback_uri=self.setting('CALLBACK'),
                         decoding=decoding),
-            method=self.REQUEST_TOKEN_METHOD
-        )
+            method=self.REQUEST_TOKEN_METHOD)
 
         content = response.content.decode()
 
@@ -89,12 +93,6 @@ class MediaWiki(BaseOAuth1):
     def oauth_authorization_request(self, token):
         """
         Generates the URL for the authorization link
-
-        For English Wikipedia the URL is either:
-         * https://en.wikipedia.org/w/index.php
-                ?title=Special:Oauth/authorize'
-         * https://en.wikipedia.org/w/index.php
-                ?title=Special:Oauth/authenticate'
         """
         if not isinstance(token, dict):
             token = parse_qs(token)
@@ -107,10 +105,9 @@ class MediaWiki(BaseOAuth1):
         state = self.get_or_create_state()
         params[self.REDIRECT_URI_PARAMETER_NAME] = self.get_redirect_uri(state)
 
-        base_url, oauth_title_param = self.setting('AUTHORIZATION_URL').split('?')
-        _, oauth_title = oauth_title_param.split('=')
+        base_url = self.setting('MEDIAWIKI_URL')
 
-        params['title'] = oauth_title
+        params['title'] = 'Special:Oauth/authenticate'
 
         return '{0}?{1}'.format(base_url, urlencode(params))
 
@@ -118,13 +115,10 @@ class MediaWiki(BaseOAuth1):
         """
         Fetches the Mediawiki access token.
         """
-        url = self.access_token_url()
-        url_base, title = url.split('?')
-        _, title_param = title.split('=')
         auth_token = self.oauth_auth(token)
 
-        response = requests.post(url=url_base,
-                                 params={'title': title_param},
+        response = requests.post(url=self.setting('MEDIAWIKI_URL'),
+                                 params={'title': 'Special:Oauth/token'},
                                  auth=auth_token)
 
         credentials = parse_qs(response.content)
@@ -137,31 +131,64 @@ class MediaWiki(BaseOAuth1):
                         'oauth_token_secret': oauth_token_secret}
         return access_token
 
-    def get_user_details(self, token):
+    def force_unicode(self, value):
+        """
+        Return string in unicode.
+        """
+        if type(value) == six.text_type:
+            return value
+        else:
+            if six.PY3:
+                return str(value, "unicode-escape")
+            else:
+                return unicode(value, "unicode-escape")
+
+    def get_user_details(self, response):
         """
         Gets the user details from Special:OAuth/identify
         """
         key, secret = self.get_key_and_secret()
-        access_token = token['access_token']
+        access_token = response['access_token']
+        leeway = 10.0
 
         auth = OAuth1(key, client_secret=secret,
                       resource_owner_key=access_token['oauth_token'],
                       resource_owner_secret=access_token['oauth_token_secret'])
 
-        base_url, oauth_title_param = self.setting('IDENTIFY_URL').split('?')
-        _, oauth_title = oauth_title_param.split('=')
-
-        response = requests.post(url=base_url,
-                                 params={'title': oauth_title},
+        req_resp = requests.post(url=self.setting('MEDIAWIKI_URL'),
+                                 params={'title': 'Special:OAuth/identify'},
                                  auth=auth)
 
         try:
-            identity = jwt.decode(response.content, secret,
+            identity = jwt.decode(req_resp.content, secret,
                                   audience=key, algorithms=['HS256'],
-                                  leeway=10.0)
+                                  leeway=leeway)
         except jwt.InvalidTokenError as exception:
             raise Exception('An error occurred while trying to read json ' +
                             'content: {0}'.format(exception))
+
+        issuer = urlparse(identity['iss']).netloc
+        expected_domain = urlparse(self.setting('MEDIAWIKI_URL')).netloc
+
+        if not issuer == expected_domain:
+            raise Exception("Unexpected issuer " +
+                            "{0}, expected {1}".format(issuer, expected_domain))
+
+        now = time.time()
+        issued_at = float(identity['iat'])
+        if not now >= (issued_at - leeway):
+            raise Exception("Identity issued {0} ".format(issued_at - now) +
+                            "seconds in the future!")
+
+        authorization_header = self.force_unicode(
+            req_resp.request.headers['Authorization'])
+        request_nonce = re.search(r'oauth_nonce="(.*?)"',
+                                  authorization_header).group(1)
+
+        if identity['nonce'] != request_nonce:
+            raise Exception('Replay attack detected:' +
+                            '{0} != {1}'.format(identity['nonce'],
+                                                request_nonce))
 
         data = {'username': identity['username'],
                 'userID': identity['sub']}
