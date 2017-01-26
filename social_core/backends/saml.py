@@ -175,7 +175,7 @@ class SAMLAuth(BaseAuth):
         idp_config = self.setting('ENABLED_IDPS')[idp_name]
         return SAMLIdentityProvider(idp_name, **idp_config)
 
-    def generate_saml_config(self, idp):
+    def generate_saml_config(self, idp=None):
         """
         Generate the configuration required to instantiate OneLogin_Saml2_Auth
         """
@@ -188,7 +188,7 @@ class SAMLAuth(BaseAuth):
                 'support': self.setting('SUPPORT_CONTACT')
             },
             'debug': True,
-            'idp': idp.saml_config_dict,
+            'idp': idp.saml_config_dict if idp else {},
             'organization': self.setting('ORG_INFO'),
             'security': {
                 'metadataValidUntil': '',
@@ -213,8 +213,7 @@ class SAMLAuth(BaseAuth):
     def generate_metadata_xml(self):
         """
         Helper method that can be used from your web app to generate the XML
-        metadata required to link your web app as a Service Provider with
-        each IdP you wish to use.
+        metadata required to link your web app as a Service Provider.
 
         Returns (metadata XML string, list of errors)
 
@@ -231,11 +230,8 @@ class SAMLAuth(BaseAuth):
                                         content_type='text/xml')
                 return HttpResponseServerError(content=', '.join(errors))
         """
-        # python-saml requires us to specify something here even
-        # though it's not used
-        idp = DummySAMLIdentityProvider()
-        config = self.generate_saml_config(idp)
-        saml_settings = OneLogin_Saml2_Settings(config)
+        config = self.generate_saml_config()
+        saml_settings = OneLogin_Saml2_Settings(config, sp_validation_only=True)
         metadata = saml_settings.get_sp_metadata()
         errors = saml_settings.validate_metadata(metadata)
         return metadata, errors
