@@ -1,69 +1,43 @@
 """
-MediaWiki OAuth1 backend
-========================
-
-Usage
------
-
-In addition to the general setup you need to define the
-following parameters. In Django's settings.py you would
-use for Wikimedia Meta-Wiki::
-
-    SOCIAL_AUTH_MEDIAWIKI_KEY = <consumer_key>
-    SOCIAL_AUTH_MEDIAWIKI_SECRET = <consumer_secret>
-    SOCIAL_AUTH_MEDIAWIKI_URL = 'https://meta.wikimedia.org/w/index.php'
-
-In the OAuth consumer registration you can choose the option to:
-
-    Allow consumer to specify a callback in requests
-    and use "callback" URL above as a required prefix
-
-This is preferable. If your URL is `https://myurl.org/` use
-the following option::
-
-    SOCIAL_AUTH_MEDIAWIKI_CALLBACK = \
-          'https://myurl.org/oauth/complete/mediawiki'
-
-But it is also possible to use::
-
-    SOCIAL_AUTH_MEDIAWIKI_CALLBACK = 'oob'
-
-General documentation
----------------------
-
-https://www.mediawiki.org/wiki/Extension:OAuth
-
-Developer documentation
------------------------
-
-https://www.mediawiki.org/wiki/OAuth/For_Developers
-
-Code based on
--------------
-
-https://github.com/mediawiki-utilities/python-mwoauth
+MediaWiki OAuth1 backend, docs at:
+    http://psa.matiasaguirre.net/docs/backends/mediawiki.html
 """
 
-import jwt
 import re
-import requests
-import six
 import time
-from requests_oauthlib import OAuth1
+import six
+import requests
+import jwt
+
 from six import b
 from six.moves.urllib.parse import parse_qs, urlencode, urlparse
+from requests_oauthlib import OAuth1
+
 from .oauth import BaseOAuth1
+from ..exceptions import AuthException
+
+
+def force_unicode(value):
+    """
+    Return string in unicode.
+    """
+    if isinstance(value, six.text_type):
+        return value
+    else:
+        if six.PY3:
+            return str(value, "unicode-escape")
+        else:
+            return unicode(value, "unicode-escape")
 
 
 class MediaWiki(BaseOAuth1):
-
     """
     Handles the handshake with Mediawiki and fetching of user data.
     """
-
     name = 'mediawiki'
     MEDIAWIKI_URL = 'https://meta.wikimedia.org/w/index.php'
     SOCIAL_AUTH_MEDIAWIKI_CALLBACK = 'oob'
+    LEEWAY = 10.0
 
     def unauthorized_token(self):
         """
@@ -77,18 +51,18 @@ class MediaWiki(BaseOAuth1):
         params['title'] = 'Special:OAuth/initiate'
         key, secret = self.get_key_and_secret()
         decoding = None if six.PY3 else 'utf-8'
-
         response = self.request(
             self.setting('MEDIAWIKI_URL'),
             params=params,
-            auth=OAuth1(key, secret,
-                        callback_uri=self.setting('CALLBACK'),
-                        decoding=decoding),
-            method=self.REQUEST_TOKEN_METHOD)
-
-        content = response.content.decode()
-
-        return content
+            auth=OAuth1(
+                key,
+                secret,
+                callback_uri=self.setting('CALLBACK'),
+                decoding=decoding
+            ),
+            method=self.REQUEST_TOKEN_METHOD
+        )
+        return response.content.decode()
 
     def oauth_authorization_request(self, token):
         """
@@ -97,19 +71,15 @@ class MediaWiki(BaseOAuth1):
         if not isinstance(token, dict):
             token = parse_qs(token)
 
-        params = {}
-
         oauth_token = token.get(self.OAUTH_TOKEN_PARAMETER_NAME)[0]
-        params[self.OAUTH_TOKEN_PARAMETER_NAME] = oauth_token
-
         state = self.get_or_create_state()
-        params[self.REDIRECT_URI_PARAMETER_NAME] = self.get_redirect_uri(state)
-
         base_url = self.setting('MEDIAWIKI_URL')
 
-        params['title'] = 'Special:Oauth/authenticate'
-
-        return '{0}?{1}'.format(base_url, urlencode(params))
+        return '{0}?{1}'.format(base_url, urlencode({
+            'title': 'Special:Oauth/authenticate',
+            self.OAUTH_TOKEN_PARAMETER_NAME: oauth_token,
+            self.REDIRECT_URI_PARAMETER_NAME: self.get_redirect_uri(state)
+        }))
 
     def access_token(self, token):
         """
@@ -117,31 +87,21 @@ class MediaWiki(BaseOAuth1):
         """
         auth_token = self.oauth_auth(token)
 
-        response = requests.post(url=self.setting('MEDIAWIKI_URL'),
-                                 params={'title': 'Special:Oauth/token'},
-                                 auth=auth_token)
-
+        response = requests.post(
+            url=self.setting('MEDIAWIKI_URL'),
+            params={'title': 'Special:Oauth/token'},
+            auth=auth_token
+        )
         credentials = parse_qs(response.content)
         oauth_token_key = credentials.get(b('oauth_token'))[0]
         oauth_token_secret = credentials.get(b('oauth_token_secret'))[0]
         oauth_token_key = oauth_token_key.decode()
         oauth_token_secret = oauth_token_secret.decode()
 
-        access_token = {'oauth_token': oauth_token_key,
-                        'oauth_token_secret': oauth_token_secret}
-        return access_token
-
-    def force_unicode(self, value):
-        """
-        Return string in unicode.
-        """
-        if type(value) == six.text_type:
-            return value
-        else:
-            if six.PY3:
-                return str(value, "unicode-escape")
-            else:
-                return unicode(value, "unicode-escape")
+        return {
+            'oauth_token': oauth_token_key,
+            'oauth_token_secret': oauth_token_secret
+        }
 
     def get_user_details(self, response):
         """
@@ -149,7 +109,6 @@ class MediaWiki(BaseOAuth1):
         """
         key, secret = self.get_key_and_secret()
         access_token = response['access_token']
-        leeway = 10.0
 
         auth = OAuth1(key, client_secret=secret,
                       resource_owner_key=access_token['oauth_token'],
@@ -162,38 +121,55 @@ class MediaWiki(BaseOAuth1):
         try:
             identity = jwt.decode(req_resp.content, secret,
                                   audience=key, algorithms=['HS256'],
-                                  leeway=leeway)
+                                  leeway=self.LEEWAY)
         except jwt.InvalidTokenError as exception:
-            raise Exception('An error occurred while trying to read json ' +
-                            'content: {0}'.format(exception))
+            raise AuthException(
+                self,
+                'An error occurred while trying to read json ' +
+                'content: {0}'.format(exception)
+            )
 
         issuer = urlparse(identity['iss']).netloc
         expected_domain = urlparse(self.setting('MEDIAWIKI_URL')).netloc
 
         if not issuer == expected_domain:
-            raise Exception("Unexpected issuer " +
-                            "{0}, expected {1}".format(issuer, expected_domain))
+            raise AuthException(
+                self,
+                'Unexpected issuer {0}, expected {1}'.format(
+                    issuer,
+                    expected_domain
+                )
+            )
 
         now = time.time()
         issued_at = float(identity['iat'])
-        if not now >= (issued_at - leeway):
-            raise Exception("Identity issued {0} ".format(issued_at - now) +
-                            "seconds in the future!")
+        if not now >= (issued_at - self.LEEWAY):
+            raise AuthException(
+                self,
+                'Identity issued {0} seconds in the future'.format(
+                    issued_at - now
+                )
+            )
 
-        authorization_header = self.force_unicode(
-            req_resp.request.headers['Authorization'])
+        authorization_header = force_unicode(
+            req_resp.request.headers['Authorization']
+        )
         request_nonce = re.search(r'oauth_nonce="(.*?)"',
                                   authorization_header).group(1)
 
         if identity['nonce'] != request_nonce:
-            raise Exception('Replay attack detected:' +
-                            '{0} != {1}'.format(identity['nonce'],
-                                                request_nonce))
+            raise AuthException(
+                self,
+                'Replay attack detected: {0} != {1}'.format(
+                    identity['nonce'],
+                    request_nonce
+                )
+            )
 
-        data = {'username': identity['username'],
-                'userID': identity['sub']}
-
-        return data
+        return {
+            'username': identity['username'],
+            'userID': identity['sub']
+        }
 
     def get_user_id(self, details, response):
         """
