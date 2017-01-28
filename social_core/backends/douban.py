@@ -1,6 +1,6 @@
 """
 Douban OAuth1 and OAuth2 backends, docs at:
-    http://psa.matiasaguirre.net/docs/backends/douban.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/douban.html
 """
 from .oauth import BaseOAuth2, BaseOAuth1
 

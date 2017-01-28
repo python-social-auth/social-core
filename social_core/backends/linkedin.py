@@ -1,6 +1,6 @@
 """
 LinkedIn OAuth1 and OAuth2 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/linkedin.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/linkedin.html
 """
 from .oauth import BaseOAuth1, BaseOAuth2
 

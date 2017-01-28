@@ -1,6 +1,6 @@
 """
 NationBuilder OAuth2 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/nationbuilder.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/nationbuilder.html
 """
 from .oauth import BaseOAuth2
 

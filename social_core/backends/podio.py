@@ -1,6 +1,6 @@
 """
 Podio OAuth2 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/podio.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/podio.html
 """
 from .oauth import BaseOAuth2
 

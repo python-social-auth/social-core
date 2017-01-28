@@ -1,6 +1,6 @@
 """
 Rdio OAuth1 and OAuth2 backends, docs at:
-    http://psa.matiasaguirre.net/docs/backends/rdio.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/rdio.html
 """
 from .oauth import BaseOAuth1, BaseOAuth2, OAuthAuth
 

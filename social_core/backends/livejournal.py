@@ -1,6 +1,6 @@
 """
 LiveJournal OpenId backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/livejournal.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/livejournal.html
 """
 from six.moves.urllib_parse import urlsplit
 

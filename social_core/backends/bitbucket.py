@@ -1,6 +1,6 @@
 """
 Bitbucket OAuth2 and OAuth1 backends, docs at:
-    http://psa.matiasaguirre.net/docs/backends/bitbucket.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/bitbucket.html
 """
 from ..exceptions import AuthForbidden
 from .oauth import BaseOAuth1, BaseOAuth2

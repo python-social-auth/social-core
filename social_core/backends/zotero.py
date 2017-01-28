@@ -1,6 +1,6 @@
 """
 Zotero OAuth1 backends, docs at:
-    http://psa.matiasaguirre.net/docs/backends/zotero.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/zotero.html
 """
 from .oauth import BaseOAuth1
 

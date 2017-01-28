@@ -1,6 +1,6 @@
 """
 MediaWiki OAuth1 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/mediawiki.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/mediawiki.html
 """
 
 import re

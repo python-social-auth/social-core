@@ -1,6 +1,6 @@
 """
 Steam OpenId backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/steam.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/steam.html
 """
 from .open_id import OpenIdAuth
 from ..exceptions import AuthFailed

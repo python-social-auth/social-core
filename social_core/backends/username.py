@@ -1,6 +1,6 @@
 """
 Legacy Username backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/username.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/username.html
 """
 from .legacy import LegacyAuth
 

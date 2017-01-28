@@ -1,6 +1,6 @@
 """
 Flickr OAuth1 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/flickr.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/flickr.html
 """
 from .oauth import BaseOAuth1
 

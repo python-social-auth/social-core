@@ -1,6 +1,6 @@
 """
 Fedora OpenId backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/fedora.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/fedora.html
 """
 from .open_id import OpenIdAuth
 

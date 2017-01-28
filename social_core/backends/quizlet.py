@@ -1,6 +1,6 @@
 """
 Quizlet OAuth2 Sign-in backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/quizlet.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/quizlet.html
 """
 from .oauth import BaseOAuth2
 

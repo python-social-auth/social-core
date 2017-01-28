@@ -1,6 +1,6 @@
 """
 XING OAuth1 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/xing.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/xing.html
 """
 import six
 

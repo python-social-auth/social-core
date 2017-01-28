@@ -1,6 +1,6 @@
 """
 Google OpenIdConnect:
-    http://psa.matiasaguirre.net/docs/backends/google.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/google.html
 """
 from .open_id_connect import OpenIdConnectAuth
 from .google import GoogleOAuth2

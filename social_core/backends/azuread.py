@@ -26,7 +26,7 @@ SOFTWARE.
 
 """
 Azure AD OAuth2 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/azuread.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/azuread.html
 """
 import time
 

@@ -1,6 +1,6 @@
 """
 Google OpenId, OAuth2, OAuth1, Google+ Sign-in backends, docs at:
-    http://psa.matiasaguirre.net/docs/backends/google.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/google.html
 """
 from ..utils import handle_http_errors
 from .open_id import OpenIdAuth

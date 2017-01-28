@@ -1,6 +1,6 @@
 """
 Github Enterprise OAuth2 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/github_enterprise.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/github_enterprise.html
 """
 from six.moves.urllib.parse import urljoin
 

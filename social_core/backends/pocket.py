@@ -1,6 +1,6 @@
 """
 Pocket OAuth2 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/pocket.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/pocket.html
 """
 from .base import BaseAuth
 from ..utils import handle_http_errors

@@ -1,6 +1,6 @@
 """
 Dribbble OAuth2 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/dribbble.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/dribbble.html
     http://developer.dribbble.com/v1/oauth/
 """
 

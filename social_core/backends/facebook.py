@@ -1,6 +1,6 @@
 """
 Facebook OAuth2 and Canvas Application backends, docs at:
-    http://psa.matiasaguirre.net/docs/backends/facebook.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/facebook.html
 """
 import hmac
 import time

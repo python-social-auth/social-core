@@ -1,6 +1,6 @@
 """
 Tripit OAuth2 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/tripit.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/tripit.html
 """
 from xml.dom import minidom
 

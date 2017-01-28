@@ -1,6 +1,6 @@
 """
 Soundcloud OAuth2 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/soundcloud.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/soundcloud.html
 """
 from six.moves.urllib_parse import urlencode
 

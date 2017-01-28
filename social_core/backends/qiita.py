@@ -1,6 +1,6 @@
 """
 Qiita OAuth2 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/qiita.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/qiita.html
     http://qiita.com/api/v2/docs#get-apiv2oauthauthorize
 """
 import json

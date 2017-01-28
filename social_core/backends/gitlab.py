@@ -1,6 +1,6 @@
 """
 GitLab OAuth2 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/gitlab.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/gitlab.html
 """
 from requests import HTTPError
 

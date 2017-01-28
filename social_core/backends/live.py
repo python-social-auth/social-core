@@ -1,6 +1,6 @@
 """
 Live OAuth2 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/live.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/live.html
 """
 from .oauth import BaseOAuth2
 

@@ -2,7 +2,7 @@
 # author:hepochen@gmail.com  https://github.com/hepochen
 """
 Weibo OAuth2 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/weibo.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/weibo.html
 """
 from .oauth import BaseOAuth2
 

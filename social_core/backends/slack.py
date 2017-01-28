@@ -1,6 +1,6 @@
 """
 Slack OAuth2 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/slack.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/slack.html
     https://api.slack.com/docs/oauth
 """
 from .oauth import BaseOAuth2

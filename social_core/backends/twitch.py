@@ -1,6 +1,6 @@
 """
 Twitch OAuth2 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/twitch.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/twitch.html
 """
 from .oauth import BaseOAuth2
 

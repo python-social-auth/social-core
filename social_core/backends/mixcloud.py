@@ -1,6 +1,6 @@
 """
 Mixcloud OAuth2 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/mixcloud.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/mixcloud.html
 """
 from .oauth import BaseOAuth2
 

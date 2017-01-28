@@ -1,6 +1,6 @@
 """
 Appsfueld OAuth2 backend (with sandbox mode support), docs at:
-    http://psa.matiasaguirre.net/docs/backends/appsfuel.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/appsfuel.html
 """
 from .oauth import BaseOAuth2
 

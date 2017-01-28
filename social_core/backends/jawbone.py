@@ -1,6 +1,6 @@
 """
 Jawbone OAuth2 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/jawbone.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/jawbone.html
 """
 from ..utils import handle_http_errors
 from .oauth import BaseOAuth2

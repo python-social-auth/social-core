@@ -1,6 +1,6 @@
 """
 Stackoverflow OAuth2 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/stackoverflow.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/stackoverflow.html
 """
 from .oauth import BaseOAuth2
 

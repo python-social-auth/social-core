@@ -1,6 +1,6 @@
 """
 Yahoo OpenId, OAuth1 and OAuth2 backends, docs at:
-    http://psa.matiasaguirre.net/docs/backends/yahoo.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/yahoo.html
 """
 from requests.auth import HTTPBasicAuth
 

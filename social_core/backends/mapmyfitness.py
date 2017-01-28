@@ -1,6 +1,6 @@
 """
 MapMyFitness OAuth2 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/mapmyfitness.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/mapmyfitness.html
 """
 from .oauth import BaseOAuth2
 

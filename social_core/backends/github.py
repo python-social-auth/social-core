@@ -1,6 +1,6 @@
 """
 Github OAuth2 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/github.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/github.html
 """
 from requests import HTTPError
 

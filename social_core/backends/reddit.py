@@ -1,6 +1,6 @@
 """
 Reddit OAuth2 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/reddit.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/reddit.html
 """
 import base64
 

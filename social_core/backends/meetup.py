@@ -1,6 +1,6 @@
 """
 Meetup OAuth2 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/meetup.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/meetup.html
 """
 from .oauth import BaseOAuth2
 

@@ -1,6 +1,6 @@
 """
 LoginRadius BaseOAuth2 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/loginradius.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/loginradius.html
 """
 from .oauth import BaseOAuth2
 

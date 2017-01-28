@@ -1,6 +1,6 @@
 """
 Stocktwits OAuth2 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/stocktwits.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/stocktwits.html
 """
 from .oauth import BaseOAuth2
 

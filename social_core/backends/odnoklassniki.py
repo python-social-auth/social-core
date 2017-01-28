@@ -1,6 +1,6 @@
 """
 Odnoklassniki OAuth2 and Iframe Application backends, docs at:
-    http://psa.matiasaguirre.net/docs/backends/odnoklassnikiru.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/odnoklassnikiru.html
 """
 from hashlib import md5
 

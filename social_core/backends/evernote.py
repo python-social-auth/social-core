@@ -1,6 +1,6 @@
 """
 Evernote OAuth1 backend (with sandbox mode support), docs at:
-    http://psa.matiasaguirre.net/docs/backends/evernote.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/evernote.html
 """
 from requests import HTTPError
 

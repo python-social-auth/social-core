@@ -1,6 +1,6 @@
 """
 Legacy Email backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/email.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/email.html
 """
 from .legacy import LegacyAuth
 

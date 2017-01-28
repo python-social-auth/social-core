@@ -1,6 +1,6 @@
 """
 Twitter OAuth1 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/twitter.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/twitter.html
 """
 from .oauth import BaseOAuth1
 from ..exceptions import AuthCanceled

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 VK.com OpenAPI, OAuth2 and Iframe application OAuth2 backends, docs at:
-    http://psa.matiasaguirre.net/docs/backends/vk.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/vk.html
 """
 from time import time
 from hashlib import md5

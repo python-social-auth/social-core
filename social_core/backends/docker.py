@@ -1,6 +1,6 @@
 """
 Docker Hub OAuth2 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/docker.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/docker.html
 """
 from .oauth import BaseOAuth2
 

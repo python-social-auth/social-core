@@ -1,6 +1,6 @@
 """
 Uber OAuth2 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/uber.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/uber.html
 """
 from .oauth import BaseOAuth2
 

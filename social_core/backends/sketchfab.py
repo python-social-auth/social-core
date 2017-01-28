@@ -1,6 +1,6 @@
 """
 Sketchfab OAuth2 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/sketchfab.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/sketchfab.html
     https://sketchfab.com/developers/oauth
 """
 from .oauth import BaseOAuth2

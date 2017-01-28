@@ -1,6 +1,6 @@
 """
 Mozilla Persona authentication backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/persona.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/persona.html
 """
 from ..utils import handle_http_errors
 from .base import BaseAuth

@@ -1,6 +1,6 @@
 """
 Kakao OAuth2 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/kakao.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/kakao.html
 """
 from .oauth import BaseOAuth2
 

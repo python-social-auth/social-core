@@ -1,6 +1,6 @@
 """
 Box.net OAuth2 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/box.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/box.html
 """
 from .oauth import BaseOAuth2
 

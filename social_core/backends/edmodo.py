@@ -1,6 +1,6 @@
 """
 Edmodo OAuth2 Sign-in backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/edmodo.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/edmodo.html
 """
 from .oauth import BaseOAuth2
 

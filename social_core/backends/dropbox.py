@@ -1,6 +1,6 @@
 """
 Dropbox OAuth1 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/dropbox.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/dropbox.html
 """
 import warnings
 

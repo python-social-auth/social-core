@@ -1,6 +1,6 @@
 """
 Instagram OAuth2 backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/instagram.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/instagram.html
 """
 import hmac
 

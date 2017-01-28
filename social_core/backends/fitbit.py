@@ -1,6 +1,6 @@
 """
 Fitbit OAuth backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/fitbit.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/fitbit.html
 """
 import base64
 

@@ -1,6 +1,6 @@
 """
 Open Suse OpenId backend, docs at:
-    http://psa.matiasaguirre.net/docs/backends/suse.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/suse.html
 """
 from .open_id import OpenIdAuth
 
