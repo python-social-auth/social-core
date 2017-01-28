@@ -11,17 +11,20 @@ class AsanaOAuth2Test(OAuth2Test):
         'access_token': 'aviato',
         'token_type': 'bearer'
     })
+    # https://asana.com/developers/api-reference/users
     user_data_body = json.dumps({
-        'id': 12345,
-        'name': 'Erlich Bachman',
-        'email': 'erlich@bachmanity.com',
-        'photo': None,
-        'workspaces': [
-          {
-              'id': 123456,
-              'name': 'Pied Piper'
-          }
-        ]
+        'data': {
+            'id': 12345,
+            'name': 'Erlich Bachman',
+            'email': 'erlich@bachmanity.com',
+            'photo': None,
+            'workspaces': [
+                {
+                    'id': 123456,
+                    'name': 'Pied Piper'
+                }
+            ]
+        }
     })
 
     def test_login(self):
