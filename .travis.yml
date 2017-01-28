@@ -9,14 +9,9 @@ env:
     - TOXENV=py33
     - TOXENV=py34
     - TOXENV=py35
-    # py36 fails because python3-openid tries to use a missing
-    # component in xml module, enable when that's ready
-    # - TOXENV=py36
+    - TOXENV=py36
     - TOXENV=pypy
 matrix:
-  allow_failures:
-    - python: 3.6
-      env: TOXENV=py36
   exclude:
     - python: 3.6
       env: TOXENV=py27
