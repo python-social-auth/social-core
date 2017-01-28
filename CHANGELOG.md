@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fixed broken dependencies while building the package
 - Removed OneLogin SAML IDP dummy settings while generating metadata xml
 - Fixed Asana user details response handling
+- Enforce defusedxml version with support for Python 3.6
 
 ## [1.0.0](https://github.com/python-social-auth/social-core/releases/tag/1.0.0) - 2017-01-22
 
