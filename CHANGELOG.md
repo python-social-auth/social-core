@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
 
+### Added
+- Mediawiki backend
+
 ### Changed
 - Removed OneLogin SAML IDP dummy settings while generating metadata xml
 - Fixed Asana user details response handling
