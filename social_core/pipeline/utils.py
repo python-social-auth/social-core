@@ -15,7 +15,7 @@ def is_dict_type(value):
 
 
 def partial_prepare(strategy, backend, next_step, user=None, social=None,
-                   *args, **kwargs):
+                    *args, **kwargs):
     kwargs.update({
         'response': kwargs.get('response') or {},
         'details': kwargs.get('details') or {},

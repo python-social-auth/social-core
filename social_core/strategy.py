@@ -153,7 +153,13 @@ class BaseStrategy(object):
         kwargs['strategy'] = self
         kwargs['storage'] = self.storage
         kwargs['backend'] = backend
+        args, kwargs = self.authenticate_args(*args, **kwargs)
         return backend.authenticate(*args, **kwargs)
+
+    def clean_authenticate_args(self, *args, **kwargs):
+        """Take authenticate arguments and return a "cleaned" version
+        of them"""
+        return args, kwargs
 
     def get_backends(self):
         """Return configured backends"""

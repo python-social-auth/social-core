@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 - Mediawiki backend
+- Strategy method to let implementation cleanup arguments passed to
+  the authenticate method
 
 ### Changed
 - Removed OneLogin SAML IDP dummy settings while generating metadata xml
