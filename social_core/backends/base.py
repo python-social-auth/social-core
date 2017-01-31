@@ -70,7 +70,6 @@ class BaseAuth(object):
            'strategy' not in kwargs or 'response' not in kwargs:
             return None
 
-
         self.strategy = self.strategy or kwargs.get('strategy')
         self.redirect_uri = self.redirect_uri or kwargs.get('redirect_uri')
         self.data = self.strategy.request_data()
