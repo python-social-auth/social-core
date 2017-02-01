@@ -51,5 +51,8 @@ class SlackOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        return self.get_json('https://slack.com/api/users.identity',
+        response = self.get_json('https://slack.com/api/users.identity',
                              params={'token': access_token})
+        if not response.get('id', None):
+            response['id'] = response['user']['id']
+        return response
