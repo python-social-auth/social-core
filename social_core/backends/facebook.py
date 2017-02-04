@@ -137,8 +137,8 @@ class FacebookOAuth2(BaseOAuth2):
                                          'users Facebook data')
 
         data['access_token'] = access_token
-        if 'expires' in response:
-            data['expires'] = response['expires']
+        if 'expires_in' in response:
+            data['expires'] = response['expires_in']
 
         if self.data.get('granted_scopes'):
             data['granted_scopes'] = self.data['granted_scopes'].split(',')
