@@ -7,9 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
 
+### Added
+- Limit Slack by team through `SOCIAL_AUTH_SLACK_TEAM` setting
+
 ### Changed
 - Enable defining extra arguments for AzureAD backend.
 - Updated key `expires` to `expires_in` for Facebook OAuth2 backend
+- Updated Slack `id` fetch to default to user `id` if not present in response
 
 ## [1.1.0](https://github.com/python-social-auth/social-core/releases/tag/1.1.0) - 2017-01-31
 
