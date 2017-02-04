@@ -21,6 +21,12 @@ class SlackOAuth2(BaseOAuth2):
         ('real_name', 'real_name')
     ]
 
+    def auth_extra_arguments(self):
+        params = super(SlackOAuth2, self).auth_extra_arguments() or {}
+        if self.setting('team', None):
+            params['team'] = self.setting('team')
+        return params
+
     def get_user_details(self, response):
         """Return user details from Slack account"""
         # Build the username with the team $username@$team_url
@@ -45,5 +51,8 @@ class SlackOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        return self.get_json('https://slack.com/api/users.identity',
+        response = self.get_json('https://slack.com/api/users.identity',
                              params={'token': access_token})
+        if not response.get('id', None):
+            response['id'] = response['user']['id']
+        return response
