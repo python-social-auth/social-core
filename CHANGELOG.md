@@ -8,8 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
 
 ### Changed
-
 - Enable defining extra arguments for AzureAD backend.
+- Updated key `expires` to `expires_in` for Facebook OAuth2 backend
 
 ## [1.1.0](https://github.com/python-social-auth/social-core/releases/tag/1.1.0) - 2017-01-31
 
