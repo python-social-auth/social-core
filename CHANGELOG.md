@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
 
+## [1.2.0](https://github.com/python-social-auth/social-core/releases/tag/1.2.0) - 2017-02-10
+
 ### Added
 - Limit Slack by team through `SOCIAL_AUTH_SLACK_TEAM` setting
 
