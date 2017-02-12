@@ -2,6 +2,7 @@ from xml.dom import minidom
 
 from .oauth import BaseOAuth2
 
+
 class NaverOAuth2(BaseOAuth2):
     """Naver OAuth authentication backend"""
     name = 'naver'

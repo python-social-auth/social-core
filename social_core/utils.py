@@ -19,7 +19,6 @@ from requests.packages.urllib3.poolmanager import PoolManager
 from .exceptions import AuthCanceled, AuthUnreachableProvider
 
 
-
 SETTING_PREFIX = 'SOCIAL_AUTH'
 
 social_logger = logging.getLogger('social')
@@ -171,8 +170,8 @@ def partial_pipeline_data(backend, user=None, partial_token=None,
     partial_argument_name = backend.setting('PARTIAL_PIPELINE_TOKEN_NAME',
                                             'partial_token')
     partial_token = partial_token or \
-                    request_data.get(partial_argument_name) or \
-                    backend.strategy.session_get('partial_pipeline_token', None)
+        request_data.get(partial_argument_name) or \
+        backend.strategy.session_get('partial_pipeline_token', None)
 
     if partial_token:
         partial = backend.strategy.partial_load(partial_token)

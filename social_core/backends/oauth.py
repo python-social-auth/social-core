@@ -404,7 +404,7 @@ class BaseOAuth2(OAuthAuth):
         response = kwargs.get('response') or {}
         response.update(data or {})
         if 'access_token' not in response:
-          response['access_token'] = access_token
+            response['access_token'] = access_token
         kwargs.update({'response': response, 'backend': self})
         return self.strategy.authenticate(*args, **kwargs)
 

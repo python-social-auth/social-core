@@ -73,7 +73,10 @@ class LineOAuth2(BaseOAuth2):
         return response
 
     def get_user_id(self, details, response):
-        """Return a unique ID for the current user, by default from server response."""
+        """
+        Return a unique ID for the current user, by default from
+        server response.
+        """
         return response.get(self.ID_KEY)
 
     def user_data(self, access_token, *args, **kwargs):

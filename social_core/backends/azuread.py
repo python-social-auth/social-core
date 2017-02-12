@@ -1,3 +1,10 @@
+import time
+
+from jwt import DecodeError, ExpiredSignature, decode as jwt_decode
+
+from ..exceptions import AuthTokenError
+from .oauth import BaseOAuth2
+
 """
 Copyright (c) 2015 Microsoft Open Technologies, Inc.
 
@@ -28,18 +35,13 @@ SOFTWARE.
 Azure AD OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/azuread.html
 """
-import time
-
-from jwt import DecodeError, ExpiredSignature, decode as jwt_decode
-
-from ..exceptions import AuthTokenError
-from .oauth import BaseOAuth2
 
 
 class AzureADOAuth2(BaseOAuth2):
     name = 'azuread-oauth2'
     SCOPE_SEPARATOR = ' '
-    AUTHORIZATION_URL = 'https://login.microsoftonline.com/common/oauth2/authorize'
+    AUTHORIZATION_URL = \
+        'https://login.microsoftonline.com/common/oauth2/authorize'
     ACCESS_TOKEN_URL = 'https://login.microsoftonline.com/common/oauth2/token'
     ACCESS_TOKEN_METHOD = 'POST'
     REDIRECT_STATE = False
@@ -85,7 +87,7 @@ class AzureADOAuth2(BaseOAuth2):
     def auth_extra_arguments(self):
         """Return extra arguments needed on auth process. The defaults can be
         overriden by GET parameters."""
-        extra_arguments =  super(AzureADOAuth2, self).auth_extra_arguments()
+        extra_arguments = super(AzureADOAuth2, self).auth_extra_arguments()
         resource = self.setting('RESOURCE')
         if resource:
             extra_arguments.update({'resource': resource})

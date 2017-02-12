@@ -37,7 +37,8 @@ class UntappdOAuth2(BaseOAuth2):
 
     def process_error(self, data):
         """
-        All errors from Untappd are contained in the 'meta' key of the response.
+        All errors from Untappd are contained in the 'meta' key of the
+        response.
         """
         response_code = data.get('meta', {}).get('http_code')
         if response_code is not None and response_code != requests.codes.ok:

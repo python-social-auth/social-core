@@ -166,7 +166,6 @@ class OpenIdAuth(BaseAuth):
                                           *partial.args,
                                           **partial.kwargs)
 
-
     def auth_complete(self, *args, **kwargs):
         """Complete auth process"""
         response = self.consumer().complete(dict(self.data.items()),

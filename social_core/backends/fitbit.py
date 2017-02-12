@@ -29,6 +29,7 @@ class FitbitOAuth1(BaseOAuth1):
             auth=self.oauth_auth(access_token)
         )['user']
 
+
 class FitbitOAuth2(BaseOAuth2):
     """Fitbit OAuth2 authentication backend"""
     name = 'fitbit'

@@ -9,7 +9,8 @@ class UpworkOAuth(BaseOAuth1):
     name = 'upwork'
     ID_KEY = 'id'
     AUTHORIZATION_URL = 'https://www.upwork.com/services/api/auth'
-    REQUEST_TOKEN_URL = 'https://www.upwork.com/api/auth/v1/oauth/token/request'
+    REQUEST_TOKEN_URL = \
+        'https://www.upwork.com/api/auth/v1/oauth/token/request'
     REQUEST_TOKEN_METHOD = 'POST'
     ACCESS_TOKEN_URL = 'https://www.upwork.com/api/auth/v1/oauth/token/access'
     ACCESS_TOKEN_METHOD = 'POST'

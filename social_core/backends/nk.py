@@ -47,10 +47,12 @@ class NKOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        url = 'http://opensocial.nk-net.pl/v09/social/rest/people/@me?' + urlencode({
-            'nk_token': access_token,
-            'fields': 'name,surname,avatar,localization,age,gender,emails,birthdate'
-        })
+        url = 'http://opensocial.nk-net.pl/v09/social/rest/people/@me?' + \
+              urlencode({
+                  'nk_token': access_token,
+                  'fields': 'name,surname,avatar,localization,age,' +
+                            'gender,emails,birthdate'
+              })
         return self.get_json(
             url,
             auth=self.oauth_auth(access_token)

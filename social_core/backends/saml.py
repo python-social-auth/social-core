@@ -231,7 +231,10 @@ class SAMLAuth(BaseAuth):
                 return HttpResponseServerError(content=', '.join(errors))
         """
         config = self.generate_saml_config()
-        saml_settings = OneLogin_Saml2_Settings(config, sp_validation_only=True)
+        saml_settings = OneLogin_Saml2_Settings(
+            config,
+            sp_validation_only=True
+        )
         metadata = saml_settings.get_sp_metadata()
         errors = saml_settings.validate_metadata(metadata)
         return metadata, errors

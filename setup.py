@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
-import os
 import sys
 import re
+import os
+
 from os.path import join, dirname
+
 from setuptools import setup
 
 
-VERSION_RE = re.compile('__version__ = \'([\d\.]+)\'')
+VERSION_RE = re.compile(r'__version__ = \'([\d\.]+)\'')
 
 LONG_DESCRIPTION = """
 Python Social Auth is an easy to setup social authentication/registration
@@ -44,13 +46,14 @@ def read_tests_requirements(filename):
 PY = os.environ.get("BUILD_VERSION") or sys.version_info[0]
 requirements_base = read_requirements('requirements-base.txt')
 requirements = requirements_base + \
-               read_requirements('requirements-python%s.txt' % PY)
-requirements_openidconnect = read_requirements('requirements-openidconnect.txt')
+    read_requirements('requirements-python%s.txt' % PY)
+requirements_openidconnect = \
+    read_requirements('requirements-openidconnect.txt')
 requirements_saml = read_requirements('requirements-saml-python%s.txt' % PY)
 
 tests_requirements_base = read_tests_requirements('requirements-base.txt')
 tests_requirements = tests_requirements_base + \
-                     read_tests_requirements('requirements-python%s.txt' % PY)
+    read_tests_requirements('requirements-python%s.txt' % PY)
 
 requirements_all = requirements_openidconnect + requirements_saml
 

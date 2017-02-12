@@ -34,7 +34,8 @@ class ItembaseOAuth2(BaseOAuth2):
         return data
 
     def extra_data(self, user, uid, response, details=None, *args, **kwargs):
-        data = BaseOAuth2.extra_data(self, user, uid, response, details=details,
+        data = BaseOAuth2.extra_data(self, user, uid, response,
+                                     details=details,
                                      *args, **kwargs)
         return self.add_expires(data)
 

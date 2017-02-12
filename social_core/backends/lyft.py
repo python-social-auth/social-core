@@ -4,6 +4,7 @@ Lyft OAuth2 backend. Read more about the
 """
 from .oauth import BaseOAuth2
 
+
 class LyftOAuth2(BaseOAuth2):
     name = 'lyft'
     ID_KEY = 'id'
