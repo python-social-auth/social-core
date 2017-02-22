@@ -96,7 +96,7 @@ class BaseActionTest(unittest.TestCase):
         )
 
         start_query = parse_qs(urlparse(start_url).query)
-        location_url = target_url + ('?' in target_url and '&' or '?') + \
+        location_url = target_url + ('&' if '?' in target_url else '?') + \
                        'state=' + start_query['state']
         location_query = parse_qs(urlparse(location_url).query)
 
@@ -161,7 +161,7 @@ class BaseActionTest(unittest.TestCase):
         )
 
         start_query = parse_qs(urlparse(start_url).query)
-        location_url = target_url + ('?' in target_url and '&' or '?') + \
+        location_url = target_url + ('&' if '?' in target_url else '?') + \
                        'state=' + start_query['state']
         location_query = parse_qs(urlparse(location_url).query)
 

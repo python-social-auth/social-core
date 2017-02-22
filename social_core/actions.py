@@ -32,7 +32,7 @@ def do_complete(backend, login, user=None, redirect_name='next',
     data = backend.strategy.request_data()
 
     is_authenticated = user_is_authenticated(user)
-    user = is_authenticated and user or None
+    user = user if is_authenticated else None
 
     partial = partial_pipeline_data(backend, user, *args, **kwargs)
     if partial:
@@ -87,7 +87,7 @@ def do_complete(backend, login, user=None, redirect_name='next',
 
     if redirect_value and redirect_value != url:
         redirect_value = quote(redirect_value)
-        url += ('?' in url and '&' or '?') + \
+        url += ('&' if '?' in url else '?') + \
                '{0}={1}'.format(redirect_name, redirect_value)
 
     if backend.setting('SANITIZE_REDIRECTS', True):
