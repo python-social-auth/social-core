@@ -62,6 +62,10 @@ class MediaWiki(BaseOAuth1):
             ),
             method=self.REQUEST_TOKEN_METHOD
         )
+
+        if response.content.decode().startswith('Error'):
+            raise AuthException(self, response.content.decode())
+
         return response.content.decode()
 
     def oauth_authorization_request(self, token):
