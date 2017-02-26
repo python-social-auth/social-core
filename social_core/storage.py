@@ -53,7 +53,11 @@ class UserMixin(object):
         if token and backend and hasattr(backend, 'refresh_token'):
             backend = backend(strategy=strategy)
             response = backend.refresh_token(token, *args, **kwargs)
-            if self.set_extra_data(response):
+            extra_data = backend.extra_data(self,
+                                            self.uid,
+                                            response,
+                                            self.extra_data)
+            if self.set_extra_data(extra_data):
                 self.save()
 
     def expiration_timedelta(self):

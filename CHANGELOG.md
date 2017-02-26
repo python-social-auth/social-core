@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 - Limit Slack by team through `SOCIAL_AUTH_SLACK_TEAM` setting
+- Use extra_data method when refreshing an `access_token`, ensure that
+  auth-time is updated then
 
 ### Changed
 - Enable defining extra arguments for AzureAD backend.
