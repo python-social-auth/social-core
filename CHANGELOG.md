@@ -7,12 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
 
+### Added
+- Use extra_data method when refreshing an `access_token`, ensure that
+  auth-time is updated then
+
 ## [1.2.0](https://github.com/python-social-auth/social-core/releases/tag/1.2.0) - 2017-02-10
 
 ### Added
 - Limit Slack by team through `SOCIAL_AUTH_SLACK_TEAM` setting
-- Use extra_data method when refreshing an `access_token`, ensure that
-  auth-time is updated then
 
 ### Changed
 - Enable defining extra arguments for AzureAD backend.
