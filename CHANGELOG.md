@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   auth-time is updated then
 - Added 500px OAuth1 backend
 
+### Changed
+- Updated email validation to pass the partial pipeline token if given.
+
 ## [1.2.0](https://github.com/python-social-auth/social-core/releases/tag/1.2.0) - 2017-02-10
 
 ### Added

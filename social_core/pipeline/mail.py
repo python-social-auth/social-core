@@ -13,10 +13,13 @@ def mail_validation(backend, details, is_new=False, *args, **kwargs):
         if 'verification_code' in data:
             backend.strategy.session_pop('email_validation_address')
             if not backend.strategy.validate_email(details['email'],
-                                           data['verification_code']):
+                                                   data['verification_code']):
                 raise InvalidEmail(backend)
         else:
-            backend.strategy.send_email_validation(backend, details['email'])
+            current_partial = kwargs.get('current_partial')
+            backend.strategy.send_email_validation(backend,
+                                                   details['email'],
+                                                   current_partial.token)
             backend.strategy.session_set('email_validation_address',
                                          details['email'])
             return backend.strategy.redirect(
