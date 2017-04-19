@@ -169,6 +169,7 @@ class SAMLAuth(BaseAuth):
     SOCIAL_AUTH_SAML_SECURITY_CONFIG = {}
     """
     name = "saml"
+    EXTRA_DATA = []
 
     def get_idp(self, idp_name):
         """Given the name of an IdP, get a SAMLIdentityProvider instance"""
@@ -308,6 +309,12 @@ class SAMLAuth(BaseAuth):
         }
         kwargs.update({'response': response, 'backend': self})
         return self.strategy.authenticate(*args, **kwargs)
+
+    def extra_data(self, user, uid, response, details=None, *args, **kwargs):
+        return super(SAMLAuth, self).extra_data(user, uid,
+                                                response['attributes'],
+                                                details=details,
+                                                *args, **kwargs)
 
     def _check_entitlements(self, idp, attributes):
         """
