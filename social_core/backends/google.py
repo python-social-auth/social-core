@@ -143,7 +143,7 @@ class GooglePlusAuth(BaseGoogleOAuth2API, BaseOAuth2):
             self.process_error(response)
             return self.do_auth(token, response=response, *args, **kwargs)
         else:
-            raise AuthMissingParameter(self, 'access_token or code')
+            raise AuthMissingParameter(self, 'access_token, id_token, or code')
 
 
 class GoogleOAuth(BaseGoogleAuth, BaseOAuth1):
