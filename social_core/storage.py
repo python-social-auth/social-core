@@ -99,6 +99,12 @@ class UserMixin(object):
         expiration = self.expiration_timedelta()
         return expiration and expiration.total_seconds() <= 0
 
+    def get_access_token(self, strategy):
+        """Returns a valid access token."""
+        if self.access_token_expired():
+            self.refresh_token(strategy)
+        return self.access_token
+
     def set_extra_data(self, extra_data=None):
         if extra_data and self.extra_data != extra_data:
             if self.extra_data and not isinstance(
