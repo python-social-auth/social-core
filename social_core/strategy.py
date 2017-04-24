@@ -139,6 +139,8 @@ class BaseStrategy(object):
             return False
         elif verification_code.email != email:
             return False
+        elif verification_code.verified:
+            return False
         else:
             verification_code.verify()
             return True
