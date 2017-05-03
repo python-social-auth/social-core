@@ -39,7 +39,7 @@ class VKontakteOpenAPI(BaseAuth):
         """Returns local VK authentication page, not necessary for
         VK to authenticate.
         """
-        ctx = {'VK_APP_ID': self.setting('APP_ID'),
+        ctx = {'VK_APP_ID': self.setting('VK_OPENAPI_ID'),
                'VK_COMPLETE_URL': self.redirect_uri}
         local_html = self.setting('LOCAL_HTML', 'vkontakte.html')
         return self.strategy.render_html(tpl=local_html, context=ctx)
@@ -48,7 +48,7 @@ class VKontakteOpenAPI(BaseAuth):
         """Performs check of authentication in VKontakte, returns User if
         succeeded"""
         session_value = self.strategy.session_get(
-            'vk_app_' + self.setting('APP_ID')
+            'vk_app_' + self.setting('VK_OPENAPI_ID')
         )
         if 'id' not in self.data or not session_value:
             raise ValueError('VK.com authentication is not completed')
