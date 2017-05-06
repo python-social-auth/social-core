@@ -5,15 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
+## [1.3.0](https://github.com/python-social-auth/social-core/releases/tag/1.3.0) - 2017-05-06
 
 ### Added
 - Use extra_data method when refreshing an `access_token`, ensure that
   auth-time is updated then
 - Added 500px OAuth1 backend
+- Added Monzo OAuth2 backend
+- Added `get_access_token` method that will refresh if expired
 
 ### Changed
 - Updated email validation to pass the partial pipeline token if given.
+- Prefer passed parameters in `authenticate` method
+- Properly discard already used verification codes
+- Save SAML attributes in `extra_data`
+- Note `id_token` in GooglePlusAuth's AuthMissingParameter
 
 ## [1.2.0](https://github.com/python-social-auth/social-core/releases/tag/1.2.0) - 2017-02-10
 
