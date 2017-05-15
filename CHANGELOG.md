@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Raise AuthForbidden when provider returns 401.
 - Fix auth header formatting problem for Fitbit OAuth2
 
+### Added
+- Added Udata OAuth2 backend
+
 ## [1.3.0](https://github.com/python-social-auth/social-core/releases/tag/1.3.0) - 2017-05-06
 
 ### Changed
