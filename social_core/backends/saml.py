@@ -312,7 +312,7 @@ class SAMLAuth(BaseAuth):
 
     def extra_data(self, user, uid, response, details=None, *args, **kwargs):
         return super(SAMLAuth, self).extra_data(user, uid,
-                                                response['attributes'],
+                                                {'attributes': response['attributes']},
                                                 details=details,
                                                 *args, **kwargs)
 
