@@ -11,7 +11,9 @@ class DatagouvfrOAuth2Test(OAuth2Test):
     expected_username = 'foobar'
     access_token_body = json.dumps({
         'access_token': 'foobar',
-        'token_type': 'bearer'
+        'token_type': 'bearer',
+        'first_name': 'foobar',
+        'email': 'foobar@example.com'
     })
     request_token_body = urlencode({
         'oauth_token_secret': 'foobar-secret',
