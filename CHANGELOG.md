@@ -8,8 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
 
 ### Changed
-- Raise AuthForbidden when provider returns 401.
+- Fix path in import BaseOAuth2 for Monzo
 - Fix auth header formatting problem for Fitbit OAuth2
+- Raise AuthForbidden when provider returns 401.
 
 ### Added
 - Added Udata OAuth2 backend
