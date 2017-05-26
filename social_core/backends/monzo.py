@@ -1,4 +1,4 @@
-from social.backends.oauth import BaseOAuth2
+from .oauth import BaseOAuth2
 
 
 class MonzoOAuth2(BaseOAuth2):
