@@ -3,6 +3,7 @@
 VK.com OpenAPI, OAuth2 and Iframe application OAuth2 backends, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/vk.html
 """
+import json
 from time import time
 from hashlib import md5
 
@@ -126,17 +127,6 @@ class VKAppOAuth2(VKOAuth2):
     """VK.com Application Authentication support"""
     name = 'vk-app'
 
-    def user_profile(self, user_id, access_token=None):
-        request_data = ['first_name', 'last_name', 'screen_name', 'nickname',
-                        'photo'] + self.setting('EXTRA_DATA', [])
-        fields = ','.join(set(request_data))
-        data = {'uids': user_id, 'fields': fields}
-        if access_token:
-            data['access_token'] = access_token
-        profiles = vk_api(self, 'getProfiles', data).get('response')
-        if profiles:
-            return profiles[0]
-
     def auth_complete(self, *args, **kwargs):
         required_params = ('is_app_user', 'viewer_id', 'access_token',
                            'api_id')
@@ -178,7 +168,7 @@ class VKAppOAuth2(VKOAuth2):
                 self.ID_KEY: user_id,
             }
         }
-        auth_data['response'].update(self.user_profile(user_id))
+        auth_data['response'].update(json.loads(auth_data['request']['api_result'])['response'][0])
         return self.strategy.authenticate(*args, **auth_data)
 
 

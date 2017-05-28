@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fix auth header formatting problem for Fitbit OAuth2
 - Raise AuthForbidden when provider returns 401.
 - Update Facebook API to version 2.9
+- Speed up authorization process for VKAppOAuth2
 
 ### Added
 - Added Udata OAuth2 backend
