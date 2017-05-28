@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fix path in import BaseOAuth2 for Monzo
 - Fix auth header formatting problem for Fitbit OAuth2
 - Raise AuthForbidden when provider returns 401.
+- Update Facebook API to version 2.9
 
 ### Added
 - Added Udata OAuth2 backend
