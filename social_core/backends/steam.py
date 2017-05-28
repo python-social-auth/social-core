@@ -24,7 +24,7 @@ class SteamOpenId(OpenIdAuth):
         })
         if len(player['response']['players']) > 0:
             player = player['response']['players'][0]
-            details = {'username': player.get('personaname'),
+            details = {'username': player.get('steamid'),
                        'email': '',
                        'fullname': '',
                        'first_name': '',

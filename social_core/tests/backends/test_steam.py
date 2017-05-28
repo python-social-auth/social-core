@@ -16,7 +16,7 @@ JANRAIN_NONCE = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
 
 class SteamOpenIdTest(OpenIdTest):
     backend_path = 'social_core.backends.steam.SteamOpenId'
-    expected_username = 'foobar'
+    expected_username = '123'
     discovery_body = ''.join([
       '<?xml version="1.0" encoding="UTF-8"?>',
       '<xrds:XRDS xmlns:xrds="xri://$xrds" xmlns="xri://$xrd*($v*2.0)">',
