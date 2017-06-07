@@ -6,7 +6,7 @@ from .oauth import OAuth2Test
 class PatreonOAuth2Test(OAuth2Test):
     backend_path = 'social_core.backends.patreon.PatreonOAuth2'
     user_data_url = 'https://api.patreon.com/oauth2/api/current_user'
-    expected_username = 'John Interwebs'
+    expected_username = 'JohnInterwebs'
     access_token_body = json.dumps({
         'access_token': 'foobar',
         'token_type': 'bearer',
