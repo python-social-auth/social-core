@@ -112,11 +112,16 @@ def do_disconnect(backend, user, association_id=None, redirect_name='next',
                                       *args, **kwargs)
 
     if isinstance(response, dict):
-        response = backend.strategy.redirect(
-            backend.strategy.absolute_uri(
-                backend.strategy.request_data().get(redirect_name, '') or
-                backend.setting('DISCONNECT_REDIRECT_URL') or
-                backend.setting('LOGIN_REDIRECT_URL')
-            )
+        url = backend.strategy.absolute_uri(
+            backend.strategy.request_data().get(redirect_name, '') or
+            backend.setting('DISCONNECT_REDIRECT_URL') or
+            backend.setting('LOGIN_REDIRECT_URL')
         )
+        if backend.setting('SANITIZE_REDIRECTS', True):
+            allowed_hosts = backend.setting('ALLOWED_REDIRECT_HOSTS', []) + \
+                            [backend.strategy.request_host()]
+            url = sanitize_redirect(allowed_hosts, url) or \
+                backend.setting('DISCONNECT_REDIRECT_URL') or \
+                backend.setting('LOGIN_REDIRECT_URL')
+        response = backend.strategy.redirect(url)
     return response
