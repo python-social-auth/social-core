@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Update Facebook API to version 2.9
 - Speed up authorization process for VKAppOAuth2
 - Apply same sanitization as on connect to disconnect.
+- Disable `redirect_state` usage on Disqus backend
 
 ### Added
 - Added Udata OAuth2 backend
