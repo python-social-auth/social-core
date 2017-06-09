@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
 
+## [1.4.0](https://github.com/python-social-auth/social-core/releases/tag/1.4.0) - 2017-06-09
+
 ### Changed
 - Fix path in import BaseOAuth2 for Monzo
 - Fix auth header formatting problem for Fitbit OAuth2
