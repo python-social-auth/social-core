@@ -18,6 +18,7 @@ class DummyOAuth2(BaseOAuth2):
     ACCESS_TOKEN_URL = 'http://dummy.com/oauth/access_token'
     REVOKE_TOKEN_URL = 'https://dummy.com/oauth/revoke'
     REVOKE_TOKEN_METHOD = 'GET'
+    GET_ALL_EXTRA_DATA = False
     EXTRA_DATA = [
         ('id', 'id'),
         ('expires', 'expires'),
@@ -37,6 +38,10 @@ class DummyOAuth2(BaseOAuth2):
         return self.get_json('http://dummy.com/user', params={
             'access_token': access_token
         })
+
+
+class Dummy2OAuth2(DummyOAuth2):
+    GET_ALL_EXTRA_DATA = True
 
 
 class DummyOAuth2Test(OAuth2Test):
@@ -129,3 +134,26 @@ class ExpirationTimeTest(DummyOAuth2Test):
         social = user.social[0]
         expiration = social.expiration_timedelta()
         self.assertEqual(expiration <= DELTA, True)
+
+
+class AllExtraDataTest(DummyOAuth2Test):
+    backend_path = 'social_core.tests.backends.test_dummy.Dummy2OAuth2'
+    access_token_body = json.dumps({
+        'access_token': 'foobar',
+        'token_type': 'bearer'
+    })
+    user_data_body = json.dumps({
+        'id': 1,
+        'username': 'foobar',
+        'url': 'http://dummy.com/user/foobar',
+        'first_name': 'Foo',
+        'last_name': 'Bar',
+        'email': 'foo@bar.com',
+        'not_normally_in_extra_data': 'value'
+    })
+
+    def test_get_all_extra_data(self):
+        user = self.do_login()
+        social = user.social[0]
+        self.assertIn('not_normally_in_extra_data', social.extra_data)
+        self.assertEqual(len(social.extra_data), 10)  # Includes auth_time.
