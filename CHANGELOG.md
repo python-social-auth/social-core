@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Speed up authorization process for VKAppOAuth2
 - Apply same sanitization as on connect to disconnect.
 - Disable `redirect_state` usage on Disqus backend
+- Fix using the entire SAML2 nameid string
 
 ### Added
 - Added Udata OAuth2 backend
