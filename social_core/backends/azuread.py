@@ -41,8 +41,8 @@ class AzureADOAuth2(BaseOAuth2):
     name = 'azuread-oauth2'
     SCOPE_SEPARATOR = ' '
     AUTHORIZATION_URL = \
-        'https://login.microsoftonline.com/common/oauth2/authorize'
-    ACCESS_TOKEN_URL = 'https://login.microsoftonline.com/common/oauth2/token'
+        'https://login.microsoftonline.com/{tenant_id}/oauth2/authorize'
+    ACCESS_TOKEN_URL = 'https://login.microsoftonline.com/{tenant_id}/oauth2/token'
     ACCESS_TOKEN_METHOD = 'POST'
     REDIRECT_STATE = False
     DEFAULT_SCOPE = ['openid', 'profile', 'user_impersonation']
@@ -57,6 +57,12 @@ class AzureADOAuth2(BaseOAuth2):
         ('family_name', 'last_name'),
         ('token_type', 'token_type')
     ]
+
+    def authorization_url(self):
+        return self.AUTHORIZATION_URL.format(tenant_id=self.setting('TENANT_ID','common'))
+
+    def access_token_url(self):
+        return self.ACCESS_TOKEN_URL.format(tenant_id=self.setting('TENANT_ID','common'))
 
     def get_user_id(self, details, response):
         """Use upn as unique id"""
