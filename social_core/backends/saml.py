@@ -73,7 +73,10 @@ class SAMLIdentityProvider(object):
         another attribute to use.
         """
         key = self.conf.get(conf_key, default_attribute)
-        return attributes[key][0] if key in attributes else None
+        value = attributes[key] if key in attributes else None
+        if isinstance(value, list):
+            value = value[0]
+        return value
 
     @property
     def entity_id(self):
