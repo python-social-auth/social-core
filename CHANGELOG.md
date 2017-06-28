@@ -7,9 +7,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
 
-### Changed
-- Nothing
-
 ### Added
 - Added support for Bungie.net OAuth2 backend
 
