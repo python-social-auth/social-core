@@ -1,6 +1,11 @@
 """
 GitLab OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/gitlab.html
+
+Thanks to [@saily](https://github.com/saily) who published an
+implementation for GitLab support on his blog post [Weblate with
+GitLab as OAuth provider](http://widerin.net/blog/weblate-gitlab-oauth-login/).
+His code was a great reference when working on this implementation.
 """
 from requests import HTTPError
 
