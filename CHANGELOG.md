@@ -8,7 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
 
 ### Added
-- Added support for tenant in Azure AD backend
+- Added support for tenant for Azure AD backend
+- Added JWT validation for Azure AD backend
 - Added support for Bungie.net OAuth2 backend
 
 ## [1.4.0](https://github.com/python-social-auth/social-core/releases/tag/1.4.0) - 2017-06-09
