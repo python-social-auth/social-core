@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 - Added support for Bungie.net OAuth2 backend
+- Added support for Eventbrite OAuth2 backend
 
 ## [1.4.0](https://github.com/python-social-auth/social-core/releases/tag/1.4.0) - 2017-06-09
 
