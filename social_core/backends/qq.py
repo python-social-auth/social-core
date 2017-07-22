@@ -59,7 +59,7 @@ class QQOAuth2(BaseOAuth2):
         response = self.get_json(
             'https://graph.qq.com/user/get_user_info', params={
                 'access_token': access_token,
-                'oauth_consumer_key': self.setting('SOCIAL_AUTH_QQ_KEY'),
+                'oauth_consumer_key': self.setting('KEY'),
                 'openid': openid
             }
         )
