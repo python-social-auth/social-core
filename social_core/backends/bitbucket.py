@@ -81,10 +81,6 @@ class BitbucketOAuth2(BitbucketOAuthBase, BaseOAuth2):
         return self.get_json('https://api.bitbucket.org/2.0/user/emails',
                              params={'access_token': access_token})
 
-    def refresh_token(self, *args, **kwargs):
-        raise NotImplementedError('Refresh tokens for Bitbucket have '
-                                  'not been implemented')
-
 
 class BitbucketOAuth(BitbucketOAuthBase, BaseOAuth1):
     """Bitbucket OAuth authentication backend"""
