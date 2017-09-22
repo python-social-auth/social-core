@@ -79,14 +79,14 @@ class UserMixin(object):
             # Detect if expires is a timestamp
             if expires > time.mktime(now.timetuple()):
                 # expires is a datetime, return the remaining difference
-                return datetime.fromtimestamp(expires) - now
+                return datetime.utcfromtimestamp(expires) - now
             else:
                 # expires is the time to live seconds since creation,
                 # check against auth_time if present, otherwise return
                 # the value
                 auth_time = self.extra_data.get('auth_time')
                 if auth_time:
-                    reference = datetime.fromtimestamp(auth_time)
+                    reference = datetime.utcfromtimestamp(auth_time)
                     return (reference + timedelta(seconds=expires)) - now
                 else:
                     return timedelta(seconds=expires)
