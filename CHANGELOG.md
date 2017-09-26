@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - Fix using the entire SAML2 nameid string
+- Prevent timing attacks against state token  
 
 ### Added
 - Added support for Bungie.net OAuth2 backend
