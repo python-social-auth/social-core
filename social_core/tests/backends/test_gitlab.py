@@ -9,7 +9,7 @@ from .oauth import OAuth2Test
 
 class GitLabOAuth2Test(OAuth2Test):
     backend_path = 'social_core.backends.gitlab.GitLabOAuth2'
-    user_data_url = 'https://gitlab.com/api/v3/user'
+    user_data_url = 'https://gitlab.com/api/v4/user'
     expected_username = 'foobar'
     access_token_body = json.dumps({
         'access_token': 'foobar',
@@ -56,7 +56,7 @@ class GitLabOAuth2Test(OAuth2Test):
 
 class GitLabCustomDomainOAuth2Test(OAuth2Test):
     backend_path = 'social_core.backends.gitlab.GitLabOAuth2'
-    user_data_url = 'https://example.com/api/v3/user'
+    user_data_url = 'https://example.com/api/v4/user'
     expected_username = 'foobar'
     access_token_body = json.dumps({
         'access_token': 'foobar',
