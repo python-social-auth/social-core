@@ -13,8 +13,10 @@ OAuth2 Backend to work with microsoft graph.
 class MicrosoftOAuth2(BaseOAuth2):
     name = 'microsoft-graph'
     SCOPE_SEPARATOR = ' '
-    AUTHORIZATION_URL = 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize'
-    ACCESS_TOKEN_URL = 'https://login.microsoftonline.com/common/oauth2/v2.0/token'
+    AUTHORIZATION_URL = \
+        'https://login.microsoftonline.com/common/oauth2/v2.0/authorize'
+    ACCESS_TOKEN_URL = \
+        'https://login.microsoftonline.com/common/oauth2/v2.0/token'
 
     ACCESS_TOKEN_METHOD = 'POST'
     REDIRECT_STATE = False
@@ -50,20 +52,19 @@ class MicrosoftOAuth2(BaseOAuth2):
                 'last_name': response.get('surname', '')}
 
     def user_data(self, access_token, *args, **kwargs):
+        """Return user data by querying Microsoft service"""
         try:
-            resp = self.get_json(
+            return self.get_json(
                 'https://graph.microsoft.com/v1.0/me',
                 headers={
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'Accept': 'application/json',
-                    'Authorization': 'Bearer '+access_token
+                    'Authorization': 'Bearer ' + access_token
                 },
                 method='GET'
             )
-        except (DecodeError, ExpiredSignature) as de:
-            raise AuthTokenError(self, de)
-
-        return resp
+        except (DecodeError, ExpiredSignature) as error:
+            raise AuthTokenError(self, error)
 
     def get_auth_token(self, user_id):
         """Return the access token for the given user, after ensuring that it
