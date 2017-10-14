@@ -53,6 +53,6 @@ class GitLabOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        return self.get_json(self.api_url('/api/v3/user'), params={
+        return self.get_json(self.api_url('/api/v4/user'), params={
             'access_token': access_token
         })
