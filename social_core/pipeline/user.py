@@ -82,31 +82,20 @@ def user_details(strategy, details, user=None, *args, **kwargs):
         return
 
     changed = False  # flag to track changes
-    protected = (
-        ('username', 'id', 'pk', 'email') +
-        tuple(strategy.setting('PROTECTED_USER_FIELDS', []))
-    )
+    protected = ('username', 'id', 'pk', 'email') + \
+                tuple(strategy.setting('PROTECTED_USER_FIELDS', []))
 
     # Update user model attributes with the new data sent by the current
     # provider. Update on some attributes is disabled by default, for
     # example username and id fields. It's also possible to disable update
     # on fields defined in SOCIAL_AUTH_PROTECTED_FIELDS.
     for name, value in details.items():
-        if value is None:
-            continue
-
-        if not hasattr(user, name):
+        if value is None or not hasattr(user, name) or name in protected:
             continue
 
         # Check https://github.com/omab/python-social-auth/issues/671
         current_value = getattr(user, name, None)
-        if current_value:
-            continue
-
-        if name in protected:
-            continue
-
-        if current_value == value:
+        if current_value or current_value == value:
             continue
 
         changed = True
