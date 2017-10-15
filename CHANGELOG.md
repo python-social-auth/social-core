@@ -9,11 +9,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - Fix using the entire SAML2 nameid string
-- Prevent timing attacks against state token  
+- Prevent timing attacks against state token
+- Updated GitLab API version to v4
+- Enforce UTC when calculating access token expiration time
+- Cleanup user attributes update from social details
 
 ### Added
 - Added support for Bungie.net OAuth2 backend
 - Added support for Eventbrite OAuth2 backend
+- Added support for OpenShift OAuth2 backend
+- Added support for Microsoft Graph OAuth2 backend
 
 ## [1.4.0](https://github.com/python-social-auth/social-core/releases/tag/1.4.0) - 2017-06-09
 
