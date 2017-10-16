@@ -63,20 +63,11 @@ class AzureADOAuth2Test(OAuth2Test):
     })
 
     def test_login(self):
-        self.strategy.set_settings({
-            'SOCIAL_AUTH_AZUREAD_TENNANT_ID': '123'
-        })
         self.do_login()
 
     def test_partial_pipeline(self):
-        self.strategy.set_settings({
-            'SOCIAL_AUTH_AZUREAD_TENNANT_ID': '123'
-        })
         self.do_partial_pipeline()
 
     def test_refresh_token(self):
-        self.strategy.set_settings({
-            'SOCIAL_AUTH_AZUREAD_TENNANT_ID': '123'
-        })
         user, social = self.do_refresh_token()
         self.assertEqual(social.extra_data['access_token'], 'foobar-new-token')
