@@ -1,5 +1,9 @@
+import base64
+import json
 import time
 
+from cryptography.x509 import load_pem_x509_certificate
+from cryptography.hazmat.backends import default_backend
 from jwt import DecodeError, ExpiredSignature, decode as jwt_decode
 
 from ..exceptions import AuthTokenError
@@ -34,15 +38,22 @@ SOFTWARE.
 """
 Azure AD OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/azuread.html
+    
+See https://nicksnettravels.builttoroam.com/post/2017/01/24/Verifying-Azure-Active-Directory-JWT-Tokens.aspx
+for verifying JWT tokens.
 """
 
 
 class AzureADOAuth2(BaseOAuth2):
     name = 'azuread-oauth2'
     SCOPE_SEPARATOR = ' '
+    OPENID_CONFIGURATION_URL = \
+        'https://login.microsoftonline.com/{tenant_id}/.well-known/openid-configuration'
     AUTHORIZATION_URL = \
-        'https://login.microsoftonline.com/common/oauth2/authorize'
-    ACCESS_TOKEN_URL = 'https://login.microsoftonline.com/common/oauth2/token'
+        'https://login.microsoftonline.com/{tenant_id}/oauth2/authorize'
+    ACCESS_TOKEN_URL = 'https://login.microsoftonline.com/{tenant_id}/oauth2/token'
+    JWKS_URL = 'https://login.microsoftonline.com/{tenant_id}/discovery/keys'
+    ACCESS_TOKEN_URL = 'https://login.microsoftonline.com/{tenant_id}/oauth2/token'
     ACCESS_TOKEN_METHOD = 'POST'
     REDIRECT_STATE = False
     DEFAULT_SCOPE = ['openid', 'profile', 'user_impersonation']
@@ -57,6 +68,22 @@ class AzureADOAuth2(BaseOAuth2):
         ('family_name', 'last_name'),
         ('token_type', 'token_type')
     ]
+
+    @property
+    def tenant_id(self):
+        return self.setting('TENANT_ID', 'common')
+
+    def openid_configuration_url(self):
+        return self.OPENID_CONFIGURATION_URL.format(tenant_id=self.tenant_id)
+
+    def authorization_url(self):
+        return self.AUTHORIZATION_URL.format(tenant_id=self.tenant_id)
+
+    def access_token_url(self):
+        return self.ACCESS_TOKEN_URL.format(tenant_id=self.tenant_id)
+
+    def jwks_url(self):
+        return self.JWKS_URL.format(tenant_id=self.tenant_id)
 
     def get_user_id(self, details, response):
         """Use upn as unique id"""
@@ -75,11 +102,52 @@ class AzureADOAuth2(BaseOAuth2):
                 'first_name': first_name,
                 'last_name': last_name}
 
+    def get_certificate(self, kid):
+
+        # retrieve keys from jwks_url
+        resp = self.request(self.jwks_url(),
+                            method="GET")
+        resp.raise_for_status()
+
+        # find the proper key for the kid
+        for k in resp.json()["keys"]:
+            if k['kid'] == kid:
+                x5c = k['x5c'][0]
+                break
+        else:
+            raise DecodeError("Cannot find kid={}".format(kid))
+
+        certificate = "-----BEGIN CERTIFICATE-----\n" \
+                      "{}\n" \
+                      "-----END CERTIFICATE-----".format(x5c)
+
+        certificate = load_pem_x509_certificate(certificate.encode(),
+                                                default_backend())
+        return certificate
+
+
     def user_data(self, access_token, *args, **kwargs):
         response = kwargs.get('response')
         id_token = response.get('id_token')
+
+        # decode the JWT header as JSON dict
+        jwt_header = json.loads(base64.b64decode(id_token.split(".")[0]).decode())
+        
+        # get key id and algorithm
+        key_id = jwt_header["kid"]
+        algorithm = jwt_header["alg"]
+
+
         try:
-            decoded_id_token = jwt_decode(id_token, verify=False)
+            # retrieve certificate for key_id
+            certificate = self.get_certificate(key_id)
+
+            decoded_id_token = jwt_decode(
+                id_token,
+                key=certificate.public_key(),
+                algorithms=algorithm,
+                audience=self.setting("SOCIAL_AUTH_AZUREAD_OAUTH2_KEY")
+            )
         except (DecodeError, ExpiredSignature) as de:
             raise AuthTokenError(self, de)
         return decoded_id_token
