@@ -47,15 +47,17 @@ PY = os.environ.get("BUILD_VERSION") or sys.version_info[0]
 requirements_base = read_requirements('requirements-base.txt')
 requirements = requirements_base + \
     read_requirements('requirements-python%s.txt' % PY)
-requirements_openidconnect = \
-    read_requirements('requirements-openidconnect.txt')
+requirements_openidconnect = read_requirements('requirements-openidconnect.txt')
 requirements_saml = read_requirements('requirements-saml-python%s.txt' % PY)
+requirements_azuread = read_requirements('requirements-azuread.txt')
 
 tests_requirements_base = read_tests_requirements('requirements-base.txt')
 tests_requirements = tests_requirements_base + \
     read_tests_requirements('requirements-python%s.txt' % PY)
 
-requirements_all = requirements_openidconnect + requirements_saml
+requirements_all = requirements_openidconnect + \
+                   requirements_saml + \
+                   requirements_azuread
 
 tests_requirements = tests_requirements + requirements_all
 
@@ -82,6 +84,7 @@ setup(
     extras_require={
         'openidconnect': [requirements_openidconnect],
         'saml': [requirements_saml],
+        'azuread': [requirements_azuread],
         'all': [requirements_all]
     },
     classifiers=[

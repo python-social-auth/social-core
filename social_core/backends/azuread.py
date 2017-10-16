@@ -38,7 +38,7 @@ SOFTWARE.
 """
 Azure AD OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/azuread.html
-    
+
 See https://nicksnettravels.builttoroam.com/post/2017/01/24/Verifying-Azure-Active-Directory-JWT-Tokens.aspx
 for verifying JWT tokens.
 """
@@ -53,7 +53,6 @@ class AzureADOAuth2(BaseOAuth2):
         'https://login.microsoftonline.com/{tenant_id}/oauth2/authorize'
     ACCESS_TOKEN_URL = 'https://login.microsoftonline.com/{tenant_id}/oauth2/token'
     JWKS_URL = 'https://login.microsoftonline.com/{tenant_id}/discovery/keys'
-    ACCESS_TOKEN_URL = 'https://login.microsoftonline.com/{tenant_id}/oauth2/token'
     ACCESS_TOKEN_METHOD = 'POST'
     REDIRECT_STATE = False
     DEFAULT_SCOPE = ['openid', 'profile', 'user_impersonation']
@@ -103,16 +102,14 @@ class AzureADOAuth2(BaseOAuth2):
                 'last_name': last_name}
 
     def get_certificate(self, kid):
-
         # retrieve keys from jwks_url
-        resp = self.request(self.jwks_url(),
-                            method="GET")
+        resp = self.request(self.jwks_url(), method="GET")
         resp.raise_for_status()
 
         # find the proper key for the kid
-        for k in resp.json()["keys"]:
-            if k['kid'] == kid:
-                x5c = k['x5c'][0]
+        for key in resp.json()["keys"]:
+            if key['kid'] == kid:
+                x5c = key['x5c'][0]
                 break
         else:
             raise DecodeError("Cannot find kid={}".format(kid))
@@ -121,36 +118,34 @@ class AzureADOAuth2(BaseOAuth2):
                       "{}\n" \
                       "-----END CERTIFICATE-----".format(x5c)
 
-        certificate = load_pem_x509_certificate(certificate.encode(),
-                                                default_backend())
-        return certificate
-
+        return load_pem_x509_certificate(certificate.encode(),
+                                         default_backend())
 
     def user_data(self, access_token, *args, **kwargs):
         response = kwargs.get('response')
         id_token = response.get('id_token')
 
         # decode the JWT header as JSON dict
-        jwt_header = json.loads(base64.b64decode(id_token.split(".")[0]).decode())
-        
+        jwt_header = json.loads(
+            base64.b64decode(id_token.split(".", 1)[0]).decode()
+        )
+
         # get key id and algorithm
         key_id = jwt_header["kid"]
         algorithm = jwt_header["alg"]
-
 
         try:
             # retrieve certificate for key_id
             certificate = self.get_certificate(key_id)
 
-            decoded_id_token = jwt_decode(
+            return jwt_decode(
                 id_token,
                 key=certificate.public_key(),
                 algorithms=algorithm,
                 audience=self.setting("SOCIAL_AUTH_AZUREAD_OAUTH2_KEY")
             )
-        except (DecodeError, ExpiredSignature) as de:
-            raise AuthTokenError(self, de)
-        return decoded_id_token
+        except (DecodeError, ExpiredSignature) as error:
+            raise AuthTokenError(self, error)
 
     def auth_extra_arguments(self):
         """Return extra arguments needed on auth process. The defaults can be
@@ -165,7 +160,7 @@ class AzureADOAuth2(BaseOAuth2):
         """Return access_token and extra defined names to store in
         extra_data field"""
         data = super(AzureADOAuth2, self).extra_data(user, uid, response,
-            details, *args, **kwargs)
+                                                     details, *args, **kwargs)
         data['resource'] = self.setting('RESOURCE')
         return data
 

@@ -43,6 +43,12 @@ docker-tox: docker-tox-build
 		     -v "`pwd`:/code" \
 		     -w /code omab/psa-social-core tox
 
+docker-bash: docker-tox-build
+	@ docker run -it --rm \
+		     --name psa-social-core-test \
+		     -v "`pwd`:/code" \
+		     -w /code omab/psa-social-core bash
+
 tests: setup-pyenv run-tox clean
 
 clean:
