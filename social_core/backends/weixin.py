@@ -17,6 +17,7 @@ class WeixinOAuth2(BaseOAuth2):
     AUTHORIZATION_URL = 'https://open.weixin.qq.com/connect/qrconnect'
     ACCESS_TOKEN_URL = 'https://api.weixin.qq.com/sns/oauth2/access_token'
     ACCESS_TOKEN_METHOD = 'POST'
+    DEFAULT_SCOPE = ['snsapi_login']
     REDIRECT_STATE = False
     EXTRA_DATA = [
         ('nickname', 'username'),
