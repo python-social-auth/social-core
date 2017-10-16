@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Cleanup user attributes update from social details
 
 ### Added
+- Added support for tenant for Azure AD backend
+- Added JWT validation for Azure AD backend
 - Added support for Bungie.net OAuth2 backend
 - Added support for Eventbrite OAuth2 backend
 - Added support for OpenShift OAuth2 backend
