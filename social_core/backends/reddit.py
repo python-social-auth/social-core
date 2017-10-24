@@ -51,3 +51,6 @@ class RedditOAuth2(BaseOAuth2):
         params = super(RedditOAuth2, self).refresh_token_params(token)
         params['redirect_uri'] = self.redirect_uri or redirect_uri
         return params
+
+    def auth_complete_credentials(self):
+        return self.get_key_and_secret()
