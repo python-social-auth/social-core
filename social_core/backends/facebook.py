@@ -20,6 +20,7 @@ API_VERSION = 2.9
 class FacebookOAuth2(BaseOAuth2):
     """Facebook OAuth2 authentication backend"""
     name = 'facebook'
+    REDIRECT_STATE = False
     RESPONSE_TYPE = None
     SCOPE_SEPARATOR = ','
     AUTHORIZATION_URL = 'https://www.facebook.com/v{version}/dialog/oauth'
