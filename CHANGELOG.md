@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Updated GitLab API version to v4
 - Enforce UTC when calculating access token expiration time
 - Cleanup user attributes update from social details
+- Send authorization header on Reddit auth
 
 ### Added
 - Added support for tenant for Azure AD backend
