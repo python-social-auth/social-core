@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
 
+## [1.5.0](https://github.com/python-social-auth/social-core/releases/tag/1.5.0) - 2017-10-28
+
 ### Changed
 - Fix using the entire SAML2 nameid string
 - Prevent timing attacks against state token
