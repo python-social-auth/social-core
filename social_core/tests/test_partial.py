@@ -1,5 +1,8 @@
 import unittest2 as unittest
-from mock import Mock, patch
+try:
+    from mock import Mock, patch
+except ImportError:
+    from unittest.mock import Mock, patch
 
 from ..pipeline.partial import partial, partial_step
 
