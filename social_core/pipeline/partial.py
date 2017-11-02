@@ -3,7 +3,7 @@ from functools import wraps
 from .utils import partial_prepare
 
 
-def partial(func):
+def partial_step(save_to_session):
     """Wraps func to behave like a partial pipeline step, any output
     that's not None or {} will be considered a response object and
     will be returned to user.
@@ -17,22 +17,28 @@ def partial(func):
     overridden by SOCIAL_AUTH_PARTIAL_PIPELINE_TOKEN_NAME setting.
 
     The token is also stored in the session under the
-    partial_pipeline_token key.
+    partial_pipeline_token key when the save_to_session parameter is True.
     """
-    @wraps(func)
-    def wrapper(strategy, backend, pipeline_index, *args, **kwargs):
-        current_partial = partial_prepare(strategy, backend, pipeline_index,
-                                          *args, **kwargs)
+    def decorator(func):
+        @wraps(func)
+        def wrapper(strategy, backend, pipeline_index, *args, **kwargs):
+            current_partial = partial_prepare(strategy, backend, pipeline_index,
+                                              *args, **kwargs)
 
-        out = func(strategy=strategy,
-                   backend=backend,
-                   pipeline_index=pipeline_index,
-                   current_partial=current_partial,
-                   *args, **kwargs) or {}
+            out = func(strategy=strategy,
+                       backend=backend,
+                       pipeline_index=pipeline_index,
+                       current_partial=current_partial,
+                       *args, **kwargs) or {}
 
-        if not isinstance(out, dict):
-            strategy.storage.partial.store(current_partial)
-            strategy.session_set('partial_pipeline_token',
-                                 current_partial.token)
-        return out
-    return wrapper
+            if not isinstance(out, dict):
+                strategy.storage.partial.store(current_partial)
+                if save_to_session:
+                    strategy.session_set('partial_pipeline_token', current_partial.token)
+            return out
+        return wrapper
+    return decorator
+
+
+# Backward compatible partial decorator, that stores the token in the session
+partial = partial_step(save_to_session=True)
