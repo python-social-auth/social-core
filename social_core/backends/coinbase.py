@@ -15,15 +15,16 @@ class CoinbaseOAuth2(BaseOAuth2):
     REDIRECT_STATE = False
 
     def get_user_id(self, details, response):
-        return response['users'][0]['user']['id']
+        return response['data']['id']
 
     def get_user_details(self, response):
         """Return user details from Coinbase account"""
-        user_data = response['users'][0]['user']
+        user_data = response['data']
         email = user_data.get('email', '')
         name = user_data['name']
+        username = user_data.get('username')
         fullname, first_name, last_name = self.get_user_names(name)
-        return {'username': name,
+        return {'username': username,
                 'fullname': fullname,
                 'first_name': first_name,
                 'last_name': last_name,
@@ -31,5 +32,5 @@ class CoinbaseOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        return self.get_json('https://coinbase.com/api/v1/users',
-                             params={'access_token': access_token})
+        return self.get_json('https://api.coinbase.com/v2/user',
+                headers={'Authorization': 'Bearer ' + access_token})
