@@ -11,6 +11,7 @@ class CoinbaseOAuth2(BaseOAuth2):
     DEFAULT_SCOPE = ['user', 'balance']
     AUTHORIZATION_URL = 'https://coinbase.com/oauth/authorize'
     ACCESS_TOKEN_URL = 'https://coinbase.com/oauth/token'
+    REVOKE_TOKEN_URL = 'https://api.coinbase.com/oauth/revoke'
     ACCESS_TOKEN_METHOD = 'POST'
     REDIRECT_STATE = False
 
