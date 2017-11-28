@@ -2,7 +2,7 @@
 AOL OpenId backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/aol.html
 """
-from urllib.parse import urlsplit
+from six.moves.urllib_parse import urlsplit
 
 from social_core.exceptions import AuthMissingParameter
 
