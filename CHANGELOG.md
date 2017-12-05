@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
 ### Changed
 - Fix coinbase backend to use api v2
+- Fix LinkedIn backend to send `oauth_token` as request header
 
 ## [1.5.0](https://github.com/python-social-auth/social-core/releases/tag/1.5.0) - 2017-10-28
 
