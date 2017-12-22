@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Default `REDIRECT_STATE` to `False` in `FacebookOAuth2` backend.
 - Add revoke token url for Coinbase OAuth2 backend
 
+### Added
+- Added support for ChatWork OAuth2 backend
+
 ## [1.5.0](https://github.com/python-social-auth/social-core/releases/tag/1.5.0) - 2017-10-28
 
 ### Changed
