@@ -1,6 +1,5 @@
 """
 Chatwork OAuth2 backend
-
 """
 import base64
 
@@ -45,9 +44,12 @@ class ChatworkOAuth2(BaseOAuth2):
         fullname, first_name, last_name = self.get_user_names(
             response.get('name')
         )
-        username = response.get('chatwork_id') or response.get('login_mail') \
-            or response.get('account_id')
-        email = response.get('mail') or response.get('login_mail') or ''
+        username = response.get('chatwork_id') or \
+                   response.get('login_mail') or \
+                   response.get('account_id')
+        email = response.get('mail') or \
+                response.get('login_mail') or \
+                ''
         return {
             'username': username,
             'email': email,
