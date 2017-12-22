@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fix coinbase backend to use api v2
 - Default `REDIRECT_STATE` to `False` in `FacebookOAuth2` backend.
 - Add revoke token url for Coinbase OAuth2 backend
+- Fix LinkedIn backend to send `oauth_token` as request header
 
 ### Added
 - Added support for ChatWork OAuth2 backend
