@@ -6,8 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
+
 ### Changed
 - Fix coinbase backend to use api v2
+- Default `REDIRECT_STATE` to `False` in `FacebookOAuth2` backend.
 - Add revoke token url for Coinbase OAuth2 backend
 
 ## [1.5.0](https://github.com/python-social-auth/social-core/releases/tag/1.5.0) - 2017-10-28
