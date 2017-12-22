@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Default `REDIRECT_STATE` to `False` in `FacebookOAuth2` backend.
 - Add revoke token url for Coinbase OAuth2 backend
 - Fix LinkedIn backend to send `oauth_token` as request header
+- Make partial step decorator handle arguments
 
 ### Added
 - Added support for ChatWork OAuth2 backend
