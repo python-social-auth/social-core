@@ -15,7 +15,7 @@ class EVEOnlineOAuth2(BaseOAuth2):
     ACCESS_TOKEN_METHOD = 'POST'
     EXTRA_DATA = [
         ('CharacterID', 'id'),
-        ('ExpiresOn', 'expires'),
+        ('expires_in', 'expires'),
         ('CharacterOwnerHash', 'owner_hash', True),
         ('refresh_token', 'refresh_token', True),
     ]
