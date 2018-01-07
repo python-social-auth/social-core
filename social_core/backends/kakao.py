@@ -18,19 +18,24 @@ class KakaoOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Kakao account"""
-        nickname = response['properties']['nickname']
         return {
-            'username': nickname,
-            'email': '',
-            'fullname': '',
-            'first_name': '',
-            'last_name': ''
+            'username': response['kaccount_email'].split('@')[0],
+            'email': response['kaccount_email'],
+            'fullname': response['properties']['nickname'],
+            'first_name': response['properties']['nickname'][1:],
+            'last_name': response['properties']['nickname'][0],
         }
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        return self.get_json('https://kapi.kakao.com/v1/user/me',
-                             params={'access_token': access_token})
+        return self.get_json(
+            'https://kapi.kakao.com/v1/user/me',
+            headers={
+                'Authorization': 'Bearer {0}'.format(access_token),
+                'Content_Type': 'application/x-www-form-urlencoded;charset=utf-8',
+            },
+            params={'access_token': access_token},
+        )
 
     def auth_complete_params(self, state=None):
         return {
