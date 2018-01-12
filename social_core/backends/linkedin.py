@@ -82,7 +82,7 @@ class LinkedinOAuth2(BaseLinkedinAuth, BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         headers = self.user_data_headers() or {}
-        headers['oauth_token'] = access_token
+        headers['Authorization'] = "Bearer {access_token}".format(access_token=access_token)
         return self.get_json(
             self.user_details_url(),
             params={'format': 'json'},
