@@ -6,7 +6,7 @@ registered first on OpenStreetMap and the settings
 SOCIAL_AUTH_OPENSTREETMAP_KEY and SOCIAL_AUTH_OPENSTREETMAP_SECRET
 must be defined with the corresponding values.
 
-More info: http://wiki.openstreetmap.org/wiki/OAuth
+More info: https://wiki.openstreetmap.org/wiki/OAuth
 """
 from xml.dom import minidom
 
@@ -16,9 +16,9 @@ from .oauth import BaseOAuth1
 class OpenStreetMapOAuth(BaseOAuth1):
     """OpenStreetMap OAuth authentication backend"""
     name = 'openstreetmap'
-    AUTHORIZATION_URL = 'http://www.openstreetmap.org/oauth/authorize'
-    REQUEST_TOKEN_URL = 'http://www.openstreetmap.org/oauth/request_token'
-    ACCESS_TOKEN_URL = 'http://www.openstreetmap.org/oauth/access_token'
+    AUTHORIZATION_URL = 'https://www.openstreetmap.org/oauth/authorize'
+    REQUEST_TOKEN_URL = 'https://www.openstreetmap.org/oauth/request_token'
+    ACCESS_TOKEN_URL = 'https://www.openstreetmap.org/oauth/access_token'
     EXTRA_DATA = [
         ('id', 'id'),
         ('avatar', 'avatar'),
@@ -38,7 +38,7 @@ class OpenStreetMapOAuth(BaseOAuth1):
     def user_data(self, access_token, *args, **kwargs):
         """Return user data provided"""
         response = self.oauth_request(
-            access_token, 'http://api.openstreetmap.org/api/0.6/user/details'
+            access_token, 'https://api.openstreetmap.org/api/0.6/user/details'
         )
         try:
             dom = minidom.parseString(response.content)
