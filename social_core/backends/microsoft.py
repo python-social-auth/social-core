@@ -45,8 +45,11 @@ class MicrosoftOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Microsoft online account"""
+        email = response.get('mail')
+        if not email and '@' in response.get('userPrincipalName'):
+            email = response.get('userPrincipalName')
         return {'username': response.get('displayName', ''),
-                'email': response.get('mail'),
+                'email': email,
                 'fullname': response.get('displayName', ''),
                 'first_name': response.get('givenName', ''),
                 'last_name': response.get('surname', '')}
