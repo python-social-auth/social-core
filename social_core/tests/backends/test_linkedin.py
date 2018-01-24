@@ -38,3 +38,7 @@ class LinkedinOAuth1Test(BaseLinkedinTest, OAuth1Test):
 
 class LinkedinOAuth2Test(BaseLinkedinTest, OAuth2Test):
     backend_path = 'social_core.backends.linkedin.LinkedinOAuth2'
+
+
+class LinkedinMobileOAuth2Test(BaseLinkedinTest, OAuth2Test):
+    backend_path = 'social_core.backends.linkedin.LinkedinMobileOAuth2'
