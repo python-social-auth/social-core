@@ -25,11 +25,12 @@ SOFTWARE.
 """
 
 
-from httpretty import HTTPretty
-from time import time
-from unittest import SkipTest
 import json
 import jwt
+
+from time import time
+from unittest import SkipTest
+from httpretty import HTTPretty
 
 from .oauth import OAuth2Test
 
