@@ -12,6 +12,7 @@ class GoogleOpenIdConnect(GoogleOAuth2, OpenIdConnectAuth):
     # differs from value in discovery document
     # http://openid.net/specs/openid-connect-core-1_0.html#rfc.section.15.6.2
     ID_TOKEN_ISSUER = 'accounts.google.com'
+    GET_ALL_EXTRA_DATA = True
 
     def user_data(self, access_token, *args, **kwargs):
         """Return user data from Google API"""
