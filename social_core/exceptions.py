@@ -1,3 +1,6 @@
+from django.utils.translation import ugettext_lazy as _
+
+
 class SocialAuthBaseException(ValueError):
     """Base class for pipeline exceptions."""
     pass
@@ -8,14 +11,14 @@ class WrongBackend(SocialAuthBaseException):
         self.backend_name = backend_name
 
     def __str__(self):
-        return 'Incorrect authentication service "{0}"'.format(
+        return _('Incorrect authentication service "{0}"'.format(
             self.backend_name
-        )
+        ))
 
 
 class MissingBackend(WrongBackend):
     def __str__(self):
-        return 'Missing backend "{0}" entry'.format(self.backend_name)
+        return _('Missing backend "{0}" entry'.format(self.backend_name))
 
 
 class NotAllowedToDisconnect(SocialAuthBaseException):
@@ -35,8 +38,8 @@ class AuthFailed(AuthException):
     def __str__(self):
         msg = super(AuthFailed, self).__str__()
         if msg == 'access_denied':
-            return 'Authentication process was canceled'
-        return 'Authentication failed: {0}'.format(msg)
+            return _('Authentication process was canceled')
+        return _('Authentication failed: {0}'.format(msg))
 
 
 class AuthCanceled(AuthException):
@@ -48,22 +51,22 @@ class AuthCanceled(AuthException):
     def __str__(self):
         msg = super(AuthCanceled, self).__str__()
         if msg:
-            return 'Authentication process canceled: {0}'.format(msg)
-        return 'Authentication process canceled'
+            return _('Authentication process canceled: {0}'.format(msg))
+        return _('Authentication process canceled')
 
 
 class AuthUnknownError(AuthException):
     """Unknown auth process error."""
     def __str__(self):
         msg = super(AuthUnknownError, self).__str__()
-        return 'An unknown error happened while authenticating {0}'.format(msg)
+        return _('An unknown error happened while authenticating {0}'.format(msg))
 
 
 class AuthTokenError(AuthException):
     """Auth token error."""
     def __str__(self):
         msg = super(AuthTokenError, self).__str__()
-        return 'Token error: {0}'.format(msg)
+        return _('Token error: {0}'.format(msg))
 
 
 class AuthMissingParameter(AuthException):
@@ -73,19 +76,19 @@ class AuthMissingParameter(AuthException):
         super(AuthMissingParameter, self).__init__(backend, *args, **kwargs)
 
     def __str__(self):
-        return 'Missing needed parameter {0}'.format(self.parameter)
+        return _('Missing needed parameter {0}'.format(self.parameter))
 
 
 class AuthStateMissing(AuthException):
     """State parameter is incorrect."""
     def __str__(self):
-        return 'Session value state missing.'
+        return _('Session value state missing.')
 
 
 class AuthStateForbidden(AuthException):
     """State parameter is incorrect."""
     def __str__(self):
-        return 'Wrong state parameter given.'
+        return _('Wrong state parameter given.')
 
 
 class AuthAlreadyAssociated(AuthException):
@@ -96,21 +99,21 @@ class AuthAlreadyAssociated(AuthException):
 class AuthTokenRevoked(AuthException):
     """User revoked the access_token in the provider."""
     def __str__(self):
-        return 'User revoke access to the token'
+        return _('User revoke access to the token')
 
 
 class AuthForbidden(AuthException):
     """Authentication for this user is forbidden"""
     def __str__(self):
-        return 'Your credentials aren\'t allowed'
+        return _('Your credentials aren\'t allowed')
 
 
 class AuthUnreachableProvider(AuthException):
     """Cannot reach the provider"""
     def __str__(self):
-        return 'The authentication provider could not be reached'
+        return _('The authentication provider could not be reached')
 
 
 class InvalidEmail(AuthException):
     def __str__(self):
-        return 'Email couldn\'t be validated'
+        return _('Email couldn\'t be validated')
