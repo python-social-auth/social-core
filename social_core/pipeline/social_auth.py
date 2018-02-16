@@ -1,3 +1,5 @@
+from django.utils.translation import ugettext_lazy as _
+
 from ..exceptions import AuthAlreadyAssociated, AuthException, AuthForbidden
 
 
@@ -19,7 +21,7 @@ def social_user(backend, uid, user=None, *args, **kwargs):
     social = backend.strategy.storage.user.get_social_auth(provider, uid)
     if social:
         if user and social.user != user:
-            msg = 'This account is already in use.'
+            msg = _('This {0} account is already in use.'.format(provider))
             raise AuthAlreadyAssociated(backend, msg)
         elif not user:
             user = social.user
@@ -72,7 +74,7 @@ def associate_by_email(backend, details, user=None, *args, **kwargs):
         elif len(users) > 1:
             raise AuthException(
                 backend,
-                'The given email address is associated with another account'
+                _('The given email address is associated with another account')
             )
         else:
             return {'user': users[0],

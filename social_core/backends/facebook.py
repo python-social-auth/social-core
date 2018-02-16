@@ -7,6 +7,7 @@ import time
 import json
 import base64
 import hashlib
+from django.utils.translation import ugettext_lazy as _
 
 from ..utils import parse_qs, constant_time_compare, handle_http_errors
 from .oauth import BaseOAuth2
@@ -136,8 +137,8 @@ class FacebookOAuth2(BaseOAuth2):
             # data is needed (it contains the user ID used to identify the
             # account on further logins), this app cannot allow it to
             # continue with the auth process.
-            raise AuthUnknownError(self, 'An error ocurred while retrieving '
-                                         'users Facebook data')
+            raise AuthUnknownError(self, _('An error ocurred while retrieving '
+                                         'users Facebook data'))
 
         data['access_token'] = access_token
         if 'expires_in' in response:
