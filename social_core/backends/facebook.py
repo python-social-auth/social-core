@@ -150,7 +150,12 @@ class FacebookOAuth2(BaseOAuth2):
             data['denied_scopes'] = self.data['denied_scopes'].split(',')
 
         kwargs.update({'backend': self, 'response': data})
-        return self.strategy.authenticate(*args, **kwargs)
+        try:
+            return self.strategy.authenticate(*args, **kwargs)
+        except Exception as v:
+            if v.detail[0].startswith('A user is already registered with e-mail'):
+                v.detail.append(data['email'])
+            raise v
 
     def revoke_token_url(self, token, uid):
         version = self.setting('API_VERSION', API_VERSION)
