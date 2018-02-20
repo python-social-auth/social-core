@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Update EvenOnline token expiration key
 - Update OpenStreetMap URL to `https`
 - Fix LinkedIn backend to send the oauth_token as `Authorization` header
+- Added LinkedinMobileOAuth2 backend
 
 ### Added
 - Added support for AzureAD B2C OAuth2
