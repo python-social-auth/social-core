@@ -173,7 +173,7 @@ class FacebookAppOAuth2(FacebookOAuth2):
         return False
 
     def auth_complete(self, *args, **kwargs):
-        access_token = None
+        access_token = self.data.get('access_token')
         response = {}
 
         if 'signed_request' in self.data:
