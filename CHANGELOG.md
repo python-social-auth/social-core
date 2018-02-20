@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Update OpenStreetMap URL to `https`
 - Fix LinkedIn backend to send the oauth_token as `Authorization` header
 - Fixed `extra_data` update to use the `alias` as key too
+- Make `signed_request` optional in Facebook App OAuth2 backend
 
 ### Added
 - Added support for AzureAD B2C OAuth2
