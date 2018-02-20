@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Support string and lists on SAML permanent id value
 - Correct sending `params` sending on `GET` access-token retrieval case
 - Ensure b2c policy name check
+- Use `extras_requrie` to specify python specific version dependencies
 
 ### Added
 - Added support for AzureAD B2C OAuth2
