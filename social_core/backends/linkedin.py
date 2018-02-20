@@ -81,14 +81,12 @@ class LinkedinOAuth2(BaseLinkedinAuth, BaseOAuth2):
     REDIRECT_STATE = False
 
     def user_data(self, access_token, *args, **kwargs):
-        headers = self.user_data_headers() or {}
-        headers['Authorization'] = 'Bearer {access_token}'.format(
-            access_token=access_token
-        )
         return self.get_json(
             self.user_details_url(),
-            params={'format': 'json'},
-            headers=headers
+            params={
+                'format': 'json',
+                'oauth2_access_token': access_token
+            }
         )
 
     def request_access_token(self, *args, **kwargs):
