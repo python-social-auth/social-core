@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Make `signed_request` optional in Facebook App OAuth2 backend
 - Support string and lists on SAML permanent id value
 - Correct sending `params` sending on `GET` access-token retrieval case
+- Ensure b2c policy name check
 
 ### Added
 - Added support for AzureAD B2C OAuth2
