@@ -20,6 +20,9 @@ NO_SPECIAL_REGEX = re.compile(r'[^\w.@+_-]+', re.UNICODE)
 
 
 class UserMixin(object):
+    # Consider tokens that expire in 5 seconds as already expired
+    ACCESS_TOKEN_EXPIRED_THRESHOLD = 5
+
     user = ''
     provider = ''
     uid = None
@@ -96,8 +99,10 @@ class UserMixin(object):
         return self.expiration_timedelta()
 
     def access_token_expired(self):
+        """Return true / false if access token is already expired"""
         expiration = self.expiration_timedelta()
-        return expiration and expiration.total_seconds() <= 0
+        return expiration and \
+            expiration.total_seconds() <= self.ACCESS_TOKEN_EXPIRED_THRESHOLD
 
     def get_access_token(self, strategy):
         """Returns a valid access token."""

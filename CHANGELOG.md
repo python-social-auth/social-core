@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - GitHub backend now uses `state` parameter instead of `redirect_state`
 - Correct setting name on AzureAD Tenant backend
+- Introduce access token expired threshold of 5 seconds by default
 
 ## [1.7.0](https://github.com/python-social-auth/social-core/releases/tag/1.7.0) - 2018-02-20
 
