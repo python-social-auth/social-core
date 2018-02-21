@@ -3,7 +3,7 @@ import requests
 
 from httpretty import HTTPretty
 
-from ...utils import module_member, parse_qs
+from ...utils import module_member, parse_qs, PARTIAL_TOKEN_SESSION_NAME
 from ...backends.utils import user_backends_data, load_backends
 from ..strategy import TestStrategy
 from ..models import User, TestUserSocialAuth, TestNonce, \
@@ -131,7 +131,7 @@ class BaseBackendTest(unittest.TestCase):
         self.pipeline_handlers(url)
 
         password = self.pipeline_password_handling(url)
-        token = self.strategy.session_pop('partial_pipeline_token')
+        token = self.strategy.session_pop(PARTIAL_TOKEN_SESSION_NAME)
         partial = self.strategy.partial_load(token)
         self.assertEqual(partial.backend, self.backend.name)
         redirect = self.backend.continue_pipeline(partial)
@@ -141,7 +141,7 @@ class BaseBackendTest(unittest.TestCase):
         self.pipeline_handlers(url)
         slug = self.pipeline_slug_handling(url)
 
-        token = self.strategy.session_pop('partial_pipeline_token')
+        token = self.strategy.session_pop(PARTIAL_TOKEN_SESSION_NAME)
         partial = self.strategy.partial_load(token)
         self.assertEqual(partial.backend, self.backend.name)
         user = self.backend.continue_pipeline(partial)

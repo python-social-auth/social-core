@@ -2,7 +2,7 @@ import time
 import random
 import hashlib
 
-from .utils import setting_name, module_member
+from .utils import setting_name, module_member, PARTIAL_TOKEN_SESSION_NAME
 from .store import OpenIdStore, OpenIdSessionWrapper
 from .pipeline import DEFAULT_AUTH_PIPELINE, DEFAULT_DISCONNECT_PIPELINE
 from .pipeline.utils import partial_load, partial_store, partial_prepare
@@ -92,6 +92,7 @@ class BaseStrategy(object):
 
     def clean_partial_pipeline(self, token):
         self.storage.partial.destroy(token)
+        self.session_pop(PARTIAL_TOKEN_SESSION_NAME)
 
     def openid_store(self):
         return OpenIdStore(self)

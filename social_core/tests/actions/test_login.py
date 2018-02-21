@@ -1,3 +1,4 @@
+from ...utils import PARTIAL_TOKEN_SESSION_NAME
 from ..models import User
 from .actions import BaseActionTest
 
@@ -25,7 +26,9 @@ class LoginActionTest(BaseActionTest):
 
     def test_login_with_invalid_partial_pipeline(self):
         def before_complete():
-            partial_token = self.strategy.session_get('partial_pipeline_token')
+            partial_token = self.strategy.session_get(
+                PARTIAL_TOKEN_SESSION_NAME
+            )
             partial = self.strategy.storage.partial.load(partial_token)
             partial.data['backend'] = 'foobar'
         self.do_login_with_partial_pipeline(before_complete)
