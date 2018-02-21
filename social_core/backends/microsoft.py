@@ -47,10 +47,11 @@ class MicrosoftOAuth2(BaseOAuth2):
         """Return user details from Microsoft online account"""
         email = response.get('mail')
         username = response.get('userPrincipalName')
-        if not email and '@' in response.get('userPrincipalName'):
-            email = response.get('userPrincipalName')
+
         if '@' in username:
-            username = username.split('@')[0]
+            if not email:
+                email = username
+            username = username.split('@', 1)[0]
 
         return {'username': username,
                 'email': email,
