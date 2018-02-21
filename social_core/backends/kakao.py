@@ -12,25 +12,36 @@ class KakaoOAuth2(BaseOAuth2):
     ACCESS_TOKEN_URL = 'https://kauth.kakao.com/oauth/token'
     ACCESS_TOKEN_METHOD = 'POST'
     REDIRECT_STATE = False
+    EXTRA_DATA = [
+        ('properties', 'properties'),
+    ]
 
     def get_user_id(self, details, response):
         return response['id']
 
     def get_user_details(self, response):
         """Return user details from Kakao account"""
-        nickname = response['properties']['nickname']
+        kaccount_email = response.get('kaccount_email', '')
+        properties = response.get('properties', '')
+        nickname = properties.get('nickname') if properties else ''
         return {
             'username': nickname,
-            'email': '',
-            'fullname': '',
-            'first_name': '',
-            'last_name': ''
+            'email': kaccount_email,
+            'fullname': nickname,
+            'first_name': nickname[1:] if nickname else '',
+            'last_name': nickname[0] if nickname else '',
         }
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        return self.get_json('https://kapi.kakao.com/v1/user/me',
-                             params={'access_token': access_token})
+        return self.get_json(
+            'https://kapi.kakao.com/v1/user/me',
+            headers={
+                'Authorization': 'Bearer {0}'.format(access_token),
+                'Content_Type': 'application/x-www-form-urlencoded;charset=utf-8',
+            },
+            params={'access_token': access_token}
+        )
 
     def auth_complete_params(self, state=None):
         return {
