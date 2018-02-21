@@ -18,6 +18,8 @@ class GithubOAuth2(BaseOAuth2):
     ACCESS_TOKEN_URL = 'https://github.com/login/oauth/access_token'
     ACCESS_TOKEN_METHOD = 'POST'
     SCOPE_SEPARATOR = ','
+    REDIRECT_STATE = False
+    STATE_PARAMETER = True
     EXTRA_DATA = [
         ('id', 'id'),
         ('expires', 'expires'),
