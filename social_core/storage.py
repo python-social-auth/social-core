@@ -256,6 +256,7 @@ class CodeMixin(object):
     email = ''
     code = ''
     verified = False
+    timestamp = None
 
     def verify(self):
         self.verified = True

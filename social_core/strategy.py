@@ -1,6 +1,7 @@
 import time
 import random
 import hashlib
+from datetime import datetime, timedelta
 
 from .utils import setting_name, module_member, PARTIAL_TOKEN_SESSION_NAME
 from .store import OpenIdStore, OpenIdSessionWrapper
@@ -136,11 +137,19 @@ class BaseStrategy(object):
 
     def validate_email(self, email, code):
         verification_code = self.storage.code.get_code(code)
+        allow_reuse = self.setting('EMAIL_VALIDATION_ALLOW_REUSE')
+        expiry = self.setting('EMAIL_VALIDATION_EXPIRED_THRESHOLD')
+        expired_code = expiry and verification_code.timestamp and \
+            ((verification_code.timestamp + \
+            timedelta(seconds=expiry)).utctimetuple() < \
+            datetime.utcnow().utctimetuple())
         if not verification_code or verification_code.code != code:
             return False
         elif verification_code.email != email:
             return False
-        elif verification_code.verified:
+        elif expired_code:
+            return False
+        elif verification_code.verified and not allow_reuse:
             return False
         else:
             verification_code.verify()

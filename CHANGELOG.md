@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Delete partial token from session if still present
 - Use `userPrincipalName` to set `username` and `email` accordingly
 - Send authorization headers to Kakao OAuth2, properly fill user details
+- Add settings for controlling email validation code expiry
 
 ## [1.7.0](https://github.com/python-social-auth/social-core/releases/tag/1.7.0) - 2018-02-20
 
