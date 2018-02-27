@@ -37,6 +37,8 @@ def do_complete(backend, login, user=None, redirect_name='next',
     partial = partial_pipeline_data(backend, user, *args, **kwargs)
     if partial:
         user = backend.continue_pipeline(partial)
+        # clean partial data after usage
+        backend.strategy.clean_partial_pipeline(partial.token)
     else:
         user = backend.complete(user=user, *args, **kwargs)
 
@@ -107,6 +109,8 @@ def do_disconnect(backend, user, association_id=None, redirect_name='next',
                 'association_id': association_id
             })
         response = backend.disconnect(*partial.args, **partial.kwargs)
+        # clean partial data after usage
+        backend.strategy.clean_partial_pipeline(partial.token)
     else:
         response = backend.disconnect(user=user, association_id=association_id,
                                       *args, **kwargs)

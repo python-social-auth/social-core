@@ -109,7 +109,7 @@ class AzureADTenantOAuth2(AzureADOAuth2):
                 id_token,
                 key=certificate.public_key(),
                 algorithms=algorithm,
-                audience=self.setting('SOCIAL_AUTH_AZUREAD_OAUTH2_KEY')
+                audience=self.setting('KEY')
             )
         except (DecodeError, ExpiredSignature) as error:
             raise AuthTokenError(self, error)

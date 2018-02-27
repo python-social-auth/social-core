@@ -21,6 +21,9 @@ from .exceptions import AuthCanceled, AuthForbidden, AuthUnreachableProvider
 
 SETTING_PREFIX = 'SOCIAL_AUTH'
 
+PARTIAL_TOKEN_SESSION_NAME = 'partial_pipeline_token'
+
+
 social_logger = logging.getLogger('social')
 
 
@@ -135,8 +138,8 @@ def slugify(value):
     value = unicodedata.normalize('NFKD', six.text_type(value)) \
                        .encode('ascii', 'ignore') \
                        .decode('ascii')
-    value = re.sub('[^\w\s-]', '', value).strip().lower()
-    return re.sub('[-\s]+', '-', value)
+    value = re.sub(r'[^\w\s-]', '', value).strip().lower()
+    return re.sub(r'[-\s]+', '-', value)
 
 
 def first(func, items):
@@ -171,7 +174,7 @@ def partial_pipeline_data(backend, user=None, partial_token=None,
                                             'partial_token')
     partial_token = partial_token or \
         request_data.get(partial_argument_name) or \
-        backend.strategy.session_get('partial_pipeline_token', None)
+        backend.strategy.session_get(PARTIAL_TOKEN_SESSION_NAME, None)
 
     if partial_token:
         partial = backend.strategy.partial_load(partial_token)

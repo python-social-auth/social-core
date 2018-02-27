@@ -1,6 +1,7 @@
 from functools import wraps
 
 from .utils import partial_prepare
+from ..utils import PARTIAL_TOKEN_SESSION_NAME
 
 
 def partial_step(save_to_session):
@@ -17,7 +18,8 @@ def partial_step(save_to_session):
     overridden by SOCIAL_AUTH_PARTIAL_PIPELINE_TOKEN_NAME setting.
 
     The token is also stored in the session under the
-    partial_pipeline_token key when the save_to_session parameter is True.
+    PARTIAL_TOKEN_SESSION_NAME (partial_pipeline_token) key when the
+    save_to_session parameter is True.
     """
     def decorator(func):
         @wraps(func)
@@ -34,7 +36,8 @@ def partial_step(save_to_session):
             if not isinstance(out, dict):
                 strategy.storage.partial.store(current_partial)
                 if save_to_session:
-                    strategy.session_set('partial_pipeline_token', current_partial.token)
+                    strategy.session_set(PARTIAL_TOKEN_SESSION_NAME,
+                                         current_partial.token)
             return out
         return wrapper
     return decorator

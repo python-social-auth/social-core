@@ -98,3 +98,19 @@ class LinkedinOAuth2(BaseLinkedinAuth, BaseOAuth2):
         return super(LinkedinOAuth2, self).request_access_token(
             *args, **kwargs
         )
+
+
+class LinkedinMobileOAuth2(LinkedinOAuth2):
+    name = 'linkedin-mobile-oauth2'
+
+    def user_data(self, access_token, *args, **kwargs):
+        headers = self.user_data_headers()
+        if not headers:
+            headers = {}
+        headers['Authorization'] = 'Bearer ' + access_token
+        headers['x-li-src'] = 'msdk'
+        return self.get_json(
+            self.user_details_url(),
+            params={'format': 'json'},
+            headers=headers
+        )

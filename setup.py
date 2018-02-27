@@ -44,9 +44,11 @@ def read_tests_requirements(filename):
 
 
 PY = os.environ.get("BUILD_VERSION") or sys.version_info[0]
-requirements_base = read_requirements('requirements-base.txt')
-requirements = requirements_base + \
-    read_requirements('requirements-python%s.txt' % PY)
+requirements = read_requirements('requirements-base.txt')
+# May be able to just use environment markers in requirements-base.txt
+# at least on  setuptools 36.2.0 and up.
+requirements_py2 = read_requirements('requirements-python2.txt')
+requirements_py3 = read_requirements('requirements-python3.txt')
 requirements_openidconnect = read_requirements('requirements-openidconnect.txt')
 requirements_saml = read_requirements('requirements-saml-python%s.txt' % PY)
 requirements_azuread = read_requirements('requirements-azuread.txt')
@@ -85,7 +87,9 @@ setup(
         'openidconnect': [requirements_openidconnect],
         'saml': [requirements_saml],
         'azuread': [requirements_azuread],
-        'all': [requirements_all]
+        'all': [requirements_all],
+        ':python_version < "3.0"': [requirements_py2],
+        ':python_version >= "3.0"': [requirements_py3],
     },
     classifiers=[
         'Development Status :: 4 - Beta',

@@ -1,5 +1,6 @@
 import json
 
+from ..utils import PARTIAL_TOKEN_SESSION_NAME
 from ..exceptions import AuthException
 
 from .models import TestUserSocialAuth, TestStorage, User
@@ -207,7 +208,7 @@ class UserPersistsInPartialPipeline(BaseActionTest):
 
         # Handle the partial pipeline
         self.strategy.session_set('attribute', 'testing')
-        token = self.strategy.session_pop('partial_pipeline_token')
+        token = self.strategy.session_pop(PARTIAL_TOKEN_SESSION_NAME)
         partial = self.strategy.partial_load(token)
         self.backend.continue_pipeline(partial)
 
@@ -228,6 +229,6 @@ class UserPersistsInPartialPipeline(BaseActionTest):
 
         # Handle the partial pipeline
         self.strategy.session_set('attribute', 'testing')
-        token = self.strategy.session_pop('partial_pipeline_token')
+        token = self.strategy.session_pop(PARTIAL_TOKEN_SESSION_NAME)
         partial = self.strategy.partial_load(token)
         self.backend.continue_pipeline(partial)
