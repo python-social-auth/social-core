@@ -1,4 +1,7 @@
-# vim:fileencoding=utf-8
+"""
+LINE Login OAuth2 backend, docs at:
+    https://developers.line.me/en/docs/line-login/
+"""
 import requests
 import json
 
@@ -9,26 +12,31 @@ from ..utils import handle_http_errors
 
 class LineOAuth2(BaseOAuth2):
     name = 'line'
-    AUTHORIZATION_URL = 'https://access.line.me/dialog/oauth/weblogin'
-    ACCESS_TOKEN_URL = 'https://api.line.me/v1/oauth/accessToken'
+    AUTHORIZATION_URL = 'https://access.line.me/oauth2/v2.1/authorize'
+    ACCESS_TOKEN_URL = 'https://api.line.me/oauth2/v2.1/token'
     BASE_API_URL = 'https://api.line.me'
-    USER_INFO_URL = BASE_API_URL + '/v1/profile'
+    USER_INFO_URL = BASE_API_URL + '/v2/profile'
     ACCESS_TOKEN_METHOD = 'POST'
     STATE_PARAMETER = True
+    DEFAULT_SCOPE = ['profile']
     REDIRECT_STATE = True
-    ID_KEY = 'mid'
+    ID_KEY = 'userId'
     EXTRA_DATA = [
-        ('mid', 'id'),
-        ('expire', 'expire'),
-        ('refreshToken', 'refresh_token')
+        ('userId', 'id'),
+        ('picture_url', 'picture_url'),
+        ('status_message', 'status_message'),
+        ('expires_in', 'expire'),
+        ('refresh_token', 'refresh_token')
     ]
 
     def auth_params(self, state=None):
         client_id, client_secret = self.get_key_and_secret()
         return {
+            'response_type': self.RESPONSE_TYPE,
             'client_id': client_id,
             'redirect_uri': self.get_redirect_uri(),
-            'response_type': self.RESPONSE_TYPE
+            'state': self.get_or_create_state(),
+            'scope': self.get_scope()
         }
 
     def process_error(self, data):
@@ -37,40 +45,44 @@ class LineOAuth2(BaseOAuth2):
                      data.get('error')
         error_message = data.get('errorMessage') or \
                         data.get('statusMessage') or \
-                        data.get('error_desciption')
+                        data.get('error_description')
         if error_code is not None or error_message is not None:
             raise AuthFailed(self, error_message or error_code)
 
     @handle_http_errors
     def auth_complete(self, *args, **kwargs):
         """Completes login process, must return user instance"""
-        client_id, client_secret = self.get_key_and_secret()
-        code = self.data.get('code')
-
         self.process_error(self.data)
 
         try:
             response = self.request_access_token(
                 self.access_token_url(),
                 method=self.ACCESS_TOKEN_METHOD,
-                params={
-                    'requestToken': code,
-                    'channelSecret': client_secret
-                }
+                headers=self.auth_headers(),
+                data=self.auth_complete_params()
             )
             self.process_error(response)
 
-            return self.do_auth(response['accessToken'], response=response,
+            return self.do_auth(response['access_token'], response=response,
                                 *args, **kwargs)
         except requests.HTTPError as err:
             self.process_error(json.loads(err.response.content))
 
     def get_user_details(self, response):
-        response.update({
-            'fullname': response.get('displayName'),
-            'picture_url': response.get('pictureUrl')
-        })
-        return response
+        fullname, first_name, last_name = self.get_user_names(
+            response.get('displayName')
+        )
+        username = response.get('userId')
+        picture_url = response.get('pictureUrl')
+        status_message = response.get('statusMessage')
+        return {
+            'username': username,
+            'fullname': fullname,
+            'first_name': first_name,
+            'last_name': last_name,
+            'picture_url': picture_url,
+            'status_message': status_message
+        }
 
     def get_user_id(self, details, response):
         """
