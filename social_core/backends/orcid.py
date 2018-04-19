@@ -2,7 +2,7 @@
 ORCID OAuth2 Application backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/orcid.html
 """
-from social_core.backends.oauth import BaseOAuth2
+from .oauth import BaseOAuth2
 
 
 class ORCIDOAuth2(BaseOAuth2):
