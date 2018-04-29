@@ -29,3 +29,20 @@ class SlackOAuth2Test(OAuth2Test):
 
     def test_partial_pipeline(self):
         self.do_partial_pipeline()
+
+
+class SlackOAuth2TestUnicodeTeamName(SlackOAuth2Test):
+    user_data_body = json.dumps({
+        'ok': True,
+        'user': {
+            'email': 'foobar@example.com',
+            'name': 'Foo Bar',
+            'id': u'123456'
+        },
+        'team': {
+            'id': u'456789',
+            'name': u'Square \u221a team',
+        },
+        'scope': u'identity.basic,identity.email,identity.team'
+    })
+
