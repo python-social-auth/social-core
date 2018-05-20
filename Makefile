@@ -1,4 +1,4 @@
-PYTHON_VERSIONS := 2.7.12 3.3.6 3.4.4 3.5.2 pypy-4.0.1
+PYTHON_VERSIONS := 2.7.12 3.4.4 3.5.2 pypy-4.0.1
 
 build:
 	@ BUILD_VERSION=2 python setup.py sdist
