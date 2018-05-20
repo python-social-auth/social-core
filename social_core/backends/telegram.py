@@ -2,8 +2,8 @@ import hmac
 import time
 import hashlib
 
-from social_core.backends.base import BaseAuth
-from social_core.exceptions import AuthFailed, AuthMissingParameter
+from .base import BaseAuth
+from ..exceptions import AuthFailed, AuthMissingParameter
 from ..utils import handle_http_errors
 
 
@@ -47,7 +47,8 @@ class TelegramAuth(BaseAuth):
         return {
             'username': response.get('username') or response[self.ID_KEY],
             'first_name': first_name,
-            'last_name': last_name
+            'last_name': last_name,
+            'fullname': fullname
         }
 
     @handle_http_errors
