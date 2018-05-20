@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Telegram authentication backend
 - Keycloak backend is added with preliminary OAuth2 support
+- Globus OpenId Connect backend
 
 ### Changed
 - GitHub backend now uses `state` parameter instead of `redirect_state`
