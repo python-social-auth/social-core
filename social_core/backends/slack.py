@@ -3,6 +3,8 @@ Slack OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/slack.html
     https://api.slack.com/docs/oauth
 """
+from __future__ import unicode_literals
+
 from .oauth import BaseOAuth2
 
 
