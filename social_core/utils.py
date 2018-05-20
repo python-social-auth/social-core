@@ -93,15 +93,19 @@ def sanitize_redirect(hosts, redirect_to):
     and returns it, else returns None, similar as how's it done
     on django.contrib.auth.views.
     """
-    if redirect_to:
-        try:
-            # Don't redirect to a host that's not in the list
-            netloc = urlparse(redirect_to)[1] or hosts[0]
-        except (TypeError, AttributeError):
-            pass
-        else:
-            if netloc in hosts:
-                return redirect_to
+    # Avoid redirect on evil URLs like ///evil.com
+    if not redirect_to or not hasattr(redirect_to, 'startswith') or \
+       redirect_to.startswith('///'):
+        return None
+
+    try:
+        # Don't redirect to a host that's not in the list
+        netloc = urlparse(redirect_to)[1] or hosts[0]
+    except (TypeError, AttributeError):
+        pass
+    else:
+        if netloc in hosts:
+            return redirect_to
 
 
 def user_is_authenticated(user):

@@ -34,6 +34,9 @@ class SanitizeRedirectTest(unittest.TestCase):
             None
         )
 
+    def test_invalid_evil_redirect(self):
+        self.assertEqual(sanitize_redirect(['myapp.com'], '///evil.com'), None)
+
     def test_valid_absolute_redirect(self):
         self.assertEqual(
             sanitize_redirect(['myapp.com'], 'http://myapp.com/path/'),
