@@ -69,7 +69,20 @@ class ORCIDOAuth2(BaseOAuth2):
 
 
 class ORCIDOAuth2Sandbox(ORCIDOAuth2):
+    """ORCID OAuth2 Sandbox authentication backend"""
     name = 'orcid-sandbox'
     AUTHORIZATION_URL = 'https://sandbox.orcid.org/oauth/authorize'
     ACCESS_TOKEN_URL = 'https://sandbox.orcid.org/oauth/token'
     USER_DATA_URL = 'https://pub.sandbox.orcid.org/v2.0/{}'
+
+
+class ORCIDMemberOAuth2(ORCIDOAuth2):
+    """ORCID OAuth2 authentication backend that uses ORCID Member API"""
+    USER_DATA_URL = 'https://api.orcid.org/v2.0/{}'
+    DEFAULT_SCOPE = ['/authenticate', '/read-limited']
+
+
+class ORCIDMemberOAuth2Sandbox(ORCIDOAuth2Sandbox):
+    """ORCID OAuth2 Sandbox authentication backend that uses ORCID Member Sandbox API"""
+    USER_DATA_URL = 'https://api.sandbox.orcid.org/v2.0/{}'
+    DEFAULT_SCOPE = ['/authenticate', '/read-limited']
