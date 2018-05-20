@@ -2,8 +2,8 @@
 Discord Auth OAuth2 backend, docs at:
     https://discordapp.com/developers/docs/topics/oauth2
 """
+from .oauth import BaseOAuth2
 
-from social_core.backends.oauth import BaseOAuth2
 
 class DiscordOAuth2(BaseOAuth2):
     name = 'discord'
