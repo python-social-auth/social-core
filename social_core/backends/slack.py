@@ -40,7 +40,7 @@ class SlackOAuth2(BaseOAuth2):
 
         if self.setting('USERNAME_WITH_TEAM', True) and team and \
            'name' in team:
-            name = '{0}@{1}'.format(name, response['team']['name'])
+            username = '{0}@{1}'.format(username, response['team']['name'])
 
         return {
             'username': username,
