@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Send authorization headers to Kakao OAuth2, properly fill user details
 - LINE API update to v2.1
 - Use `unitest2` with Python 3
+- Update Slack backend to use computed usename on teams setups
 
 ## [1.7.0](https://github.com/python-social-auth/social-core/releases/tag/1.7.0) - 2018-02-20
 
