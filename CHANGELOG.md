@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Update ORCID backend to support Member API
 - Updated Pixelpin backend to use the new OpenId Connect service
 - Update `sanitize_redirect` to invalidate redirects like `///evil.com`
+- Update Coinbase API endpoint
 
 ## [1.7.0](https://github.com/python-social-auth/social-core/releases/tag/1.7.0) - 2018-02-20
 
