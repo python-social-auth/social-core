@@ -1,5 +1,5 @@
-from .open_id_connect import OpenIdConnectAuth
 import json
+from .open_id_connect import OpenIdConnectAuth
 
 
 class PixelPinOpenIDConnect(OpenIdConnectAuth):
@@ -15,7 +15,6 @@ class PixelPinOpenIDConnect(OpenIdConnectAuth):
 
     def get_user_details(self, response):
         """Return user details from PixelPin account"""
-
         first_name = response.get('given_name')
         last_name = response.get('family_name')
         sub = response.get('sub')
@@ -24,12 +23,14 @@ class PixelPinOpenIDConnect(OpenIdConnectAuth):
 
         return {'username': username,
                 'email': response.get('email'),
-                'fullname': response.get('given_name') + ' ' + response.get('family_name'),
+                'fullname': first_name + ' ' + last_name,
                 'first_name': first_name,
                 'last_name': last_name}
-    
-	
+
     def user_data(self, access_token, *args, **kwargs):
-        return self.get_json('https://login.pixelpin.io/connect/userinfo', headers={
-            'Authorization': 'Bearer {0}'.format(access_token)
-        })
+        return self.get_json(
+            'https://login.pixelpin.io/connect/userinfo',
+            headers={
+                'Authorization': 'Bearer {0}'.format(access_token)
+            }
+        )
