@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 - Telegram authentication backend
+- Keycloak backend is added with preliminary OAuth2 support
 
 ### Changed
 - GitHub backend now uses `state` parameter instead of `redirect_state`
@@ -17,7 +18,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Delete partial token from session if still present
 - Use `userPrincipalName` to set `username` and `email` accordingly
 - Send authorization headers to Kakao OAuth2, properly fill user details
-- Keycloak backend is added with preliminary OAuth2 support
 
 ## [1.7.0](https://github.com/python-social-auth/social-core/releases/tag/1.7.0) - 2018-02-20
 
