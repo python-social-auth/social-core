@@ -67,5 +67,10 @@ class QQOAuth2(BaseOAuth2):
         return response
 
     def request_access_token(self, url, data, *args, **kwargs):
-        response = self.request(url, params=data, *args, **kwargs)
+	#it'll occur to error if the data is None.so should add the judgement.
+	# the request will add the param automatically,which contains the post data.
+	if kwargs.has_key("params") and data is None:
+	    response = self.request(url,*args,**kwargs)
+	else:
+            response = self.request(url, params=data, *args, **kwargs)
         return parse_qs(response.content)
