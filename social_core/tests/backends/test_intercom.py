@@ -18,14 +18,14 @@ class IntercomOAuth2Test(OAuth2Test):
             "id": "123456",
             "email": "foo@bbar.com",
             "name": "Foo Bar",
-            "email_verified": true,
+            "email_verified": True,
             "app": {
                 "type": "app",
                 "id_code": "123456",
                 "name": "Foo Bar",
                 "created_at": 0,
-                "secure": false,
-                "identity_verification": false,
+                "secure": False,
+                "identity_verification": False,
                 "timezone": "America/Los_Angeles"
             },
             "avatar": {
