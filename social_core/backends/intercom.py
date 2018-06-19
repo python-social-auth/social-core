@@ -21,6 +21,6 @@ class IntercomOAuth2(BaseOAuth2):
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
         return self.get_json("https://api.intercom.io/me", headers={
-            "Authorization": "Bearer {0}'".format(access_token),
+            "Authorization": "Bearer {0}".format(access_token),
             "Accept": "application/json"
         })
