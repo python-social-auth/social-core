@@ -213,7 +213,7 @@ class BaseAuth(object):
         otherwise return false."""
         return True
 
-    def request(self, url, method='GET', *args, **kwargs):
+    def request(self, url, method='GET', raise_for_status=True, *args, **kwargs):
         kwargs.setdefault('headers', {})
         if self.setting('VERIFY_SSL') is not None:
             kwargs.setdefault('verify', self.setting('VERIFY_SSL'))
@@ -231,7 +231,8 @@ class BaseAuth(object):
                 response = request(method, url, *args, **kwargs)
         except ConnectionError as err:
             raise AuthFailed(self, str(err))
-        response.raise_for_status()
+        if raise_for_status:
+            response.raise_for_status()
         return response
 
     def get_json(self, url, *args, **kwargs):
