@@ -7,7 +7,7 @@ from .oauth import BaseOAuth2
 
 class SciStarterOAuth2(BaseOAuth2):
     name = 'scistarter'
-    ID_KEY = 'id'
+    ID_KEY = 'email'
     SCOPE_PARAMETER_NAME = 'scope'
     DEFAULT_SCOPE = ['login', 'extensive']
     SCOPE_SEPARATOR = ' '
