@@ -65,10 +65,30 @@ def do_complete(backend, login, user=None, redirect_name='next',
             # catch is_new/social_user in case login() resets the instance
             is_new = getattr(user, 'is_new', False)
             social_user = user.social_user
+            request = kwargs.get('request')
+            path = None
+            if request:
+                path = request.META.get("PATH_INFO")
+
             login(backend, user, social_user)
+
             # store last login backend name in session
-            backend.strategy.session_set('social_auth_last_login_backend',
-                                         social_user.provider)
+            try:
+                backend.strategy.session_set(
+                    'social_auth_last_login_backend',
+                    social_user.provider
+                )
+            except AttributeError:
+                if path and 'google' in path.lower():
+                    provider = 'google'
+                elif path and 'facebook' in path.lower():
+                    provider = 'facebook'
+                else:
+                    provider = 'social'
+                backend.strategy.session_set(
+                    'social_auth_last_login_backend',
+                    provider
+                )
 
             if is_new:
                 url = setting_url(backend,
