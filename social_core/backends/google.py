@@ -145,6 +145,11 @@ class GooglePlusAuth(BaseGoogleOAuth2API, BaseOAuth2):
         else:
             raise AuthMissingParameter(self, 'access_token, id_token, or code')
 
+    def user_data(self, *args, **kwargs):
+        if 'id_token' in self.data:
+            return kwargs['response']
+        return super(GooglePlusAuth, self).user_data(*args, **kwargs)
+
 
 class GoogleOAuth(BaseGoogleAuth, BaseOAuth1):
     """Google OAuth authorization mechanism"""
