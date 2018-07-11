@@ -136,19 +136,20 @@ class GooglePlusAuth(BaseGoogleOAuth2API, BaseOAuth2):
                                 *args, **kwargs)
         elif 'id_token' in self.data:  # Client-side workflow
             token = self.data.get('id_token')
-            response = self.get_json(
-                'https://www.googleapis.com/oauth2/v3/tokeninfo',
-                params={'id_token': token}
-            )
-            self.process_error(response)
-            return self.do_auth(token, response=response, *args, **kwargs)
+            return self.do_auth(token, *args, **kwargs)
         else:
             raise AuthMissingParameter(self, 'access_token, id_token, or code')
 
-    def user_data(self, *args, **kwargs):
-        if 'id_token' in self.data:
-            return kwargs['response']
-        return super(GooglePlusAuth, self).user_data(*args, **kwargs)
+    def user_data(self, access_token, *args, **kwargs):
+        if 'id_token' not in self.data:
+            return super(GooglePlusAuth, self).user_data(access_token, *args,
+                                                         **kwargs)
+        response = self.get_json(
+            'https://www.googleapis.com/oauth2/v3/tokeninfo',
+            params={'id_token': access_token}
+        )
+        self.process_error(response)
+        return response
 
 
 class GoogleOAuth(BaseGoogleAuth, BaseOAuth1):
