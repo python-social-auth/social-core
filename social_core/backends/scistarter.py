@@ -20,7 +20,7 @@ class SciStarterOAuth2(BaseOAuth2):
     STATE_PARAMETER = True
     REDIRECT_STATE = True
     EXTRA_DATA = [
-        ('id', 'id'),
+        ('profile_id', 'profile_id'),
         ('expires', 'expires')
     ]
 
