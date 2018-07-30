@@ -3,7 +3,7 @@
 """
 Weixin OAuth2 backend
 """
-import urllib
+from six.moves.urllib_parse import urlencode
 from requests import HTTPError
 
 from .oauth import BaseOAuth2
@@ -136,7 +136,7 @@ class WeixinOAuth2APP(WeixinOAuth2):
         params = self.auth_params(state)
         params.update(self.get_scope_argument())
         params.update(self.auth_extra_arguments())
-        params = urllib.urlencode(sorted(params.items()))
+        params = urlencode(sorted(params.items()))
         return '{}#wechat_redirect'.format(
             self.AUTHORIZATION_URL + '?' + params
         )
