@@ -36,7 +36,7 @@ class PersonaAuth(BaseAuth):
 
     @handle_http_errors
     def auth_complete(self, *args, **kwargs):
-        """Completes loging process, must return user instance"""
+        """Completes login process, must return user instance"""
         if 'assertion' not in self.data:
             raise AuthMissingParameter(self, 'assertion')
 
