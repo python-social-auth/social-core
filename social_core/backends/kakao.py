@@ -35,7 +35,7 @@ class KakaoOAuth2(BaseOAuth2):
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
         return self.get_json(
-            'https://kapi.kakao.com/v1/user/me',
+            'https://kapi.kakao.com/v2/user/me',
             headers={
                 'Authorization': 'Bearer {0}'.format(access_token),
                 'Content_Type': 'application/x-www-form-urlencoded;charset=utf-8',
