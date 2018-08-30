@@ -14,7 +14,8 @@ class SciStarterOAuth2(BaseOAuth2):
     AUTHORIZATION_URL = 'https://scistarter.com/authorize'
     ACCESS_TOKEN_URL = 'https://scistarter.com/token?key={key}'
     ACCESS_TOKEN_METHOD = 'POST'
-    USER_ACCESS_URL = 'https://scistarter.com/api/user_info?client_id={clientid}&key={key}'
+    USER_ACCESS_URL = \
+        'https://scistarter.com/api/user_info?client_id={clientid}&key={key}'
     REFRESH_TOKEN_URL = None
     RESPONSE_TYPE = 'code'
     STATE_PARAMETER = True
@@ -26,25 +27,27 @@ class SciStarterOAuth2(BaseOAuth2):
 
     def get_redirect_uri(self, state=None):
         """Build redirect with redirect_state parameter."""
-        uri = self.redirect_uri.rstrip("/")
-        # if self.REDIRECT_STATE and state:
-        #uri = url_add_parameters(uri, {'redirect_state': state})
-        return uri
+        return self.redirect_uri.rstrip('/')
 
     def authorization_url(self):
         return self.AUTHORIZATION_URL
 
     def get_user_details(self, response):
-        return {'username': response.get('handle'),
-                'email': response.get('email') or '',
-                'first_name': response.get('first_name'),
-                'last_name': response.get('last_name')
-                }
+        return {
+            'username': response.get('handle'),
+            'email': response.get('email') or '',
+            'first_name': response.get('first_name'),
+            'last_name': response.get('last_name')
+        }
 
     def user_data(self, access_token, *args, **kwards):
         client_id, client_secret = self.get_key_and_secret()
-        return self.get_json(self.USER_ACCESS_URL.format(clientid=client_id, key=client_secret),
-                             headers={'Authorization': 'Bearer ' + access_token})
+        return self.get_json(
+            self.USER_ACCESS_URL.format(clientid=client_id, key=client_secret),
+            headers={
+                'Authorization': 'Bearer ' + access_token
+            }
+        )
 
     def access_token(self, token):
         """Return request for access token value"""
