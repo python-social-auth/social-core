@@ -186,7 +186,10 @@ class OpenIdConnectAuth(BaseOAuth2):
         store it (temporarily).
         """
         response = self.get_json(*args, **kwargs)
-        self.id_token = self.validate_and_return_id_token(response['id_token'], response['access_token'])
+        self.id_token = self.validate_and_return_id_token(
+            response['id_token'],
+            response['access_token']
+        )
         return response
 
     def user_data(self, access_token, *args, **kwargs):

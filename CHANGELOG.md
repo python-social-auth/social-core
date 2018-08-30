@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Dropped Python 3.3 support
 - Updated Weixin backend to use `urlencode` from `six`
 - Updated Google+ backend to properly process requests with `id_token`
+- Updated OpenId connect dependencies
 
 ## [1.7.0](https://github.com/python-social-auth/social-core/releases/tag/1.7.0) - 2018-02-20
 
