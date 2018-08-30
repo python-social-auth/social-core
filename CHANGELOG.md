@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Globus OpenId Connect backend
 - Discord OAuth2 backend
 - SciStarter OAuth2 backend
+- Flat OAuth2 backend
 
 ### Changed
 - GitHub backend now uses `state` parameter instead of `redirect_state`
