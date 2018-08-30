@@ -82,7 +82,7 @@ class WeixinOAuth2(BaseOAuth2):
         }
 
     def auth_complete(self, *args, **kwargs):
-        """Completes loging process, must return user instance"""
+        """Completes login process, must return user instance"""
         self.process_error(self.data)
         try:
             response = self.request_access_token(
@@ -154,7 +154,7 @@ class WeixinOAuth2APP(WeixinOAuth2):
         return None
 
     def auth_complete(self, *args, **kwargs):
-        """Completes loging process, must return user instance"""
+        """Completes login process, must return user instance"""
         self.process_error(self.data)
         try:
             response = self.request_access_token(

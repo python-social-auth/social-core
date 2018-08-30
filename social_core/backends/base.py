@@ -48,7 +48,7 @@ class BaseAuth(object):
         raise NotImplementedError('Implement in subclass')
 
     def auth_complete(self, *args, **kwargs):
-        """Completes loging process, must return user instance"""
+        """Completes login process, must return user instance"""
         raise NotImplementedError('Implement in subclass')
 
     def process_error(self, data):
