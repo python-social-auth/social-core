@@ -26,5 +26,6 @@ class FlatOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        return self.get_json('https://api.flat.io/v2/me',
-                headers={'Authorization': 'Bearer ' + access_token})
+        return self.get_json('https://api.flat.io/v2/me', headers={
+            'Authorization': 'Bearer ' + access_token
+        })
