@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Update `sanitize_redirect` to invalidate redirects like `///evil.com`
 - Update Coinbase API endpoint
 - Dropped Python 3.3 support
+- Updated Weixin backend to use `urlencode` from `six`
 
 ## [1.7.0](https://github.com/python-social-auth/social-core/releases/tag/1.7.0) - 2018-02-20
 
