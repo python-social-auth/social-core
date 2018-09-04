@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Discord OAuth2 backend
 - SciStarter OAuth2 backend
 - Flat OAuth2 backend
+- Atlassian OAuth2 backend
 
 ### Changed
 - GitHub backend now uses `state` parameter instead of `redirect_state`
