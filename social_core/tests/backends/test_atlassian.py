@@ -31,10 +31,10 @@ class AtlassianOAuth2Test(OAuth2Test):
         "name": "erlich",
         "emailAddress": "erlich@bachmanity.com",
         "avatarUrls": {
-            "48x48": "http://your-domain.atlassian.net/secure/useravatar?size=large&ownerId=erlich",
-            "24x24": "http://your-domain.atlassian.net/secure/useravatar?size=small&ownerId=erlich",
-            "16x16": "http://your-domain.atlassian.net/secure/useravatar?size=xsmall&ownerId=erlich",
-            "32x32": "http://your-domain.atlassian.net/secure/useravatar?size=medium&ownerId=erlich"
+            "48x48": "http://bachmanity.atlassian.net/secure/useravatar?size=large&ownerId=erlich",
+            "24x24": "http://bachmanity.atlassian.net/secure/useravatar?size=small&ownerId=erlich",
+            "16x16": "http://bachmanity.atlassian.net/secure/useravatar?size=xsmall&ownerId=erlich",
+            "32x32": "http://bachmanity.atlassian.net/secure/useravatar?size=medium&ownerId=erlich"
         },
         "displayName": "Erlich Bachman",
         "active": True,
