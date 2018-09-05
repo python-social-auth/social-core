@@ -10,6 +10,8 @@ class AtlassianOAuth2(BaseOAuth2):
     ID_KEY = 'accountId'
     EXTRA_DATA = [
         ('cloud_id', 'cloud_id'),
+        ('refresh_token', 'refresh_token'),
+        ('expires_in', 'expires_in'),
     ]
 
     def auth_params(self, state=None):
