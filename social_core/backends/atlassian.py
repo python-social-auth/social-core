@@ -9,7 +9,7 @@ class AtlassianOAuth2(BaseOAuth2):
     DEFAULT_SCOPE = ['read:jira-user', 'offline_access']
     ID_KEY = 'accountId'
     EXTRA_DATA = [
-        ('cloud_id', 'cloud_id'),
+        ('resource_ids', 'resource_ids'),
         ('refresh_token', 'refresh_token'),
         ('expires_in', 'expires_in'),
     ]
