@@ -29,10 +29,10 @@ class AtlassianOAuth2(BaseOAuth2):
                 'last_name': last_name}
 
     def user_data(self, access_token, *args, **kwargs):
-        clouds = self.get_json('https://api.atlassian.com/oauth/token/accessible-resources',
-                               headers={'Authorization': 'Bearer {}'.format(access_token)})
-        cloud_id = clouds[0]['id']
-        user_info = self.get_json('https://api.atlassian.com/ex/jira/{}/rest/api/2/myself'.format(cloud_id),
+        resources = self.get_json('https://api.atlassian.com/oauth/token/accessible-resources',
                                   headers={'Authorization': 'Bearer {}'.format(access_token)})
-        user_info['cloud_id'] = cloud_id
+        resource_ids = [resource['id'] for resource in resources]
+        user_info = self.get_json('https://api.atlassian.com/ex/jira/{}/rest/api/2/myself'.format(resource_ids[0]),
+                                  headers={'Authorization': 'Bearer {}'.format(access_token)})
+        user_info['resource_ids'] = resource_ids
         return user_info
