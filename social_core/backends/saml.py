@@ -93,23 +93,26 @@ class SAMLIdentityProvider(object):
         return self.conf['url']
 
     @property
-    def x509cert(self):
-        """X.509 Public Key Certificate for this IdP"""
-        return self.conf['x509cert']
-
-    @property
     def saml_config_dict(self):
         """Get the IdP configuration dict in the format required by
         python-saml"""
-        return {
+        result = {
             'entityId': self.entity_id,
             'singleSignOnService': {
                 'url': self.sso_url,
                 # python-saml only supports Redirect
                 'binding': 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect'
             },
-            'x509cert': self.x509cert,
         }
+        cert = self.conf.get('x509cert', None)
+        if cert:
+            result['x509cert'] = cert
+            return result
+        cert = self.conf.get('x509certMulti', None)
+        if cert:
+            result['x509certMulti'] = cert
+            return result
+        raise KeyError("IDP must contain x509cert or x509certMulti")
 
 
 class DummySAMLIdentityProvider(SAMLIdentityProvider):
