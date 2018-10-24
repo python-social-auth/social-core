@@ -374,7 +374,7 @@ class BaseOAuth2(OAuthAuth):
 
     def process_error(self, data):
         if data.get('error'):
-            if data['error'] == 'denied' or data['error'] == 'access_denied':
+            if 'denied' in data['error'] or 'cancelled' in data['error']:
                 raise AuthCanceled(self, data.get('error_description', ''))
             raise AuthFailed(self, data.get('error_description') or
                                    data['error'])
