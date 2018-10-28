@@ -83,5 +83,5 @@ class AlreadyAssociatedErrorTest(BaseActionTest):
         self.do_login()
         self.user = User(username='foobar2', email='foo2@bar2.com')
         with self.assertRaisesRegexp(AuthAlreadyAssociated,
-                                     'This github account is already in use.'):
+                                     'This account is already in use.'):
             self.do_login()
