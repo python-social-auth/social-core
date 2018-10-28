@@ -1,6 +1,10 @@
+"""
+Backend for OpenID Connect ELIXIR AAI
+https://www.elixir-europe.org/services/compute/aai
+"""
+
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 
-""" Backend for OpenID Connect ELIXIR AAI https://www.elixir-europe.org/services/compute/aai """
 
 class ElixirOpenIdConnect(OpenIdConnectAuth):
     name = 'elixir'
