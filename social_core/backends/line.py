@@ -44,7 +44,6 @@ class LineOAuth2(BaseOAuth2):
                      data.get('statusCode') or \
                      data.get('error')
         error_message = data.get('errorMessage') or \
-                        data.get('statusMessage') or \
                         data.get('error_description')
         if error_code is not None or error_message is not None:
             raise AuthFailed(self, error_message or error_code)
