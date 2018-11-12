@@ -173,13 +173,13 @@ class MediaWiki(BaseOAuth1):
         return {
             'username': identity['username'],
             'userID': identity['sub'],
-            'email': identity['email'],
-            'confirmed_email': identity['confirmed_email'],
-            'editcount': identity['editcount'],
-            'rights': identity['rights'],
-            'groups': identity['groups'],
-            'registered': identity['registered'],
-            'blocked': identity['blocked']
+            'email': identity.get('email'),
+            'confirmed_email': identity.get('confirmed_email'),
+            'editcount': identity.get('editcount'),
+            'rights': identity.get('rights'),
+            'groups': identity.get('groups'),
+            'registered': identity.get('registered'),
+            'blocked': identity.get('blocked')
         }
 
     def get_user_id(self, details, response):
