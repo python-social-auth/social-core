@@ -13,7 +13,7 @@ from ..exceptions import AuthCanceled, AuthUnknownError
 class WeixinOAuth2(BaseOAuth2):
     """Weixin OAuth authentication backend"""
     name = 'weixin'
-    ID_KEY = 'openid'
+    ID_KEY = 'unionid'
     AUTHORIZATION_URL = 'https://open.weixin.qq.com/connect/qrconnect'
     ACCESS_TOKEN_URL = 'https://api.weixin.qq.com/sns/oauth2/access_token'
     ACCESS_TOKEN_METHOD = 'POST'
@@ -40,7 +40,7 @@ class WeixinOAuth2(BaseOAuth2):
     def user_data(self, access_token, *args, **kwargs):
         data = self.get_json('https://api.weixin.qq.com/sns/userinfo', params={
             'access_token': access_token,
-            'openid': kwargs['response']['openid']
+            'openid': kwargs.get('response', {}).get('openid') or kwargs.get('openid', 'null')
         })
         nickname = data.get('nickname')
         if nickname:
