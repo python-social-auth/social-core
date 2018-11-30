@@ -11,9 +11,14 @@ from ..exceptions import AuthCanceled, AuthUnknownError
 
 
 class WeixinOAuth2(BaseOAuth2):
-    """Weixin OAuth authentication backend"""
+    """Weixin OAuth authentication backend.
+    According to the qq development document,
+    If the developer has multiple mobile apps, web apps, and public accounts (including applets),
+    the unionid can be used to distinguish the uniqueness of the user.
+    """
     name = 'weixin'
-    ID_KEY = 'unionid'
+    ID_KEY = 'openid'
+    # ID_KEY = 'unionid'
     AUTHORIZATION_URL = 'https://open.weixin.qq.com/connect/qrconnect'
     ACCESS_TOKEN_URL = 'https://api.weixin.qq.com/sns/oauth2/access_token'
     ACCESS_TOKEN_METHOD = 'POST'
