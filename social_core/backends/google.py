@@ -54,10 +54,9 @@ class BaseGoogleOAuth2API(BaseGoogleAuth):
         """Return user data from Google API"""
         return self.get_json(
             'https://www.googleapis.com/plus/v1/people/me',
-            params={
-                'access_token': access_token,
-                'alt': 'json'
-            }
+            headers={
+                'Authorization': 'Bearer %s' % access_token,
+            },
         )
 
     def revoke_token_params(self, token, uid):

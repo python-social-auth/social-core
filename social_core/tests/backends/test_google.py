@@ -78,6 +78,14 @@ class GoogleOAuth2Test(OAuth2Test):
 
     def test_login(self):
         self.do_login()
+        last_request = HTTPretty.last_request
+        self.assertEqual(last_request.method, 'GET')
+        self.assertTrue(self.user_data_url.endswith(last_request.path))
+        self.assertEqual(
+            last_request.headers['Authorization'],
+            'Bearer foobar',
+        )
+        self.assertEqual(last_request.querystring, {})
 
     def test_partial_pipeline(self):
         self.do_partial_pipeline()
