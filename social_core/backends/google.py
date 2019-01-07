@@ -53,7 +53,7 @@ class BaseGoogleOAuth2API(BaseGoogleAuth):
     def user_data(self, access_token, *args, **kwargs):
         """Return user data from Google API"""
         return self.get_json(
-            'https://www.googleapis.com/plus/v1/people/me',
+            'https://www.googleapis.com/userinfo/v2/me',
             params={
                 'access_token': access_token,
                 'alt': 'json'
