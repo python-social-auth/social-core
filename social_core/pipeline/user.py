@@ -88,7 +88,7 @@ def user_details(strategy, details, user=None, *args, **kwargs):
     # Update user model attributes with the new data sent by the current
     # provider. Update on some attributes is disabled by default, for
     # example username and id fields. It's also possible to disable update
-    # on fields defined in SOCIAL_AUTH_PROTECTED_FIELDS.
+    # on fields defined in SOCIAL_AUTH_PROTECTED_USER_FIELDS.
     for name, value in details.items():
         if value is None or not hasattr(user, name) or name in protected:
             continue
