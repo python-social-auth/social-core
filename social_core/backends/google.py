@@ -12,7 +12,10 @@ class BaseGoogleAuth(object):
     def get_user_id(self, details, response):
         """Use google email as unique id"""
         if self.setting('USE_UNIQUE_USER_ID', False):
-            return response['id']
+            if 'sub' in response:
+                return response['sub']
+            else:
+                return response['id']
         else:
             return details['email']
 
@@ -20,24 +23,14 @@ class BaseGoogleAuth(object):
         """Return user details from Google API account"""
         if 'email' in response:
             email = response['email']
-        elif 'emails' in response:
-            email = response['emails'][0]['value']
         else:
             email = ''
 
-        if isinstance(response.get('name'), dict):
-            names = response.get('name') or {}
-            name, given_name, family_name = (
-                response.get('displayName', ''),
-                names.get('givenName', ''),
-                names.get('familyName', '')
-            )
-        else:
-            name, given_name, family_name = (
-                response.get('name', ''),
-                response.get('given_name', ''),
-                response.get('family_name', '')
-            )
+        name, given_name, family_name = (
+            response.get('name', ''),
+            response.get('given_name', ''),
+            response.get('family_name', ''),
+        )
 
         fullname, first_name, last_name = self.get_user_names(
             name, given_name, family_name
@@ -53,7 +46,7 @@ class BaseGoogleOAuth2API(BaseGoogleAuth):
     def user_data(self, access_token, *args, **kwargs):
         """Return user data from Google API"""
         return self.get_json(
-            'https://www.googleapis.com/plus/v1/people/me',
+            'https://www.googleapis.com/oauth2/v3/userinfo',
             params={
                 'access_token': access_token,
                 'alt': 'json'

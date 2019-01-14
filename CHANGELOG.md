@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - Updated Azure B2C to extract first email from list if it's a list
+- Replace deprecated Google+ API usage with https://www.googleapis.com/oauth2/v3/userinfo
 
 ## [2.0.0](https://github.com/python-social-auth/social-core/releases/tag/2.0.0) - 2018-10-28
 
