@@ -16,64 +16,23 @@ from .open_id_connect import OpenIdConnectTestMixin, NO_JWKEST
 
 class GoogleOAuth2Test(OAuth2Test):
     backend_path = 'social_core.backends.google.GoogleOAuth2'
-    user_data_url = 'https://www.googleapis.com/plus/v1/people/me'
+    user_data_url = 'https://www.googleapis.com/oauth2/v3/userinfo'
     expected_username = 'foo'
     access_token_body = json.dumps({
         'access_token': 'foobar',
         'token_type': 'bearer'
     })
     user_data_body = json.dumps({
-        'aboutMe': 'About me text',
-        'cover': {
-            'coverInfo': {
-                'leftImageOffset': 0,
-                'topImageOffset': 0
-            },
-            'coverPhoto': {
-                'height': 629,
-                'url': 'https://lh5.googleusercontent.com/-ui-GqpNh5Ms/'
-                       'AAAAAAAAAAI/AAAAAAAAAZw/a7puhHMO_fg/photo.jpg',
-                'width': 940
-            },
-            'layout': 'banner'
-        },
-        'displayName': 'Foo Bar',
-        'emails': [{
-            'type': 'account',
-            'value': 'foo@bar.com'
-        }],
-        'etag': '"e-tag string"',
-        'gender': 'male',
-        'id': '101010101010101010101',
-        'image': {
-            'url': 'https://lh5.googleusercontent.com/-ui-GqpNh5Ms/'
+        'profile': 'https://plus.google.com/101010101010101010101',
+        'family_name': 'Bar',
+        'sub': '101010101010101010101',
+        'picture': 'https://lh5.googleusercontent.com/-ui-GqpNh5Ms/'
                    'AAAAAAAAAAI/AAAAAAAAAZw/a7puhHMO_fg/photo.jpg',
-        },
-        'isPlusUser': True,
-        'kind': 'plus#person',
-        'language': 'en',
-        'name': {
-            'familyName': 'Bar',
-            'givenName': 'Foo'
-        },
-        'objectType': 'person',
-        'occupation': 'Software developer',
-        'organizations': [{
-            'name': 'Org name',
-            'primary': True,
-            'type': 'school'
-        }],
-        'placesLived': [{
-            'primary': True,
-            'value': 'Anyplace'
-        }],
-        'url': 'https://plus.google.com/101010101010101010101',
-        'urls': [{
-            'label': 'http://foobar.com',
-            'type': 'otherProfile',
-            'value': 'http://foobar.com',
-        }],
-        'verified': False
+        'locale': 'en',
+        'email_verified': True,
+        'given_name': 'Foo',
+        'email': 'foo@bar.com',
+        'name': 'Foo Bar',
     })
 
     def test_login(self):
