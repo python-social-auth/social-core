@@ -18,6 +18,9 @@ class UniverseOAuth2(BaseOAuth2):
         ('updated_at', 'updated_at'),
     ]
 
+    def get_user_id(self, details, response):
+        return response['current_user'][self.ID_KEY]
+
     def get_user_details(self, response):
         """Return user details from a Universe account"""
         # Start with the user data as it was returned
