@@ -43,6 +43,7 @@ class OpenIdConnectAuth(BaseOAuth2):
     REVOKE_TOKEN_URL = ''
     USERINFO_URL = ''
     JWKS_URI = ''
+    JWT_DECODE_OPTIONS = dict()
 
     def __init__(self, *args, **kwargs):
         self.id_token = None
@@ -167,7 +168,8 @@ class OpenIdConnectAuth(BaseOAuth2):
                 algorithms=[alg],
                 audience=client_id,
                 issuer=self.id_token_issuer(),
-                access_token=access_token
+                access_token=access_token,
+                options=self.JWT_DECODE_OPTIONS,
             )
         except ExpiredSignatureError:
             raise AuthTokenError(self, 'Signature has expired')
