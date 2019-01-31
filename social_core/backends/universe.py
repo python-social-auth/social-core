@@ -25,9 +25,11 @@ class UniverseOAuth2(BaseOAuth2):
         """Return user details from a Universe account"""
         # Start with the user data as it was returned
         user_details = response['current_user']
-        user_details["username"] = user_details["email"]
+        user_details['username'] = user_details['email']
         return user_details
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        return self.get_json(self.USER_INFO_URL, headers={'Authorization': 'Bearer {}'.format(access_token)})
+        return self.get_json(self.USER_INFO_URL, headers={
+            'Authorization': 'Bearer {}'.format(access_token)
+        })
