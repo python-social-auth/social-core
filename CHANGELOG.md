@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Yandex: do not fail when no email is present
 - Mediawiki: do not fail when no email is present
 - Mediawiki: enhance `get_user_details` to return more details
++ Allow to override JWT decode options in Open ID Connect base backend
 
 ## [2.0.0](https://github.com/python-social-auth/social-core/releases/tag/2.0.0) - 2018-10-28
 
