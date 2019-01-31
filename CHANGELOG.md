@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - Updated Azure B2C to extract first email from list if it's a list
+- Pass access token via Authorization header to Google user data url
 - Replace deprecated Google+ API usage with https://www.googleapis.com/oauth2/v3/userinfo
 - Updated Azure Tenant to fix Nonetype error
 - Updated comment denoting incorrect setting name
