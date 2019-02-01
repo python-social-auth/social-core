@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
 
 ### Changed
+- Updated user_data method in AzureADOAuth2 to return access_token if id_token is not present in response
+
+### Changed
 - Updated Azure B2C to extract first email from list if it's a list
 
 ## [2.0.0](https://github.com/python-social-auth/social-core/releases/tag/2.0.0) - 2018-10-28
