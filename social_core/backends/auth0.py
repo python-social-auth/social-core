@@ -2,8 +2,8 @@
 Auth0 implementation based on:
 https://auth0.com/docs/quickstart/webapp/django/01-login
 """
-from urllib import request
 from jose import jwt
+
 from .oauth import BaseOAuth2
 
 
@@ -34,15 +34,14 @@ class Auth0OAuth2(BaseOAuth2):
     def get_user_details(self, response):
         # Obtain JWT and the keys to validate the signature
         id_token = response.get('id_token')
-        jwks = request.urlopen(self.api_path('.well-known/jwks.json'))
+        jwks = self.get_json(self.api_path('.well-known/jwks.json'))
         issuer = self.api_path()
         audience = self.setting('KEY')  # CLIENT_ID
         payload = jwt.decode(id_token,
-                             jwks.read().decode('utf-8'),
+                             jwks,
                              algorithms=['RS256'],
                              audience=audience,
                              issuer=issuer)
-
         return {'username': payload['nickname'],
                 'email': payload['email'],
                 'first_name': payload['name'],
