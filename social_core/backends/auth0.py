@@ -42,8 +42,11 @@ class Auth0OAuth2(BaseOAuth2):
                              algorithms=['RS256'],
                              audience=audience,
                              issuer=issuer)
+        fullname, first_name, last_name = self.get_user_names(payload['name'])
         return {'username': payload['nickname'],
                 'email': payload['email'],
-                'first_name': payload['name'],
+                'fullname': fullname,
+                'first_name': first_name,
+                'last_name': last_name,
                 'picture': payload['picture'],
                 'user_id': payload['sub']}
