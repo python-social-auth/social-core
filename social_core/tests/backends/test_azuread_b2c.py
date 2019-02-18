@@ -23,24 +23,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-
-
 import json
 import jwt
 
 from time import time
-from unittest import SkipTest
 from httpretty import HTTPretty
+from jwt.algorithms import RSAAlgorithm
 
 from .oauth import OAuth2Test
-
-
-try:
-    from jwt.algorithms import RSAAlgorithm
-except ImportError:
-    # Usually in Python 3.3
-    raise SkipTest('RSA support is missing in jwt/cryptography packages')
-
 
 
 # Dummy private and private keys:

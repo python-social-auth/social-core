@@ -11,7 +11,7 @@ from ...actions import do_disconnect
 from ..models import User
 from .oauth import OAuth1Test, OAuth2Test
 from .open_id import OpenIdTest
-from .open_id_connect import OpenIdConnectTestMixin, NO_JWKEST
+from .open_id_connect import OpenIdConnectTestMixin
 
 
 class GoogleOAuth2Test(OAuth2Test):
@@ -203,59 +203,56 @@ class GoogleRevokeTokenTest(GoogleOAuth2Test):
         do_disconnect(self.backend, user)
 
 
-@unittest2.skipIf(NO_JWKEST, 'No Jwkest installed')
-class GoogleOpenIdConnectTest(OpenIdConnectTestMixin, GoogleOAuth2Test):
+class GoogleOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
     backend_path = \
         'social_core.backends.google_openidconnect.GoogleOpenIdConnect'
     user_data_url = \
         'https://www.googleapis.com/plus/v1/people/me/openIdConnect'
     issuer = 'accounts.google.com'
-    openid_config_body = ''.join([
-        '{',
-        ' "issuer": "https://accounts.google.com",',
-        ' "authorization_endpoint": "https://accounts.google.com/o/oauth2/v2/auth",',
-        ' "token_endpoint": "https://www.googleapis.com/oauth2/v4/token",',
-        ' "userinfo_endpoint": "https://www.googleapis.com/oauth2/v3/userinfo",',
-        ' "revocation_endpoint": "https://accounts.google.com/o/oauth2/revoke",',
-        ' "jwks_uri": "https://www.googleapis.com/oauth2/v3/certs",',
-        ' "response_types_supported": [',
-        '  "code",',
-        '  "token",',
-        '  "id_token",',
-        '  "code token",',
-        '  "code id_token",',
-        '  "token id_token",',
-        '  "code token id_token",',
-        '  "none"',
-        ' ],',
-        ' "subject_types_supported": [',
-        '  "public"',
-        ' ],',
-        ' "id_token_signing_alg_values_supported": [',
-        '  "RS256"',
-        ' ],',
-        ' "scopes_supported": [',
-        '  "openid",',
-        '  "email",',
-        '  "profile"',
-        ' ],',
-        ' "token_endpoint_auth_methods_supported": [',
-        '  "client_secret_post",',
-        '  "client_secret_basic"',
-        ' ],',
-        ' "claims_supported": [',
-        '  "aud",',
-        '  "email",',
-        '  "email_verified",',
-        '  "exp",',
-        '  "family_name",',
-        '  "given_name",',
-        '  "iat",',
-        '  "iss",',
-        '  "locale",',
-        '  "name",',
-        '  "picture",',
-        '  "sub"',
-        ' ]',
-        '}'
-    ])
+    openid_config_body = json.dumps({
+        'issuer': 'https://accounts.google.com',
+        'authorization_endpoint': 'https://accounts.google.com/o/oauth2/v2/auth',
+        'token_endpoint': 'https://www.googleapis.com/oauth2/v4/token',
+        'userinfo_endpoint': 'https://www.googleapis.com/oauth2/v3/userinfo',
+        'revocation_endpoint': 'https://accounts.google.com/o/oauth2/revoke',
+        'jwks_uri': 'https://www.googleapis.com/oauth2/v3/certs',
+        'response_types_supported': [
+            'code',
+            'token',
+            'id_token',
+            'code token',
+            'code id_token',
+            'token id_token',
+            'code token id_token',
+            'none',
+        ],
+        'subject_types_supported': [
+            'public',
+        ],
+        'id_token_signing_alg_values_supported': [
+            'RS256',
+        ],
+        'scopes_supported': [
+            'openid',
+            'email',
+            'profile',
+        ],
+        'token_endpoint_auth_methods_supported': [
+            'client_secret_post',
+            'client_secret_basic',
+        ],
+        'claims_supported': [
+            'aud',
+            'email',
+            'email_verified',
+            'exp',
+            'family_name',
+            'given_name',
+            'iat',
+            'iss',
+            'locale',
+            'name',
+            'picture',
+            'sub',
+        ],
+    })

@@ -6,12 +6,6 @@ import jwt
 
 from .oauth import OAuth2Test
 
-try:
-    from jwt.algorithms import RSAAlgorithm
-except ImportError:
-    # Usually in Python 3.3
-    raise unittest.SkipTest('RSA support is missing in jwt/cryptography packages')
-
 
 _PRIVATE_KEY_HEADERLESS = '''
 MIIEowIBAAKCAQEAvyo2hx1L3ALHeUd/6xk/lIhTyZ/HJZ+Sss/ge6T6gPdES4Dw
