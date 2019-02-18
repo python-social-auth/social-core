@@ -1,5 +1,6 @@
 """
-Auth0 implementation based on https://auth0.com/docs/quickstart/webapp/django/01-login
+Auth0 implementation based on:
+https://auth0.com/docs/quickstart/webapp/django/01-login
 """
 from urllib import request
 from jose import jwt
@@ -15,15 +16,16 @@ class Auth0OAuth2(BaseOAuth2):
         ('picture', 'picture')
     ]
 
-    def auth_extra_arguments(self):
-        """Return extra arguments needed on request-token process"""
-        return self.setting('AUTH_EXTRA_ARGUMENTS', {})
+    def api_path(self, path=''):
+        """Build API path for Auth0 domain"""
+        return 'https://{domain}/{path}'.format(domain=self.setting('DOMAIN'),
+                                                path=path)
 
     def authorization_url(self):
-        return 'https://' + self.setting('DOMAIN') + '/authorize'
+        return self.api_path('authorize')
 
     def access_token_url(self):
-        return 'https://' + self.setting('DOMAIN') + '/oauth/token'
+        return self.api_path('oauth/token')
 
     def get_user_id(self, details, response):
         """Return current user id."""
@@ -32,10 +34,14 @@ class Auth0OAuth2(BaseOAuth2):
     def get_user_details(self, response):
         # Obtain JWT and the keys to validate the signature
         id_token = response.get('id_token')
-        jwks = request.urlopen('https://' + self.setting('DOMAIN') + '/.well-known/jwks.json')
-        issuer = 'https://' + self.setting('DOMAIN') + '/'
+        jwks = request.urlopen(self.api_path('.well-known/jwks.json'))
+        issuer = self.api_path()
         audience = self.setting('KEY')  # CLIENT_ID
-        payload = jwt.decode(id_token, jwks.read().decode('utf-8'), algorithms=['RS256'], audience=audience, issuer=issuer)
+        payload = jwt.decode(id_token,
+                             jwks.read().decode('utf-8'),
+                             algorithms=['RS256'],
+                             audience=audience,
+                             issuer=issuer)
 
         return {'username': payload['nickname'],
                 'email': payload['email'],
