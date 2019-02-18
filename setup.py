@@ -88,6 +88,8 @@ setup(
         'saml': [requirements_saml],
         'azuread': [requirements_azuread],
         'all': [requirements_all],
+        'allpy2': [requirements_all, requirements_py2],
+        'allpy3': [requirements_all, requirements_py3],
         ':python_version < "3.0"': [requirements_py2],
         ':python_version >= "3.0"': [requirements_py3],
     },
