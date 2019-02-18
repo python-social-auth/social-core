@@ -1,12 +1,12 @@
 """
 Bungie OAuth2 backend
 """
+import requests
+
 from social_core.backends.oauth import BaseOAuth2
-from django.conf import settings
 
 
 class BungieOAuth2(BaseOAuth2):
-
     name = 'bungie'
     ID_KEY = 'membership_id'
     AUTHORIZATION_URL = 'https://www.bungie.net/en/oauth/authorize/'
@@ -28,23 +28,18 @@ class BungieOAuth2(BaseOAuth2):
 
     def auth_headers(self):
         """Adds X-API-KEY and Origin"""
-        return {'X-API-KEY': settings.SOCIAL_AUTH_BUNGIE_API_KEY,
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Origin': settings.SOCIAL_AUTH_BUNGIE_ORIGIN,
-                'Accept': 'application/json'
-                }
+        return {
+            'X-API-KEY': self.setting('API_KEY'),
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Origin': self.setting('ORIGIN'),
+            'Accept': 'application/json'
+        }
 
     def make_bungie_request(self, url, access_token, kwargs):
         """Helper function to get username data keyed off displayName"""
-        print('ENTERING MAKE BUNGIE REQUEST')
         headers = self.auth_headers()
-        print(repr(headers))
-        auth_header = {'Authorization': 'Bearer ' + access_token}
-        headers.update(auth_header)
-        import requests as python_requests
-        r = python_requests.get(url, headers=headers)
-        this_json = r.json()
-        return this_json
+        headers['Authorization'] = 'Bearer ' + access_token
+        return self.get_json(url, headers=headers)
 
     def auth_complete(self, *args, **kwargs):
         """Completes login process, must return user instance"""
@@ -58,7 +53,9 @@ class BungieOAuth2(BaseOAuth2):
             method=self.ACCESS_TOKEN_METHOD
         )
         self.process_error(response)
-        return self.do_auth(response['access_token'], response=response, *args, **kwargs)
+        return self.do_auth(response['access_token'],
+                            response=response,
+                            *args, **kwargs)
 
     def do_auth(self, access_token, *args, **kwargs):
         """Finish the auth process once the access_token was retrieved"""
@@ -74,17 +71,16 @@ class BungieOAuth2(BaseOAuth2):
         """Grab user profile information from Bunige"""
         membership_id = kwargs['response']['membership_id']
         url = 'https://www.bungie.net/Platform/User/GetBungieNetUser/'
-        this_json = self.make_bungie_request(url, access_token, kwargs)
-        username = this_json['Response']['user']['displayName']
-        return {'username': username, 'uid': membership_id}
+        response = self.make_bungie_request(url, access_token, kwargs)
+        username = response['Response']['user']['displayName']
+        return {'username': username,
+                'uid': membership_id}
 
     def get_user_details(self, response, *args, **kwargs):
         """Return user details from Bungie account"""
         username = response['username']
-        uid = response['uid']
-        bnId = response['bnId']
         return {
             'first_name': username,
             'username': username,
-            'uid': uid,
+            'uid': response['uid'],
         }
