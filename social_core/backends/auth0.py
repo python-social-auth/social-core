@@ -21,6 +21,10 @@ class Auth0OAuth2(BaseOAuth2):
         return 'https://{domain}/{path}'.format(domain=self.setting('DOMAIN'),
                                                 path=path)
 
+    def auth_extra_arguments(self):
+        """Return extra arguments needed on request-token process"""
+        return self.setting('AUTH_EXTRA_ARGUMENTS', {})
+
     def authorization_url(self):
         return self.api_path('authorize')
 
