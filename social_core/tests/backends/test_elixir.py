@@ -1,10 +1,9 @@
 import unittest2
 
 from .oauth import OAuth1Test, OAuth2Test
-from .open_id_connect import OpenIdConnectTestMixin, NO_JWKEST
+from .open_id_connect import OpenIdConnectTestMixin
 
 
-@unittest2.skipIf(NO_JWKEST, 'No Jwkest installed')
 class ElixirOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
     backend_path = 'social_core.backends.elixir.ElixirOpenIdConnect'
     issuer = 'https://login.elixir-czech.org/oidc/'
