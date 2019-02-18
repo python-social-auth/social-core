@@ -52,7 +52,6 @@ class Auth0OAuth2Test(OAuth2Test):
     def extra_settings(self):
         settings = super(Auth0OAuth2Test, self).extra_settings()
         settings['SOCIAL_AUTH_' + self.name + '_DOMAIN'] = DOMAIN
-        print(settings)
         return settings
 
     def auth_handlers(self, start_url):
