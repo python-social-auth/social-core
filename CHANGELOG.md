@@ -11,20 +11,26 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Universe Ticketing backend
 - Auth0.com authentication backend
 
+### Changed
+- Update Bungie backend dropping any Django reference
+- Enable and fix JWT related tests
+- Remove PyPy support from Tox
+- Drop support for Python 3.4 in Tox
+- Allow to override JWT decode options in Open ID Connect base backend
+- Pass access token via Authorization header to Google user data url
+- Updated `user_data` method in `AzureADOAuth2` to return `access_token` if
+  `id_token` is not present in response
+
 ## [3.0.0](https://github.com/python-social-auth/social-core/releases/tag/3.0.0) - 2019-01-14
 
 ### Changed
 - Updated Azure B2C to extract first email from list if it's a list
-- Pass access token via Authorization header to Google user data url
 - Replace deprecated Google+ API usage with https://www.googleapis.com/oauth2/v3/userinfo
 - Updated Azure Tenant to fix Nonetype error
 - Updated comment denoting incorrect setting name
 - Yandex: do not fail when no email is present
 - Mediawiki: do not fail when no email is present
 - Mediawiki: enhance `get_user_details` to return more details
-- Allow to override JWT decode options in Open ID Connect base backend
-- Updated `user_data` method in `AzureADOAuth2` to return `access_token` if
-  `id_token` is not present in response
 
 ## [2.0.0](https://github.com/python-social-auth/social-core/releases/tag/2.0.0) - 2018-10-28
 
