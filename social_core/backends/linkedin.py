@@ -5,17 +5,15 @@ LinkedIn OAuth1 and OAuth2 backend, docs at:
 from social_core.exceptions import AuthCanceled
 from .oauth import BaseOAuth2
 
-API_VERSION = 2
-
 
 class LinkedinOAuth2(BaseOAuth2):
     name = 'linkedin-oauth2'
     AUTHORIZATION_URL = \
-        'https://www.linkedin.com/oauth/v{version}/authorization'
-    ACCESS_TOKEN_URL = 'https://www.linkedin.com/oauth/v{version}/accessToken'
+        'https://www.linkedin.com/oauth/v2/authorization'
+    ACCESS_TOKEN_URL = 'https://www.linkedin.com/oauth/v2/accessToken'
     USER_DETAILS_URL = \
-        'https://api.linkedin.com/v{version}/me?projection=({projection})'
-    USER_EMAILS_URL = 'https://api.linkedin.com/v{version}/emailAddress' \
+        'https://api.linkedin.com/v2/me?projection=({projection})'
+    USER_EMAILS_URL = 'https://api.linkedin.com/v2/emailAddress' \
                       '?q=members&projection=(elements*(handle~))'
     ACCESS_TOKEN_METHOD = 'POST'
     REDIRECT_STATE = False
@@ -23,16 +21,9 @@ class LinkedinOAuth2(BaseOAuth2):
         ('id', 'id'),
         ('expires_in', 'expires'),
         ('firstName', 'first_name', True),
-        ('lastName', 'last_name', True)
+        ('lastName', 'last_name', True),
+        ('emailAddress', 'email')
     ]
-
-    def authorization_url(self):
-        version = self.setting('API_VERSION', API_VERSION)
-        return self.AUTHORIZATION_URL.format(version=version)
-
-    def access_token_url(self):
-        version = self.setting('API_VERSION', API_VERSION)
-        return self.ACCESS_TOKEN_URL.format(version=version)
 
     def user_details_url(self):
         # use set() since LinkedIn fails when values are duplicated
@@ -41,37 +32,28 @@ class LinkedinOAuth2(BaseOAuth2):
         # user sort to ease the tests URL mocking
         fields_selectors.sort()
         fields_selectors = ','.join(fields_selectors)
-        version = self.setting('API_VERSION', API_VERSION)
-        return self.USER_DETAILS_URL.format(version=version,
-                                            projection=fields_selectors)
+        return self.USER_DETAILS_URL.format(projection=fields_selectors)
 
     def user_emails_url(self):
-        version = self.setting('API_VERSION', API_VERSION)
-        return self.USER_EMAILS_URL.format(version=version)
+        return self.USER_EMAILS_URL
 
     def user_data(self, access_token, *args, **kwargs):
-        headers = self.user_data_headers() or {}
-        headers['Authorization'] = 'Bearer {access_token}'.format(
-            access_token=access_token)
-
-        user_details = self.get_json(
+        response = self.get_json(
             self.user_details_url(),
-            headers=headers
+            headers=self.user_data_headers(access_token)
         )
 
         if 'emailAddress' in set(self.setting('FIELD_SELECTORS', [])):
             emails = self.email_data(access_token, *args, **kwargs)
             if emails:
-                user_details['emailAddress'] = emails[0]
+                response['emailAddress'] = emails[0]
 
-        return user_details
+        return response
 
     def email_data(self, access_token, *args, **kwargs):
-        headers = {'Authorization': 'Bearer {access_token}'.format(
-            access_token=access_token)}
         response = self.get_json(
             self.user_emails_url(),
-            headers=headers
+            headers=self.user_data_headers(access_token)
         )
         email_addresses = []
         for element in response.get('elements', []):
@@ -113,13 +95,15 @@ class LinkedinOAuth2(BaseOAuth2):
                 'last_name': last_name,
                 'email': email}
 
-    def user_data_headers(self):
+    def user_data_headers(self, access_token):
+        headers = {}
         lang = self.setting('FORCE_PROFILE_LANGUAGE')
         if lang:
-            return {
-                'Accept-Language': lang if lang is not True
+            headers['Accept-Language'] = lang if lang is not True \
                 else self.strategy.get_language()
-            }
+        headers['Authorization'] = 'Bearer {access_token}'.format(
+            access_token=access_token)
+        return headers
 
     def request_access_token(self, *args, **kwargs):
         # LinkedIn expects a POST request with querystring parameters, despite
@@ -138,14 +122,8 @@ class LinkedinOAuth2(BaseOAuth2):
 class LinkedinMobileOAuth2(LinkedinOAuth2):
     name = 'linkedin-mobile-oauth2'
 
-    def user_data(self, access_token, *args, **kwargs):
-        headers = self.user_data_headers()
-        if not headers:
-            headers = {}
-        headers['Authorization'] = 'Bearer ' + access_token
+    def user_data_headers(self, access_token):
+        headers = super(LinkedinMobileOAuth2, self).user_data_headers(
+            access_token)
         headers['x-li-src'] = 'msdk'
-        return self.get_json(
-            self.user_details_url(),
-            params={'format': 'json'},
-            headers=headers
-        )
+        return headers
