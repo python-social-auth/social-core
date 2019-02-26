@@ -20,9 +20,8 @@ class LinkedinOAuth2(BaseOAuth2):
     EXTRA_DATA = [
         ('id', 'id'),
         ('expires_in', 'expires'),
-        ('firstName', 'first_name', True),
-        ('lastName', 'last_name', True),
-        ('emailAddress', 'email')
+        ('firstName', 'first_name'),
+        ('lastName', 'last_name')
     ]
 
     def user_details_url(self):
