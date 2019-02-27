@@ -17,6 +17,7 @@ class LinkedinOAuth2(BaseOAuth2):
                       '?q=members&projection=(elements*(handle~))'
     ACCESS_TOKEN_METHOD = 'POST'
     REDIRECT_STATE = False
+    DEFAULT_SCOPE = ['r_liteprofile']
     EXTRA_DATA = [
         ('id', 'id'),
         ('expires_in', 'expires'),
