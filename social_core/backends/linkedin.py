@@ -59,7 +59,7 @@ class LinkedinOAuth2(BaseOAuth2):
         for element in response.get('elements', []):
             email_address = element.get('handle~', {}).get('emailAddress')
             email_addresses.append(email_address)
-        return filter(None, email_addresses)
+        return list(filter(None, email_addresses))
 
     def get_user_details(self, response):
         """Return user details from Linkedin account"""
