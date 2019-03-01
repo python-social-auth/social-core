@@ -17,8 +17,8 @@ class BaseLinkedinAuth(object):
     def get_user_details(self, response):
         """Return user details from Linkedin account"""
         fullname, first_name, last_name = self.get_user_names(
-            first_name=response['firstName'],
-            last_name=response['lastName']
+            first_name=response.get('firstName', ''),
+            last_name=response.get('lastName', '')
         )
         email = response.get('emailAddress', '')
         return {'username': first_name + last_name,
