@@ -16,6 +16,6 @@ class GoogleOpenIdConnect(GoogleOAuth2, OpenIdConnectAuth):
     def user_data(self, access_token, *args, **kwargs):
         """Return user data from Google API"""
         return self.get_json(
-            'https://www.googleapis.com/plus/v1/people/me/openIdConnect',
+            'https://openidconnect.googleapis.com/v1/userinfo',
             params={'access_token': access_token, 'alt': 'json'}
         )
