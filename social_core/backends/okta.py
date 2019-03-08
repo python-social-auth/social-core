@@ -50,7 +50,6 @@ class OktaOAuth2(OktaMixin, BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Okta account"""
-        print(response)
         return {'username': response.get('preferred_username'),
                 'email': response.get('preferred_username') or '',
                 'first_name': response.get('given_name'),
@@ -77,7 +76,6 @@ class OktaOpenIdConnect(OktaOAuth2, OpenIdConnectAuth):
         store it (temporarily).
         """
         response = self.get_json(*args, **kwargs)
-        print(response)
         self.id_token = self.validate_and_return_id_token(
             response['id_token'],
             response['access_token']
