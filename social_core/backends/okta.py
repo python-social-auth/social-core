@@ -12,9 +12,9 @@ import requests
 from six.moves.urllib.parse import urljoin
 
 from ..utils import append_slash
-from social_core.backends.oauth import BaseOAuth2
-from social_core.backends.open_id_connect import OpenIdConnectAuth
-from social_core.exceptions import AuthTokenError
+from .oauth import BaseOAuth2
+from .open_id_connect import OpenIdConnectAuth
+from ..exceptions import AuthTokenError
 
 class OktaMixin(object):
     def api_url(self):

@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Universe Ticketing backend
 - Auth0.com authentication backend
+- Okta backend
 
 ### Changed
 - Update Bungie backend dropping any Django reference
