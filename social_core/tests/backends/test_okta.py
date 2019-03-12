@@ -113,21 +113,6 @@ class OktaOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
         ],
     })
     expected_username = 'foo'
-    # user_data_body = json.dumps({
-    #     'family_name': 'Bar',
-    #     'sub': '101010101010101010101',
-    #     'locale': 'en',
-    #     'email_verified': True,
-    #     'given_name': 'Foo',
-    #     'email': 'foo@bar.com',
-    #     'name': 'Foo Bar',
-    #     'nickname': 'foobar',
-    #     'middle_name': '',
-    #     'profile': 'https://example.com/foo.bar',
-    #     'zoneinfo': "America/Los_Angeles",
-    #     "updated_at": 1311280970,
-    #     "preferred_username": "foo",
-    # })
 
 
     def setUp(self):
@@ -153,13 +138,6 @@ class OktaOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
                                oidc_config.get('jwks_uri'),
                                status=200,
                                body=json.dumps({'keys': [self.public_key]}))
-
-        # HTTPretty.register_uri(self._method(self.backend.ACCESS_TOKEN_METHOD),
-        #                        uri=self.backend.access_token_url(),
-        #                        status=self.access_token_status,
-        #                        body=self.access_token_body or '',
-        #                        content_type='text/json',
-        #                        priority=10)\
 
         self.backend.JWKS_URI = oidc_config.get('jwks_uri')
         self.backend.ID_TOKEN_ISSUER = oidc_config.get('issuer')
