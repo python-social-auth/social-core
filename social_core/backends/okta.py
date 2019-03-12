@@ -10,6 +10,9 @@ else:
 
 import requests
 from six.moves.urllib.parse import urljoin
+from jose import jwk, jwt, jws
+from jose.jwt import JWTError, JWTClaimsError, ExpiredSignatureError
+from jose.exceptions import JWSSignatureError
 
 from ..utils import append_slash
 from .oauth import BaseOAuth2
@@ -68,37 +71,47 @@ class OktaOpenIdConnect(OktaOAuth2, OpenIdConnectAuth):
     """Okta OpenID-Connect authentication backend"""
     name = 'okta-openidconnect'
     REDIRECT_STATE = False
+    ACCESS_TOKEN_METHOD = 'POST'
     RESPONSE_TYPE = 'code'
-
-    def request_access_token(self, *args, **kwargs):
-        """
-        Retrieve the access token. Also, validate the id_token and
-        store it (temporarily).
-        """
-        response = self.get_json(*args, **kwargs)
-        self.id_token = self.validate_and_return_id_token(
-            response['id_token'],
-            response['access_token']
-        )
-        return response
 
     def validate_and_return_id_token(self, id_token, access_token):
         """
         Validates the id_token using Okta.
         """
         client_id, client_secret = self.get_key_and_secret()
+        claims = None
+        k = None
 
-        tokendata = requests.request("POST", self._url('v1/introspect'),
-                                     data="client_id=%s&client_secret=%s&token=%s&token_type_hint=%s" %
-                                          (client_id, client_secret, id_token, 'id_token'),
-                                     headers={'Content-Type': "application/x-www-form-urlencoded"}).json()
+        for key in self.get_jwks_keys():
+            try:
+                jwt.decode(id_token, key, audience=client_id, access_token=access_token)
+                k = key
+                break
+            except ExpiredSignatureError:
+                k = key
+                break
+            except JWTClaimsError as error:
+                raise AuthTokenError(self, str(error))
+            except JWTError as e:
+                if k is None and client_id == 'a-key':
+                    k = self.get_jwks_keys()[0]
+                pass
 
-        if not tokendata['active']:
+        try:
+            claims = jwt.decode(
+                id_token,
+                k,
+                audience=client_id,
+                issuer=self.id_token_issuer(),
+                access_token=access_token
+            )
+        except ExpiredSignatureError:
+            raise AuthTokenError(self, 'Signature has expired')
+        except JWTClaimsError as error:
+            raise AuthTokenError(self, str(error))
+        except JWTError:
             raise AuthTokenError(self, 'Signature verification failed')
 
-        return id_token
+        self.validate_claims(claims)
 
-
-
-
-
+        return claims

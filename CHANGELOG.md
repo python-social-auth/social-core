@@ -7,12 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
 
+### Added
+- Okta backend
+
 ## [3.1.0](https://github.com/python-social-auth/social-core/releases/tag/3.1.0) - 2019-02-20
 
 ### Added
 - Universe Ticketing backend
 - Auth0.com authentication backend
-- Okta backend
 
 ### Changed
 - Update Bungie backend dropping any Django reference
