@@ -16,6 +16,9 @@ class ElixirOpenIdConnect(OpenIdConnectAuth):
         ('other_tokens', 'other_tokens', True),
     ]
 
+    DEFAULT_SCOPE = ['openid', 'email']
+    JWT_DECODE_OPTIONS['verify_at_hash'] = False
+
     def get_user_details(self, response):
         username_key = self.setting('USERNAME_KEY', default=self.USERNAME_KEY)
         name = response.get('name') or ''
