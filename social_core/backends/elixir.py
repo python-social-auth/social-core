@@ -15,7 +15,9 @@ class ElixirOpenIdConnect(OpenIdConnectAuth):
         ('id_token', 'id_token', True),
         ('other_tokens', 'other_tokens', True),
     ]
-
+    # In order to get any scopes, you have to register your service with
+    # ELIXIR, see documentation at
+    # https://www.elixir-europe.org/services/compute/aai
     DEFAULT_SCOPE = ['openid', 'email']
     JWT_DECODE_OPTIONS['verify_at_hash'] = False
 
