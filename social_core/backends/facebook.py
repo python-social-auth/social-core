@@ -14,8 +14,7 @@ from ..exceptions import AuthException, AuthCanceled, AuthUnknownError, \
                          AuthMissingParameter
 
 
-API_VERSION = 2.9
-
+API_VERSION = 3.2
 
 class FacebookOAuth2(BaseOAuth2):
     """Facebook OAuth2 authentication backend"""
@@ -59,6 +58,7 @@ class FacebookOAuth2(BaseOAuth2):
         )
         return {'username': response.get('username', response.get('name')),
                 'email': response.get('email', ''),
+                'profile_picture': response.get('profile_picture', ''),
                 'fullname': fullname,
                 'first_name': first_name,
                 'last_name': last_name}
