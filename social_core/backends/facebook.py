@@ -58,7 +58,6 @@ class FacebookOAuth2(BaseOAuth2):
         )
         return {'username': response.get('username', response.get('name')),
                 'email': response.get('email', ''),
-                'profile_picture': response.get('profile_picture', ''),
                 'fullname': fullname,
                 'first_name': first_name,
                 'last_name': last_name}
