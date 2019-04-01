@@ -221,9 +221,9 @@ def build_absolute_uri(host_url, path=None):
 def constant_time_compare(val1, val2):
     """Compare two values and prevent timing attacks for cryptographic use."""
     if isinstance(val1, six.text_type):
-        val1 = six.binary_type(val1, 'utf-8')
+        val1 = val1.encode('utf-8')
     if isinstance(val2, six.text_type):
-        val2 = six.binary_type(val2, 'utf-8')
+        val2 = val2.encode('utf-8')
     return hmac.compare_digest(val1, val2)
 
 
