@@ -73,7 +73,9 @@ class ID4meBackend(OpenIdConnectAuth):
             issuer_configuration = self.oidc_config_authority()
             response = requests.post(issuer_configuration['registration_endpoint'], json={
                 'client_name': self.setting('SOCIAL_AUTH_ID4ME_CLIENT_NAME', ''),
-                'redirect_uris': [self.get_redirect_uri()]
+                'redirect_uris': [self.get_redirect_uri()],
+                'id_token_signed_response_alg': 'RS256',
+                'userinfo_signed_response_alg': 'RS256'
             })
 
             if response.status_code != 200:
@@ -147,7 +149,7 @@ class ID4meBackend(OpenIdConnectAuth):
             header = jwt.get_unverified_header(id_token)
             if header['kid'] == key['kid']:
                 if 'alg' not in key:
-                    key['alg'] = 'RS256' if key['kty'] == 'RSA' else 'ES256'
+                    key['alg'] = 'RS256'
                 return key
 
     def find_agent_valid_key(self, id_token):
@@ -155,13 +157,15 @@ class ID4meBackend(OpenIdConnectAuth):
             header = jwt.get_unverified_header(id_token)
             if header['kid'] == key['kid']:
                 if 'alg' not in key:
-                    key['alg'] = 'RS256' if key['kty'] == 'RSA' else 'ES256'
+                    key['alg'] = 'RS256'
                 return key
 
     def auth_complete(self, *args, **kwargs):
         self.validate_state()
         identity = self.strategy.session_get(self.name + '_identity')
         openid_configuration = self.get_identity_record(identity)
+        if 'v' not in openid_configuration or openid_configuration['v'] != 'OID1':
+            raise AuthUnreachableProvider(self)
         if 'clp' not in openid_configuration:
             raise AuthUnreachableProvider(self)
         self.strategy.session_set(self.name + '_agent', openid_configuration['clp'])
@@ -196,6 +200,8 @@ class ID4meBackend(OpenIdConnectAuth):
         if not is_valid_domain(identity):
             raise AuthForbidden(self)
         openid_configuration = self.get_identity_record(identity)
+        if 'v' not in openid_configuration or openid_configuration['v'] != 'OID1':
+            raise AuthUnreachableProvider(self)
         if 'iss' not in openid_configuration:
             raise AuthUnreachableProvider(self)
         self.strategy.session_set(self.name + '_authority', openid_configuration['iss'])
@@ -216,13 +222,8 @@ class ID4meBackend(OpenIdConnectAuth):
     def validate_claims(self, id_token):
         utc_timestamp = timegm(datetime.datetime.utcnow().utctimetuple())
 
-        if 'nbf' in id_token and utc_timestamp < id_token['nbf']:
-            raise AuthTokenError(self, 'Incorrect id_token: nbf')
-
-        # Verify the token was issued in the last 10 minutes
-        iat_leeway = self.setting('ID_TOKEN_MAX_AGE', self.ID_TOKEN_MAX_AGE)
-        if utc_timestamp > id_token['iat'] + iat_leeway:
-            raise AuthTokenError(self, 'Incorrect id_token: iat')
+        if utc_timestamp > id_token['exp']:
+            raise AuthTokenError(self, 'Incorrect id_token: exp')
 
     def validate_and_return_user_token(self, user_token):
         client_id, client_secret = self.get_key_and_secret()
