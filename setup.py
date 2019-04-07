@@ -82,6 +82,7 @@ setup(
         'social_core.tests.backends.data'
     ],
     long_description=long_description() or LONG_DESCRIPTION,
+    long_description_content_type="text/markdown",
     install_requires=requirements,
     extras_require={
         'openidconnect': [requirements_openidconnect],
