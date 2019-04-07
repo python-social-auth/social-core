@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Updated Linkedin backend to v2 API
 - Facebook: Update to use the latest Graph API v3.2
+- Send User-Agent header on GitHub backend
 
 ## [3.1.0](https://github.com/python-social-auth/social-core/releases/tag/3.1.0) - 2019-02-20
 
