@@ -20,6 +20,7 @@ class GithubOAuth2(BaseOAuth2):
     SCOPE_SEPARATOR = ','
     REDIRECT_STATE = False
     STATE_PARAMETER = True
+    SEND_USER_AGENT = True
     EXTRA_DATA = [
         ('id', 'id'),
         ('expires', 'expires'),
