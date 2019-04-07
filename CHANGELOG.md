@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Remove profile scope and verification at hash on Elixir backend
 - Mark description as Markdown for PyPI
 - Use `hmac.compare_digest` for constant time comparision
+- Replace deprecated Google+ API usage in GoogleOpenIdConnect
 
 ## [3.1.0](https://github.com/python-social-auth/social-core/releases/tag/3.1.0) - 2019-02-20
 
