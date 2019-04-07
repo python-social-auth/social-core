@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Send User-Agent header on GitHub backend
 - Remove profile scope and verification at hash on Elixir backend
 - Mark description as Markdown for PyPI
+- Use `hmac.compare_digest` for constant time comparision
 
 ## [3.1.0](https://github.com/python-social-auth/social-core/releases/tag/3.1.0) - 2019-02-20
 
