@@ -16,6 +16,7 @@ from ..exceptions import AuthException, AuthCanceled, AuthUnknownError, \
 
 API_VERSION = 3.2
 
+
 class FacebookOAuth2(BaseOAuth2):
     """Facebook OAuth2 authentication backend"""
     name = 'facebook'
