@@ -45,6 +45,7 @@ class Auth0OAuth2(BaseOAuth2):
         fullname, first_name, last_name = self.get_user_names(payload['name'])
         return {'username': payload['nickname'],
                 'email': payload['email'],
+                'email_verified': payload['email_verified'],
                 'fullname': fullname,
                 'first_name': first_name,
                 'last_name': last_name,
