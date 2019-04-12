@@ -79,7 +79,7 @@ class ID4meBackend(OpenIdConnectAuth):
             })
 
             if response.status_code != 200:
-                raise AuthUnreachableProvider(self)
+                raise AuthUnreachableProvider(self, response.text)
             association = ID4meAssociation(response.text)
             self.strategy.storage.association.store(iau, association)
         data = json.loads(association.handle)
