@@ -174,9 +174,10 @@ class ID4meBackend(OpenIdConnectAuth):
 
         params.update({
             'client_id': client_id,
-            'redirect_uri': self.get_redirect_uri(state),
-            'login_hint': self.strategy.session_get(self.name + '_identity')
+            'redirect_uri': self.get_redirect_uri(state)
         })
+        if self.strategy.session_get(self.name + '_identity'):
+            params['login_hint'] = self.strategy.session_get(self.name + '_identity')
         if self.STATE_PARAMETER and state:
             params['state'] = state
         if self.RESPONSE_TYPE:
