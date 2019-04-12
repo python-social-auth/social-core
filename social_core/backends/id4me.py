@@ -160,17 +160,6 @@ class ID4meBackend(OpenIdConnectAuth):
                     key['alg'] = 'RS256'
                 return key
 
-    def auth_complete(self, *args, **kwargs):
-        self.validate_state()
-        identity = self.strategy.session_get(self.name + '_identity')
-        openid_configuration = self.get_identity_record(identity)
-        if 'v' not in openid_configuration or openid_configuration['v'] != 'OID1':
-            raise AuthUnreachableProvider(self)
-        if 'clp' not in openid_configuration:
-            raise AuthUnreachableProvider(self)
-        self.strategy.session_set(self.name + '_agent', openid_configuration['clp'])
-        return super().auth_complete(*args, **kwargs)
-
     def auth_params(self, state=None):
         client_id, client_secret = self.get_key_and_secret()
         params = {
@@ -194,6 +183,9 @@ class ID4meBackend(OpenIdConnectAuth):
         return params
 
     def auth_url(self):
+        if self.setting('SOCIAL_AUTH_ID4ME_DEFAULT_IAU', None):
+            self.strategy.session_set(self.name + '_authority', self.setting('SOCIAL_AUTH_ID4ME_DEFAULT_IAU', None))
+            return super(ID4meBackend, self).auth_url()
         if not self.data.get('identity', ''):
             raise AuthMissingParameter(self, 'identity')
         identity = self.data.get('identity')
@@ -218,6 +210,20 @@ class ID4meBackend(OpenIdConnectAuth):
 
     def auth_complete_credentials(self):
         return self.get_key_and_secret()
+
+    def validate_and_return_id_token(self, id_token, access_token):
+        claims = super(ID4meBackend, self).validate_and_return_id_token(id_token, access_token)
+        if self.setting('SOCIAL_AUTH_ID4ME_DEFAULT_IAU', None):
+            self.strategy.session_set(self.name + '_identity', claims.get('id4me.identifier', ''))
+        identity = self.strategy.session_get(self.name + '_identity')
+        openid_configuration = self.get_identity_record(identity)
+        if 'v' not in openid_configuration or openid_configuration['v'] != 'OID1':
+            raise AuthUnreachableProvider(self)
+        if 'clp' not in openid_configuration:
+            raise AuthUnreachableProvider(self)
+        self.strategy.session_set(self.name + '_agent', openid_configuration['clp'])
+
+        return claims
 
     def validate_claims(self, id_token):
         utc_timestamp = timegm(datetime.datetime.utcnow().utctimetuple())
