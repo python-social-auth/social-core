@@ -42,7 +42,7 @@ class ShopifyOAuth2(BaseOAuth2):
         extra_data field"""
         data = super(ShopifyOAuth2, self).extra_data(user, uid, response,
                                                      details, *args, **kwargs)
-        session = self.shopifyAPI.Session(self.data.get('shop').strip())
+        session = self.shopifyAPI.Session(self.data.get('shop').strip(), version='2019-04')
         # Get, and store the permanent token
         token = session.request_token(data['access_token'])
         data['access_token'] = token
@@ -55,7 +55,7 @@ class ShopifyOAuth2(BaseOAuth2):
         state = self.state_token()
         self.strategy.session_set(self.name + '_state', state)
         redirect_uri = self.get_redirect_uri(state)
-        session = self.shopifyAPI.Session(self.data.get('shop').strip())
+        session = self.shopifyAPI.Session(self.data.get('shop').strip(), version='2019-04')
         return session.create_permission_url(
             scope=scope,
             redirect_uri=redirect_uri
@@ -70,7 +70,7 @@ class ShopifyOAuth2(BaseOAuth2):
         try:
             shop_url = self.data.get('shop')
             self.shopifyAPI.Session.setup(api_key=key, secret=secret)
-            shopify_session = self.shopifyAPI.Session(shop_url, self.data)
+            shopify_session = self.shopifyAPI.Session(shop_url, version='2019-04', token=self.data)
             access_token = shopify_session.token
         except self.shopifyAPI.ValidationException:
             raise AuthCanceled(self)
