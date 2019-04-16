@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
 
+### Added
+- Cognito backend
+
 ### Changed
 - Updated Linkedin backend to v2 API
 - Facebook: Update to use the latest Graph API v3.2
