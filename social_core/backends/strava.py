@@ -16,6 +16,7 @@ class StravaOAuth(BaseOAuth2):
     # Check issue #259 for details.
     REDIRECT_STATE = False
     REVOKE_TOKEN_URL = 'https://www.strava.com/oauth/deauthorize'
+    SCOPE_SEPARATOR = ','
 
     def get_user_id(self, details, response):
         return response['athlete']['id']
