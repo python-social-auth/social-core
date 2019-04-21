@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Replace deprecated Google+ API usage in GoogleOpenIdConnect
 - Defined scope separator for Strava backend
 - Ensure `saml_config.json` is included by addint it to `MANIFEST.in`
+- Include `email_verified` as part of user details on Auth0 backend
 
 ## [3.1.0](https://github.com/python-social-auth/social-core/releases/tag/3.1.0) - 2019-02-20
 
