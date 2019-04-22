@@ -185,12 +185,14 @@ class ID4meBackend(OpenIdConnectAuth):
         return params
 
     def auth_url(self):
-        if self.setting('SOCIAL_AUTH_ID4ME_DEFAULT_IAU', None):
-            self.strategy.session_set(self.name + '_authority', self.setting('SOCIAL_AUTH_ID4ME_DEFAULT_IAU', None))
-            return super(ID4meBackend, self).auth_url()
-        if not self.data.get('identity', ''):
+        identity = None
+        if self.data.get('identity', ''):
+            identity = self.data.get('identity')
+        if not identity and not self.setting('SOCIAL_AUTH_ID4ME_DEFAULT_IAU', None):
             raise AuthMissingParameter(self, 'identity')
-        identity = self.data.get('identity')
+        if not identity:
+            self.strategy.session_set(self.name + '_authority', self.setting('SOCIAL_AUTH_ID4ME_DEFAULT_IAU'))
+            return super(ID4meBackend, self).auth_url()
         if not is_valid_domain(identity):
             raise AuthForbidden(self)
         openid_configuration = self.get_identity_record(identity)
@@ -198,6 +200,9 @@ class ID4meBackend(OpenIdConnectAuth):
             raise AuthUnreachableProvider(self)
         if 'iss' not in openid_configuration:
             raise AuthUnreachableProvider(self)
+        if (self.setting('SOCIAL_AUTH_ID4ME_DEFAULT_IAU', None) and
+                openid_configuration['iss'] != self.setting('SOCIAL_AUTH_ID4ME_DEFAULT_IAU')):
+            raise AuthForbidden(self)
         self.strategy.session_set(self.name + '_authority', openid_configuration['iss'])
         self.strategy.session_set(self.name + '_identity', identity)
         return super(ID4meBackend, self).auth_url()
