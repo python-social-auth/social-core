@@ -22,6 +22,10 @@ class ShopifyOAuth2(BaseOAuth2):
     REDIRECT_STATE = False
 
     @property
+    def shopify_api_version(self):
+        return self.setting('API_VERSION', '2019-04')
+
+    @property
     def shopify_api(self):
         if not hasattr(self, '_shopify_api'):
             fp, pathname, description = imp.find_module('shopify')
@@ -43,7 +47,7 @@ class ShopifyOAuth2(BaseOAuth2):
         data = super(ShopifyOAuth2, self).extra_data(user, uid, response,
                                                      details, *args, **kwargs)
         session = self.shopify_api.Session(self.data.get('shop').strip(),
-                                           version='2019-04')
+                                           version=self.shopify_api_version)
         # Get, and store the permanent token
         token = session.request_token(data['access_token'])
         data['access_token'] = token
@@ -57,7 +61,7 @@ class ShopifyOAuth2(BaseOAuth2):
         self.strategy.session_set(self.name + '_state', state)
         redirect_uri = self.get_redirect_uri(state)
         session = self.shopify_api.Session(self.data.get('shop').strip(),
-                                           version='2019-04')
+                                           version=self.shopify_api_version)
         return session.create_permission_url(
             scope=scope,
             redirect_uri=redirect_uri
@@ -72,9 +76,9 @@ class ShopifyOAuth2(BaseOAuth2):
         try:
             shop_url = self.data.get('shop')
             self.shopify_api.Session.setup(api_key=key, secret=secret)
-            shopify_session = self.shopify_api.Session(shop_url,
-                                                       version='2019-04',
-                                                       token=self.data)
+            shopify_session = self.shopify_api.Session(
+                shop_url, version=self.shopify_api_version, token=self.data
+            )
             access_token = shopify_session.token
         except self.shopify_api.ValidationException:
             raise AuthCanceled(self)
