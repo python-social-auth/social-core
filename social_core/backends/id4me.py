@@ -197,9 +197,9 @@ class ID4meBackend(OpenIdConnectAuth):
             raise AuthForbidden(self)
         openid_configuration = self.get_identity_record(identity)
         if 'v' not in openid_configuration or openid_configuration['v'] != 'OID1':
-            raise AuthUnreachableProvider(self)
+            raise AuthForbidden(self)
         if 'iss' not in openid_configuration:
-            raise AuthUnreachableProvider(self)
+            raise AuthForbidden(self)
         if (self.setting('SOCIAL_AUTH_ID4ME_DEFAULT_IAU', None) and
                 openid_configuration['iss'] != self.setting('SOCIAL_AUTH_ID4ME_DEFAULT_IAU')):
             raise AuthForbidden(self)
@@ -225,9 +225,9 @@ class ID4meBackend(OpenIdConnectAuth):
         identity = self.strategy.session_get(self.name + '_identity')
         openid_configuration = self.get_identity_record(identity)
         if 'v' not in openid_configuration or openid_configuration['v'] != 'OID1':
-            raise AuthUnreachableProvider(self)
+            raise AuthForbidden(self)
         if 'clp' not in openid_configuration:
-            raise AuthUnreachableProvider(self)
+            raise AuthForbidden(self)
         self.strategy.session_set(self.name + '_agent', openid_configuration['clp'])
 
         return claims
