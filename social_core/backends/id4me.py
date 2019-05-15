@@ -281,4 +281,5 @@ class ID4meBackend(OpenIdConnectAuth):
         data['iss'] = self.strategy.session_get(self.name + '_authority')
         data['clp'] = self.strategy.session_get(self.name + '_agent')
         data['sub'] = response['sub']
+        data['identity'] = self.strategy.session_get(self.name + '_identity')
         return data
