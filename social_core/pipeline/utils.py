@@ -23,7 +23,7 @@ def partial_prepare(strategy, backend, next_step, user=None, social=None,
         'uid': kwargs.get('uid'),
         'is_new': kwargs.get('is_new') or False,
         'new_association': kwargs.get('new_association') or False,
-        'user': user and user.id or None,
+        'user': hasattr(user, 'id') and user.id or None,
         'social': social and {
             'provider': social.provider,
             'uid': social.uid
