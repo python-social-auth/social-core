@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 - Cognito backend
+- OpenStack (openstackid and openstackid-dev) backends
 
 ### Changed
 - Updated Linkedin backend to v2 API
