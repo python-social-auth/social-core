@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Include Shopify `version` parameter on Shopify session setup
 - Define `SOCIAL_AUTH_SHOPIFY_API_VERSION` setting to override default API version
 - Check user `id` attribute existence before using it
+- Pull `last_name` from `family_name` in Cognito backend
 
 ## [3.1.0](https://github.com/python-social-auth/social-core/releases/tag/3.1.0) - 2019-02-20
 
