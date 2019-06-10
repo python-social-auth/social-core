@@ -23,7 +23,7 @@ class NaverOAuth2Test(OAuth2Test):
             "age": "40-49",
             "gender": "F",
             "id": "32742776",
-            "name": "오픈 API",
+            "name": "open API",
             "birthday": "10-01",
         }
     })
