@@ -54,7 +54,7 @@ class BaseGoogleOAuth2API(BaseGoogleAuth):
             )
         except:
             res = self.get_json(
-                'https://www.googleapis.com/oauth2/v3/tokeninfo',
+                'https://www.googleapis.com/oauth2/v3/userinfo',
                 params={
                  'access_token': access_token,
                 },
