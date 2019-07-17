@@ -19,6 +19,7 @@ from .oauth import BaseOAuth2
 from .open_id_connect import OpenIdConnectAuth
 from ..exceptions import AuthTokenError
 
+
 class OktaMixin(object):
     def api_url(self):
         return append_slash(self.setting('API_URL'))
@@ -34,6 +35,7 @@ class OktaMixin(object):
 
     def oidc_config(self):
         return self.get_json(self._url('/.well-known/openid-configuration?client_id='+self.setting('KEY')))
+
 
 class OktaOAuth2(OktaMixin, BaseOAuth2):
     """Okta OAuth authentication backend"""
@@ -66,6 +68,7 @@ class OktaOAuth2(OktaMixin, BaseOAuth2):
                 'Authorization': 'Bearer %s' % access_token,
             }
         )
+
 
 class OktaOpenIdConnect(OktaOAuth2, OpenIdConnectAuth):
     """Okta OpenID-Connect authentication backend"""
