@@ -10,6 +10,32 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Okta backend
 
+### Changed
+- Update test runner to PyTest
+
+## [3.2.0](https://github.com/python-social-auth/social-core/releases/tag/3.2.0) - 2019-05-30
+
+### Added
+- Cognito backend
+- OpenStack (openstackid and openstackid-dev) backends
+
+### Changed
+- Updated Linkedin backend to v2 API
+- Facebook: Update to use the latest Graph API v3.2
+- Send User-Agent header on GitHub backend
+- Remove profile scope and verification at hash on Elixir backend
+- Mark description as Markdown for PyPI
+- Use `hmac.compare_digest` for constant time comparision
+- Replace deprecated Google+ API usage in GoogleOpenIdConnect
+- Defined scope separator for Strava backend
+- Ensure `saml_config.json` is included by addint it to `MANIFEST.in`
+- Include `email_verified` as part of user details on Auth0 backend
+- Include Shopify `version` parameter on Shopify session setup
+- Define `SOCIAL_AUTH_SHOPIFY_API_VERSION` setting to override default API version
+- Check user `id` attribute existence before using it
+- Pull `last_name` from `family_name` in Cognito backend
+- Ignore key errors on Naver backend for missing attributes
+
 ## [3.1.0](https://github.com/python-social-auth/social-core/releases/tag/3.1.0) - 2019-02-20
 
 ### Added

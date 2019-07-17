@@ -57,4 +57,8 @@ class NaverOAuth2(BaseOAuth2):
         }
 
     def _dom_value(self, dom, key):
-        return dom.getElementsByTagName(key)[0].childNodes[0].data
+        try:
+            # Fixed Missing Key Getting Error
+            return dom.getElementsByTagName(key)[0].childNodes[0].data
+        except IndexError:
+            return ''
