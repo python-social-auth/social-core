@@ -29,7 +29,7 @@ JWK_PUBLIC_KEY = {key: value for key, value in JWK_KEY.items() if key != 'd'}
 
 class OktaOAuth2Test(OAuth2Test):
     backend_path = 'social_core.backends.okta.OktaOAuth2'
-    user_data_url = 'https://dev-000000.oktapreview.com/oauth2/default/v1/userinfo'
+    user_data_url = 'https://dev-000000.oktapreview.com/oauth2/v1/userinfo'
     expected_username = 'foo'
     access_token_body = json.dumps({
         'access_token': 'foobar',
@@ -52,11 +52,11 @@ class OktaOAuth2Test(OAuth2Test):
     })
 
     def test_login(self):
-        self.strategy.set_settings({'SOCIAL_AUTH_OKTA_OAUTH2_API_URL': 'https://dev-000000.oktapreview.com/oauth2/default'})
+        self.strategy.set_settings({'SOCIAL_AUTH_OKTA_OAUTH2_API_URL': 'https://dev-000000.oktapreview.com/oauth2'})
         self.do_login()
 
     def test_partial_pipeline(self):
-        self.strategy.set_settings({'SOCIAL_AUTH_OKTA_OAUTH2_API_URL': 'https://dev-000000.oktapreview.com/oauth2/default'})
+        self.strategy.set_settings({'SOCIAL_AUTH_OKTA_OAUTH2_API_URL': 'https://dev-000000.oktapreview.com/oauth2'})
         self.do_partial_pipeline()
 
 
@@ -64,14 +64,14 @@ class OktaOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
     backend_path = \
         'social_core.backends.okta.OktaOpenIdConnect'
     user_data_url = \
-        'https://dev-000000.oktapreview.com/oauth2/default/v1/userinfo'
-    issuer = 'https://dev-000000.oktapreview.com/oauth2/default'
+        'https://dev-000000.oktapreview.com/oauth2/v1/userinfo'
+    issuer = 'https://dev-000000.oktapreview.com/oauth2'
     openid_config_body = json.dumps({
-        'issuer': 'https://dev-000000.oktapreview.com/oauth2/default',
-        'authorization_endpoint': 'https://dev-000000.oktapreview.com/oauth2/default/v1/authorize',
-        'token_endpoint': 'https://dev-000000.oktapreview.com/oauth2/default/v1/token',
-        'userinfo_endpoint': 'https://dev-000000.oktapreview.com/oauth2/default/v1/userinfo',
-        'jwks_uri': 'https://dev-000000.oktapreview.com/oauth2/default/v1/keys',
+        'issuer': 'https://dev-000000.oktapreview.com/oauth2',
+        'authorization_endpoint': 'https://dev-000000.oktapreview.com/oauth2/v1/authorize',
+        'token_endpoint': 'https://dev-000000.oktapreview.com/oauth2/v1/token',
+        'userinfo_endpoint': 'https://dev-000000.oktapreview.com/oauth2/v1/userinfo',
+        'jwks_uri': 'https://dev-000000.oktapreview.com/oauth2/v1/keys',
         'response_types_supported': [
             'code',
             'token',
@@ -118,8 +118,8 @@ class OktaOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
     def setUp(self):
         super(OpenIdConnectTestMixin, self).setUp()
         # Settings for Okta
-        self.strategy.set_settings({'SOCIAL_AUTH_OKTA_OPENIDCONNECT_API_URL': 'https://dev-000000.oktapreview.com/oauth2/default'})
-        self.backend.OIDC_ENDPOINT = 'https://dev-000000.oktapreview.com/oauth2/default'
+        self.strategy.set_settings({'SOCIAL_AUTH_OKTA_OPENIDCONNECT_API_URL': 'https://dev-000000.oktapreview.com/oauth2'})
+        self.backend.OIDC_ENDPOINT = 'https://dev-000000.oktapreview.com/oauth2'
 
         self.key = JWK_KEY.copy()
         self.public_key = JWK_PUBLIC_KEY.copy()
