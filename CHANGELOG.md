@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased](https://github.com/python-social-auth/social-core/)
 
+### Added
+- Discourse backend
+
 ### Changed
 - Get Apple user first and last name from `self.data`
 - Instagram Legacy API has been replaced with Instagram Basic Display API since the first one was deprecated, [see](https://www.instagram.com/developer/).
