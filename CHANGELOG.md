@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Update test runner to PyTest
 - Add python 3.7 CI target
 - Send User-Agent header on Untappd backend
+- Updated Naver API suppor from XML to JSON format
 
 ## [3.2.0](https://github.com/python-social-auth/social-core/releases/tag/3.2.0) - 2019-05-30
 
