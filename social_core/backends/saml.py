@@ -93,6 +93,11 @@ class SAMLIdentityProvider(object):
         return self.conf['url']
 
     @property
+    def slo_url(self):
+        """Get the SLO URL for this IdP"""
+        return self.conf.get('slo_url')
+
+    @property
     def saml_config_dict(self):
         """Get the IdP configuration dict in the format required by
         python-saml"""
@@ -104,6 +109,13 @@ class SAMLIdentityProvider(object):
                 'binding': 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect'
             },
         }
+
+        if self.slo_url:
+            result["singleLogoutService"] = {
+                "url": self.slo_url,
+                "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+            }
+
         cert = self.conf.get('x509cert', None)
         if cert:
             result['x509cert'] = cert
@@ -318,10 +330,26 @@ class SAMLAuth(BaseAuth):
         return self.strategy.authenticate(*args, **kwargs)
 
     def extra_data(self, user, uid, response, details=None, *args, **kwargs):
-        return super(SAMLAuth, self).extra_data(user, uid,
-                                                response['attributes'],
-                                                details=details,
-                                                *args, **kwargs)
+        extra_data = super(SAMLAuth, self).extra_data(
+            user, uid, response['attributes'], details=details, *args, **kwargs
+        )
+        extra_data['session_index'] = response['session_index']
+        extra_data['name_id'] = response['attributes']['name_id']
+        return extra_data
+
+    def request_logout(self, idp_name, social_auth, return_to=None):
+        idp = self.get_idp(idp_name)
+        auth = self._create_saml_auth(idp)
+        name_id = social_auth.extra_data['name_id']
+        session_index = social_auth.extra_data['session_index']
+        return auth.logout(name_id=name_id, session_index=session_index, return_to=return_to)
+
+    def process_logout(self, idp_name, delete_session_cb):
+        idp = self.get_idp(idp_name)
+        auth = self._create_saml_auth(idp)
+        url = auth.process_slo(delete_session_cb=delete_session_cb)
+        errors = auth.get_errors()
+        return url, errors
 
     def _check_entitlements(self, idp, attributes):
         """
