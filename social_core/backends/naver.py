@@ -27,24 +27,24 @@ class NaverOAuth2(BaseOAuth2):
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
         response = self.request(
-            'https://openapi.naver.com/v1/nid/getUserProfile.xml',
+            'https://openapi.naver.com/v1/nid/me',
             headers={
                 'Authorization': 'Bearer {0}'.format(access_token),
-                'Content_Type': 'text/xml'
+                'Content_Type': 'text/json'
             }
         )
 
-        dom = minidom.parseString(response.text.encode('utf-8').strip())
+        data = response.json()
 
         return {
-            'id': self._dom_value(dom, 'id'),
-            'email': self._dom_value(dom, 'email'),
-            'username': self._dom_value(dom, 'name'),
-            'nickname': self._dom_value(dom, 'nickname'),
-            'gender': self._dom_value(dom, 'gender'),
-            'age': self._dom_value(dom, 'age'),
-            'birthday': self._dom_value(dom, 'birthday'),
-            'profile_image': self._dom_value(dom, 'profile_image')
+            'id': self._fetch(data, 'id'),
+            'email': self._fetch(data, 'email'),
+            'username': self._fetch(data, 'name'),
+            'nickname': self._fetch(data, 'nickname'),
+            'gender': self._fetch(data, 'gender'),
+            'age': self._fetch(data, 'age'),
+            'birthday': self._fetch(data, 'birthday'),
+            'profile_image': self._fetch(data, 'profile_image')
         }
 
     def auth_headers(self):
@@ -56,9 +56,8 @@ class NaverOAuth2(BaseOAuth2):
             'client_secret': client_secret,
         }
 
-    def _dom_value(self, dom, key):
+    def _fetch(self, data, key):
         try:
-            # Fixed Missing Key Getting Error
-            return dom.getElementsByTagName(key)[0].childNodes[0].data
-        except IndexError:
+            return data['response'][key]
+        except (KeyError, TypeError):
             return ''
