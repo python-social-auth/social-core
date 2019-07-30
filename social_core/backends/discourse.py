@@ -15,22 +15,22 @@ class DiscourseAuth(BaseAuth):
 
     def auth_url(self):
         """Return redirect url"""
-        returnUrl = self.redirect_uri
+        return_url = self.redirect_uri
         nonce = self.strategy.random_string(64)
         self.add_nonce(nonce)
 
-        payload = "nonce=" + nonce + "&return_sso_url=" + returnUrl
-        base64Payload = b64encode(payload)
-        payloadSignature = hmac.new(
-            self.setting("SOCIAL_AUTH_DISCOURSE_AUTH_SECRET"), base64Payload, sha256
+        payload = "nonce=" + nonce + "&return_sso_url=" + return_url
+        base_64_payload = b64encode(payload)
+        payload_signature = hmac.new(
+            self.setting("SOCIAL_AUTH_DISCOURSE_AUTH_SECRET"), base_64_payload, sha256
         ).hexdigest()
-        encodedParams = urllib.urlencode(
-            {"sso": base64Payload, "sig": payloadSignature}
+        encoded_params = urllib.urlencode(
+            {"sso": base_64_payload, "sig": payload_signature}
         )
         return (
             self.setting("SOCIAL_AUTH_DISCOURSE_AUTH_SERVER_URL")
             + "/session/sso_provider?"
-            + encodedParams
+            + encoded_params
         )
 
     def get_user_id(self, details, response):
@@ -42,8 +42,8 @@ class DiscourseAuth(BaseAuth):
             "email": response.get("email"),
             "name": response.get("name"),
             "groups": response.get("groups", "").split(","),
-            "is_staff": response.get("admin") == "true"
-            or response.get("moderator") == "true",
+            "is_staff": response.get("admin") == "true" or
+                        response.get("moderator") == "true",
             "is_superuser": response.get("admin") == "true",
         }
         return results
@@ -63,19 +63,19 @@ class DiscourseAuth(BaseAuth):
             pass
 
     def auth_complete(self, request, *args, **kwargs):
-        ssoParams = request.GET.get("sso")
-        ssoSignature = request.GET.get("sig")
-        paramSignature = hmac.new(
-            self.setting("SOCIAL_AUTH_DISCOURSE_AUTH_SECRET"), ssoParams, sha256
+        sso_params = request.GET.get("sso")
+        sso_signature = request.GET.get("sig")
+        param_signature = hmac.new(
+            self.setting("SOCIAL_AUTH_DISCOURSE_AUTH_SECRET"), sso_params, sha256
         ).hexdigest()
 
-        if not hmac.compare_digest(str(ssoSignature), str(paramSignature)):
+        if not hmac.compare_digest(str(sso_signature), str(param_signature)):
             raise AuthException("Could not verify discourse login")
 
-        decodedParams = b64decode(ssoParams)
+        decoded_params = b64decode(sso_params)
 
         # Validate the nonce to ensure the request was not modified
-        response = parse_qs(decodedParams)
+        response = parse_qs(decoded_params)
         nonce_obj = self.get_nonce(response.get("nonce"))
         if nonce_obj:
             nonce_obj.delete()
