@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Support for SAML Single Logout
 - SimpleLogin backend
 - Discourse backend
+- Add `get` and `delete` class methods for `NonceMixin`
 
 ### Changed
 - Update test runner to PyTest
