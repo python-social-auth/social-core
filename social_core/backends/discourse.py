@@ -1,6 +1,6 @@
 import hmac
 import time
-import urllib
+from six.moves.urllib.parse import urlencode
 from base64 import b64encode, b64decode
 from hashlib import sha256
 
@@ -22,13 +22,13 @@ class DiscourseAuth(BaseAuth):
         payload = "nonce=" + nonce + "&return_sso_url=" + return_url
         base_64_payload = b64encode(payload)
         payload_signature = hmac.new(
-            self.setting("SOCIAL_AUTH_DISCOURSE_AUTH_SECRET"), base_64_payload, sha256
+            self.setting("SECRET"), base_64_payload, sha256
         ).hexdigest()
-        encoded_params = urllib.urlencode(
+        encoded_params = urlencode(
             {"sso": base_64_payload, "sig": payload_signature}
         )
         return (
-            self.setting("SOCIAL_AUTH_DISCOURSE_AUTH_SERVER_URL")
+            self.setting("SERVER_URL")
             + "/session/sso_provider?"
             + encoded_params
         )
@@ -50,23 +50,23 @@ class DiscourseAuth(BaseAuth):
 
     def add_nonce(self, nonce):
         self.strategy.storage.nonce.use(
-            self.setting("SOCIAL_AUTH_DISCOURSE_AUTH_SERVER_URL"), time.time(), nonce
+            self.setting("SERVER_URL"), time.time(), nonce
         )
 
     def get_nonce(self, nonce):
-        try:
-            return self.strategy.storage.nonce.objects.get(
-                server_url=self.setting("SOCIAL_AUTH_DISCOURSE_AUTH_SERVER_URL"),
-                salt=nonce,
-            )
-        except IndexError:
-            pass
+        return self.strategy.storage.nonce.get(
+            self.setting("SERVER_URL"),
+            nonce,
+        )
+
+    def delete_nonce(self, nonce):
+        self.strategy.storage.nonce.delete(nonce)
 
     def auth_complete(self, request, *args, **kwargs):
         sso_params = request.GET.get("sso")
         sso_signature = request.GET.get("sig")
         param_signature = hmac.new(
-            self.setting("SOCIAL_AUTH_DISCOURSE_AUTH_SECRET"), sso_params, sha256
+            self.setting("SECRET"), sso_params, sha256
         ).hexdigest()
 
         if not hmac.compare_digest(str(sso_signature), str(param_signature)):
@@ -78,7 +78,7 @@ class DiscourseAuth(BaseAuth):
         response = parse_qs(decoded_params)
         nonce_obj = self.get_nonce(response.get("nonce"))
         if nonce_obj:
-            nonce_obj.delete()
+            self.delete_nonce(nonce_obj)
         else:
             raise AuthTokenError(self, "Incorrect id_token: nonce")
 

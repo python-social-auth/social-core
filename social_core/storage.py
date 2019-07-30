@@ -203,6 +203,16 @@ class NonceMixin:
         """Create a Nonce instance"""
         raise NotImplementedError('Implement in subclass')
 
+    @classmethod
+    def get(cls, server_url, salt):
+        """Retrieve a Nonce instance"""
+        raise NotImplementedError('Implement in subclass')
+
+    @classmethod
+    def delete(cls, nonce):
+        """Delete a Nonce instance"""
+        raise NotImplementedError('Implement in subclass')
+
 
 class AssociationMixin:
     """OpenId account association"""
