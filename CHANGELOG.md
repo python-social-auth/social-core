@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 - Discourse backend
+- Add `get` and `delete` class methods for `NonceMixin`
 
 ### Changed
 - Get Apple user first and last name from `self.data`
