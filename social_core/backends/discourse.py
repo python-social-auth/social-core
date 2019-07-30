@@ -1,11 +1,12 @@
-from .base import BaseAuth
-from ..exceptions import AuthException, AuthTokenError
 import hmac
+import time
+import urllib
 from base64 import b64encode, b64decode
 from hashlib import sha256
-import urllib
+
+from .base import BaseAuth
+from ..exceptions import AuthException, AuthTokenError
 from ..utils import parse_qs
-import time
 
 
 class DiscourseAuth(BaseAuth):
