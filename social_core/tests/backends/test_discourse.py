@@ -41,7 +41,6 @@ class DiscourseTest(BaseBackendTest):
             HTTPretty.GET,
             return_url,
             status=200,
-            body={"email": "test@test.org"},
             content_type="text/html",
         )
 
