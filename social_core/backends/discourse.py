@@ -14,7 +14,8 @@ class DiscourseAuth(BaseAuth):
     EXTRA_DATA = ["username", "name", "avatar_url"]
 
     def auth_url(self):
-        """Return redirect url"""
+        """Get the URL to which we must redirect in order to
+        authenticate the user"""
         return_url = self.redirect_uri
         nonce = self.strategy.random_string(64)
         self.add_nonce(nonce)
@@ -28,10 +29,11 @@ class DiscourseAuth(BaseAuth):
             {"sso": base_64_payload, "sig": payload_signature}
         )
         return (
-            self.setting("SERVER_URL")
-            + "/session/sso_provider?"
-            + encoded_params
+            "{0}?{1}".format(self.get_idp_url(), encoded_params)
         )
+
+    def get_idp_url(self):
+        return self.setting("SERVER_URL") + "/session/sso_provider"
 
     def get_user_id(self, details, response):
         return response["email"]
@@ -62,9 +64,15 @@ class DiscourseAuth(BaseAuth):
     def delete_nonce(self, nonce):
         self.strategy.storage.nonce.delete(nonce)
 
-    def auth_complete(self, request, *args, **kwargs):
-        sso_params = request.GET.get("sso")
-        sso_signature = request.GET.get("sig")
+    def auth_complete(self, *args, **kwargs):
+        """
+        The user has been redirected back from the IdP and we should
+        now log them in, if everything checks out.
+        """
+        request_data = self.strategy.request_data()
+
+        sso_params = request_data.get("sso")
+        sso_signature = request_data.get("sig")
         param_signature = hmac.new(
             self.setting("SECRET"), sso_params, sha256
         ).hexdigest()
