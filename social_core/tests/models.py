@@ -147,6 +147,15 @@ class TestNonce(NonceMixin, BaseModel):
         TestNonce.cache[server_url] = nonce
         return nonce
 
+    @classmethod
+    def get(cls, server_url, salt):
+        return TestNonce.cache[server_url]
+
+    @classmethod
+    def delete(cls, nonce):
+        server_url = nonce.server_url
+        del TestNonce.cache[server_url]
+
 
 class TestAssociation(AssociationMixin, BaseModel):
     NEXT_ID = 1
