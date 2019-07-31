@@ -1,7 +1,7 @@
 import hmac
 import time
 from six.moves.urllib.parse import urlencode
-from base64 import b64encode, b64decode
+from base64 import urlsafe_b64decode, urlsafe_b64encode
 from hashlib import sha256
 
 from .base import BaseAuth
@@ -21,16 +21,16 @@ class DiscourseAuth(BaseAuth):
         self.add_nonce(nonce)
 
         payload = "nonce=" + nonce + "&return_sso_url=" + return_url
-        base_64_payload = b64encode(payload)
+
+        base_64_payload = urlsafe_b64encode(payload.encode("utf8")).decode("ascii")
+
         payload_signature = hmac.new(
-            self.setting("SECRET"), base_64_payload, sha256
+            self.setting("SECRET").encode("utf8"),
+            base_64_payload.encode("utf8"),
+            sha256,
         ).hexdigest()
-        encoded_params = urlencode(
-            {"sso": base_64_payload, "sig": payload_signature}
-        )
-        return (
-            "{0}?{1}".format(self.get_idp_url(), encoded_params)
-        )
+        encoded_params = urlencode({"sso": base_64_payload, "sig": payload_signature})
+        return "{0}?{1}".format(self.get_idp_url(), encoded_params)
 
     def get_idp_url(self):
         return self.setting("SERVER_URL") + "/session/sso_provider"
@@ -51,15 +51,10 @@ class DiscourseAuth(BaseAuth):
         return results
 
     def add_nonce(self, nonce):
-        self.strategy.storage.nonce.use(
-            self.setting("SERVER_URL"), time.time(), nonce
-        )
+        self.strategy.storage.nonce.use(self.setting("SERVER_URL"), time.time(), nonce)
 
     def get_nonce(self, nonce):
-        return self.strategy.storage.nonce.get(
-            self.setting("SERVER_URL"),
-            nonce,
-        )
+        return self.strategy.storage.nonce.get(self.setting("SERVER_URL"), nonce)
 
     def delete_nonce(self, nonce):
         self.strategy.storage.nonce.delete(nonce)
@@ -73,14 +68,15 @@ class DiscourseAuth(BaseAuth):
 
         sso_params = request_data.get("sso")
         sso_signature = request_data.get("sig")
+
         param_signature = hmac.new(
-            self.setting("SECRET"), sso_params, sha256
+            self.setting("SECRET").encode("utf8"), sso_params.encode("utf8"), sha256
         ).hexdigest()
 
         if not hmac.compare_digest(str(sso_signature), str(param_signature)):
             raise AuthException("Could not verify discourse login")
 
-        decoded_params = b64decode(sso_params)
+        decoded_params = urlsafe_b64decode(sso_params.encode("utf8")).decode("ascii")
 
         # Validate the nonce to ensure the request was not modified
         response = parse_qs(decoded_params)
