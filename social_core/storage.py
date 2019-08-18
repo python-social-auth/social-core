@@ -10,12 +10,12 @@ from datetime import datetime, timedelta
 import six
 
 from openid.association import Association as OpenIdAssociation
+from unidecode import unidecode
 
 from .exceptions import MissingBackend
 from .backends.utils import get_backend
 
 
-NO_ASCII_REGEX = re.compile(r'[^\x00-\x7F]+')
 NO_SPECIAL_REGEX = re.compile(r'[^\w.@+_-]+', re.UNICODE)
 
 
@@ -122,7 +122,7 @@ class UserMixin(object):
     @classmethod
     def clean_username(cls, value):
         """Clean username removing any unsupported character"""
-        value = NO_ASCII_REGEX.sub('', value)
+        value = unidecode(value)
         value = NO_SPECIAL_REGEX.sub('', value)
         return value
 
