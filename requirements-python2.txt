@@ -1,2 +1,3 @@
 python-openid>=2.2.5
+unidecode>=1.1.1
 -r requirements-base.txt
