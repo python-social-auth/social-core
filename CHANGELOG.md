@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 - Support for SAML Single Logout
+- SimpleLogin backend
 
 ### Changed
 - Update test runner to PyTest
@@ -23,7 +24,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Cognito backend
 - OpenStack (openstackid and openstackid-dev) backends
-- SimpleLogin backend
 
 ### Changed
 - Updated Linkedin backend to v2 API
