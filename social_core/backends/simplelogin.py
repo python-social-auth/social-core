@@ -38,4 +38,6 @@ class SimpleLoginOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        return self.get_json(self.USERINFO_URL, params={'access_token': access_token})
+        return self.get_json(self.USERINFO_URL, params={
+            'access_token': access_token
+        })
