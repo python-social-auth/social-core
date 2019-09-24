@@ -31,6 +31,7 @@ class OktaOAuth2(OktaMixin, BaseOAuth2):
     REDIRECT_STATE = False
     ACCESS_TOKEN_METHOD = 'POST'
     SCOPE_SEPARATOR = ' '
+    ID_KEY = "preferred_username"
 
     DEFAULT_SCOPE = [
         'openid', 'profile'
