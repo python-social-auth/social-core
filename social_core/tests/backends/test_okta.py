@@ -62,7 +62,7 @@ class OktaOAuth2Test(OAuth2Test):
 
 class OktaOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
     backend_path = \
-        'social_core.backends.okta.OktaOpenIdConnect'
+        'social_core.backends.okta_openidconnect.OktaOpenIdConnect'
     user_data_url = \
         'https://dev-000000.oktapreview.com/oauth2/v1/userinfo'
     issuer = 'https://dev-000000.oktapreview.com/oauth2'
