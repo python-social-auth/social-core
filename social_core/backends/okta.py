@@ -2,22 +2,10 @@
 Okta OAuth2 and OpenIdConnect:
     https://python-social-auth.readthedocs.io/en/latest/backends/okta.html
 """
-import sys
-if sys.version_info[0] < 3:
-    import urlparse as urlparse
-else:
-    import urllib.parse as urlparse
-
-import requests
 from six.moves.urllib.parse import urljoin
-from jose import jwk, jwt, jws
-from jose.jwt import JWTError, JWTClaimsError, ExpiredSignatureError
-from jose.exceptions import JWSSignatureError
 
 from ..utils import append_slash
 from .oauth import BaseOAuth2
-from .open_id_connect import OpenIdConnectAuth
-from ..exceptions import AuthTokenError
 
 
 class OktaMixin(object):
@@ -68,12 +56,4 @@ class OktaOAuth2(OktaMixin, BaseOAuth2):
                 'Authorization': 'Bearer %s' % access_token,
             }
         )
-
-
-class OktaOpenIdConnect(OktaOAuth2, OpenIdConnectAuth):
-    """Okta OpenID-Connect authentication backend"""
-    name = 'okta-openidconnect'
-    REDIRECT_STATE = False
-    ACCESS_TOKEN_METHOD = 'POST'
-    RESPONSE_TYPE = 'code'
 
