@@ -9,9 +9,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 - Okta backend
+- Support for SAML Single Logout
+- SimpleLogin backend
 
 ### Changed
 - Update test runner to PyTest
+- Add python 3.7 CI target
+- Send User-Agent header on Untappd backend
+- Updated Naver API suppor from XML to JSON format
+- Use `unidecode` to cleanup usernames from unicode characters
+- Update Twitch API support from v3 to v5
+- Properly setup `pytest` version for Python2 and Python3
 
 ## [3.2.0](https://github.com/python-social-auth/social-core/releases/tag/3.2.0) - 2019-05-30
 

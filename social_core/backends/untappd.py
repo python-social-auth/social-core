@@ -15,6 +15,7 @@ class UntappdOAuth2(BaseOAuth2):
     ACCESS_TOKEN_METHOD = 'GET'
     STATE_PARAMETER = False
     REDIRECT_STATE = False
+    SEND_USER_AGENT = True
     EXTRA_DATA = [
         ('id', 'id'),
         ('bio', 'bio'),

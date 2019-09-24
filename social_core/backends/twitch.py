@@ -9,8 +9,8 @@ class TwitchOAuth2(BaseOAuth2):
     """Twitch OAuth authentication backend"""
     name = 'twitch'
     ID_KEY = '_id'
-    AUTHORIZATION_URL = 'https://api.twitch.tv/kraken/oauth2/authorize'
-    ACCESS_TOKEN_URL = 'https://api.twitch.tv/kraken/oauth2/token'
+    AUTHORIZATION_URL = 'https://id.twitch.tv/oauth2/authorize'
+    ACCESS_TOKEN_URL = 'https://id.twitch.tv/oauth2/token'
     ACCESS_TOKEN_METHOD = 'POST'
     DEFAULT_SCOPE = ['user_read']
     REDIRECT_STATE = False
@@ -26,5 +26,6 @@ class TwitchOAuth2(BaseOAuth2):
     def user_data(self, access_token, *args, **kwargs):
         return self.get_json(
             'https://api.twitch.tv/kraken/user/',
-            params={'oauth_token': access_token}
+            params={'oauth_token': access_token},
+            headers={'Accept': 'application/vnd.twitchtv.v5+json'}
         )

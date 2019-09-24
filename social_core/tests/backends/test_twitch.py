@@ -14,16 +14,19 @@ class TwitchOAuth2Test(OAuth2Test):
         'name': 'test_user1',
         'created_at': '2011-06-03T17:49:19Z',
         'updated_at': '2012-06-18T17:19:57Z',
-        '_links': {
-            'self': 'https://api.twitch.tv/kraken/users/test_user1'
-        },
         'logo': 'http://static-cdn.jtvnw.net/jtv_user_pictures/'
                 'test_user1-profile_image-62e8318af864d6d7-300x300.jpeg',
         '_id': 22761313,
         'display_name': 'test_user1',
+        'bio': 'test bio woo I\'m a test user',
         'email': 'asdf@asdf.com',
+        'email_verified': True,
         'partnered': True,
-        'bio': 'test bio woo I\'m a test user'
+        'twitter_connected': False,
+        'notifications': {
+            'push': True,
+            'email': True
+        }
     })
 
     def test_login(self):
