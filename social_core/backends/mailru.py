@@ -61,6 +61,7 @@ class MainMailruOAuth2(BaseOAuth2):
         return {
             'gender': response.get('gender'),
             'fullname': response.get('name'),
+            'username': response.get('name'),
             'first_name': response.get('first_name'),
             'last_name': response.get('last_name'),
             'locale': response.get('locale'),
