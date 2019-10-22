@@ -46,7 +46,7 @@ class MailruOAuth2(BaseOAuth2):
                              params=data)[0]
 
 
-class MainMailruOAuth2(BaseOAuth2):
+class MRGOAuth2(BaseOAuth2):
 
     name = 'mailru'
     ID_KEY = 'email'

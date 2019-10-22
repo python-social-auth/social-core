@@ -3,8 +3,8 @@ import json
 from .oauth import OAuth2Test
 
 
-class MainMailruOAuth2Test(OAuth2Test):
-    backend_path = 'social_core.backends.mailru.MainMailruOAuth2'
+class MRGOAuth2Test(OAuth2Test):
+    backend_path = 'social_core.backends.mailru.MRGOAuth2'
     user_data_url = 'https://oauth.mail.ru/userinfo'
     expected_username = 'FooBar'
     access_token_body = json.dumps({
