@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - SimpleLogin backend
 
 ### Changed
+- Add refresh token to Strava backend, change username and remove email
 - Update test runner to PyTest
 - Add python 3.7 CI target
 - Send User-Agent header on Untappd backend
