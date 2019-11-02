@@ -27,7 +27,6 @@ class StravaOAuth(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Strava account"""
-        email = response['athlete'].get('email', '')
         username = response['athlete'].get('username', '')
         fullname, first_name, last_name = self.get_user_names(
             first_name=response['athlete'].get('firstname', ''),
@@ -36,8 +35,7 @@ class StravaOAuth(BaseOAuth2):
         return {'username': username,
                 'fullname': fullname,
                 'first_name': first_name,
-                'last_name': last_name,
-                'email': email}
+                'last_name': last_name}
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
