@@ -21,7 +21,7 @@ class OpenIdStore(BaseOpenIDStore):
         self.max_nonce_age = 6 * 60 * 60  # Six hours
 
     def storeAssociation(self, server_url, association):
-        """Store new association if doesn't exist"""
+        """Store new association if it does not exist"""
         self.assoc.store(server_url, association)
 
     def removeAssociation(self, server_url, handle):
