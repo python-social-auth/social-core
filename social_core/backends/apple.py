@@ -21,7 +21,6 @@ import time
 import jwt
 from jwt.algorithms import RSAAlgorithm
 from jwt.exceptions import PyJWTError
-
 from social_core.backends.oauth import BaseOAuth2
 from social_core.exceptions import AuthCanceled
 
@@ -122,8 +121,9 @@ class AppleIdAuth(BaseOAuth2):
 
         return user_details
 
-    def do_auth(self, access_token, response, *args, **kwargs):
-        jwt_string = kwargs.pop("jwt_string", None) or response.get(self.TOKEN_KEY)
+    def do_auth(self, access_token, *args, **kwargs):
+        response = kwargs.pop('response', None) or {}
+        jwt_string = response.get(self.TOKEN_KEY) or access_token
         if not jwt_string:
             raise AuthCanceled("Missing id_token parameter")
 
