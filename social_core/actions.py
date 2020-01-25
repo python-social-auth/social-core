@@ -12,6 +12,8 @@ def do_auth(backend, redirect_name='next'):
     for field_name in backend.setting('FIELDS_STORED_IN_SESSION', []):
         if field_name in data:
             backend.strategy.session_set(field_name, data[field_name])
+        else:
+            backend.strategy.session_set(field_name, None)
 
     if redirect_name in data:
         # Check and sanitize a user-defined GET/POST next field value

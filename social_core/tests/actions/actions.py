@@ -209,3 +209,6 @@ class BaseActionTest(unittest.TestCase):
         self.assertEqual(self.strategy.session_get('username'),
                          self.expected_username)
         self.assertEqual(redirect.url, self.login_redirect_url)
+
+    def _logout(self, backend):
+        backend.strategy.session_set('username', None)
