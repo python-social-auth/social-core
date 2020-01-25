@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Use `unidecode` to cleanup usernames from unicode characters
 - Update Twitch API support from v3 to v5
 - Properly setup `pytest` version for Python2 and Python3
+- Fix old fields from FIELDS_STORED_IN_SESSION persisting in session
 
 ## [3.2.0](https://github.com/python-social-auth/social-core/releases/tag/3.2.0) - 2019-05-30
 
