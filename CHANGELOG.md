@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Support for SAML Single Logout
 - SimpleLogin backend
 - SurveyMonkey backend
+- HubSpot backend
 
 ### Changed
 - Update test runner to PyTest
