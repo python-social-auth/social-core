@@ -2,6 +2,8 @@
 Github OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/github.html
 """
+import base64
+
 from requests import HTTPError
 
 from six.moves.urllib.parse import urljoin
@@ -65,7 +67,8 @@ class GithubOAuth2(BaseOAuth2):
 
     def _user_data(self, access_token, path=None):
         url = urljoin(self.api_url(), 'user{0}'.format(path or ''))
-        return self.get_json(url, params={'access_token': access_token})
+        token = base64.b64encode(access_token.encode('utf8'))
+        return self.get_json(url, headers={'Authorization': 'Basic %s' % token})
 
 
 class GithubMemberOAuth2(GithubOAuth2):
