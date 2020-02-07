@@ -147,7 +147,7 @@ class OpenIdConnectTestMixin(object):
         self.access_token_body = self.prepare_access_token_body(
             **access_token_kwargs
         )
-        with self.assertRaisesRegexp(AuthTokenError, expected_message):
+        with self.assertRaisesRegex(AuthTokenError, expected_message):
             self.do_login()
 
     def test_invalid_signature(self):
