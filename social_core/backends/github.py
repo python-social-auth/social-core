@@ -65,8 +65,7 @@ class GithubOAuth2(BaseOAuth2):
 
     def _user_data(self, access_token, path=None):
         url = urljoin(self.api_url(), 'user{0}'.format(path or ''))
-        headers = {"Authorization": "token {0}".format(access_token)}
-        return self.get_json(url, headers=headers)
+        return self.get_json(url, headers={'Authorization': 'token {0}'.format(access_token)})
 
 
 class GithubMemberOAuth2(GithubOAuth2):
