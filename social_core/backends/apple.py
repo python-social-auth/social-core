@@ -86,30 +86,31 @@ class AppleIdAuth(BaseOAuth2):
         client_secret = self.generate_client_secret()
         return client_id, client_secret
 
-    def get_apple_jwk(self):
-        """Returns an iterable of apple jwk strings."""
-        keys = self.get_json(url=self.JWK_URL).get('keys')
-        if not isinstance(keys, list) or not keys:
-            raise AuthCanceled('Invalid jwk response')
+    def get_apple_jwk(self, kid=None):
+        keys = self.get_json(url=self.JWK_URL).get("keys")
 
-        return (json.dumps(key) for key in keys)
+        if not isinstance(keys, list) or not keys:
+            raise AuthCanceled("Invalid jwk response")
+        
+        # Return requested key instead of the last one
+        if kid:
+            return json.dumps([key for key in keys if key['kid'] == kid][0])
+        
+        return json.dumps(keys.pop())
 
     def decode_id_token(self, id_token):
         '''Decode and validate JWT token from apple and return payload including user data.'''
         if not id_token:
-            raise AuthCanceled('Missing id_token parameter')
+            raise AuthCanceled("Missing id_token parameter")
 
-        for jwk_string in self.get_apple_jwk():
-            public_key = RSAAlgorithm.from_jwk(jwk_string)
-            try:
-                decoded = jwt.decode(id_token, key=public_key,
-                                     audience=self.setting('CLIENT'),
-                                     algorithm='RS256')
-                break
-            except PyJWTError:
-                pass
-        else:
-            raise AuthCanceled('Token validation failed')
+
+        kid = jwt.get_unverified_header(id_token).get('kid', None)
+        public_key = RSAAlgorithm.from_jwk(self.get_apple_jwk(kid))
+        try:
+            decoded = jwt.decode(id_token, key=public_key,
+                                 audience=self.setting("CLIENT"), algorithm="RS256",)
+        except PyJWTError:
+            raise AuthCanceled("Token validation failed")
 
         return decoded
 
