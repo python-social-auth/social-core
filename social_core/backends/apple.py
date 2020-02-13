@@ -11,7 +11,7 @@ Settings:
     * `CLIENT` - your client id;
     * `SECRET` - your secret key;
     * `SCOPE` (optional) - e.g. `['name', 'email']`;
-    * `EMAIL_AS_USERNAME` - use apple email is username if set, use apple id otherwise.
+    * `EMAIL_AS_USERNAME` - use apple email is username is set, use apple id otherwise.
     * `AppleIdAuth.TOKEN_TTL_SEC` - time before JWT token expiration, seconds.
 """
 
@@ -21,6 +21,7 @@ import time
 import jwt
 from jwt.algorithms import RSAAlgorithm
 from jwt.exceptions import PyJWTError
+
 from social_core.backends.oauth import BaseOAuth2
 from social_core.exceptions import AuthCanceled
 
@@ -82,21 +83,26 @@ class AppleIdAuth(BaseOAuth2):
         return client_id, client_secret
 
     def get_apple_jwk(self):
+        """Returns an iterable of apple jwk strings."""
         keys = self.get_json(url=self.JWK_URL).get("keys")
         if not isinstance(keys, list) or not keys:
             raise AuthCanceled("Invalid jwk response")
 
-        return json.dumps(keys.pop())
+        return (json.dumps(key) for key in keys)
 
     def decode_id_token(self, id_token):
         """Decode and validate JWT token from apple and return payload including user data."""
         if not id_token:
             raise AuthCanceled("Missing id_token parameter")
 
-        public_key = RSAAlgorithm.from_jwk(self.get_apple_jwk())
-        try:
-            decoded = jwt.decode(id_token, key=public_key, audience=self.setting("CLIENT"), algorithm="RS256",)
-        except PyJWTError:
+        for jwk_string in self.get_apple_jwk():
+            public_key = RSAAlgorithm.from_jwk(jwk_string)
+            try:
+                decoded = jwt.decode(id_token, key=public_key, audience=self.setting("CLIENT"), algorithm="RS256",)
+                break
+            except PyJWTError:
+                pass
+        else:
             raise AuthCanceled("Token validation failed")
 
         return decoded
