@@ -76,10 +76,9 @@ class GithubMemberOAuth2(GithubOAuth2):
         user_data = super(GithubMemberOAuth2, self).user_data(
             access_token, *args, **kwargs
         )
+        headers = {'Authorization': 'token {0}'.format(access_token)}
         try:
-            self.request(self.member_url(user_data), params={
-                'access_token': access_token
-            })
+            self.request(self.member_url(user_data), headers=headers)
         except HTTPError as err:
             # if the user is a member of the organization, response code
             # will be 204, see http://bit.ly/ZS6vFl
