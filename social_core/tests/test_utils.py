@@ -71,6 +71,7 @@ class UserIsAuthenticatedTest(unittest.TestCase):
 
     def test_user_has_is_authenticated_callable(self):
         class User(object):
+            @property
             def is_authenticated(self):
                 return True
         self.assertEqual(user_is_authenticated(User()), True)

@@ -112,7 +112,7 @@ def sanitize_redirect(hosts, redirect_to):
 def user_is_authenticated(user):
     if user and hasattr(user, 'is_authenticated'):
         if isinstance(user.is_authenticated, collections.Callable):
-            authenticated = user.is_authenticated()
+            authenticated = user.is_authenticated
         else:
             authenticated = user.is_authenticated
     elif user:
