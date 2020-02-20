@@ -18,6 +18,9 @@ class KakaoOAuth2Test(OAuth2Test):
                                'ujlHpQhxtMSbhKrBisrxe1/o.jpg',
             'profile_image': 'http://mud-kage.kakao.co.kr/14/dn/btqbjCnl06Q/'
                              'wbMJSVAUZB7lzSImgGdsoK/o.jpg'
+        },
+        'kakao_account': {
+            'email': 'a'
         }
     })
 
