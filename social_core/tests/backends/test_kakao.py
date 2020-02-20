@@ -5,7 +5,7 @@ from .oauth import OAuth2Test
 
 class KakaoOAuth2Test(OAuth2Test):
     backend_path = 'social_core.backends.kakao.KakaoOAuth2'
-    user_data_url = 'https://kapi.kakao.com/v1/user/me'
+    user_data_url = 'https://kapi.kakao.com/v2/user/me'
     expected_username = 'foobar'
     access_token_body = json.dumps({
         'access_token': 'foobar'
