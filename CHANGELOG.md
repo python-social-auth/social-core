@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Support for SAML Single Logout
 - SimpleLogin backend
+- Allow ignoring of default protected user fields with option `SOCIAL_AUTH_NO_DEFAULT_PROTECTED_USER_FIELDS`
 
 ### Changed
 - Update test runner to PyTest
