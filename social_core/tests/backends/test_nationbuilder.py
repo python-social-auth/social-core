@@ -133,7 +133,7 @@ class NationBuilderOAuth2Test(OAuth2Test):
             'twitter_friends_count': None,
             'facebook_username': None,
             'active_customer_started_at': None,
-            'pf_start_id': None,
+            'pf_strat_id': None,
             'locale': None,
             'twitter_address': None,
             'is_supporter': True,
