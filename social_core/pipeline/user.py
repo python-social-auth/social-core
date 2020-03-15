@@ -82,8 +82,15 @@ def user_details(strategy, details, user=None, *args, **kwargs):
         return
 
     changed = False  # flag to track changes
-    protected = ('username', 'id', 'pk', 'email') + \
-                tuple(strategy.setting('PROTECTED_USER_FIELDS', []))
+
+    # Default protected user fields (username, id, pk and email) can be ignored
+    # by setting the SOCIAL_AUTH_NO_DEFAULT_PROTECTED_USER_FIELDS to True
+    if strategy.setting('NO_DEFAULT_PROTECTED_USER_FIELDS') is True:
+        protected = ()
+    else:
+        protected = ('username', 'id', 'pk', 'email')
+
+    protected = protected + tuple(strategy.setting('PROTECTED_USER_FIELDS', []))
 
     # Update user model attributes with the new data sent by the current
     # provider. Update on some attributes is disabled by default, for
