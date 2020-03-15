@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Support for SAML Single Logout
 - SimpleLogin backend
 - MRG backend
+- Sign in with Apple backend
 
 ### Changed
 - Update test runner to PyTest
