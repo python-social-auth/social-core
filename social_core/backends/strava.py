@@ -18,7 +18,7 @@ class StravaOAuth(BaseOAuth2):
     REVOKE_TOKEN_URL = 'https://www.strava.com/oauth/deauthorize'
     SCOPE_SEPARATOR = ','
     EXTRA_DATA = [
-        ('refresh_token'),
+        ('refresh_token', 'refresh_token'),
         ('expires_in', 'expires'),
     ]
 
