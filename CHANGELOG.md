@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Support for SAML Single Logout
 - SimpleLogin backend
+- MRG backend
 
 ### Changed
 - Update test runner to PyTest
@@ -19,8 +20,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Use `unidecode` to cleanup usernames from unicode characters
 - Update Twitch API support from v3 to v5
 - Properly setup `pytest` version for Python2 and Python3
+- Github: pass access token in a header instead of in a query parameter.
 - Updated Patreon API support from v1 to v2 per issue #307
-
 
 ## [3.2.0](https://github.com/python-social-auth/social-core/releases/tag/3.2.0) - 2019-05-30
 
