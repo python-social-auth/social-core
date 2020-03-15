@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Properly setup `pytest` version for Python2 and Python3
 - Github: pass access token in a header instead of in a query parameter.
 - Update Kakao API support from v1 to v2
+- Update Twitch API support to v5
 
 ## [3.2.0](https://github.com/python-social-auth/social-core/releases/tag/3.2.0) - 2019-05-30
 
