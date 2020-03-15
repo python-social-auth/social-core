@@ -22,7 +22,13 @@ class OktaMixin(object):
         return urljoin(append_slash(self.setting('API_URL')), path)
 
     def oidc_config(self):
-        return self.get_json(self._url('/.well-known/openid-configuration?client_id='+self.setting('KEY')))
+        return self.get_json(
+            self._url(
+                '/.well-known/openid-configuration?client_id={}'.format(
+                    self.setting('KEY')
+                )
+            )
+        )
 
 
 class OktaOAuth2(OktaMixin, BaseOAuth2):
@@ -54,7 +60,6 @@ class OktaOAuth2(OktaMixin, BaseOAuth2):
         return self.get_json(
             self._url('v1/userinfo'),
             headers={
-                'Authorization': 'Bearer %s' % access_token,
+                'Authorization': 'Bearer {}'.format(access_token),
             }
         )
-
