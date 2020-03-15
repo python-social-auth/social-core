@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
 
 ### Added
+- Okta backend
 - Support for SAML Single Logout
 - SimpleLogin backend
 - MRG backend
