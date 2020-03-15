@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Support for SAML Single Logout
 - SimpleLogin backend
+- MRG backend
 
 ### Changed
 - Update test runner to PyTest

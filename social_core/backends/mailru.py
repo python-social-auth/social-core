@@ -44,3 +44,32 @@ class MailruOAuth2(BaseOAuth2):
         ).hexdigest()
         return self.get_json('http://www.appsmail.ru/platform/api',
                              params=data)[0]
+
+
+class MRGOAuth2(BaseOAuth2):
+
+    name = 'mailru'
+    ID_KEY = 'email'
+    AUTHORIZATION_URL = 'https://oauth.mail.ru/login'
+    ACCESS_TOKEN_URL = 'https://oauth.mail.ru/token'
+    ACCESS_TOKEN_METHOD = 'POST'
+    EXTRA_DATA = [('refresh_token', 'refresh_token'),
+                  ('expires_in', 'expires')]
+    REDIRECT_STATE = False
+
+    def get_user_details(self, response):
+        return {
+            'gender': response.get('gender'),
+            'fullname': response.get('name'),
+            'username': response.get('name'),
+            'first_name': response.get('first_name'),
+            'last_name': response.get('last_name'),
+            'locale': response.get('locale'),
+            'email': response.get('email'),
+            'address': response.get('address'),
+            'birthday': response.get('birthday'),
+            'image': response.get('image'),
+        }
+
+    def user_data(self, access_token, *args, **kwargs):
+        return self.get_json('https://oauth.mail.ru/userinfo', params={'access_token': access_token})
