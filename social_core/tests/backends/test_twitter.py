@@ -255,7 +255,7 @@ class TwitterOAuth1IncludeEmailTest(OAuth1Test):
 
     def test_login(self):
         user = self.do_login()
-        self.assertEquals(user.email, 'foo@bar.bas')
+        self.assertEqual(user.email, 'foo@bar.bas')
 
     def test_partial_pipeline(self):
         self.do_partial_pipeline()

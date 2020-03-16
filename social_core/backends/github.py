@@ -8,6 +8,7 @@ from six.moves.urllib.parse import urljoin
 
 from .oauth import BaseOAuth2
 from ..exceptions import AuthFailed
+from ..utils import handle_http_errors
 
 
 class GithubOAuth2(BaseOAuth2):
@@ -65,7 +66,7 @@ class GithubOAuth2(BaseOAuth2):
 
     def _user_data(self, access_token, path=None):
         url = urljoin(self.api_url(), 'user{0}'.format(path or ''))
-        return self.get_json(url, params={'access_token': access_token})
+        return self.get_json(url, headers={'Authorization': 'token {0}'.format(access_token)})
 
 
 class GithubMemberOAuth2(GithubOAuth2):
@@ -76,10 +77,9 @@ class GithubMemberOAuth2(GithubOAuth2):
         user_data = super(GithubMemberOAuth2, self).user_data(
             access_token, *args, **kwargs
         )
+        headers = {'Authorization': 'token {0}'.format(access_token)}
         try:
-            self.request(self.member_url(user_data), params={
-                'access_token': access_token
-            })
+            self.request(self.member_url(user_data), headers=headers)
         except HTTPError as err:
             # if the user is a member of the organization, response code
             # will be 204, see http://bit.ly/ZS6vFl
@@ -120,3 +120,31 @@ class GithubTeamOAuth2(GithubMemberOAuth2):
                 username=user_data.get('login')
             )
         )
+
+
+class GithubAppAuth(GithubOAuth2):
+    """GitHub App OAuth authentication backend"""
+    name = 'github-app'
+
+    def validate_state(self):
+        """
+        Scenario 1: user clicks an icon/button on your website and initiates
+                    social login. This works exacltly like standard OAuth and we
+                    have `state` and `redirect_uri`.
+
+        Scenario 2: user starts from http://github.com/apps/your-app and clicks
+                    'Install & Authorize' button! They still get a temporary
+                    `code` (used to fetch `access_token`) but there's no `state`
+                    or `redirect_uri` here.
+
+        Note: Scenario 2 only happens when your GitHub App is configured
+              with `Request user authorization (OAuth) during installation`
+              turned on! This causes GitHub to redirect the person back to
+              `/complete/github/`. If the above setting is turned off then
+              GitHub will redirect to another URL called Setup URL and the
+              person may need to login first before they can continue!
+        """
+        if self.data.get('installation_id') and self.data.get('setup_action'):
+            return None
+
+        return super().validate_state()

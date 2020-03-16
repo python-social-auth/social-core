@@ -136,7 +136,7 @@ class FacebookOAuth2(BaseOAuth2):
             # data is needed (it contains the user ID used to identify the
             # account on further logins), this app cannot allow it to
             # continue with the auth process.
-            raise AuthUnknownError(self, 'An error ocurred while retrieving '
+            raise AuthUnknownError(self, 'An error occurred while retrieving '
                                          'users Facebook data')
 
         data['access_token'] = access_token
