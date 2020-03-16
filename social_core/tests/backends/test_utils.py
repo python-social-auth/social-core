@@ -40,7 +40,7 @@ class GetBackendTest(BaseBackendUtilsTest):
         self.assertEqual(backend, GithubOAuth2)
 
     def test_get_missing_backend(self):
-        with self.assertRaisesRegexp(MissingBackend,
+        with self.assertRaisesRegex(MissingBackend,
                                      'Missing backend "foobar" entry'):
             get_backend(('social_core.backends.github.GithubOAuth2',
                          'social_core.backends.facebook.FacebookOAuth2',

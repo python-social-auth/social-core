@@ -8,18 +8,28 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
 
 ### Added
+- Okta backend
 - Support for SAML Single Logout
 - SimpleLogin backend
+- MRG backend
+- Sign in with Apple backend
+- Allow ignoring of default protected user fields with option `SOCIAL_AUTH_NO_DEFAULT_PROTECTED_USER_FIELDS`
 
 ### Changed
+- Add refresh token to Strava backend, change username and remove email
 - Update test runner to PyTest
 - Add python 3.7 CI target
 - Send User-Agent header on Untappd backend
-- Updated Naver API suppor from XML to JSON format
+- Updated Naver API support from XML to JSON format
 - Use `unidecode` to cleanup usernames from unicode characters
 - Update Twitch API support from v3 to v5
 - Properly setup `pytest` version for Python2 and Python3
 - Fix old fields from FIELDS_STORED_IN_SESSION persisting in session
+- Github: pass access token in a header instead of in a query parameter.
+- Update Kakao API support from v1 to v2
+- Update Twitch API support to v5
+- Updated Patreon API support from v1 to v2 per issue #307
+- Fix `user_details` in user pipeline to allow model attributes to be updated
 
 ## [3.2.0](https://github.com/python-social-auth/social-core/releases/tag/3.2.0) - 2019-05-30
 

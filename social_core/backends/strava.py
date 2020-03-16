@@ -17,24 +17,25 @@ class StravaOAuth(BaseOAuth2):
     REDIRECT_STATE = False
     REVOKE_TOKEN_URL = 'https://www.strava.com/oauth/deauthorize'
     SCOPE_SEPARATOR = ','
+    EXTRA_DATA = [
+        ('refresh_token', 'refresh_token'),
+        ('expires_in', 'expires'),
+    ]
 
     def get_user_id(self, details, response):
         return response['athlete']['id']
 
     def get_user_details(self, response):
         """Return user details from Strava account"""
-        # because there is no usernames on strava
-        username = response['athlete']['id']
-        email = response['athlete'].get('email', '')
+        username = response['athlete'].get('username', '')
         fullname, first_name, last_name = self.get_user_names(
             first_name=response['athlete'].get('firstname', ''),
             last_name=response['athlete'].get('lastname', ''),
         )
-        return {'username': str(username),
+        return {'username': username,
                 'fullname': fullname,
                 'first_name': first_name,
-                'last_name': last_name,
-                'email': email}
+                'last_name': last_name}
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
