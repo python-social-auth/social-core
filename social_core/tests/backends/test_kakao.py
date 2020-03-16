@@ -5,7 +5,7 @@ from .oauth import OAuth2Test
 
 class KakaoOAuth2Test(OAuth2Test):
     backend_path = 'social_core.backends.kakao.KakaoOAuth2'
-    user_data_url = 'https://kapi.kakao.com/v1/user/me'
+    user_data_url = 'https://kapi.kakao.com/v2/user/me'
     expected_username = 'foobar'
     access_token_body = json.dumps({
         'access_token': 'foobar'
@@ -18,6 +18,9 @@ class KakaoOAuth2Test(OAuth2Test):
                                'ujlHpQhxtMSbhKrBisrxe1/o.jpg',
             'profile_image': 'http://mud-kage.kakao.co.kr/14/dn/btqbjCnl06Q/'
                              'wbMJSVAUZB7lzSImgGdsoK/o.jpg'
+        },
+        'kakao_account': {
+            'email': 'a'
         }
     })
 
