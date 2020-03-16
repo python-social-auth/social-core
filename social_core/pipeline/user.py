@@ -76,7 +76,7 @@ def create_user(strategy, details, backend, user=None, *args, **kwargs):
     }
 
 
-def user_details(strategy, details, user=None, *args, **kwargs):
+def user_details(strategy, details, backend, user=None, *args, **kwargs):
     """Update user details using data from provider."""
     if not user:
         return
@@ -96,7 +96,10 @@ def user_details(strategy, details, user=None, *args, **kwargs):
     # provider. Update on some attributes is disabled by default, for
     # example username and id fields. It's also possible to disable update
     # on fields defined in SOCIAL_AUTH_PROTECTED_USER_FIELDS.
+    field_mapping = strategy.setting('USER_FIELD_MAPPING', {}, backend)
     for name, value in details.items():
+        # Convert to existing user field if mapping exists
+        name = field_mapping.get(name, name)
         if value is None or not hasattr(user, name) or name in protected:
             continue
 
