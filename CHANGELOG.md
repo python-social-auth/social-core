@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - MRG backend
 - Sign in with Apple backend
 - Allow ignoring of default protected user fields with option `SOCIAL_AUTH_NO_DEFAULT_PROTECTED_USER_FIELDS`
+- Support for users field names mapping
 
 ### Changed
 - Add refresh token to Strava backend, change username and remove email
