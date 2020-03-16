@@ -90,7 +90,7 @@ class AzureADOAuth2(BaseOAuth2):
 
     def auth_extra_arguments(self):
         """Return extra arguments needed on auth process. The defaults can be
-        overriden by GET parameters."""
+        overridden by GET parameters."""
         extra_arguments = super(AzureADOAuth2, self).auth_extra_arguments()
         resource = self.setting('RESOURCE')
         if resource:
