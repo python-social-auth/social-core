@@ -87,17 +87,17 @@ class AppleIdAuth(BaseOAuth2):
         return client_id, client_secret
 
     def get_apple_jwk(self, kid=None):
+        '''Return requested Apple public key or all available.'''
         keys = self.get_json(url=self.JWK_URL).get("keys")
 
         if not isinstance(keys, list) or not keys:
             raise AuthCanceled("Invalid jwk response")
         
-        # Return requested key instead of the last one
         if kid:
             return json.dumps([key for key in keys if key['kid'] == kid][0])
+        else:
+            return (json.dumps(key) for key in keys)
         
-        return json.dumps(keys.pop())
-
     def decode_id_token(self, id_token):
         '''Decode and validate JWT token from apple and return payload including user data.'''
         if not id_token:
