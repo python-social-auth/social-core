@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Okta backend
 - Support for SAML Single Logout
 - SimpleLogin backend
+- SurveyMonkey backend
+- HubSpot backend
 - MRG backend
 - Sign in with Apple backend
 - Allow ignoring of default protected user fields with option `SOCIAL_AUTH_NO_DEFAULT_PROTECTED_USER_FIELDS`
