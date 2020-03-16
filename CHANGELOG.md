@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Use `unidecode` to cleanup usernames from unicode characters
 - Update Twitch API support from v3 to v5
 - Properly setup `pytest` version for Python2 and Python3
+- Fix some spelling mistakes in docstrings
 - Fix old fields from FIELDS_STORED_IN_SESSION persisting in session
 - Github: pass access token in a header instead of in a query parameter.
 - Update Kakao API support from v1 to v2
