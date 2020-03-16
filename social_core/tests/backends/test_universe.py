@@ -15,7 +15,7 @@ class UniverseAuth2Test(OAuth2Test):
         {
             'current_user': {
                 'id': '123456',
-                'slug': 'scott-vitale',
+                'slug': 'foo-bar',
                 'first_name': 'Scott',
                 'last_name': 'Vitale',
                 'created_at': '2019-01-08T15:49:42.514Z',

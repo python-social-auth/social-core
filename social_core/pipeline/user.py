@@ -100,9 +100,8 @@ def user_details(strategy, details, user=None, *args, **kwargs):
         if value is None or not hasattr(user, name) or name in protected:
             continue
 
-        # Check https://github.com/omab/python-social-auth/issues/671
         current_value = getattr(user, name, None)
-        if current_value or current_value == value:
+        if current_value == value:
             continue
 
         changed = True
