@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Update Twitch API support to v5
 - Updated Patreon API support from v1 to v2 per issue #307
 - Fix `user_details` in user pipeline to allow model attributes to be updated
+- Updated Atlassian API urls
 
 ## [3.2.0](https://github.com/python-social-auth/social-core/releases/tag/3.2.0) - 2019-05-30
 
