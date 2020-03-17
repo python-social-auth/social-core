@@ -1,0 +1,14 @@
+version: "3.7"
+
+services:
+  social-release:
+    image: omab/social-core-release
+    build:
+      context: .
+      dockerfile: ./files/release/Dockerfile
+    environment:
+        - PROJECT_NAME=social-auth-core
+    env_file:
+      - ./files/local.env
+    volumes:
+      - .:/code
