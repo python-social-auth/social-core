@@ -13,6 +13,6 @@ addons:
       - libxmlsec1-dev
       - swig
 install:
-  - pip install tox  tox-travis -U pip
+  - pip install tox tox-travis -U pip
 script:
   - tox
