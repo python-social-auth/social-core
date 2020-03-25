@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
 
+### Changed
+- Reverted [PR #388](https://github.com/python-social-auth/social-core/pull/388/) due to
+  dependency license incompatibility
+
 ## [3.3.0](https://github.com/python-social-auth/social-core/releases/tag/3.3.0) - 2020-03-17
 
 ### Added
