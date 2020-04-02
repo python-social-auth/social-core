@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
 
+### Changed
+- Updated list of default user protected fields to include admin flags and password
+
 ## [3.3.2](https://github.com/python-social-auth/social-core/releases/tag/3.3.2) - 2020-03-25
 
 ### Changed
