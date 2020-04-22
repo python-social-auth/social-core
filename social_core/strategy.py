@@ -92,7 +92,9 @@ class BaseStrategy(object):
 
     def clean_partial_pipeline(self, token):
         self.storage.partial.destroy(token)
-        self.session_pop(PARTIAL_TOKEN_SESSION_NAME)
+        current_token_in_session = self.session_get(PARTIAL_TOKEN_SESSION_NAME)
+        if current_token_in_session == token:
+            self.session_pop(PARTIAL_TOKEN_SESSION_NAME)
 
     def openid_store(self):
         return OpenIdStore(self)
