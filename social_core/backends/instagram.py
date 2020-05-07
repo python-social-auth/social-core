@@ -28,11 +28,6 @@ class InstagramOAuth2(BaseOAuth2):
             uri = url_add_parameters(uri, {'state': state})
         return uri
 
-    def auth_params(self, state=None):
-        params = super(InstagramOAuth2, self).auth_params(state)
-        params['return_scopes'] = 'true'
-        return params
-
     def get_user_id(self, details, response):
         # https://developers.facebook.com/docs/instagram-basic-display-api/reference/me
         user_id = response.get('id') or {}
