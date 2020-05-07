@@ -95,7 +95,7 @@ class AzureADOAuth2Test(OAuth2Test):
                 'family_name': 'Bar',
                 'given_name': 'Foo',
                 'iat': AUTH_TIME,
-                'iss': 'https://login.microsoftonline.com/9a9a9a9a-1111-5555-0000-bc24adfdae00/v2.0/',
+                'iss': 'https://footenant.b2clogin.com/99999999-0000-0000-0000-999999999999/v2.0/',
                 'name': 'FooBar',
                 'nbf': AUTH_TIME,
                 'oid': '11223344-5566-7788-9999-aabbccddeeff',
@@ -103,7 +103,7 @@ class AzureADOAuth2Test(OAuth2Test):
                 'sub': '11223344-5566-7788-9999-aabbccddeeff',
                 'tfp': 'B2C_1_SignIn',
                 'ver': '1.0',
-        }).decode('ascii'),
+            }).decode('ascii'),
         'expires_in': EXPIRES_IN,
         'expires_on': EXPIRES_ON,
         'not_before': AUTH_TIME,
@@ -114,14 +114,14 @@ class AzureADOAuth2Test(OAuth2Test):
         settings.update({
             'SOCIAL_AUTH_' + self.name + '_POLICY': 'b2c_1_signin',
             'SOCIAL_AUTH_' + self.name + '_KEY': self.AUTH_KEY,
-            'SOCIAL_AUTH_' + self.name + '_TENANT_ID': 'footenant.onmicrosoft.com',
+            'SOCIAL_AUTH_' + self.name + '_TENANT_NAME': 'footenant',
         })
         return settings
 
     def setUp(self):
         super(AzureADOAuth2Test, self).setUp()
 
-        keys_url = 'https://login.microsoftonline.com/footenant.onmicrosoft.com/discovery/v2.0/keys?p=b2c_1_signin'
+        keys_url = 'https://footenant.b2clogin.com/footenant.onmicrosoft.com/b2c_1_signin/discovery/v2.0/keys'
         keys_body = json.dumps({
             'keys': [{
                 # Dummy public key that pairs with `access_token_body` key:
@@ -136,7 +136,7 @@ class AzureADOAuth2Test(OAuth2Test):
                      'EHg8lhzwOHrtIQbS0FVbb9k3-tVTU4fg_3L_vniUFAKwuCLqKnS2BYwdq_'
                      'mzSnbLY7h_qixoR7jig3__kRhuaxwUkRz5iaiQkqgc5gHdrNP5zw',
                 'e': 'AQAB',
-        }],
+            }],
         })
         HTTPretty.register_uri(HTTPretty.GET, keys_url, status=200, body=keys_body)
 
