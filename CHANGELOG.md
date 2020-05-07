@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - Updated list of default user protected fields to include admin flags and password
+- Instagram: Update to use the latest Graph API v3.2
 
 ## [3.3.2](https://github.com/python-social-auth/social-core/releases/tag/3.3.2) - 2020-03-25
 
