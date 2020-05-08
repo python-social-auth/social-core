@@ -60,13 +60,17 @@ class InstagramOAuth2(BaseOAuth2):
             raise AuthMissingParameter(self, 'code')
         state = self.validate_state()
         key, secret = self.get_key_and_secret()
-        response = self.request(self.ACCESS_TOKEN_URL, params={
-            'client_id': key,
-            'client_secret': secret,
-            'code': self.data['code'],
-            'grant_type': 'authorization_code',
-            'redirect_uri': self.get_redirect_uri(state),
-        })
+        response = self.request(
+            self.ACCESS_TOKEN_URL, 
+            params={
+                'client_id': key,
+                'client_secret': secret,
+                'code': self.data['code'],
+                'grant_type': 'authorization_code',
+                'redirect_uri': self.get_redirect_uri(state),
+            },
+            method=self.ACCESS_TOKEN_METHOD
+        )
         access_token = response['access_token']
         return self.do_auth(access_token, response, *args, **kwargs)
 
