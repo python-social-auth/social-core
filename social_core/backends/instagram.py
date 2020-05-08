@@ -12,21 +12,13 @@ from .oauth import BaseOAuth2
 class InstagramOAuth2(BaseOAuth2):
     name = 'instagram'
     RESPONSE_TYPE = None
+    REDIRECT_STATE = False
     SCOPE_SEPARATOR = ','
     AUTHORIZATION_URL = 'https://api.instagram.com/oauth/authorize'
     ACCESS_TOKEN_URL = 'https://api.instagram.com/oauth/access_token'
     USER_DATA_URL = 'https://graph.instagram.com/me/'
     REFRESH_TOKEN_URL = 'https://graph.instagram.com/refresh_access_token'
     ACCESS_TOKEN_METHOD = 'POST'
-
-    def get_redirect_uri(self, state=None):
-        """Build redirect with redirect_state parameter."""
-        # Facebook and Instagram redirect_uri can accept states now 
-        # but the key must be 'state' or it'll cancel authentication
-        uri = self.redirect_uri
-        if self.REDIRECT_STATE and state:
-            uri = url_add_parameters(uri, {'state': state})
-        return uri
 
     def get_user_id(self, details, response):
         # https://developers.facebook.com/docs/instagram-basic-display-api/reference/me
