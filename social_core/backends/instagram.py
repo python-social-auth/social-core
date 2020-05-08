@@ -62,7 +62,7 @@ class InstagramOAuth2(BaseOAuth2):
         key, secret = self.get_key_and_secret()
         response = self.request(
             self.ACCESS_TOKEN_URL, 
-            params={
+            data={
                 'client_id': key,
                 'client_secret': secret,
                 'code': self.data['code'],
