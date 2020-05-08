@@ -8,7 +8,7 @@ import json
 from hashlib import sha256
 
 from .oauth import BaseOAuth2
-from ..utils import handle_http_errors
+from ..utils import handle_http_errors, parse_qs
 from ..exceptions import AuthCanceled, AuthMissingParameter
 
 
@@ -71,6 +71,13 @@ class InstagramOAuth2(BaseOAuth2):
             },
             method=self.ACCESS_TOKEN_METHOD
         )
+        # API v2.3 returns a JSON, according to the documents linked at issue
+        # #592, but it seems that this needs to be enabled(?), otherwise the
+        # usual querystring type response is returned.
+        try:
+            response = response.json()
+        except ValueError:
+            response = parse_qs(response.text)
         access_token = response['access_token']
         return self.do_auth(access_token, response, *args, **kwargs)
 
