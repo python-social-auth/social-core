@@ -70,7 +70,7 @@ class InstagramOAuth2(BaseOAuth2):
             'client_id': key,
             'client_secret': secret,
             'code': self.data['code'],
-            'grant_type': 'authorization_code'
+            'grant_type': 'authorization_code',
             'redirect_uri': self.get_redirect_uri(state),
         })
         access_token = response['access_token']
