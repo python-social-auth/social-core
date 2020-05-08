@@ -3,10 +3,13 @@ Instagram OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/instagram.html
 """
 import hmac
+import json
 
 from hashlib import sha256
 
 from .oauth import BaseOAuth2
+from ..utils import handle_http_errors
+from ..exceptions import AuthCanceled, AuthMissingParameter
 
 
 class InstagramOAuth2(BaseOAuth2):
