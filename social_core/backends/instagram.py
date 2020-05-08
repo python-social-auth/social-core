@@ -14,7 +14,6 @@ from ..exceptions import AuthCanceled, AuthMissingParameter
 
 class InstagramOAuth2(BaseOAuth2):
     name = 'instagram'
-    RESPONSE_TYPE = None
     REDIRECT_STATE = False
     SCOPE_SEPARATOR = ','
     AUTHORIZATION_URL = 'https://api.instagram.com/oauth/authorize'
