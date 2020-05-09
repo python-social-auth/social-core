@@ -56,8 +56,9 @@ class InstagramOAuth2(BaseOAuth2):
         response.update(data or {})
         if 'access_token' not in response:
             response['access_token'] = access_token
-        kwargs.update({'backend': self, 'response': data})
-        return self.strategy.authenticate(*args, **kwargs)
+        kwargs.update({'response': data})
+        backend=self
+        return self.strategy.authenticate(backend, *args, **kwargs)
 
     @handle_http_errors
     def auth_complete(self, *args, **kwargs):
