@@ -22,10 +22,6 @@ class InstagramOAuth2(BaseOAuth2):
     REFRESH_TOKEN_URL = 'https://graph.instagram.com/refresh_access_token'
     ACCESS_TOKEN_METHOD = 'POST'
 
-    def get_user_id(self, details, response):
-        # https://developers.facebook.com/docs/instagram-basic-display-api/reference/me
-        user_id = response.get('id') or {}
-        return user_id
 
     def get_user_details(self, response):
         """Return user details from Instagram account"""
@@ -60,8 +56,8 @@ class InstagramOAuth2(BaseOAuth2):
         response.update(data or {})
         if 'access_token' not in response:
             response['access_token'] = access_token
-        kwargs.update({'response': response})
-        return self.strategy.authenticate(backend=self, *args, **kwargs)
+        kwargs.update({'backend': self, 'response': data})
+        return self.strategy.authenticate(*args, **kwargs)
 
     @handle_http_errors
     def auth_complete(self, *args, **kwargs):
