@@ -27,7 +27,7 @@ class InstagramOAuth2(BaseOAuth2):
         """Return user details from Instagram account"""
         # https://developers.facebook.com/docs/instagram-basic-display-api/reference/me
         fullname, first_name, last_name = self.get_user_names(
-            user.get('full_name', '')
+            response.get('full_name', '')
         )
         return {'username': response.get('username', response.get('name')),
                 'email': response.get('email', ''),
