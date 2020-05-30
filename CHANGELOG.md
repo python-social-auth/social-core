@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
 
+### Changed
+- Directly use `access_token` in Azure Tenant backend
+
 ## [3.3.3](https://github.com/python-social-auth/social-core/releases/tag/3.3.3) - 2020-04-16
 
 ### Changed

@@ -93,8 +93,7 @@ class AzureADTenantOAuth2(AzureADOAuth2):
         return response.get('sub')
 
     def user_data(self, access_token, *args, **kwargs):
-        response = kwargs.get('response')
-        id_token = response.get('id_token')
+        id_token = access_token
 
         # decode the JWT header as JSON dict
         jwt_header = json.loads(
