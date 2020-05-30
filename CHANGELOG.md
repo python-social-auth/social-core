@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Directly use `access_token` in Azure Tenant backend
 - Support Apple JWT audience 
+- Update partial session cleanup to remove old token from session too
 
 ## [3.3.3](https://github.com/python-social-auth/social-core/releases/tag/3.3.3) - 2020-04-16
 
