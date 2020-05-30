@@ -10,13 +10,15 @@ Settings:
     * `KEY` - your key id;
     * `CLIENT` - your client id;
     * `AUDIENCE` - a list of authorized client IDs, defaults to [CLIENT].
-                   Use this if you need to accept both service and bundle id to b able
-                   to login both via iOS and ie a web form.
+                   Use this if you need to accept both service and bundle id to
+                   be able to login both via iOS and ie a web form.
     * `SECRET` - your secret key;
     * `SCOPE` (optional) - e.g. `['name', 'email']`;
-    * `EMAIL_AS_USERNAME` - use apple email is username is set, use apple id otherwise.
+    * `EMAIL_AS_USERNAME` - use apple email is username is set, use apple id
+                            otherwise.
     * `AppleIdAuth.TOKEN_TTL_SEC` - time before JWT token expiration, seconds.
-    * `SOCIAL_AUTH_APPLE_ID_INACTIVE_USER_LOGIN` - allow inactive users email to login
+    * `SOCIAL_AUTH_APPLE_ID_INACTIVE_USER_LOGIN` - allow inactive users email to
+                                                   login
 """
 
 import json
@@ -110,7 +112,8 @@ class AppleIdAuth(BaseOAuth2):
         
     def decode_id_token(self, id_token):
         """
-        Decode and validate JWT token from apple and return payload including user data.
+        Decode and validate JWT token from apple and return payload including
+        user data.
         """
         if not id_token:
             raise AuthCanceled("Missing id_token parameter")
