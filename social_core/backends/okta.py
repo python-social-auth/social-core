@@ -40,7 +40,7 @@ class OktaOAuth2(OktaMixin, BaseOAuth2):
     ID_KEY = "preferred_username"
 
     DEFAULT_SCOPE = [
-        'openid', 'profile'
+        'openid', 'profile', 'email'
     ]
     EXTRA_DATA = [
         ('refresh_token', 'refresh_token', True),
@@ -51,7 +51,7 @@ class OktaOAuth2(OktaMixin, BaseOAuth2):
     def get_user_details(self, response):
         """Return user details from Okta account"""
         return {'username': response.get('preferred_username'),
-                'email': response.get('preferred_username') or '',
+                'email': response.get('email') or '',
                 'first_name': response.get('given_name'),
                 'last_name': response.get('family_name')}
 
