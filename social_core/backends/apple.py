@@ -9,10 +9,14 @@ Settings:
     * `TEAM` - your team id;
     * `KEY` - your key id;
     * `CLIENT` - your client id;
+    * `AUDIENCE` - a list of authorized client IDs, defaults to [CLIENT].
+                   Use this if you need to accept both service and bundle id to b able
+                   to login both via iOS and ie a web form.
     * `SECRET` - your secret key;
     * `SCOPE` (optional) - e.g. `['name', 'email']`;
     * `EMAIL_AS_USERNAME` - use apple email is username is set, use apple id otherwise.
     * `AppleIdAuth.TOKEN_TTL_SEC` - time before JWT token expiration, seconds.
+    * `SOCIAL_AUTH_APPLE_ID_INACTIVE_USER_LOGIN` - allow inactive users email to login
 """
 
 import json
@@ -42,6 +46,10 @@ class AppleIdAuth(BaseOAuth2):
 
     TOKEN_AUDIENCE = 'https://appleid.apple.com'
     TOKEN_TTL_SEC = 6 * 30 * 24 * 60 * 60
+
+    def get_audience(self):
+        client_id = self.setting('CLIENT')
+        return self.setting('AUDIENCE', default=[client_id])
 
     def auth_params(self, *args, **kwargs):
         """
@@ -87,7 +95,9 @@ class AppleIdAuth(BaseOAuth2):
         return client_id, client_secret
 
     def get_apple_jwk(self, kid=None):
-        '''Return requested Apple public key or all available.'''
+        """
+        Return requested Apple public key or all available.
+        """
         keys = self.get_json(url=self.JWK_URL).get("keys")
 
         if not isinstance(keys, list) or not keys:
@@ -99,16 +109,21 @@ class AppleIdAuth(BaseOAuth2):
             return (json.dumps(key) for key in keys)
         
     def decode_id_token(self, id_token):
-        '''Decode and validate JWT token from apple and return payload including user data.'''
+        """
+        Decode and validate JWT token from apple and return payload including user data.
+        """
         if not id_token:
             raise AuthCanceled("Missing id_token parameter")
-
 
         kid = jwt.get_unverified_header(id_token).get('kid')
         public_key = RSAAlgorithm.from_jwk(self.get_apple_jwk(kid))
         try:
-            decoded = jwt.decode(id_token, key=public_key,
-                                 audience=self.setting("CLIENT"), algorithm="RS256",)
+            decoded = jwt.decode(
+                id_token,
+                key=public_key,
+                audience=self.get_audience(),
+                algorithm="RS256",
+            )
         except PyJWTError:
             raise AuthCanceled("Token validation failed")
 
@@ -124,9 +139,10 @@ class AppleIdAuth(BaseOAuth2):
 
         email = response.get('email', '')
         apple_id = response.get(self.ID_KEY, '')
+        # prevent updating User with empty strings
         user_details = {
-            'first_name': first_name,
-            'last_name': last_name,
+            'first_name': first_name or None,
+            'last_name': last_name or None,
             'email': email,
         }
         if email and self.setting('EMAIL_AS_USERNAME'):
