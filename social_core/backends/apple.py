@@ -118,9 +118,9 @@ class AppleIdAuth(BaseOAuth2):
         if not id_token:
             raise AuthFailed(self, "Missing id_token parameter")
 
-        kid = jwt.get_unverified_header(id_token).get('kid')
-        public_key = RSAAlgorithm.from_jwk(self.get_apple_jwk(kid))
         try:
+            kid = jwt.get_unverified_header(id_token).get('kid')
+            public_key = RSAAlgorithm.from_jwk(self.get_apple_jwk(kid))
             decoded = jwt.decode(
                 id_token,
                 key=public_key,
