@@ -29,7 +29,7 @@ from jwt.algorithms import RSAAlgorithm
 from jwt.exceptions import PyJWTError
 
 from social_core.backends.oauth import BaseOAuth2
-from social_core.exceptions import AuthCanceled
+from social_core.exceptions import AuthFailed
 
 
 class AppleIdAuth(BaseOAuth2):
@@ -103,20 +103,20 @@ class AppleIdAuth(BaseOAuth2):
         keys = self.get_json(url=self.JWK_URL).get("keys")
 
         if not isinstance(keys, list) or not keys:
-            raise AuthCanceled("Invalid jwk response")
-        
+            raise AuthFailed(self, "Invalid jwk response")
+
         if kid:
             return json.dumps([key for key in keys if key['kid'] == kid][0])
         else:
             return (json.dumps(key) for key in keys)
-        
+
     def decode_id_token(self, id_token):
         """
         Decode and validate JWT token from apple and return payload including
         user data.
         """
         if not id_token:
-            raise AuthCanceled("Missing id_token parameter")
+            raise AuthFailed(self, "Missing id_token parameter")
 
         kid = jwt.get_unverified_header(id_token).get('kid')
         public_key = RSAAlgorithm.from_jwk(self.get_apple_jwk(kid))
@@ -128,7 +128,7 @@ class AppleIdAuth(BaseOAuth2):
                 algorithm="RS256",
             )
         except PyJWTError:
-            raise AuthCanceled("Token validation failed")
+            raise AuthFailed(self, "Token validation failed")
 
         return decoded
 
@@ -160,7 +160,7 @@ class AppleIdAuth(BaseOAuth2):
         jwt_string = response.get(self.TOKEN_KEY) or access_token
 
         if not jwt_string:
-            raise AuthCanceled('Missing id_token parameter')
+            raise AuthFailed(self, 'Missing id_token parameter')
 
         decoded_data = self.decode_id_token(jwt_string)
         return super(AppleIdAuth, self).do_auth(
