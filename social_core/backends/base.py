@@ -215,6 +215,9 @@ class BaseAuth(object):
 
     def request(self, url, method='GET', *args, **kwargs):
         kwargs.setdefault('headers', {})
+		if self.setting('PROXIES') is not None:
+			kwargs.setdefault('proxies', self.setting('PROXIES'))
+
         if self.setting('VERIFY_SSL') is not None:
             kwargs.setdefault('verify', self.setting('VERIFY_SSL'))
         kwargs.setdefault('timeout', self.setting('REQUESTS_TIMEOUT') or
