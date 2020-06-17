@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
 
+### Added
+- Zoom backend
+
 ### Changed
 - Directly use `access_token` in Azure Tenant backend
 - Support Apple JWT audience 
