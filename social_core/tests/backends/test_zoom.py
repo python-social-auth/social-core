@@ -60,4 +60,5 @@ class ZoomOAuth2Test(OAuth2Test):
 
     def test_refresh_token(self):
         user, social = self.do_refresh_token()
+        self.assertEqual(user.username, self.expected_username)
         self.assertEqual(social.extra_data['access_token'], 'foobar-new-token')

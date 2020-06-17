@@ -20,7 +20,9 @@ class ZoomOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         response = self.get_json(
-            self.USER_DETAILS_URL, headers={'Authorization': 'Bearer {access_token}'.format(access_token=access_token)}
+            self.USER_DETAILS_URL, headers={
+                'Authorization': 'Bearer {access_token}'.format(access_token=access_token)
+            }
         )
         return response
 
@@ -47,7 +49,9 @@ class ZoomOAuth2(BaseOAuth2):
 
     def auth_headers(self):
         return {
-            'Authorization': b'Basic ' + base64.urlsafe_b64encode('{0}:{1}'.format(*self.get_key_and_secret()).encode())
+            'Authorization': b'Basic ' + base64.urlsafe_b64encode(
+                '{0}:{1}'.format(*self.get_key_and_secret()).encode()
+            )
         }
 
     def refresh_token_params(self, token, *args, **kwargs):
