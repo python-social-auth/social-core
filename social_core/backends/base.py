@@ -148,12 +148,24 @@ class BaseAuth(object):
     def auth_allowed(self, response, details):
         """Return True if the user should be allowed to authenticate, by
         default check if email is whitelisted (if there's a whitelist)"""
-        emails = self.setting('WHITELISTED_EMAILS', [])
-        domains = self.setting('WHITELISTED_DOMAINS', [])
-        email = details.get('email')
+        def lower_email_domain(email):
+            """Lowercase an email safely by leaving the local-part alone and
+            only lowercasing the domain."""
+            if email is None:
+                return
+
+            try:
+                local_part, domain = email.split('@', 1)
+            except ValueError:
+                return email  # the email is malformed, pass it through unchanged
+            return '@'.join([local_part, domain.lower()])
+
+        emails = [lower_email_domain(email) for email in self.setting('WHITELISTED_EMAILS', [])]
+        domains = [domain.lower() for domain in self.setting('WHITELISTED_DOMAINS', [])]
+        email = lower_email_domain(details.get('email'))
         allowed = True
         if email and (emails or domains):
-            domain = email.split('@', 1)[1]
+            domain = email.split('@', 1)[1].lower()
             allowed = email in emails or domain in domains
         return allowed
 
