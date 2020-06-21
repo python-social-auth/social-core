@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fetch user email in Okta integration
 - Improve Python 3.9 compatibility
 - Send proxies in request
+- Improve error handling in Apple backend
 
 ## [3.3.3](https://github.com/python-social-auth/social-core/releases/tag/3.3.3) - 2020-04-16
 
