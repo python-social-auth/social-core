@@ -1,5 +1,7 @@
 import base64
 
+import six
+
 from ..storage import UserMixin, NonceMixin, AssociationMixin, \
                       CodeMixin, PartialMixin, BaseStorage
 
@@ -166,7 +168,10 @@ class TestAssociation(AssociationMixin, BaseModel):
         if assoc is None:
             assoc = TestAssociation(server_url=server_url,
                                     handle=association.handle)
-        assoc.secret = base64.encodestring(association.secret)
+        if six.PY3:
+            assoc.secret = base64.encodebytes(association.secret)
+        else:
+            assoc.secret = base64.encodestring(association.secret)
         assoc.issued = association.issued
         assoc.lifetime = association.lifetime
         assoc.assoc_type = association.assoc_type

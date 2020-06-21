@@ -2,7 +2,6 @@ import re
 import sys
 import time
 import unicodedata
-import collections
 import functools
 import hmac
 import logging
@@ -111,7 +110,7 @@ def sanitize_redirect(hosts, redirect_to):
 
 def user_is_authenticated(user):
     if user and hasattr(user, 'is_authenticated'):
-        if isinstance(user.is_authenticated, collections.Callable):
+        if callable(user.is_authenticated):
             authenticated = user.is_authenticated()
         else:
             authenticated = user.is_authenticated
@@ -124,7 +123,7 @@ def user_is_authenticated(user):
 
 def user_is_active(user):
     if user and hasattr(user, 'is_active'):
-        if isinstance(user.is_active, collections.Callable):
+        if callable(user.is_active):
             is_active = user.is_active()
         else:
             is_active = user.is_active
