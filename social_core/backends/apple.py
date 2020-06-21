@@ -70,7 +70,7 @@ class AppleIdAuth(BaseOAuth2):
         Return contents of the private key file. Override this method to provide
         secret key from another source if needed.
         """
-        return self.setting("SECRET")
+        return self.setting('SECRET')
 
     def generate_client_secret(self):
         now = int(time.time())
@@ -100,10 +100,10 @@ class AppleIdAuth(BaseOAuth2):
         """
         Return requested Apple public key or all available.
         """
-        keys = self.get_json(url=self.JWK_URL).get("keys")
+        keys = self.get_json(url=self.JWK_URL).get('keys')
 
         if not isinstance(keys, list) or not keys:
-            raise AuthFailed(self, "Invalid jwk response")
+            raise AuthFailed(self, 'Invalid jwk response')
 
         if kid:
             return json.dumps([key for key in keys if key['kid'] == kid][0])
@@ -116,7 +116,7 @@ class AppleIdAuth(BaseOAuth2):
         user data.
         """
         if not id_token:
-            raise AuthFailed(self, "Missing id_token parameter")
+            raise AuthFailed(self, 'Missing id_token parameter')
 
         try:
             kid = jwt.get_unverified_header(id_token).get('kid')
@@ -125,10 +125,10 @@ class AppleIdAuth(BaseOAuth2):
                 id_token,
                 key=public_key,
                 audience=self.get_audience(),
-                algorithm="RS256",
+                algorithm='RS256',
             )
         except PyJWTError:
-            raise AuthFailed(self, "Token validation failed")
+            raise AuthFailed(self, 'Token validation failed')
 
         return decoded
 
