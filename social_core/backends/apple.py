@@ -133,7 +133,7 @@ class AppleIdAuth(BaseOAuth2):
         return decoded
 
     def get_user_details(self, response):
-        name = response.get('name') or {}
+        name = json.loads(self.data.get('user', '{}')).get('name', {})
         fullname, first_name, last_name = self.get_user_names(
             fullname='',
             first_name=name.get('firstName', ''),
@@ -144,6 +144,7 @@ class AppleIdAuth(BaseOAuth2):
         apple_id = response.get(self.ID_KEY, '')
         # prevent updating User with empty strings
         user_details = {
+            'fullname': fullname or None,
             'first_name': first_name or None,
             'last_name': last_name or None,
             'email': email,
