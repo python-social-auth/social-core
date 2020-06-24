@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 - Zoom backend
+- EpicGames backend
 
 ### Changed
 - Directly use `access_token` in Azure Tenant backend
