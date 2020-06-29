@@ -1,7 +1,7 @@
 import base64
 import json
 
-from cryptography.x509 import load_pem_x509_certificate
+from cryptography.x509 import load_der_x509_certificate
 from cryptography.hazmat.backends import default_backend
 from jwt import DecodeError, ExpiredSignature, decode as jwt_decode
 
@@ -85,8 +85,7 @@ class AzureADTenantOAuth2(AzureADOAuth2):
                       '{}\n' \
                       '-----END CERTIFICATE-----'.format(x5c)
 
-        return load_pem_x509_certificate(certificate.encode(),
-                                         default_backend())
+        return load_der_x509_certificate(base64.b64decode(x5c), default_backend())
 
     def get_user_id(self, details, response):
         """Use subject (sub) claim as unique id."""
