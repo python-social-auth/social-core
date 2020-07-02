@@ -46,8 +46,10 @@ class KakaoOAuth2(BaseOAuth2):
         )
 
     def auth_complete_params(self, state=None):
+        client_id, client_secret = self.get_key_and_secret()
         return {
             'grant_type': 'authorization_code',
             'code': self.data.get('code', ''),
-            'client_id': self.get_key_and_secret()[0],
+            'client_id': client_id,
+            'client_secret': client_secret,
         }
