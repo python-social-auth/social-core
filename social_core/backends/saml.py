@@ -79,7 +79,7 @@ class SAMLIdentityProvider(object):
             if len(value):
                 value = value[0]
             else:
-                value = None
+                value = ''
         return value
 
     @property
