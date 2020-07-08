@@ -116,3 +116,10 @@ class AzureADTenantOAuth2(AzureADOAuth2):
             )
         except (DecodeError, ExpiredSignature) as error:
             raise AuthTokenError(self, error)
+
+
+class AzureADV2TenantOAuth2(AzureADTenantOAuth2):
+    name = 'azuread-v2-tenant-oauth2'
+    AUTHORIZATION_URL = 'https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/authorize'
+    ACCESS_TOKEN_URL = 'https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token'
+    DEFAULT_SCOPE = ['openid', 'profile']
