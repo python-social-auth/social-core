@@ -123,3 +123,20 @@ class AzureADV2TenantOAuth2(AzureADTenantOAuth2):
     AUTHORIZATION_URL = 'https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/authorize'
     ACCESS_TOKEN_URL = 'https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token'
     DEFAULT_SCOPE = ['openid', 'profile']
+
+    def get_user_id(self, details, response):
+        """Use upn as unique id"""
+        return response.get('preferred_username')
+
+    def get_user_details(self, response):
+        """Return user details from Azure AD account"""
+        fullname, first_name, last_name = (
+            response.get('name', ''),
+            response.get('given_name', ''),
+            response.get('family_name', '')
+        )
+        return {'username': fullname,
+                'email': response.get('preferred_username'),
+                'fullname': fullname,
+                'first_name': first_name,
+                'last_name': last_name}
