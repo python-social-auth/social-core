@@ -34,7 +34,7 @@ class AmazonOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Grab user profile information from amazon."""
-        response = self.get_json('https://www.amazon.com/ap/user/profile',
+        response = self.get_json('https://api.amazon.com/user/profile',
                                  params={'access_token': access_token})
         if 'Profile' in response:
             response = {
