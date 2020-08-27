@@ -81,12 +81,12 @@ class YahooOAuth(BaseOAuth1):
 class YahooOAuth2(BaseOAuth2):
     """Yahoo OAuth2 authentication backend"""
     name = 'yahoo-oauth2'
-    ID_KEY = 'guid'
+    ID_KEY = 'sub'
     AUTHORIZATION_URL = 'https://api.login.yahoo.com/oauth2/request_auth'
     ACCESS_TOKEN_URL = 'https://api.login.yahoo.com/oauth2/get_token'
     ACCESS_TOKEN_METHOD = 'POST'
     EXTRA_DATA = [
-        ('xoauth_yahoo_guid', 'id'),
+        ('sub', 'id'),
         ('access_token', 'access_token'),
         ('expires_in', 'expires'),
         ('refresh_token', 'refresh_token'),
