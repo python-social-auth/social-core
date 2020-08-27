@@ -66,7 +66,7 @@ def do_complete(backend, login, user=None, redirect_name='next',
         if user_is_active(user):
             # catch is_new/social_user in case login() resets the instance
             is_new = getattr(user, 'is_new', False)
-            social_user = user.social_user
+            social_user = user.social_auth.all()[0]
             login(backend, user, social_user)
             # store last login backend name in session
             backend.strategy.session_set('social_auth_last_login_backend',
