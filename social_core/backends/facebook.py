@@ -14,7 +14,7 @@ from ..exceptions import AuthException, AuthCanceled, AuthUnknownError, \
                          AuthMissingParameter
 
 
-API_VERSION = 2.9
+API_VERSION = 3.2
 
 
 class FacebookOAuth2(BaseOAuth2):
@@ -88,7 +88,7 @@ class FacebookOAuth2(BaseOAuth2):
 
     @handle_http_errors
     def auth_complete(self, *args, **kwargs):
-        """Completes loging process, must return user instance"""
+        """Completes login process, must return user instance"""
         self.process_error(self.data)
         if not self.data.get('code'):
             raise AuthMissingParameter(self, 'code')
@@ -136,7 +136,7 @@ class FacebookOAuth2(BaseOAuth2):
             # data is needed (it contains the user ID used to identify the
             # account on further logins), this app cannot allow it to
             # continue with the auth process.
-            raise AuthUnknownError(self, 'An error ocurred while retrieving '
+            raise AuthUnknownError(self, 'An error occurred while retrieving '
                                          'users Facebook data')
 
         data['access_token'] = access_token

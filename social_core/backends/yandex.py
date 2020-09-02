@@ -42,9 +42,12 @@ class YandexOAuth2(BaseOAuth2):
         fullname, first_name, last_name = self.get_user_names(
             response.get('real_name') or response.get('display_name') or ''
         )
+        email = response.get('default_email')
+        if not email:
+            emails = response.get('emails')
+            email = emails[0] if emails else ''
         return {'username': response.get('display_name'),
-                'email': response.get('default_email') or
-                         response.get('emails', [''])[0],
+                'email': email,
                 'fullname': fullname,
                 'first_name': first_name,
                 'last_name': last_name}
@@ -66,9 +69,12 @@ class YaruOAuth2(BaseOAuth2):
         fullname, first_name, last_name = self.get_user_names(
             response.get('real_name') or response.get('display_name') or ''
         )
+        email = response.get('default_email')
+        if not email:
+            emails = response.get('emails')
+            email = emails[0] if emails else ''
         return {'username': response.get('display_name'),
-                'email': response.get('default_email') or
-                         response.get('emails', [''])[0],
+                'email': email,
                 'fullname': fullname,
                 'first_name': first_name,
                 'last_name': last_name}

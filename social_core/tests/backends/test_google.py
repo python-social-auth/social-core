@@ -11,73 +11,40 @@ from ...actions import do_disconnect
 from ..models import User
 from .oauth import OAuth1Test, OAuth2Test
 from .open_id import OpenIdTest
-from .open_id_connect import OpenIdConnectTestMixin, NO_JWKEST
+from .open_id_connect import OpenIdConnectTestMixin
 
 
 class GoogleOAuth2Test(OAuth2Test):
     backend_path = 'social_core.backends.google.GoogleOAuth2'
-    user_data_url = 'https://www.googleapis.com/plus/v1/people/me'
+    user_data_url = 'https://www.googleapis.com/oauth2/v3/userinfo'
     expected_username = 'foo'
     access_token_body = json.dumps({
         'access_token': 'foobar',
         'token_type': 'bearer'
     })
     user_data_body = json.dumps({
-        'aboutMe': 'About me text',
-        'cover': {
-            'coverInfo': {
-                'leftImageOffset': 0,
-                'topImageOffset': 0
-            },
-            'coverPhoto': {
-                'height': 629,
-                'url': 'https://lh5.googleusercontent.com/-ui-GqpNh5Ms/'
-                       'AAAAAAAAAAI/AAAAAAAAAZw/a7puhHMO_fg/photo.jpg',
-                'width': 940
-            },
-            'layout': 'banner'
-        },
-        'displayName': 'Foo Bar',
-        'emails': [{
-            'type': 'account',
-            'value': 'foo@bar.com'
-        }],
-        'etag': '"e-tag string"',
-        'gender': 'male',
-        'id': '101010101010101010101',
-        'image': {
-            'url': 'https://lh5.googleusercontent.com/-ui-GqpNh5Ms/'
+        'profile': 'https://plus.google.com/101010101010101010101',
+        'family_name': 'Bar',
+        'sub': '101010101010101010101',
+        'picture': 'https://lh5.googleusercontent.com/-ui-GqpNh5Ms/'
                    'AAAAAAAAAAI/AAAAAAAAAZw/a7puhHMO_fg/photo.jpg',
-        },
-        'isPlusUser': True,
-        'kind': 'plus#person',
-        'language': 'en',
-        'name': {
-            'familyName': 'Bar',
-            'givenName': 'Foo'
-        },
-        'objectType': 'person',
-        'occupation': 'Software developer',
-        'organizations': [{
-            'name': 'Org name',
-            'primary': True,
-            'type': 'school'
-        }],
-        'placesLived': [{
-            'primary': True,
-            'value': 'Anyplace'
-        }],
-        'url': 'https://plus.google.com/101010101010101010101',
-        'urls': [{
-            'label': 'http://foobar.com',
-            'type': 'otherProfile',
-            'value': 'http://foobar.com',
-        }],
-        'verified': False
+        'locale': 'en',
+        'email_verified': True,
+        'given_name': 'Foo',
+        'email': 'foo@bar.com',
+        'name': 'Foo Bar',
     })
 
     def test_login(self):
         self.do_login()
+        last_request = HTTPretty.last_request
+        self.assertEqual(last_request.method, 'GET')
+        self.assertTrue(self.user_data_url.endswith(last_request.path))
+        self.assertEqual(
+            last_request.headers['Authorization'],
+            'Bearer foobar',
+        )
+        self.assertEqual(last_request.querystring, {})
 
     def test_partial_pipeline(self):
         self.do_partial_pipeline()
@@ -236,59 +203,56 @@ class GoogleRevokeTokenTest(GoogleOAuth2Test):
         do_disconnect(self.backend, user)
 
 
-@unittest2.skipIf(NO_JWKEST, 'No Jwkest installed')
-class GoogleOpenIdConnectTest(OpenIdConnectTestMixin, GoogleOAuth2Test):
+class GoogleOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
     backend_path = \
         'social_core.backends.google_openidconnect.GoogleOpenIdConnect'
     user_data_url = \
         'https://www.googleapis.com/plus/v1/people/me/openIdConnect'
     issuer = 'accounts.google.com'
-    openid_config_body = ''.join([
-        '{',
-        ' "issuer": "https://accounts.google.com",',
-        ' "authorization_endpoint": "https://accounts.google.com/o/oauth2/v2/auth",',
-        ' "token_endpoint": "https://www.googleapis.com/oauth2/v4/token",',
-        ' "userinfo_endpoint": "https://www.googleapis.com/oauth2/v3/userinfo",',
-        ' "revocation_endpoint": "https://accounts.google.com/o/oauth2/revoke",',
-        ' "jwks_uri": "https://www.googleapis.com/oauth2/v3/certs",',
-        ' "response_types_supported": [',
-        '  "code",',
-        '  "token",',
-        '  "id_token",',
-        '  "code token",',
-        '  "code id_token",',
-        '  "token id_token",',
-        '  "code token id_token",',
-        '  "none"',
-        ' ],',
-        ' "subject_types_supported": [',
-        '  "public"',
-        ' ],',
-        ' "id_token_signing_alg_values_supported": [',
-        '  "RS256"',
-        ' ],',
-        ' "scopes_supported": [',
-        '  "openid",',
-        '  "email",',
-        '  "profile"',
-        ' ],',
-        ' "token_endpoint_auth_methods_supported": [',
-        '  "client_secret_post",',
-        '  "client_secret_basic"',
-        ' ],',
-        ' "claims_supported": [',
-        '  "aud",',
-        '  "email",',
-        '  "email_verified",',
-        '  "exp",',
-        '  "family_name",',
-        '  "given_name",',
-        '  "iat",',
-        '  "iss",',
-        '  "locale",',
-        '  "name",',
-        '  "picture",',
-        '  "sub"',
-        ' ]',
-        '}'
-    ])
+    openid_config_body = json.dumps({
+        'issuer': 'https://accounts.google.com',
+        'authorization_endpoint': 'https://accounts.google.com/o/oauth2/v2/auth',
+        'token_endpoint': 'https://www.googleapis.com/oauth2/v4/token',
+        'userinfo_endpoint': 'https://www.googleapis.com/oauth2/v3/userinfo',
+        'revocation_endpoint': 'https://accounts.google.com/o/oauth2/revoke',
+        'jwks_uri': 'https://www.googleapis.com/oauth2/v3/certs',
+        'response_types_supported': [
+            'code',
+            'token',
+            'id_token',
+            'code token',
+            'code id_token',
+            'token id_token',
+            'code token id_token',
+            'none',
+        ],
+        'subject_types_supported': [
+            'public',
+        ],
+        'id_token_signing_alg_values_supported': [
+            'RS256',
+        ],
+        'scopes_supported': [
+            'openid',
+            'email',
+            'profile',
+        ],
+        'token_endpoint_auth_methods_supported': [
+            'client_secret_post',
+            'client_secret_basic',
+        ],
+        'claims_supported': [
+            'aud',
+            'email',
+            'email_verified',
+            'exp',
+            'family_name',
+            'given_name',
+            'iat',
+            'iss',
+            'locale',
+            'name',
+            'picture',
+            'sub',
+        ],
+    })

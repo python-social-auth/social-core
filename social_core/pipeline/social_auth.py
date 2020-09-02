@@ -19,7 +19,7 @@ def social_user(backend, uid, user=None, *args, **kwargs):
     social = backend.strategy.storage.user.get_social_auth(provider, uid)
     if social:
         if user and social.user != user:
-            msg = 'This {0} account is already in use.'.format(provider)
+            msg = 'This account is already in use.'
             raise AuthAlreadyAssociated(backend, msg)
         elif not user:
             user = social.user

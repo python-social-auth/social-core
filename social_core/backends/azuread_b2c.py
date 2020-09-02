@@ -151,7 +151,9 @@ class AzureADB2COAuth2(AzureADOAuth2):
         """
         details = super(AzureADB2COAuth2, self).get_user_details(response)
         if not details['email'] and response.get('emails'):
-            details['email'] = response['emails'][0]
+            details['email'] = response['emails']
+        if isinstance(details.get('email'), (list, tuple)):
+            details['email'] = details['email'][0]
         return details
 
     def get_public_key(self, kid):

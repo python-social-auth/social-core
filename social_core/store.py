@@ -21,7 +21,7 @@ class OpenIdStore(BaseOpenIDStore):
         self.max_nonce_age = 6 * 60 * 60  # Six hours
 
     def storeAssociation(self, server_url, association):
-        """Store new assocition if doesn't exist"""
+        """Store new association if it does not exist"""
         self.assoc.store(server_url, association)
 
     def removeAssociation(self, server_url, handle):
@@ -38,7 +38,7 @@ class OpenIdStore(BaseOpenIDStore):
             return assoc.expiresIn
 
     def getAssociation(self, server_url, handle=None):
-        """Return stored assocition"""
+        """Return stored association"""
         associations, expired = [], []
         for assoc_id, association in self.assoc.oids(server_url, handle):
             expires = self.expiresIn(association)

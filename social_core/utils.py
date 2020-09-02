@@ -4,6 +4,7 @@ import time
 import unicodedata
 import collections
 import functools
+import hmac
 import logging
 
 import six
@@ -218,21 +219,12 @@ def build_absolute_uri(host_url, path=None):
 
 
 def constant_time_compare(val1, val2):
-    """
-    Returns True if the two strings are equal, False otherwise.
-    The time taken is independent of the number of characters that match.
-    This code was borrowed from Django 1.5.4-final
-    """
-    if len(val1) != len(val2):
-        return False
-    result = 0
-    if six.PY3 and isinstance(val1, bytes) and isinstance(val2, bytes):
-        for x, y in zip(val1, val2):
-            result |= x ^ y
-    else:
-        for x, y in zip(val1, val2):
-            result |= ord(x) ^ ord(y)
-    return result == 0
+    """Compare two values and prevent timing attacks for cryptographic use."""
+    if isinstance(val1, six.text_type):
+        val1 = val1.encode('utf-8')
+    if isinstance(val2, six.text_type):
+        val2 = val2.encode('utf-8')
+    return hmac.compare_digest(val1, val2)
 
 
 def is_url(value):

@@ -77,7 +77,11 @@ class AzureADOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         response = kwargs.get('response')
-        id_token = response.get('id_token')
+        if response and response.get('id_token'):
+            id_token = response.get('id_token')
+        else:
+            id_token = access_token
+            
         try:
             decoded_id_token = jwt_decode(id_token, verify=False)
         except (DecodeError, ExpiredSignature) as de:
@@ -86,7 +90,7 @@ class AzureADOAuth2(BaseOAuth2):
 
     def auth_extra_arguments(self):
         """Return extra arguments needed on auth process. The defaults can be
-        overriden by GET parameters."""
+        overridden by GET parameters."""
         extra_arguments = super(AzureADOAuth2, self).auth_extra_arguments()
         resource = self.setting('RESOURCE')
         if resource:

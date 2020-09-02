@@ -1,1 +1,2 @@
-pyjwkest>=1.0.1
+python-jose>=3.0.0
+pyjwt>=1.7.1

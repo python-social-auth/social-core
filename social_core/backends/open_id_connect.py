@@ -1,19 +1,20 @@
+import json
 import datetime
 from calendar import timegm
 
 import six
+from jose import jwk, jwt
+from jose.jwt import JWTError, JWTClaimsError, ExpiredSignatureError
+from jose.utils import base64url_decode
 
-from jwkest import JWKESTException
-from jwkest.jwk import KEYS
-from jwkest.jws import JWS
-
-from .oauth import BaseOAuth2
-from ..utils import cache
-from ..exceptions import AuthTokenError
+from social_core.backends.oauth import BaseOAuth2
+from social_core.utils import cache
+from social_core.exceptions import AuthTokenError
 
 
 class OpenIdConnectAssociation(object):
     """ Use Association model to save the nonce by force."""
+
     def __init__(self, handle, secret='', issued=0, lifetime=0, assoc_type=''):
         self.handle = handle  # as nonce
         self.secret = secret.encode()  # not use
@@ -43,6 +44,7 @@ class OpenIdConnectAuth(BaseOAuth2):
     REVOKE_TOKEN_URL = ''
     USERINFO_URL = ''
     JWKS_URI = ''
+    JWT_DECODE_OPTIONS = dict()
 
     def __init__(self, *args, **kwargs):
         self.id_token = None
@@ -79,13 +81,16 @@ class OpenIdConnectAuth(BaseOAuth2):
 
     @cache(ttl=86400)
     def get_jwks_keys(self):
-        keys = KEYS()
-        keys.load_from_url(self.jwks_uri())
+        keys = self.get_remote_jwks_keys()
 
         # Add client secret as oct key so it can be used for HMAC signatures
-        client_id, client_secret = self.get_key_and_secret()
-        keys.add({'key': client_secret, 'kty': 'oct'})
+        # client_id, client_secret = self.get_key_and_secret()
+        # keys.append({'key': client_secret, 'kty': 'oct'})
         return keys
+
+    def get_remote_jwks_keys(self):
+        response = self.request(self.jwks_uri())
+        return json.loads(response.text)['keys']
 
     def auth_params(self, state=None):
         """Return extra arguments needed on auth process."""
@@ -116,26 +121,7 @@ class OpenIdConnectAuth(BaseOAuth2):
         self.strategy.storage.association.remove([nonce_id])
 
     def validate_claims(self, id_token):
-        if id_token['iss'] != self.id_token_issuer():
-            raise AuthTokenError(self, 'Invalid issuer')
-
-        client_id, client_secret = self.get_key_and_secret()
-
-        if isinstance(id_token['aud'], six.string_types):
-            id_token['aud'] = [id_token['aud']]
-
-        if client_id not in id_token['aud']:
-            raise AuthTokenError(self, 'Invalid audience')
-
-        if len(id_token['aud']) > 1 and 'azp' not in id_token:
-            raise AuthTokenError(self, 'Incorrect id_token: azp')
-
-        if 'azp' in id_token and id_token['azp'] != client_id:
-            raise AuthTokenError(self, 'Incorrect id_token: azp')
-
         utc_timestamp = timegm(datetime.datetime.utcnow().utctimetuple())
-        if utc_timestamp > id_token['exp']:
-            raise AuthTokenError(self, 'Signature has expired')
 
         if 'nbf' in id_token and utc_timestamp < id_token['nbf']:
             raise AuthTokenError(self, 'Incorrect id_token: nbf')
@@ -156,21 +142,49 @@ class OpenIdConnectAuth(BaseOAuth2):
         else:
             raise AuthTokenError(self, 'Incorrect id_token: nonce')
 
-    def validate_and_return_id_token(self, jws):
+    def find_valid_key(self, id_token):
+        for key in self.get_jwks_keys():
+            rsakey = jwk.construct(key)
+            message, encoded_sig = id_token.rsplit('.', 1)
+            decoded_sig = base64url_decode(encoded_sig.encode('utf-8'))
+            if rsakey.verify(message.encode('utf-8'), decoded_sig):
+                return key
+
+    def validate_and_return_id_token(self, id_token, access_token):
         """
         Validates the id_token according to the steps at
         http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation.
         """
-        try:
-            # Decode the JWT and raise an error if the sig is invalid
-            id_token = JWS().verify_compact(jws.encode('utf-8'),
-                                            self.get_jwks_keys())
-        except JWKESTException:
+        client_id, client_secret = self.get_key_and_secret()
+
+        key = self.find_valid_key(id_token)
+
+        if not key:
             raise AuthTokenError(self, 'Signature verification failed')
 
-        self.validate_claims(id_token)
+        alg = key['alg']
+        rsakey = jwk.construct(key)
 
-        return id_token
+        try:
+            claims = jwt.decode(
+                id_token,
+                rsakey.to_pem().decode('utf-8'),
+                algorithms=[alg],
+                audience=client_id,
+                issuer=self.id_token_issuer(),
+                access_token=access_token,
+                options=self.JWT_DECODE_OPTIONS,
+            )
+        except ExpiredSignatureError:
+            raise AuthTokenError(self, 'Signature has expired')
+        except JWTClaimsError as error:
+            raise AuthTokenError(self, str(error))
+        except JWTError:
+            raise AuthTokenError(self, 'Invalid signature')
+
+        self.validate_claims(claims)
+
+        return claims
 
     def request_access_token(self, *args, **kwargs):
         """
@@ -178,7 +192,10 @@ class OpenIdConnectAuth(BaseOAuth2):
         store it (temporarily).
         """
         response = self.get_json(*args, **kwargs)
-        self.id_token = self.validate_and_return_id_token(response['id_token'])
+        self.id_token = self.validate_and_return_id_token(
+            response['id_token'],
+            response['access_token']
+        )
         return response
 
     def user_data(self, access_token, *args, **kwargs):

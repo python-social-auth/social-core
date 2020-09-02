@@ -82,12 +82,15 @@ setup(
         'social_core.tests.backends.data'
     ],
     long_description=long_description() or LONG_DESCRIPTION,
+    long_description_content_type="text/markdown",
     install_requires=requirements,
     extras_require={
         'openidconnect': [requirements_openidconnect],
         'saml': [requirements_saml],
         'azuread': [requirements_azuread],
         'all': [requirements_all],
+        'allpy2': [requirements_all, requirements_py2],
+        'allpy3': [requirements_all, requirements_py3],
         ':python_version < "3.0"': [requirements_py2],
         ':python_version >= "3.0"': [requirements_py3],
     },
@@ -98,8 +101,12 @@ setup(
         'Intended Audience :: Developers',
         'Environment :: Web Environment',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3'
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
     ],
     package_data={
         'social_core/tests': [

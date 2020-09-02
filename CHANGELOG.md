@@ -7,11 +7,113 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
 
+### Changed
+- Updated list of default user protected fields to include admin flags and password
+
+## [3.3.2](https://github.com/python-social-auth/social-core/releases/tag/3.3.2) - 2020-03-25
+
+### Changed
+- Updated package upload method to use `twine`
+
+## [3.3.1](https://github.com/python-social-auth/social-core/releases/tag/3.3.1) - 2020-03-25
+
+### Changed
+- Reverted [PR #388](https://github.com/python-social-auth/social-core/pull/388/) due to
+  dependency license incompatibility
+
+## [3.3.0](https://github.com/python-social-auth/social-core/releases/tag/3.3.0) - 2020-03-17
+
+### Added
+- Okta backend
+- Support for SAML Single Logout
+- SimpleLogin backend
+- SurveyMonkey backend
+- HubSpot backend
+- MRG backend
+- Sign in with Apple backend
+- Allow ignoring of default protected user fields with option `SOCIAL_AUTH_NO_DEFAULT_PROTECTED_USER_FIELDS`
+- Support for users field names mapping
+- Added GithubAppAuth backend
+
+### Changed
+- Add refresh token to Strava backend, change username and remove email
+- Update test runner to PyTest
+- Add python 3.7 CI target
+- Send User-Agent header on Untappd backend
+- Updated Naver API support from XML to JSON format
+- Use `unidecode` to cleanup usernames from unicode characters
+- Update Twitch API support from v3 to v5
+- Properly setup `pytest` version for Python2 and Python3
+- Fix some spelling mistakes in docstrings
+- Fix old fields from FIELDS_STORED_IN_SESSION persisting in session
+- Github: pass access token in a header instead of in a query parameter.
+- Update Kakao API support from v1 to v2
+- Update Twitch API support to v5
+- Updated Patreon API support from v1 to v2 per issue #307
+- Fix `user_details` in user pipeline to allow model attributes to be updated
+- Updated Atlassian API urls
+
+## [3.2.0](https://github.com/python-social-auth/social-core/releases/tag/3.2.0) - 2019-05-30
+
+### Added
+- Cognito backend
+- OpenStack (openstackid and openstackid-dev) backends
+
+### Changed
+- Updated Linkedin backend to v2 API
+- Facebook: Update to use the latest Graph API v3.2
+- Send User-Agent header on GitHub backend
+- Remove profile scope and verification at hash on Elixir backend
+- Mark description as Markdown for PyPI
+- Use `hmac.compare_digest` for constant time comparision
+- Replace deprecated Google+ API usage in GoogleOpenIdConnect
+- Defined scope separator for Strava backend
+- Ensure `saml_config.json` is included by addint it to `MANIFEST.in`
+- Include `email_verified` as part of user details on Auth0 backend
+- Include Shopify `version` parameter on Shopify session setup
+- Define `SOCIAL_AUTH_SHOPIFY_API_VERSION` setting to override default API version
+- Check user `id` attribute existence before using it
+- Pull `last_name` from `family_name` in Cognito backend
+- Ignore key errors on Naver backend for missing attributes
+
+## [3.1.0](https://github.com/python-social-auth/social-core/releases/tag/3.1.0) - 2019-02-20
+
+### Added
+- Universe Ticketing backend
+- Auth0.com authentication backend
+
+### Changed
+- Update Bungie backend dropping any Django reference
+- Enable and fix JWT related tests
+- Remove PyPy support from Tox
+- Drop support for Python 3.4 in Tox
+- Allow to override JWT decode options in Open ID Connect base backend
+- Pass access token via Authorization header to Google user data url
+- Updated `user_data` method in `AzureADOAuth2` to return `access_token` if
+  `id_token` is not present in response
+
+## [3.0.0](https://github.com/python-social-auth/social-core/releases/tag/3.0.0) - 2019-01-14
+
+### Changed
+- Updated Azure B2C to extract first email from list if it's a list
+- Replace deprecated Google+ API usage with https://www.googleapis.com/oauth2/v3/userinfo
+- Updated Azure Tenant to fix Nonetype error
+- Updated comment denoting incorrect setting name
+- Yandex: do not fail when no email is present
+- Mediawiki: do not fail when no email is present
+- Mediawiki: enhance `get_user_details` to return more details
+
+## [2.0.0](https://github.com/python-social-auth/social-core/releases/tag/2.0.0) - 2018-10-28
+
 ### Added
 - Telegram authentication backend
 - Keycloak backend is added with preliminary OAuth2 support
 - Globus OpenId Connect backend
 - Discord OAuth2 backend
+- SciStarter OAuth2 backend
+- Flat OAuth2 backend
+- ELIXIR OpenId Connect backend
+- Atlassian OAuth2 backend
 
 ### Changed
 - GitHub backend now uses `state` parameter instead of `redirect_state`
@@ -29,6 +131,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Update `sanitize_redirect` to invalidate redirects like `///evil.com`
 - Update Coinbase API endpoint
 - Dropped Python 3.3 support
+- Updated Weixin backend to use `urlencode` from `six`
+- Updated Google+ backend to properly process requests with `id_token`
+- Updated OpenId connect dependencies
 
 ## [1.7.0](https://github.com/python-social-auth/social-core/releases/tag/1.7.0) - 2018-02-20
 
