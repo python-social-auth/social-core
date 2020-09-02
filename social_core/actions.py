@@ -85,6 +85,8 @@ def do_complete(backend, login, user=None, redirect_name='next',
                     provider = 'google'
                 elif path and 'facebook' in path.lower():
                     provider = 'facebook'
+                elif path and 'apple' in path.lower():
+                    provider = 'apple-id'
                 else:
                     provider = 'social'
                 backend.strategy.session_set(
