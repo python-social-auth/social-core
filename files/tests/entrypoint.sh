@@ -7,4 +7,4 @@ export PYENV_ROOT=~/.pyenv
 
 eval "$(pyenv init -)"
 
-tox
+exec "$@"
