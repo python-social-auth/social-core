@@ -35,10 +35,14 @@ class PayPalOAuth2(BaseOAuth2):
         )
         emails = response.get("emails", [])
 <<<<<<< HEAD
+<<<<<<< HEAD
         email = self.get_email(emails)
 =======
         email = self._get_primary_email(emails)
 >>>>>>> 832a896 (Implement PayPal backend)
+=======
+        email = self.get_email(emails)
+>>>>>>> 8306f4e (Fix email selection and add tests for it)
         return {
             "username": username,
             "email": email,
@@ -62,6 +66,7 @@ class PayPalOAuth2(BaseOAuth2):
 
     @staticmethod
 <<<<<<< HEAD
+<<<<<<< HEAD
     def get_email(emails):
         if not emails:
             return ""
@@ -70,8 +75,11 @@ class PayPalOAuth2(BaseOAuth2):
         return primary_or_first.get("value")
 =======
     def _get_primary_email(emails):
+=======
+    def get_email(emails):
+>>>>>>> 8306f4e (Fix email selection and add tests for it)
         return (
-            next(filter(lambda e: e.get("primary"), emails), emails[0])
+            next(filter(lambda e: e.get("primary"), emails), emails[0]).get("value")
             if emails
             else ""
         )

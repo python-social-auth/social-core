@@ -2,9 +2,13 @@ import json
 
 from .oauth import OAuth2Test
 <<<<<<< HEAD
+<<<<<<< HEAD
 from social_core.backends.paypal import PayPalOAuth2
 =======
 >>>>>>> 832a896 (Implement PayPal backend)
+=======
+from social_core.backends.paypal import PayPalOAuth2
+>>>>>>> 8306f4e (Fix email selection and add tests for it)
 
 
 class PayPalOAuth2Test(OAuth2Test):
@@ -59,11 +63,19 @@ class PayPalOAuth2Test(OAuth2Test):
         self.assertEqual(user.username, self.expected_username)
         self.assertEqual(social.extra_data["access_token"], "foobar-new-token")
 <<<<<<< HEAD
+<<<<<<< HEAD
 
     def test_get_email_no_emails(self):
         emails = []
         email = PayPalOAuth2.get_email(emails)
         self.assertEqual(email, "")
+=======
+
+    def test_get_email_no_emails(self):
+        emails = []
+        primary_email = PayPalOAuth2.get_email(emails)
+        self.assertEqual(primary_email, "")
+>>>>>>> 8306f4e (Fix email selection and add tests for it)
 
     def test_get_email_multiple_emails(self):
         expected_email = "mail2@example.com"
@@ -71,8 +83,13 @@ class PayPalOAuth2Test(OAuth2Test):
             {"value": "mail1@example.com", "primary": False},
             {"value": expected_email, "primary": True},
         ]
+<<<<<<< HEAD
         email = PayPalOAuth2.get_email(emails)
         self.assertEqual(email, expected_email)
+=======
+        primary_email = PayPalOAuth2.get_email(emails)
+        self.assertEqual(primary_email, expected_email)
+>>>>>>> 8306f4e (Fix email selection and add tests for it)
 
     def test_get_email_multiple_emails_no_primary(self):
         expected_email = "mail1@example.com"
@@ -80,7 +97,12 @@ class PayPalOAuth2Test(OAuth2Test):
             {"value": expected_email, "primary": False},
             {"value": "mail2@example.com", "primary": False},
         ]
+<<<<<<< HEAD
         email = PayPalOAuth2.get_email(emails)
         self.assertEqual(email, expected_email)
 =======
 >>>>>>> 832a896 (Implement PayPal backend)
+=======
+        primary_email = PayPalOAuth2.get_email(emails)
+        self.assertEqual(primary_email, expected_email)
+>>>>>>> 8306f4e (Fix email selection and add tests for it)
