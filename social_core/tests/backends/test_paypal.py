@@ -1,6 +1,7 @@
 import json
 
 from .oauth import OAuth2Test
+from social_core.backends.paypal import PayPalOAuth2
 
 
 class PayPalOAuth2Test(OAuth2Test):
@@ -54,3 +55,26 @@ class PayPalOAuth2Test(OAuth2Test):
         user, social = self.do_refresh_token()
         self.assertEqual(user.username, self.expected_username)
         self.assertEqual(social.extra_data["access_token"], "foobar-new-token")
+
+    def test_get_email_no_emails(self):
+        emails = []
+        primary_email = PayPalOAuth2.get_email(emails)
+        self.assertEqual(primary_email, "")
+
+    def test_get_email_multiple_emails(self):
+        expected_email = "mail2@example.com"
+        emails = [
+            {"value": "mail1@example.com", "primary": False},
+            {"value": expected_email, "primary": True},
+        ]
+        primary_email = PayPalOAuth2.get_email(emails)
+        self.assertEqual(primary_email, expected_email)
+
+    def test_get_email_multiple_emails_no_primary(self):
+        expected_email = "mail1@example.com"
+        emails = [
+            {"value": expected_email, "primary": False},
+            {"value": "mail2@example.com", "primary": False},
+        ]
+        primary_email = PayPalOAuth2.get_email(emails)
+        self.assertEqual(primary_email, expected_email)
