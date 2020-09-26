@@ -77,6 +77,7 @@ class PayPalOAuth2(BaseOAuth2):
     def _get_primary_email(emails):
 =======
     def get_email(emails):
+<<<<<<< HEAD
 >>>>>>> 8306f4e (Fix email selection and add tests for it)
         return (
             next(filter(lambda e: e.get("primary"), emails), emails[0]).get("value")
@@ -84,6 +85,13 @@ class PayPalOAuth2(BaseOAuth2):
             else ""
         )
 >>>>>>> 832a896 (Implement PayPal backend)
+=======
+        if not emails:
+            return ""
+        primary_emails = (email for email in emails if email.get("primary", False))
+        primary_or_first = next(primary_emails, emails[0])
+        return primary_or_first.get("value")
+>>>>>>> 68238b2 (Fix Python 2.7 support)
 
 
 class PayPalOAuth2Sandbox(PayPalOAuth2):
