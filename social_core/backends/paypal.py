@@ -34,7 +34,7 @@ class PayPalOAuth2(BaseOAuth2):
             response.get("family_name", ""),
         )
         emails = response.get("emails", [])
-        email = self._get_primary_email(emails)
+        email = self.get_email(emails)
         return {
             "username": username,
             "email": email,
@@ -57,9 +57,9 @@ class PayPalOAuth2(BaseOAuth2):
         return {"refresh_token": token, "grant_type": "refresh_token"}
 
     @staticmethod
-    def _get_primary_email(emails):
+    def get_email(emails):
         return (
-            next(filter(lambda e: e.get("primary"), emails), emails[0])
+            next(filter(lambda e: e.get("primary"), emails), emails[0]).get("value")
             if emails
             else ""
         )
