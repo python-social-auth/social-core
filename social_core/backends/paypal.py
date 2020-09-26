@@ -58,11 +58,11 @@ class PayPalOAuth2(BaseOAuth2):
 
     @staticmethod
     def get_email(emails):
-        return (
-            next(filter(lambda e: e.get("primary"), emails), emails[0]).get("value")
-            if emails
-            else ""
-        )
+        if not emails:
+            return ""
+        primary_emails = (email for email in emails if email.get("primary", False))
+        primary_or_first = next(primary_emails, emails[0])
+        return primary_or_first.get("value")
 
 
 class PayPalOAuth2Sandbox(PayPalOAuth2):
