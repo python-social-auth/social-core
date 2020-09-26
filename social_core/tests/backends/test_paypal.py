@@ -73,9 +73,14 @@ class PayPalOAuth2Test(OAuth2Test):
 
     def test_get_email_no_emails(self):
         emails = []
+<<<<<<< HEAD
         primary_email = PayPalOAuth2.get_email(emails)
         self.assertEqual(primary_email, "")
 >>>>>>> 8306f4e (Fix email selection and add tests for it)
+=======
+        email = PayPalOAuth2.get_email(emails)
+        self.assertEqual(email, "")
+>>>>>>> 2b13af7 (Variable renaming)
 
     def test_get_email_multiple_emails(self):
         expected_email = "mail2@example.com"
@@ -84,12 +89,17 @@ class PayPalOAuth2Test(OAuth2Test):
             {"value": expected_email, "primary": True},
         ]
 <<<<<<< HEAD
+<<<<<<< HEAD
         email = PayPalOAuth2.get_email(emails)
         self.assertEqual(email, expected_email)
 =======
         primary_email = PayPalOAuth2.get_email(emails)
         self.assertEqual(primary_email, expected_email)
 >>>>>>> 8306f4e (Fix email selection and add tests for it)
+=======
+        email = PayPalOAuth2.get_email(emails)
+        self.assertEqual(email, expected_email)
+>>>>>>> 2b13af7 (Variable renaming)
 
     def test_get_email_multiple_emails_no_primary(self):
         expected_email = "mail1@example.com"
@@ -97,6 +107,7 @@ class PayPalOAuth2Test(OAuth2Test):
             {"value": expected_email, "primary": False},
             {"value": "mail2@example.com", "primary": False},
         ]
+<<<<<<< HEAD
 <<<<<<< HEAD
         email = PayPalOAuth2.get_email(emails)
         self.assertEqual(email, expected_email)
@@ -106,3 +117,7 @@ class PayPalOAuth2Test(OAuth2Test):
         primary_email = PayPalOAuth2.get_email(emails)
         self.assertEqual(primary_email, expected_email)
 >>>>>>> 8306f4e (Fix email selection and add tests for it)
+=======
+        email = PayPalOAuth2.get_email(emails)
+        self.assertEqual(email, expected_email)
+>>>>>>> 2b13af7 (Variable renaming)
