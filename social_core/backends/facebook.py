@@ -14,7 +14,7 @@ from ..exceptions import AuthException, AuthCanceled, AuthUnknownError, \
                          AuthMissingParameter
 
 
-API_VERSION = 3.2
+API_VERSION = 8.0
 
 
 class FacebookOAuth2(BaseOAuth2):
