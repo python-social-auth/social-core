@@ -30,42 +30,27 @@ class YahooOAuth(BaseOAuth1):
     ]
 
     def get_user_details(self, response):
-        """
-        Return user details from Yahoo Profile.
-        To Get user email you need the profile private read permission.
-        """
-        # fullname, first_name, last_name = self.get_user_names(
-            # first_name=response.get('givenName'),
-            # last_name=response.get('familyName')
-        # )
+        """Return user details from Yahoo Profile"""
         fullname, first_name, last_name = self.get_user_names(
-            first_name=response.get('given_name'),
-            last_name=response.get('family_name')
+            first_name=response.get('givenName'),
+            last_name=response.get('familyName')
         )
-        # emails = [email for email in response.get('emails', [])
-                        # if 'handle' in email]
-        # emails.sort(key=lambda e: e.get('primary', False), reverse=True)
-        # email = emails[0]['handle'] if emails else response.get('guid', '')
-        email = response.get('email')
-        return {
-            'username': response.get('nickname'),
-            'email': email,
-            'fullname': fullname,
-            'first_name': first_name,
-            'last_name': last_name
-        }
+        emails = [email for email in response.get('emails', [])
+                        if email.get('handle')]
+        emails.sort(key=lambda e: e.get('primary', False), reverse=True)
+        return {'username': response.get('nickname'),
+                'email': emails[0]['handle'] if emails else '',
+                'fullname': fullname,
+                'first_name': first_name,
+                'last_name': last_name}
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        # url = 'https://social.yahooapis.com/v1/user/{0}/profile?format=json' \
-                # .format(kwargs['response']['xoauth_yahoo_guid'])
-        url = 'https://api.login.yahoo.com/openid/v1/userinfo'
-        # return self.get_json(url, headers={
-            # 'Authorization': 'Bearer {0}'.format(access_token)
-        # }, method='GET')['profile']
-        return self.get_json(url, headers={
-            'Authorization': 'Bearer {0}'.format(access_token)
-        }, method='GET')
+        url = 'https://social.yahooapis.com/v1/user/{0}/profile?format=json'
+        return self.get_json(
+            url.format(self._get_guid(access_token)),
+            auth=self.oauth_auth(access_token)
+        )['profile']
 
     def _get_guid(self, access_token):
         """
