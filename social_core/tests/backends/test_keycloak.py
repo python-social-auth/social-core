@@ -95,7 +95,7 @@ def _encode(
 def _decode(
     token,
     key=_PUBLIC_KEY,
-    algorithms=_ALGORITHM,
+    algorithms=[_ALGORITHM],
     audience=_KEY,
 ):
     return jwt.decode(token, key=key, algorithms=algorithms, audience=audience)
