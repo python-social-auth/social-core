@@ -169,16 +169,3 @@ class GoogleOAuth(BaseGoogleAuth, BaseOAuth1):
         if key_secret == (None, None):
             key_secret = ('anonymous', 'anonymous')
         return key_secret
-
-
-class GoogleOpenId(OpenIdAuth):
-    name = 'google'
-    URL = 'https://www.google.com/accounts/o8/id'
-
-    def get_user_id(self, details, response):
-        """
-        Return user unique id provided by service. For google user email
-        is unique enought to flag a single user. Email comes from schema:
-        http://axschema.org/contact/email
-        """
-        return details['email']
