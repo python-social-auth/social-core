@@ -44,6 +44,7 @@ class OpenIdConnectAuth(BaseOAuth2):
     REVOKE_TOKEN_URL = ''
     USERINFO_URL = ''
     JWKS_URI = ''
+    JWT_ALGORITHMS = ['RS256']
     JWT_DECODE_OPTIONS = dict()
 
     def __init__(self, *args, **kwargs):
@@ -162,14 +163,13 @@ class OpenIdConnectAuth(BaseOAuth2):
         if not key:
             raise AuthTokenError(self, 'Signature verification failed')
 
-        alg = key['alg']
         rsakey = jwk.construct(key)
 
         try:
             claims = jwt.decode(
                 id_token,
                 rsakey.to_pem().decode('utf-8'),
-                algorithms=[alg],
+                algorithms=self.JWT_ALGORITHMS,
                 audience=client_id,
                 issuer=self.id_token_issuer(),
                 access_token=access_token,
