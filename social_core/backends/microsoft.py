@@ -1,6 +1,6 @@
 import time
 
-from jwt import DecodeError, ExpiredSignature
+from jwt import DecodeError, ExpiredSignatureError
 
 from ..exceptions import AuthTokenError
 from .oauth import BaseOAuth2
@@ -71,7 +71,7 @@ class MicrosoftOAuth2(BaseOAuth2):
                 },
                 method='GET'
             )
-        except (DecodeError, ExpiredSignature) as error:
+        except (DecodeError, ExpiredSignatureError) as error:
             raise AuthTokenError(self, error)
 
     def get_auth_token(self, user_id):
