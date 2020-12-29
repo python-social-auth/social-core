@@ -31,7 +31,7 @@ import json
 import six
 
 from cryptography.hazmat.primitives import serialization
-from jwt import DecodeError, ExpiredSignature, decode as jwt_decode
+from jwt import DecodeError, ExpiredSignatureError, decode as jwt_decode
 from jwt.utils import base64url_decode
 
 
@@ -192,5 +192,5 @@ class AzureADB2COAuth2(AzureADOAuth2):
                 audience=self.setting('KEY'),
                 leeway=self.setting('JWT_LEEWAY', default=0),
             )
-        except (DecodeError, ExpiredSignature) as error:
+        except (DecodeError, ExpiredSignatureError) as error:
             raise AuthTokenError(self, error)
