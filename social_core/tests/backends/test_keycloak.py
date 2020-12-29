@@ -89,7 +89,12 @@ def _encode(
     key=_PRIVATE_KEY,
     algorithm=_ALGORITHM
 ):
-    return jwt.encode(payload, key=key, algorithm=algorithm).decode('utf-8')
+    encoded = jwt.encode(payload, key=key, algorithm=algorithm)
+    if jwt.__version__ < '2.0.0':
+        return encoded.decode('utf-8')
+    else:
+        return encoded
+
 
 
 def _decode(
