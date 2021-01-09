@@ -10,6 +10,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - PayPal backend
 
+### Changed
+- Dropped Python 2 support from testing stack
+- Remove discontinued Google OpenId backend
+- Remove discontinued Yahoo OpenId backend
+- Fix `jwt.decode()` passed algorithm
+- Prevent `PyJWT` v2.0.0 being installed
+- Prevent `PyJWT` v2.0.0 being installed
+
 ## [3.4.0](https://github.com/python-social-auth/social-core/releases/tag/3.4.0) - 2020-06-21
 
 ### Added
