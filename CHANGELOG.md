@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 - PayPal backend
+- Fence OIDC-based backend
 
 ### Changed
 - Dropped Python 2 support from testing stack
