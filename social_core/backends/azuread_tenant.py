@@ -1,4 +1,6 @@
-from cryptography.x509 import load_pem_x509_certificate
+import base64
+
+from cryptography.x509 import load_der_x509_certificate
 from cryptography.hazmat.backends import default_backend
 from jwt import DecodeError, ExpiredSignature, decode as jwt_decode, get_unverified_header
 
@@ -82,15 +84,15 @@ class AzureADTenantOAuth2(AzureADOAuth2):
                       '{}\n' \
                       '-----END CERTIFICATE-----'.format(x5c)
 
-        return load_pem_x509_certificate(certificate.encode(),
-                                         default_backend())
+        return load_der_x509_certificate(base64.b64decode(x5c), default_backend())
 
     def get_user_id(self, details, response):
         """Use subject (sub) claim as unique id."""
         return response.get('sub')
 
     def user_data(self, access_token, *args, **kwargs):
-        id_token = access_token
+        response = kwargs.get('response')
+        id_token = response.get('id_token')
 
         # get key id and algorithm
         key_id = get_unverified_header(id_token)['kid']
@@ -107,3 +109,27 @@ class AzureADTenantOAuth2(AzureADOAuth2):
             )
         except (DecodeError, ExpiredSignature) as error:
             raise AuthTokenError(self, error)
+
+
+class AzureADV2TenantOAuth2(AzureADTenantOAuth2):
+    name = 'azuread-v2-tenant-oauth2'
+    AUTHORIZATION_URL = 'https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/authorize'
+    ACCESS_TOKEN_URL = 'https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token'
+    DEFAULT_SCOPE = ['openid', 'profile', 'offline_access']
+
+    def get_user_id(self, details, response):
+        """Use upn as unique id"""
+        return response.get('preferred_username')
+
+    def get_user_details(self, response):
+        """Return user details from Azure AD account"""
+        fullname, first_name, last_name = (
+            response.get('name', ''),
+            response.get('given_name', ''),
+            response.get('family_name', '')
+        )
+        return {'username': fullname,
+                'email': response.get('preferred_username'),
+                'fullname': fullname,
+                'first_name': first_name,
+                'last_name': last_name}
