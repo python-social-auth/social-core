@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fix Azure AD Tenant, unable to load certificate
 - Fix Okta well-known URL
 - Updated Discord's API hostname from discordapp.com to discord.com
+- Pass `client_secret` in auth-complete on Kakao backend
 
 ## [3.4.0](https://github.com/python-social-auth/social-core/releases/tag/3.4.0) - 2020-06-21
 
