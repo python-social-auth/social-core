@@ -5,7 +5,7 @@ from .oauth import OAuth2Test
 
 class AmazonOAuth2Test(OAuth2Test):
     backend_path = 'social_core.backends.amazon.AmazonOAuth2'
-    user_data_url = 'https://www.amazon.com/ap/user/profile'
+    user_data_url = 'https://api.amazon.com/user/profile'
     expected_username = 'FooBar'
     access_token_body = json.dumps({
         'access_token': 'foobar',
