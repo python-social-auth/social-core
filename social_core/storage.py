@@ -232,7 +232,7 @@ class AssociationMixin(object):
         secret = assoc.secret
         if not isinstance(secret, six.binary_type):
             secret = secret.encode()
-        return OpenIdAssociation(assoc.handle, base64.decodestring(secret),
+        return OpenIdAssociation(assoc.handle, base64.decodebytes(secret),
                                  assoc.issued, assoc.lifetime,
                                  assoc.assoc_type)
 
