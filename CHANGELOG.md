@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Prevent `PyJWT` v2.0.0 being installed
 - Update Facebook Graph API to 8.0
 - Update Amazon fetch-profile URL
+- Fix Azure AD Tenant, unable to load certificate
 
 ## [3.4.0](https://github.com/python-social-auth/social-core/releases/tag/3.4.0) - 2020-06-21
 
