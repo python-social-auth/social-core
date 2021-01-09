@@ -3,7 +3,7 @@ import base64
 import six
 
 from ..storage import UserMixin, NonceMixin, AssociationMixin, \
-                      CodeMixin, PartialMixin, BaseStorage
+    CodeMixin, PartialMixin, BaseStorage
 
 
 class BaseModel(object):

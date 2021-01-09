@@ -61,6 +61,7 @@ class QiitaOAuth2(BaseOAuth2):
         """Loads user data from service"""
         return self.get_json(
             'https://qiita.com/api/v2/authenticated_user',
-           headers={
+            headers={
                 'Authorization': 'Bearer {0}'.format(access_token)
-            })
+            }
+        )

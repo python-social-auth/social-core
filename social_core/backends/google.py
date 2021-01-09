@@ -3,7 +3,6 @@ Google OpenId, OAuth2, OAuth1, Google+ Sign-in backends, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/google.html
 """
 from ..utils import handle_http_errors
-from .open_id import OpenIdAuth
 from .oauth import BaseOAuth2, BaseOAuth1
 from ..exceptions import AuthMissingParameter
 

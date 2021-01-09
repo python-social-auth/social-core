@@ -22,7 +22,7 @@ class CoinbaseOAuth2Test(OAuth2Test):
             "avatar_url": None,
             "resource": "user",
             "resource_path": "/v2/user"
-          }
+        }
     })
 
     def test_login(self):

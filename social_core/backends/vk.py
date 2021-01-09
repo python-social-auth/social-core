@@ -56,7 +56,7 @@ class VKontakteOpenAPI(BaseAuth):
 
         mapping = parse_qs(session_value)
         check_str = ''.join(item + '=' + mapping[item]
-                                for item in ['expire', 'mid', 'secret', 'sid'])
+                            for item in ['expire', 'mid', 'secret', 'sid'])
 
         key, secret = self.get_key_and_secret()
         hash = md5((check_str + secret).encode('utf-8')).hexdigest()

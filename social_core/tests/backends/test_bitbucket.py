@@ -40,7 +40,7 @@ class BitbucketOAuthMixin(object):
                 u'email': u'foo@bar.com',
                 u'is_confirmed': True,
                 u'is_primary': True,
-                u'links': { u'self': {u'href': u'https://api.bitbucket.org/2.0/user/emails/foo@bar.com'}},
+                u'links': {u'self': {u'href': u'https://api.bitbucket.org/2.0/user/emails/foo@bar.com'}},
                 u'type': u'email'
             },
             {
@@ -91,7 +91,7 @@ class BitbucketOAuth1FailTest(BitbucketOAuth1Test):
                 u'email': u'foo@bar.com',
                 u'is_confirmed': False,
                 u'is_primary': True,
-                u'links': { u'self': {u'href': u'https://api.bitbucket.org/2.0/user/emails/foo@bar.com'}},
+                u'links': {u'self': {u'href': u'https://api.bitbucket.org/2.0/user/emails/foo@bar.com'}},
                 u'type': u'email'
             }
         ]
@@ -146,7 +146,7 @@ class BitbucketOAuth2FailTest(BitbucketOAuth2Test):
                 u'email': u'foo@bar.com',
                 u'is_confirmed': False,
                 u'is_primary': True,
-                u'links': { u'self': {u'href': u'https://api.bitbucket.org/2.0/user/emails/foo@bar.com'}},
+                u'links': {u'self': {u'href': u'https://api.bitbucket.org/2.0/user/emails/foo@bar.com'}},
                 u'type': u'email'
             }
         ]

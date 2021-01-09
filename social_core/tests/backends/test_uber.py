@@ -1,11 +1,6 @@
 import json
 
-from httpretty import HTTPretty
-
-from six.moves.urllib_parse import urlencode
-
-from ...exceptions import AuthForbidden
-from .oauth import OAuth1Test, OAuth2Test
+from .oauth import OAuth2Test
 
 
 class UberOAuth2Test(OAuth2Test):

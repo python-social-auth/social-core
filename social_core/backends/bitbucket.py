@@ -38,7 +38,7 @@ class BitbucketOAuthBase(object):
                 break
 
         if self.setting('VERIFIED_EMAILS_ONLY', False) and \
-            not address['is_confirmed']:
+           not address['is_confirmed']:
             raise AuthForbidden(
                 self,
                 'Bitbucket account has no verified email'

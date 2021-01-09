@@ -80,11 +80,8 @@ class AzureADTenantOAuth2(AzureADOAuth2):
         else:
             raise DecodeError('Cannot find kid={}'.format(kid))
 
-        certificate = '-----BEGIN CERTIFICATE-----\n' \
-                      '{}\n' \
-                      '-----END CERTIFICATE-----'.format(x5c)
-
-        return load_der_x509_certificate(base64.b64decode(x5c), default_backend())
+        return load_der_x509_certificate(base64.b64decode(x5c),
+                                         default_backend())
 
     def get_user_id(self, details, response):
         """Use subject (sub) claim as unique id."""

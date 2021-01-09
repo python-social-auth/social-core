@@ -1,4 +1,3 @@
-import json
 from .open_id_connect import OpenIdConnectAuth
 
 

@@ -35,7 +35,7 @@ from jwt import DecodeError, ExpiredSignature, decode as jwt_decode, get_unverif
 
 try:
     from jwt.algorithms import RSAAlgorithm
-except ImportError as e:
+except ImportError:
     raise Exception(
         # Python 3.3 is not supported because of compatibility in
         # Cryptography package in Python3.3 You are welcome to patch

@@ -15,14 +15,14 @@ class AtlassianOAuth2Test(OAuth2Test):
         'token_type': 'bearer'
     })
     tenant_data_body = json.dumps([
-      {
-          "id": "FAKED_CLOUD_ID",
-          "name": "bachmanity.com",
-          "avatarUrl": "https://bachmanity.atlassian.net/avatars/240/site.png",
-          "scopes": [
-            "read:jira-user"
-          ]
-      }
+        {
+            "id": "FAKED_CLOUD_ID",
+            "name": "bachmanity.com",
+            "avatarUrl": "https://bachmanity.atlassian.net/avatars/240/site.png",
+            "scopes": [
+                "read:jira-user"
+            ]
+        }
     ])
     user_data_body = json.dumps({
         "self": "http://bachmanity.atlassian.net/rest/api/3/user?username=erlich",

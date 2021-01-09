@@ -16,15 +16,15 @@ class LiveJournalOpenIdTest(OpenIdTest):
     backend_path = 'social_core.backends.livejournal.LiveJournalOpenId'
     expected_username = 'foobar'
     discovery_body = ''.join([
-      '<xrds:XRDS xmlns:xrds="xri://$xrds" xmlns="xri://$xrd*($v*2.0)">',
-      '<XRD>',
-      '<Service priority="0">',
-      '<Type>http://specs.openid.net/auth/2.0/signon</Type>',
-      '<URI>http://www.livejournal.com/openid/server.bml</URI>',
-      '<LocalID>http://foobar.livejournal.com/</LocalID>',
-      '</Service>',
-      '</XRD>',
-      '</xrds:XRDS>'
+        '<xrds:XRDS xmlns:xrds="xri://$xrds" xmlns="xri://$xrd*($v*2.0)">',
+        '<XRD>',
+        '<Service priority="0">',
+        '<Type>http://specs.openid.net/auth/2.0/signon</Type>',
+        '<URI>http://www.livejournal.com/openid/server.bml</URI>',
+        '<LocalID>http://foobar.livejournal.com/</LocalID>',
+        '</Service>',
+        '</XRD>',
+        '</xrds:XRDS>'
     ])
     server_response = urlencode({
         'janrain_nonce': JANRAIN_NONCE,

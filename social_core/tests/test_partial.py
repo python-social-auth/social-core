@@ -7,8 +7,8 @@ except ImportError:
 from ..utils import PARTIAL_TOKEN_SESSION_NAME
 from ..pipeline.partial import partial, partial_step
 
-class PartialDecoratorTestCase(unittest.TestCase):
 
+class PartialDecoratorTestCase(unittest.TestCase):
     def setUp(self):
         super(PartialDecoratorTestCase, self).setUp()
         self.mock_current_partial_token = Mock()

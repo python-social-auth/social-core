@@ -16,8 +16,7 @@ class LiveJournalOpenId(OpenIdAuth):
         """Generate username from identity url"""
         values = super(LiveJournalOpenId, self).get_user_details(response)
         values['username'] = values.get('username') or \
-                             urlsplit(response.identity_url)\
-                                .netloc.split('.', 1)[0]
+            urlsplit(response.identity_url).netloc.split('.', 1)[0]
         return values
 
     def openid_url(self):

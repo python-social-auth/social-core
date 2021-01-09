@@ -44,7 +44,7 @@ class OAuthAuth(BaseAuth):
         data = super(OAuthAuth, self).extra_data(user, uid, response, details,
                                                  *args, **kwargs)
         data['access_token'] = response.get('access_token', '') or \
-                               kwargs.get('access_token')
+            kwargs.get('access_token')
         return data
 
     def state_token(self):
@@ -142,7 +142,7 @@ class OAuthAuth(BaseAuth):
             params = self.revoke_token_params(token, uid)
             headers = self.revoke_token_headers(token, uid)
             data = urlencode(params) if self.REVOKE_TOKEN_METHOD != 'GET' \
-                                     else None
+                else None
             response = self.request(url, params=params, headers=headers,
                                     data=data, method=self.REVOKE_TOKEN_METHOD)
             return self.process_revoke_token_response(response)
@@ -366,7 +366,7 @@ class BaseOAuth2(OAuthAuth):
                                                   details=details,
                                                   *args, **kwargs)
         data['token_type'] = response.get('token_type') or \
-                             kwargs.get('token_type')
+            kwargs.get('token_type')
         return data
 
     def request_access_token(self, *args, **kwargs):
@@ -377,7 +377,7 @@ class BaseOAuth2(OAuthAuth):
             if 'denied' in data['error'] or 'cancelled' in data['error']:
                 raise AuthCanceled(self, data.get('error_description', ''))
             raise AuthFailed(self, data.get('error_description') or
-                                   data['error'])
+                             data['error'])
         elif 'denied' in data:
             raise AuthCanceled(self, data['denied'])
 

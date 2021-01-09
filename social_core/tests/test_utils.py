@@ -7,8 +7,8 @@ except ImportError:
     from mock import Mock
 
 from ..utils import sanitize_redirect, user_is_authenticated, \
-                    user_is_active, slugify, build_absolute_uri, \
-                    partial_pipeline_data
+    user_is_active, slugify, build_absolute_uri, \
+    partial_pipeline_data
 from .models import TestPartial
 
 

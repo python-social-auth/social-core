@@ -84,7 +84,7 @@ class FacebookOAuth2(BaseOAuth2):
         super(FacebookOAuth2, self).process_error(data)
         if data.get('error_code'):
             raise AuthCanceled(self, data.get('error_message') or
-                                     data.get('error_code'))
+                               data.get('error_code'))
 
     @handle_http_errors
     def auth_complete(self, *args, **kwargs):

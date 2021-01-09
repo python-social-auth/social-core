@@ -1,41 +1,39 @@
 # -*- coding: utf-8 -*-
+from ...exceptions import AuthTokenError
 import os
 import sys
 import json
 import datetime
-import unittest2
 import base64
 from calendar import timegm
 
 import six
 from jose import jwt
-from jose.jwk import RSAKey
 from httpretty import HTTPretty
 
-sys.path.insert(0, '..')
 
-from ...exceptions import AuthTokenError
+sys.path.insert(0, '..')
 
 
 TEST_ROOT = os.path.dirname(os.path.dirname(__file__))
 
 JWK_KEY = {
     'kty': 'RSA',
-    'd': 'ZmswNokEvBcxW_Kvcy8mWUQOQCBdGbnM0xR7nhvGHC-Q24z3XAQWlMWbsmGc_R1o' \
-         '_F3zK7DBlc3BokdRaO1KJirNmnHCw5TlnBlJrXiWpFBtVglUg98-4sRRO0VWnGXK' \
-         'JPOkBQ6b_DYRO3b0o8CSpWowpiV6HB71cjXTqKPZf-aXU9WjCCAtxVjfIxgQFu5I' \
-         '-G1Qah8mZeY8HK_y99L4f0siZcbUoaIcfeWBhxi14ODyuSAHt0sNEkhiIVBZE7QZ' \
-         'm-SEP1ryT9VAaljbwHHPmg7NC26vtLZhvaBGbTTJnEH0ZubbN2PMzsfeNyoCIHy4' \
+    'd': 'ZmswNokEvBcxW_Kvcy8mWUQOQCBdGbnM0xR7nhvGHC-Q24z3XAQWlMWbsmGc_R1o'
+         '_F3zK7DBlc3BokdRaO1KJirNmnHCw5TlnBlJrXiWpFBtVglUg98-4sRRO0VWnGXK'
+         'JPOkBQ6b_DYRO3b0o8CSpWowpiV6HB71cjXTqKPZf-aXU9WjCCAtxVjfIxgQFu5I'
+         '-G1Qah8mZeY8HK_y99L4f0siZcbUoaIcfeWBhxi14ODyuSAHt0sNEkhiIVBZE7QZ'
+         'm-SEP1ryT9VAaljbwHHPmg7NC26vtLZhvaBGbTTJnEH0ZubbN2PMzsfeNyoCIHy4'
          '4QDSpQDCHfgcGOlHY_t5gQ',
     'e': 'AQAB',
     'use': 'sig',
     'kid': 'testkey',
     'alg': 'RS256',
-    'n': 'pUfcJ8WFrVue98Ygzb6KEQXHBzi8HavCu8VENB2As943--bHPcQ-nScXnrRFAUg8' \
-         'H5ZltuOcHWvsGw_AQifSLmOCSWJAPkdNb0w0QzY7Re8NrPjCsP58Tytp5LicF0Ao' \
-         'Ag28UK3JioY9hXHGvdZsWR1Rp3I-Z3nRBP6HyO18pEgcZ91c9aAzsqu80An9X4DA' \
-         'b1lExtZorvcd5yTBzZgr-MUeytVRni2lDNEpa6OFuopHXmg27Hn3oWAaQlbymd4g' \
-         'ifc01oahcwl3ze2tMK6gJxa_TdCf1y99Yq6oilmVvZJ8kwWWnbPE-oDmOVPVnEyT' \
+    'n': 'pUfcJ8WFrVue98Ygzb6KEQXHBzi8HavCu8VENB2As943--bHPcQ-nScXnrRFAUg8'
+         'H5ZltuOcHWvsGw_AQifSLmOCSWJAPkdNb0w0QzY7Re8NrPjCsP58Tytp5LicF0Ao'
+         'Ag28UK3JioY9hXHGvdZsWR1Rp3I-Z3nRBP6HyO18pEgcZ91c9aAzsqu80An9X4DA'
+         'b1lExtZorvcd5yTBzZgr-MUeytVRni2lDNEpa6OFuopHXmg27Hn3oWAaQlbymd4g'
+         'ifc01oahcwl3ze2tMK6gJxa_TdCf1y99Yq6oilmVvZJ8kwWWnbPE-oDmOVPVnEyT'
          'vYVCvN4rBT1DQ-x0F1mo2Q',
 }
 
@@ -59,10 +57,10 @@ class OpenIdConnectTestMixin(object):
         self.public_key = JWK_PUBLIC_KEY.copy()
 
         HTTPretty.register_uri(HTTPretty.GET,
-          self.backend.OIDC_ENDPOINT + '/.well-known/openid-configuration',
-          status=200,
-          body=self.openid_config_body
-        )
+                               self.backend.OIDC_ENDPOINT + '/.well-known/openid-configuration',
+                               status=200,
+                               body=self.openid_config_body
+                               )
         oidc_config = json.loads(self.openid_config_body)
 
         def jwks(_request, _uri, headers):
@@ -115,7 +113,7 @@ class OpenIdConnectTestMixin(object):
         client_key = client_key or self.client_key
         now = datetime.datetime.utcnow()
         expiration_datetime = expiration_datetime or \
-                              (now + datetime.timedelta(seconds=30))
+            (now + datetime.timedelta(seconds=30))
         issue_datetime = issue_datetime or now
         nonce = nonce or 'a-nonce'
         issuer = issuer or self.issuer
@@ -162,7 +160,7 @@ class OpenIdConnectTestMixin(object):
 
     def test_expired_signature(self):
         expiration_datetime = datetime.datetime.utcnow() - \
-                              datetime.timedelta(seconds=30)
+            datetime.timedelta(seconds=30)
         self.authtoken_raised('Token error: Signature has expired',
                               expiration_datetime=expiration_datetime)
 
@@ -176,7 +174,7 @@ class OpenIdConnectTestMixin(object):
 
     def test_invalid_issue_time(self):
         expiration_datetime = datetime.datetime.utcnow() - \
-                              datetime.timedelta(hours=1)
+            datetime.timedelta(hours=1)
         self.authtoken_raised('Token error: Incorrect id_token: iat',
                               issue_datetime=expiration_datetime)
 

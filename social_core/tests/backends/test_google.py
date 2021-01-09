@@ -1,5 +1,4 @@
 import json
-import unittest2
 
 from httpretty import HTTPretty
 

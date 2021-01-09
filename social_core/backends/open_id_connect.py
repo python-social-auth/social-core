@@ -2,7 +2,6 @@ import json
 import datetime
 from calendar import timegm
 
-import six
 from jose import jwk, jwt
 from jose.jwt import JWTError, JWTClaimsError, ExpiredSignatureError
 from jose.utils import base64url_decode

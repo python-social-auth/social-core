@@ -4,7 +4,7 @@ import unittest2 as unittest
 
 from ..strategy import BaseStrategy
 from ..storage import UserMixin, NonceMixin, AssociationMixin, \
-                      CodeMixin, BaseStorage
+    CodeMixin, BaseStorage
 
 from .models import User
 
@@ -179,7 +179,7 @@ class BrokenStrategyTests(unittest.TestCase):
 
     def test_render_html_with_none(self):
         with self.assertRaisesRegex(ValueError,
-                                     'Missing template or html parameters'):
+                                    'Missing template or html parameters'):
             self.strategy.render_html()
 
     def test_is_integrity_error(self):

@@ -222,11 +222,11 @@ class NationBuilderOAuth2Test(OAuth2Test):
     def test_login(self):
         self.strategy.set_settings({
             'SOCIAL_AUTH_NATIONBUILDER_SLUG': 'foobar'
-            })
+        })
         self.do_login()
 
     def test_partial_pipeline(self):
         self.strategy.set_settings({
             'SOCIAL_AUTH_NATIONBUILDER_SLUG': 'foobar'
-            })
+        })
         self.do_partial_pipeline()

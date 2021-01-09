@@ -8,7 +8,6 @@ from six.moves.urllib.parse import urljoin
 
 from .oauth import BaseOAuth2
 from ..exceptions import AuthFailed
-from ..utils import handle_http_errors
 
 
 class GithubOAuth2(BaseOAuth2):

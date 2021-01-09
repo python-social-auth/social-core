@@ -1,7 +1,5 @@
 import json
 import time
-import unittest
-
 import jwt
 
 from .oauth import OAuth2Test

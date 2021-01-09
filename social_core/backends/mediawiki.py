@@ -24,10 +24,7 @@ def force_unicode(value):
     if isinstance(value, six.text_type):
         return value
     else:
-        if six.PY3:
-            return str(value, "unicode-escape")
-        else:
-            return unicode(value, "unicode-escape")
+        return str(value, 'unicode-escape')
 
 
 class MediaWiki(BaseOAuth1):

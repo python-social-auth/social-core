@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+from ...backends.utils import load_backends
+from ...utils import parse_qs, module_member
+from ..models import TestStorage, User, TestUserSocialAuth, \
+    TestNonce, TestAssociation
+from ..strategy import TestStrategy
+from .base import BaseBackendTest
 import sys
 
 import requests
@@ -9,12 +15,6 @@ from httpretty import HTTPretty
 
 sys.path.insert(0, '..')
 
-from .base import BaseBackendTest
-from ..strategy import TestStrategy
-from ..models import TestStorage, User, TestUserSocialAuth, \
-    TestNonce, TestAssociation
-from ...utils import parse_qs, module_member
-from ...backends.utils import load_backends
 
 # Patch to remove the too-verbose output until a new version is released
 oidutil.log = lambda *args, **kwargs: None
