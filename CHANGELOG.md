@@ -16,7 +16,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Remove discontinued Yahoo OpenId backend
 - Fix `jwt.decode()` passed algorithm
 - Prevent `PyJWT` v2.0.0 being installed
-- Prevent `PyJWT` v2.0.0 being installed
 - Update Facebook Graph API to 8.0
 - Update Amazon fetch-profile URL
 
