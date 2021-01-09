@@ -34,15 +34,7 @@ class PayPalOAuth2(BaseOAuth2):
             response.get("family_name", ""),
         )
         emails = response.get("emails", [])
-<<<<<<< HEAD
-<<<<<<< HEAD
         email = self.get_email(emails)
-=======
-        email = self._get_primary_email(emails)
->>>>>>> 832a896 (Implement PayPal backend)
-=======
-        email = self.get_email(emails)
->>>>>>> 8306f4e (Fix email selection and add tests for it)
         return {
             "username": username,
             "email": email,
@@ -65,33 +57,12 @@ class PayPalOAuth2(BaseOAuth2):
         return {"refresh_token": token, "grant_type": "refresh_token"}
 
     @staticmethod
-<<<<<<< HEAD
-<<<<<<< HEAD
     def get_email(emails):
         if not emails:
             return ""
         primary_emails = (email for email in emails if email.get("primary", False))
         primary_or_first = next(primary_emails, emails[0])
         return primary_or_first.get("value")
-=======
-    def _get_primary_email(emails):
-=======
-    def get_email(emails):
-<<<<<<< HEAD
->>>>>>> 8306f4e (Fix email selection and add tests for it)
-        return (
-            next(filter(lambda e: e.get("primary"), emails), emails[0]).get("value")
-            if emails
-            else ""
-        )
->>>>>>> 832a896 (Implement PayPal backend)
-=======
-        if not emails:
-            return ""
-        primary_emails = (email for email in emails if email.get("primary", False))
-        primary_or_first = next(primary_emails, emails[0])
-        return primary_or_first.get("value")
->>>>>>> 68238b2 (Fix Python 2.7 support)
 
 
 class PayPalOAuth2Sandbox(PayPalOAuth2):
