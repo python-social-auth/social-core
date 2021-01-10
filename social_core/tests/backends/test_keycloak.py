@@ -82,20 +82,11 @@ _PAYLOAD = {
 }
 
 
-def _encode(
-    payload,
-    key=_PRIVATE_KEY,
-    algorithm=_ALGORITHM
-):
-    return jwt.encode(payload, key=key, algorithm=algorithm).decode('utf-8')
+def _encode(payload, key=_PRIVATE_KEY, algorithm=_ALGORITHM):
+    return jwt.encode(payload, key=key, algorithm=algorithm)
 
 
-def _decode(
-    token,
-    key=_PUBLIC_KEY,
-    algorithms=[_ALGORITHM],
-    audience=_KEY,
-):
+def _decode(token, key=_PUBLIC_KEY, algorithms=[_ALGORITHM], audience=_KEY):
     return jwt.decode(token, key=key, algorithms=algorithms, audience=audience)
 
 

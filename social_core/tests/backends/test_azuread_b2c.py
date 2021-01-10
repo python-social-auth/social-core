@@ -128,7 +128,8 @@ class AzureADOAuth2Test(OAuth2Test):
                 'sub': '11223344-5566-7788-9999-aabbccddeeff',
                 'tfp': 'B2C_1_SignIn',
                 'ver': '1.0',
-            }).decode('ascii'),
+            }
+        ),
         'expires_in': EXPIRES_IN,
         'expires_on': EXPIRES_ON,
         'not_before': AUTH_TIME,

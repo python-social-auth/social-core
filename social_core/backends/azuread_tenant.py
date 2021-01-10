@@ -2,7 +2,8 @@ import base64
 
 from cryptography.x509 import load_der_x509_certificate
 from cryptography.hazmat.backends import default_backend
-from jwt import DecodeError, ExpiredSignature, decode as jwt_decode, get_unverified_header
+from jwt import DecodeError, ExpiredSignatureError, decode as jwt_decode, \
+    get_unverified_header
 
 from ..exceptions import AuthTokenError
 from .azuread import AzureADOAuth2
@@ -104,7 +105,7 @@ class AzureADTenantOAuth2(AzureADOAuth2):
                 algorithms=['RS256'],
                 audience=self.setting('KEY')
             )
-        except (DecodeError, ExpiredSignature) as error:
+        except (DecodeError, ExpiredSignatureError) as error:
             raise AuthTokenError(self, error)
 
 

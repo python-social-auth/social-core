@@ -1,6 +1,6 @@
 import time
 
-from jwt import DecodeError, ExpiredSignature, decode as jwt_decode
+import jwt
 
 from ..exceptions import AuthTokenError
 from .oauth import BaseOAuth2
@@ -83,8 +83,10 @@ class AzureADOAuth2(BaseOAuth2):
             id_token = access_token
 
         try:
-            decoded_id_token = jwt_decode(id_token, verify=False)
-        except (DecodeError, ExpiredSignature) as de:
+            decoded_id_token =  jwt.decode(id_token, options={
+                'verify_signature': False
+            })
+        except (jwt.DecodeError, jwt.ExpiredSignatureError) as de:
             raise AuthTokenError(self, de)
         return decoded_id_token
 
