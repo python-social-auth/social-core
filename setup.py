@@ -43,19 +43,18 @@ def read_tests_requirements(filename):
     return read_requirements('social_core/tests/{0}'.format(filename))
 
 
-PY = os.environ.get("BUILD_VERSION") or sys.version_info[0]
 requirements = read_requirements('requirements-base.txt')
 # May be able to just use environment markers in requirements-base.txt
 # at least on  setuptools 36.2.0 and up.
 requirements_py2 = read_requirements('requirements-python2.txt')
 requirements_py3 = read_requirements('requirements-python3.txt')
 requirements_openidconnect = read_requirements('requirements-openidconnect.txt')
-requirements_saml = read_requirements('requirements-saml-python%s.txt' % PY)
+requirements_saml = read_requirements('requirements-saml-python3.txt')
 requirements_azuread = read_requirements('requirements-azuread.txt')
 
 tests_requirements_base = read_tests_requirements('requirements-base.txt')
 tests_requirements = tests_requirements_base + \
-    read_tests_requirements('requirements-python%s.txt' % PY)
+    read_tests_requirements('requirements-python3.txt')
 
 requirements_all = requirements_openidconnect + \
                    requirements_saml + \
