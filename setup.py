@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-import sys
 import re
-import os
 
 from os.path import join, dirname
 
