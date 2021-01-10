@@ -83,7 +83,7 @@ class AzureADOAuth2(BaseOAuth2):
             id_token = access_token
 
         try:
-            decoded_id_token =  jwt.decode(id_token, options={
+            decoded_id_token = jwt.decode(id_token, options={
                 'verify_signature': False
             })
         except (jwt.DecodeError, jwt.ExpiredSignatureError) as de:
