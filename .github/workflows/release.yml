@@ -23,16 +23,16 @@ jobs:
         python -m pip install --upgrade pip
         pip install wheel twine
 
-    # - name: Verify tag is documented
-    #   run: |
-    #     CURRENT_TAG=${GITHUB_REF#refs/tags/}
-    #     CURRENT_VERSION=$(head -n1 social_core/__init__.py | awk '{print $3}' | sed 's/[^0-9\.]//g')
-    #     if [ "${CURRENT_VERSION}" != "${CURRENT_TAG}" ]; then
-    #         echo "========================================================================"
-    #         echo "Error: tag '${CURRENT_TAG}' and version '${CURRENT_VERSION}' don't match"
-    #         echo "========================================================================"
-    #         exit 1;
-    #     fi
+    - name: Verify tag is documented
+      run: |
+        CURRENT_TAG=${GITHUB_REF#refs/tags/}
+        CURRENT_VERSION=$(head -n1 social_core/__init__.py | awk '{print $3}' | sed 's/[^0-9\.]//g')
+        if [ "${CURRENT_VERSION}" != "${CURRENT_TAG}" ]; then
+            echo "========================================================================"
+            echo "Error: tag '${CURRENT_TAG}' and version '${CURRENT_VERSION}' don't match"
+            echo "========================================================================"
+            exit 1;
+        fi
 
     - name: Build dist
       run: python setup.py sdist bdist_wheel --python-tag py3
