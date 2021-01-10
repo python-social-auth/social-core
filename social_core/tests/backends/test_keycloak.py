@@ -82,25 +82,11 @@ _PAYLOAD = {
 }
 
 
-def _encode(
-    payload,
-    key=_PRIVATE_KEY,
-    algorithm=_ALGORITHM
-):
-    encoded = jwt.encode(payload, key=key, algorithm=algorithm)
-    if jwt.__version__ < '2.0.0':
-        return encoded.decode('utf-8')
-    else:
-        return encoded
+def _encode(payload, key=_PRIVATE_KEY, algorithm=_ALGORITHM):
+    return jwt.encode(payload, key=key, algorithm=algorithm)
 
 
-
-def _decode(
-    token,
-    key=_PUBLIC_KEY,
-    algorithms=[_ALGORITHM],
-    audience=_KEY,
-):
+def _decode(token, key=_PUBLIC_KEY, algorithms=[_ALGORITHM], audience=_KEY):
     return jwt.decode(token, key=key, algorithms=algorithms, audience=audience)
 
 

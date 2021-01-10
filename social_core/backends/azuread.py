@@ -83,7 +83,9 @@ class AzureADOAuth2(BaseOAuth2):
             id_token = access_token
 
         try:
-            decoded_id_token = jwt_decode_no_verify(id_token)
+            decoded_id_token =  jwt.decode(id_token, options={
+                'verify_signature': False
+            })
         except (jwt.DecodeError, jwt.ExpiredSignatureError) as de:
             raise AuthTokenError(self, de)
         return decoded_id_token
@@ -124,14 +126,3 @@ class AzureADOAuth2(BaseOAuth2):
             new_token_response = self.refresh_token(token=access_token)
             access_token = new_token_response['access_token']
         return access_token
-
-
-# PyJWT 2.0.0 changed the signature of jwt.decode
-# The semantics of argument `verify=False` are now specified by
-# setting 'verify_signature' to False in the `options` dictionary
-if jwt.__version__ < '2.0.0':
-    def jwt_decode_no_verify(token):
-        return jwt.decode(token, verify=False)
-else:
-    def jwt_decode_no_verify(token):
-        return jwt.decode(token, options={'verify_signature': False})

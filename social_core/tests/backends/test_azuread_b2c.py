@@ -33,15 +33,6 @@ from jwt.algorithms import RSAAlgorithm
 from .oauth import OAuth2Test
 
 
-# PyJWT version 2.0.0 changed jwt.encode() from "-> bytes" to "-> str"
-def _encode(*args, **kw):
-    encoded = jwt.encode(*args, **kw)
-    if jwt.__version__ < '2.0.0':
-        return encoded.decode('utf-8')
-    else:
-        return encoded
-
-
 # Dummy private and private keys:
 RSA_PUBLIC_JWT_KEY = {
     # https://github.com/jpadilla/pyjwt/blob/06f461a/tests/keys/jwk_rsa_pub.json
@@ -112,7 +103,7 @@ class AzureADOAuth2Test(OAuth2Test):
     access_token_body = json.dumps({
         'access_token': 'foobar',
         'token_type': 'bearer',
-        'id_token': _encode(
+        'id_token': jwt.encode(
             key=RSAAlgorithm.from_jwk(json.dumps(RSA_PRIVATE_JWT_KEY)),
             headers={
                 'kid': RSA_PRIVATE_JWT_KEY['kid'],
