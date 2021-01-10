@@ -1,11 +1,8 @@
 name: Release
 
 on:
-  push:
-    branches:
-      - test/**
-  # release:
-  #   types: [published]
+  release:
+    types: [published]
 
 jobs:
   release:
@@ -52,4 +49,4 @@ jobs:
       env:
         TWINE_USERNAME: ${{ secrets.PYPI_USER }}
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-      run: twine upload -r testpypi dist/*
+      run: twine upload -r dist/*
