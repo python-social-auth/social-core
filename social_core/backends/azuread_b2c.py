@@ -30,8 +30,8 @@ See https://nicksnettravels.builttoroam.com/post/2017/01/24/Verifying-Azure-Acti
 import json
 
 from cryptography.hazmat.primitives import serialization
-from jwt import DecodeError, ExpiredSignature, decode as jwt_decode, get_unverified_header
-
+from jwt import DecodeError, ExpiredSignatureError, decode as jwt_decode, \
+    get_unverified_header
 
 try:
     from jwt.algorithms import RSAAlgorithm
@@ -184,5 +184,5 @@ class AzureADB2COAuth2(AzureADOAuth2):
                 audience=self.setting('KEY'),
                 leeway=self.setting('JWT_LEEWAY', default=0),
             )
-        except (DecodeError, ExpiredSignature) as error:
+        except (DecodeError, ExpiredSignatureError) as error:
             raise AuthTokenError(self, error)
