@@ -58,5 +58,5 @@ jobs:
         username = __token__
         password = ${PYPI_API_TOKEN}
         EOF
-        twine upload -c ./pypirc -r dist/*
+        twine upload -c ./pypirc dist/*
         rm -rf ./pypirc dist/
