@@ -1,6 +1,6 @@
 import time
 
-from jwt import DecodeError, ExpiredSignature
+from jwt import DecodeError, ExpiredSignatureError
 
 from ..exceptions import AuthTokenError
 from .oauth import BaseOAuth2
@@ -61,18 +61,15 @@ class MicrosoftOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Return user data by querying Microsoft service"""
-        try:
-            return self.get_json(
-                'https://graph.microsoft.com/v1.0/me',
-                headers={
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'Accept': 'application/json',
-                    'Authorization': 'Bearer ' + access_token
-                },
-                method='GET'
-            )
-        except (DecodeError, ExpiredSignature) as error:
-            raise AuthTokenError(self, error)
+        return self.get_json(
+            'https://graph.microsoft.com/v1.0/me',
+            headers={
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Accept': 'application/json',
+                'Authorization': 'Bearer ' + access_token
+            },
+            method='GET'
+        )
 
     def get_auth_token(self, user_id):
         """Return the access token for the given user, after ensuring that it
