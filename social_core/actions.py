@@ -1,4 +1,4 @@
-from six.moves.urllib_parse import quote
+from urllib.parse import quote
 
 from .utils import sanitize_redirect, user_is_authenticated, \
                    user_is_active, partial_pipeline_data, setting_url

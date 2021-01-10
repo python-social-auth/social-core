@@ -1,4 +1,4 @@
-from six.moves.urllib.parse import urljoin
+from urllib.parse import urljoin
 
 from social_core.utils import cache
 

@@ -2,7 +2,7 @@
 LiveJournal OpenId backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/livejournal.html
 """
-from six.moves.urllib_parse import urlsplit
+from urllib.parse import urlsplit
 
 from .open_id import OpenIdAuth
 from ..exceptions import AuthMissingParameter

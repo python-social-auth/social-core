@@ -3,8 +3,7 @@ Mail.ru OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/mailru.html
 """
 from hashlib import md5
-
-from six.moves.urllib_parse import unquote
+from urllib.parse import unquote
 
 from .oauth import BaseOAuth2
 

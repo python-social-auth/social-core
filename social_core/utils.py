@@ -5,13 +5,12 @@ import unicodedata
 import functools
 import hmac
 import logging
+from urllib.parse import urlparse, urlunparse, urlencode, \
+                                   parse_qs as battery_parse_qs
 
 import six
 import requests
 import social_core
-
-from six.moves.urllib_parse import urlparse, urlunparse, urlencode, \
-                                   parse_qs as battery_parse_qs
 
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.poolmanager import PoolManager

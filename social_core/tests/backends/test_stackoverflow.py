@@ -1,6 +1,5 @@
 import json
-
-from six.moves.urllib_parse import urlencode
+from urllib.parse import urlencode
 
 from .oauth import OAuth2Test
 

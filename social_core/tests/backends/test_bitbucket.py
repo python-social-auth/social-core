@@ -1,8 +1,7 @@
 import json
+from urllib.parse import urlencode
 
 from httpretty import HTTPretty
-
-from six.moves.urllib_parse import urlencode
 
 from ...exceptions import AuthForbidden
 from .oauth import OAuth1Test, OAuth2Test

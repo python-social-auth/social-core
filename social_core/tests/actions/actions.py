@@ -1,10 +1,9 @@
 import json
 import requests
 import unittest2 as unittest
+from urllib.parse import urlparse
 
 from httpretty import HTTPretty
-
-from six.moves.urllib_parse import urlparse
 
 from ...utils import parse_qs, module_member
 from ...actions import do_auth, do_complete

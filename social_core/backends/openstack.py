@@ -1,7 +1,7 @@
 """
 OpenStack OpenId backend
 """
-from six.moves.urllib_parse import urlsplit
+from urllib.parse import urlsplit
 from openid.extensions import ax
 
 from .open_id import OpenIdAuth
