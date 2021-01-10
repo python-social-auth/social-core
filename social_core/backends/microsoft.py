@@ -1,13 +1,9 @@
-import time
-
-from jwt import DecodeError, ExpiredSignatureError
-
-from ..exceptions import AuthTokenError
-from .oauth import BaseOAuth2
-
 """
 OAuth2 Backend to work with microsoft graph.
 """
+import time
+
+from .oauth import BaseOAuth2
 
 
 class MicrosoftOAuth2(BaseOAuth2):
