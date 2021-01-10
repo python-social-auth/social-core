@@ -46,7 +46,6 @@ def read_tests_requirements(filename):
 requirements = read_requirements('requirements-base.txt')
 # May be able to just use environment markers in requirements-base.txt
 # at least on  setuptools 36.2.0 and up.
-requirements_py2 = read_requirements('requirements-python2.txt')
 requirements_py3 = read_requirements('requirements-python3.txt')
 requirements_openidconnect = read_requirements('requirements-openidconnect.txt')
 requirements_saml = read_requirements('requirements-saml-python3.txt')
@@ -88,9 +87,7 @@ setup(
         'saml': [requirements_saml],
         'azuread': [requirements_azuread],
         'all': [requirements_all],
-        'allpy2': [requirements_all, requirements_py2],
         'allpy3': [requirements_all, requirements_py3],
-        ':python_version < "3.0"': [requirements_py2],
         ':python_version >= "3.0"': [requirements_py3],
     },
     classifiers=[
@@ -100,12 +97,11 @@ setup(
         'Intended Audience :: Developers',
         'Environment :: Web Environment',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
     ],
     package_data={
         'social_core/tests': [
