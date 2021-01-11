@@ -149,8 +149,8 @@ class FacebookOAuth2(BaseOAuth2):
         if self.data.get('denied_scopes'):
             data['denied_scopes'] = self.data['denied_scopes'].split(',')
 
-        kwargs.update({'backend': self, 'response': data})
-        return self.strategy.authenticate(*args, **kwargs)
+        kwargs.update({'response': data})
+        return self.strategy.authenticate(self,*args, **kwargs)
 
     def revoke_token_url(self, token, uid):
         version = self.setting('API_VERSION', API_VERSION)
