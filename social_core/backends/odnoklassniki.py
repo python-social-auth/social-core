@@ -3,8 +3,7 @@ Odnoklassniki OAuth2 and Iframe Application backends, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/odnoklassnikiru.html
 """
 from hashlib import md5
-
-from six.moves.urllib_parse import unquote
+from urllib.parse import unquote
 
 from .base import BaseAuth
 from .oauth import BaseOAuth2

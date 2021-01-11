@@ -1,8 +1,7 @@
 import datetime
+from urllib.parse import urlencode
 
 from httpretty import HTTPretty
-
-from six.moves.urllib_parse import urlencode
 
 from ...exceptions import AuthMissingParameter
 

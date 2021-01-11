@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
+import sys
+from html.parser import HTMLParser
+
+import requests
+from httpretty import HTTPretty
+from openid import oidutil
+
 from ...backends.utils import load_backends
 from ...utils import parse_qs, module_member
 from ..models import TestStorage, User, TestUserSocialAuth, \
     TestNonce, TestAssociation
 from ..strategy import TestStrategy
 from .base import BaseBackendTest
-import sys
 
-import requests
-
-from six.moves.html_parser import HTMLParser
-from openid import oidutil
-from httpretty import HTTPretty
 
 sys.path.insert(0, '..')
 

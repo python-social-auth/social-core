@@ -1,11 +1,9 @@
-import requests
+from urllib.parse import urlparse
 
+import requests
 from httpretty import HTTPretty
 
-from six.moves.urllib_parse import urlparse
-
 from ...utils import parse_qs, url_add_parameters
-
 from ..models import User
 from .base import BaseBackendTest
 

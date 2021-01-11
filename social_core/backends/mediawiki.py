@@ -5,12 +5,12 @@ MediaWiki OAuth1 backend, docs at:
 
 import re
 import time
+from urllib.parse import parse_qs, urlencode, urlparse
+
 import six
 import requests
 import jwt
-
 from six import b
-from six.moves.urllib.parse import parse_qs, urlencode, urlparse
 from requests_oauthlib import OAuth1
 
 from .oauth import BaseOAuth1

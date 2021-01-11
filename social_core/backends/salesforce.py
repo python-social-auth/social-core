@@ -1,4 +1,4 @@
-from six.moves.urllib_parse import urlencode
+from urllib.parse import urlencode
 
 from .oauth import BaseOAuth2
 

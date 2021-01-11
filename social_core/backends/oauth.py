@@ -1,9 +1,8 @@
-import six
+from urllib.parse import urlencode, unquote
 
+import six
 from requests_oauthlib import OAuth1
 from oauthlib.oauth1 import SIGNATURE_TYPE_AUTH_HEADER
-
-from six.moves.urllib_parse import urlencode, unquote
 
 from ..utils import url_add_parameters, parse_qs, handle_http_errors, \
                     constant_time_compare
