@@ -46,9 +46,9 @@ class OktaOAuth2Test(OAuth2Test):
         'nickname': 'foobar',
         'middle_name': '',
         'profile': 'https://example.com/foo.bar',
-        'zoneinfo': "America/Los_Angeles",
-        "updated_at": 1311280970,
-        "preferred_username": "foo",
+        'zoneinfo': 'America/Los_Angeles',
+        'updated_at': 1311280970,
+        'preferred_username': 'foo',
     })
 
     def test_login(self):

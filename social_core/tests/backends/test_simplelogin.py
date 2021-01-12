@@ -11,14 +11,14 @@ class SimpleLoginOAuth2Test(OAuth2Test):
         'token_type': 'bearer'
     })
     user_data_body = json.dumps({
-        "client": "Continental",
-        "email": "john@wick.com",
-        "email_verified": True,
-        "id": 1,
-        "name": "John Wick",
-        "avatar_url": "http://wick.com/john.png"
+        'client': 'Continental',
+        'email': 'john@wick.com',
+        'email_verified': True,
+        'id': 1,
+        'name': 'John Wick',
+        'avatar_url': 'http://wick.com/john.png'
     })
-    expected_username = "john@wick.com"
+    expected_username = 'john@wick.com'
 
     def test_login(self):
         self.do_login()

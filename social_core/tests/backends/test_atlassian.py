@@ -16,36 +16,36 @@ class AtlassianOAuth2Test(OAuth2Test):
     })
     tenant_data_body = json.dumps([
         {
-            "id": "FAKED_CLOUD_ID",
-            "name": "bachmanity.com",
-            "avatarUrl": "https://bachmanity.atlassian.net/avatars/240/site.png",
-            "scopes": [
-                "read:jira-user"
+            'id': 'FAKED_CLOUD_ID',
+            'name': 'bachmanity.com',
+            'avatarUrl': 'https://bachmanity.atlassian.net/avatars/240/site.png',
+            'scopes': [
+                'read:jira-user'
             ]
         }
     ])
     user_data_body = json.dumps({
-        "self": "http://bachmanity.atlassian.net/rest/api/3/user?username=erlich",
-        "key": "erlich",
-        "accountId": "99:27935d01-92a7-4687-8272-a9b8d3b2ae2e",
-        "name": "erlich",
-        "emailAddress": "erlich@bachmanity.com",
-        "avatarUrls": {
-            "48x48": "http://bachmanity.atlassian.net/secure/useravatar?size=large&ownerId=erlich",
-            "24x24": "http://bachmanity.atlassian.net/secure/useravatar?size=small&ownerId=erlich",
-            "16x16": "http://bachmanity.atlassian.net/secure/useravatar?size=xsmall&ownerId=erlich",
-            "32x32": "http://bachmanity.atlassian.net/secure/useravatar?size=medium&ownerId=erlich"
+        'self': 'http://bachmanity.atlassian.net/rest/api/3/user?username=erlich',
+        'key': 'erlich',
+        'accountId': '99:27935d01-92a7-4687-8272-a9b8d3b2ae2e',
+        'name': 'erlich',
+        'emailAddress': 'erlich@bachmanity.com',
+        'avatarUrls': {
+            '48x48': 'http://bachmanity.atlassian.net/secure/useravatar?size=large&ownerId=erlich',
+            '24x24': 'http://bachmanity.atlassian.net/secure/useravatar?size=small&ownerId=erlich',
+            '16x16': 'http://bachmanity.atlassian.net/secure/useravatar?size=xsmall&ownerId=erlich',
+            '32x32': 'http://bachmanity.atlassian.net/secure/useravatar?size=medium&ownerId=erlich'
         },
-        "displayName": "Erlich Bachman",
-        "active": True,
-        "timeZone": "Australia/Sydney",
-        "groups": {
-            "size": 3,
-            "items": []
+        'displayName': 'Erlich Bachman',
+        'active': True,
+        'timeZone': 'Australia/Sydney',
+        'groups': {
+            'size': 3,
+            'items': []
         },
-        "applicationRoles": {
-            "size": 1,
-            "items": []
+        'applicationRoles': {
+            'size': 1,
+            'items': []
         }
     })
 

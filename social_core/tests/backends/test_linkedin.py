@@ -16,23 +16,23 @@ class BaseLinkedinTest:
     # https://docs.microsoft.com/en-us/linkedin/consumer/integrations/self
     # -serve/sign-in-with-linkedin?context=linkedin/consumer/context#api-request
     user_data_body = json.dumps({
-        "id": '1010101010',
-        "firstName": {
-            "localized": {
-                "en_US": "Foo"
+        'id': '1010101010',
+        'firstName': {
+            'localized': {
+                'en_US': 'Foo'
             },
-            "preferredLocale": {
-                "country": "US",
-                "language": "en"
+            'preferredLocale': {
+                'country': 'US',
+                'language': 'en'
             }
         },
-        "lastName": {
-            "localized": {
-                "en_US": "Bar"
+        'lastName': {
+            'localized': {
+                'en_US': 'Bar'
             },
-            "preferredLocale": {
-                "country": "US",
-                "language": "en"
+            'preferredLocale': {
+                'country': 'US',
+                'language': 'en'
             }
         }
     })
