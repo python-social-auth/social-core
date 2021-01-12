@@ -45,6 +45,7 @@ class AppleIdAuth(BaseOAuth2):
     TOKEN_KEY = 'id_token'
     STATE_PARAMETER = True
     REDIRECT_STATE = False
+    SCOPE_SEPARATOR = "%20"
 
     TOKEN_AUDIENCE = 'https://appleid.apple.com'
     TOKEN_TTL_SEC = 6 * 30 * 24 * 60 * 60
