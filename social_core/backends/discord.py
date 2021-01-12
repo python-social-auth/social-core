@@ -27,5 +27,5 @@ class DiscordOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         url = 'https://%s/api/users/@me' % self.HOSTNAME
-        auth_header = {"Authorization": "Bearer %s" % access_token}
+        auth_header = {'Authorization': 'Bearer %s' % access_token}
         return self.get_json(url, headers=auth_header)

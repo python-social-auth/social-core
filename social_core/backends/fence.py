@@ -19,14 +19,14 @@ class Fence(OpenIdConnectAuth):
         return urljoin(append_slash(self.OIDC_ENDPOINT), path)
 
     def authorization_url(self):
-        return self._url("user/oauth2/authorize")
+        return self._url('user/oauth2/authorize')
 
     def access_token_url(self):
-        return self._url("user/oauth2/token")
+        return self._url('user/oauth2/token')
 
     @cache(ttl=86400)
     def oidc_config(self):
-        return self.get_json(self._url(".well-known/openid-configuration"))
+        return self.get_json(self._url('.well-known/openid-configuration'))
 
     def get_user_details(self, response):
         return {

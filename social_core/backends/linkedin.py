@@ -68,19 +68,19 @@ class LinkedinOAuth2(BaseOAuth2):
             """
             FirstName & Last Name object
             {
-                  "localized":{
-                     "en_US":"Smith"
+                  'localized': {
+                     'en_US': 'Smith'
                   },
-                  "preferredLocale":{
-                     "country":"US",
-                     "language":"en"
+                  'preferredLocale': {
+                     'country': 'US',
+                     'language': 'en'
                   }
             }
             :return the localizedName from the lastName object
             """
-            locale = "{}_{}".format(
-                name["preferredLocale"]["language"],
-                name["preferredLocale"]["country"]
+            locale = '{}_{}'.format(
+                name['preferredLocale']['language'],
+                name['preferredLocale']['country']
             )
             return name['localized'].get(locale, '')
 

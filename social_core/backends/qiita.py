@@ -36,10 +36,10 @@ class QiitaOAuth2(BaseOAuth2):
 
     def auth_complete_params(self, state=None):
         data = super().auth_complete_params(state)
-        if "grant_type" in data:
-            del data["grant_type"]
-        if "redirect_uri" in data:
-            del data["redirect_uri"]
+        if 'grant_type' in data:
+            del data['grant_type']
+        if 'redirect_uri' in data:
+            del data['redirect_uri']
         return json.dumps(data)
 
     def auth_headers(self):

@@ -15,8 +15,8 @@ class OAuthAuth(BaseAuth):
     """OAuth authentication backend base class.
 
     Settings will be inspected to get more values names that should be
-    stored on extra_data field. The setting name is created following the pattern 
-    SOCIAL_AUTH_<uppercase current backend name>_EXTRA_DATA.
+    stored on extra_data field. The setting name is created following the
+    pattern SOCIAL_AUTH_<uppercase current backend name>_EXTRA_DATA.
 
     access_token is always stored.
 

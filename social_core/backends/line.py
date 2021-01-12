@@ -96,7 +96,7 @@ class LineOAuth2(BaseOAuth2):
             response = self.get_json(
                 self.USER_INFO_URL,
                 headers={
-                    "Authorization": "Bearer {}".format(access_token)
+                    'Authorization': 'Bearer {}'.format(access_token)
                 }
             )
             self.process_error(response)
