@@ -14,6 +14,7 @@ request, be sure to link to that issue.
 
 Please check the type of change your PR introduces:
 
+- [ ] Release (new release request)
 - [ ] Bugfix (non-breaking change which fixes an issue)
 - [ ] New feature (non-breaking change which adds functionality)
 - [ ] Code style update (PEP8, lint, formatting, renaming, etc)
