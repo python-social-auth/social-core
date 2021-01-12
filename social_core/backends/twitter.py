@@ -21,7 +21,7 @@ class TwitterOAuth(BaseOAuth1):
         if 'denied' in data:
             raise AuthCanceled(self)
         else:
-            super(TwitterOAuth, self).process_error(data)
+            super().process_error(data)
 
     def get_user_details(self, response):
         """Return user details from Twitter account"""

@@ -122,9 +122,7 @@ class OpenIdAuth(BaseAuth):
         sreg_names = self.setting('SREG_EXTRA_DATA')
         ax_names = self.setting('AX_EXTRA_DATA')
         values = self.values_from_response(response, sreg_names, ax_names)
-        from_details = super(OpenIdAuth, self).extra_data(
-            user, uid, {}, details, *args, **kwargs
-        )
+        from_details = super().extra_data(user, uid, {}, details, *args, **kwargs)
         values.update(from_details)
         return values
 

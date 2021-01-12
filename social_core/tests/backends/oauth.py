@@ -95,7 +95,7 @@ class OAuth1Test(BaseOAuthTest):
 
     def do_start(self):
         self.request_token_handler()
-        return super(OAuth1Test, self).do_start()
+        return super().do_start()
 
 
 class OAuth2Test(BaseOAuthTest):

@@ -46,7 +46,7 @@ class SAMLTest(BaseBackendTest):
     def setUp(self):
         """Patch the time so that we can replay canned
         request/response pairs"""
-        super(SAMLTest, self).setUp()
+        super().setUp()
 
         @staticmethod
         def fixed_time():

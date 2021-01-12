@@ -83,7 +83,7 @@ class NGPVANActionIDOpenIDTest(OpenIdTest):
 
     def setUp(self):
         """Setup the test"""
-        super(NGPVANActionIDOpenIDTest, self).setUp()
+        super().setUp()
 
         # Mock out the NGP VAN endpoints
         HTTPretty.register_uri(

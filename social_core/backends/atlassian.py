@@ -15,7 +15,7 @@ class AtlassianOAuth2(BaseOAuth2):
     ]
 
     def auth_params(self, state=None):
-        params = super(AtlassianOAuth2, self).auth_params(state)
+        params = super().auth_params(state)
         params.update({'audience': 'api.atlassian.com',
                        'prompt': 'consent'})
         return params

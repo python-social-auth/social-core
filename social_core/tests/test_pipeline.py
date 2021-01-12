@@ -30,9 +30,7 @@ class IntegrityErrorUserSocialAuth(TestUserSocialAuth):
             user = list(User.cache.values())[0]
             return IntegrityErrorUserSocialAuth(user, provider, uid)
         else:
-            return super(IntegrityErrorUserSocialAuth, cls).get_social_auth(
-                provider, uid
-            )
+            return super().get_social_auth(provider, uid)
 
 
 class IntegrityErrorStorage(TestStorage):
@@ -57,7 +55,7 @@ class UnknownErrorStorage(IntegrityErrorStorage):
 class IntegrityErrorOnLoginTest(BaseActionTest):
     def setUp(self):
         self.strategy = TestStrategy(IntegrityErrorStorage)
-        super(IntegrityErrorOnLoginTest, self).setUp()
+        super().setUp()
 
     def test_integrity_error(self):
         self.do_login()
@@ -66,7 +64,7 @@ class IntegrityErrorOnLoginTest(BaseActionTest):
 class UnknownErrorOnLoginTest(BaseActionTest):
     def setUp(self):
         self.strategy = TestStrategy(UnknownErrorStorage)
-        super(UnknownErrorOnLoginTest, self).setUp()
+        super().setUp()
 
     def test_unknown_error(self):
         with self.assertRaises(UnknownError):

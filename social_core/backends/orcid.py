@@ -21,7 +21,7 @@ class ORCIDOAuth2(BaseOAuth2):
     ]
 
     def auth_params(self, state=None):
-        params = super(ORCIDOAuth2, self).auth_params(state)
+        params = super().auth_params(state)
         return params
 
     def get_user_details(self, response):

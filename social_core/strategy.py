@@ -8,7 +8,7 @@ from .pipeline import DEFAULT_AUTH_PIPELINE, DEFAULT_DISCONNECT_PIPELINE
 from .pipeline.utils import partial_load, partial_store, partial_prepare
 
 
-class BaseTemplateStrategy(object):
+class BaseTemplateStrategy:
     def __init__(self, strategy):
         self.strategy = strategy
 
@@ -28,7 +28,7 @@ class BaseTemplateStrategy(object):
         raise NotImplementedError('Implement in subclass')
 
 
-class BaseStrategy(object):
+class BaseStrategy:
     ALLOWED_CHARS = 'abcdefghijklmnopqrstuvwxyz' \
                     'ABCDEFGHIJKLMNOPQRSTUVWXYZ' \
                     '0123456789'

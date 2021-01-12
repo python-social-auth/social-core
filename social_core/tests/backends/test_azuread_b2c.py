@@ -136,7 +136,7 @@ class AzureADOAuth2Test(OAuth2Test):
     })
 
     def extra_settings(self):
-        settings = super(AzureADOAuth2Test, self).extra_settings()
+        settings = super().extra_settings()
         settings.update({
             'SOCIAL_AUTH_' + self.name + '_POLICY': 'b2c_1_signin',
             'SOCIAL_AUTH_' + self.name + '_KEY': self.AUTH_KEY,
@@ -145,7 +145,7 @@ class AzureADOAuth2Test(OAuth2Test):
         return settings
 
     def setUp(self):
-        super(AzureADOAuth2Test, self).setUp()
+        super().setUp()
 
         keys_url = 'https://login.microsoftonline.com/footenant.onmicrosoft.com/discovery/v2.0/keys?p=b2c_1_signin'
         keys_body = json.dumps({

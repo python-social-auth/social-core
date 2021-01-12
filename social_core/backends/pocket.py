@@ -16,7 +16,7 @@ class PocketAuth(BaseAuth):
     def get_json(self, url, *args, **kwargs):
         headers = {'X-Accept': 'application/json'}
         kwargs.update({'method': 'POST', 'headers': headers})
-        return super(PocketAuth, self).get_json(url, *args, **kwargs)
+        return super().get_json(url, *args, **kwargs)
 
     def get_user_details(self, response):
         return {'username': response['username']}

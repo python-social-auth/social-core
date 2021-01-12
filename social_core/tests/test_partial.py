@@ -10,7 +10,7 @@ from ..pipeline.partial import partial, partial_step
 
 class PartialDecoratorTestCase(unittest.TestCase):
     def setUp(self):
-        super(PartialDecoratorTestCase, self).setUp()
+        super().setUp()
         self.mock_current_partial_token = Mock()
         self.mock_current_partial = Mock(token=self.mock_current_partial_token)
 

@@ -113,9 +113,7 @@ class GithubOrganizationOAuth2Test(GithubOAuth2Test):
     def auth_handlers(self, start_url):
         url = 'https://api.github.com/orgs/foobar/members/foobar'
         HTTPretty.register_uri(HTTPretty.GET, url, status=204, body='')
-        return super(GithubOrganizationOAuth2Test, self).auth_handlers(
-            start_url
-        )
+        return super().auth_handlers(start_url)
 
     def test_login(self):
         self.strategy.set_settings({'SOCIAL_AUTH_GITHUB_ORG_NAME': 'foobar'})
@@ -134,9 +132,7 @@ class GithubOrganizationOAuth2FailTest(GithubOAuth2Test):
         HTTPretty.register_uri(HTTPretty.GET, url, status=404,
                                body='{"message": "Not Found"}',
                                content_type='application/json')
-        return super(GithubOrganizationOAuth2FailTest, self).auth_handlers(
-            start_url
-        )
+        return super().auth_handlers(start_url)
 
     def test_login(self):
         self.strategy.set_settings({'SOCIAL_AUTH_GITHUB_ORG_NAME': 'foobar'})
@@ -155,9 +151,7 @@ class GithubTeamOAuth2Test(GithubOAuth2Test):
     def auth_handlers(self, start_url):
         url = 'https://api.github.com/teams/123/members/foobar'
         HTTPretty.register_uri(HTTPretty.GET, url, status=204, body='')
-        return super(GithubTeamOAuth2Test, self).auth_handlers(
-            start_url
-        )
+        return super().auth_handlers(start_url)
 
     def test_login(self):
         self.strategy.set_settings({'SOCIAL_AUTH_GITHUB_TEAM_ID': '123'})
@@ -176,9 +170,7 @@ class GithubTeamOAuth2FailTest(GithubOAuth2Test):
         HTTPretty.register_uri(HTTPretty.GET, url, status=404,
                                body='{"message": "Not Found"}',
                                content_type='application/json')
-        return super(GithubTeamOAuth2FailTest, self).auth_handlers(
-            start_url
-        )
+        return super().auth_handlers(start_url)
 
     def test_login(self):
         self.strategy.set_settings({'SOCIAL_AUTH_GITHUB_TEAM_ID': '123'})

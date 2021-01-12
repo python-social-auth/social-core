@@ -35,7 +35,7 @@ class QiitaOAuth2(BaseOAuth2):
     ]
 
     def auth_complete_params(self, state=None):
-        data = super(QiitaOAuth2, self).auth_complete_params(state)
+        data = super().auth_complete_params(state)
         if "grant_type" in data:
             del data["grant_type"]
         if "redirect_uri" in data:
@@ -46,7 +46,7 @@ class QiitaOAuth2(BaseOAuth2):
         return {'Content-Type': 'application/json'}
 
     def request_access_token(self, *args, **kwargs):
-        data = super(QiitaOAuth2, self).request_access_token(*args, **kwargs)
+        data = super().request_access_token(*args, **kwargs)
         data.update({'access_token': data['token']})
         return data
 

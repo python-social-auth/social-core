@@ -9,7 +9,7 @@ from .github import GithubOAuth2, GithubOrganizationOAuth2, \
                     GithubTeamOAuth2
 
 
-class GithubEnterpriseMixin(object):
+class GithubEnterpriseMixin:
     def api_url(self):
         return append_slash(self.setting('API_URL'))
 

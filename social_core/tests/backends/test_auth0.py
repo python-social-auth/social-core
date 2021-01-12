@@ -50,7 +50,7 @@ class Auth0OAuth2Test(OAuth2Test):
     jwks_url = 'https://foobar.auth0.com/.well-known/jwks.json'
 
     def extra_settings(self):
-        settings = super(Auth0OAuth2Test, self).extra_settings()
+        settings = super().extra_settings()
         settings['SOCIAL_AUTH_' + self.name + '_DOMAIN'] = DOMAIN
         return settings
 
@@ -59,7 +59,7 @@ class Auth0OAuth2Test(OAuth2Test):
                                self.jwks_url,
                                body=json.dumps({'keys': [JWK_PUBLIC_KEY]}),
                                content_type='application/json')
-        return super(Auth0OAuth2Test, self).auth_handlers(start_url)
+        return super().auth_handlers(start_url)
 
     def test_login(self):
         self.do_login()

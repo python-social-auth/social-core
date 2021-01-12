@@ -110,7 +110,7 @@ class AzureADB2COAuth2(AzureADOAuth2):
 
         However, B2C backends provides `id_token`.
         """
-        response = super(AzureADB2COAuth2, self).request_access_token(
+        response = super().request_access_token(
             *args,
             **kwargs
         )
@@ -124,7 +124,7 @@ class AzureADB2COAuth2(AzureADOAuth2):
 
         The defaults can be overridden by GET parameters.
         """
-        extra_arguments = super(AzureADB2COAuth2, self).auth_extra_arguments()
+        extra_arguments = super().auth_extra_arguments()
         extra_arguments['p'] = self.policy or self.data.get('p')
         return extra_arguments
 
@@ -147,7 +147,7 @@ class AzureADB2COAuth2(AzureADOAuth2):
         Email address is returned on a different attribute for AzureAD
         B2C backends.
         """
-        details = super(AzureADB2COAuth2, self).get_user_details(response)
+        details = super().get_user_details(response)
         if not details['email'] and response.get('emails'):
             details['email'] = response['emails']
         if isinstance(details.get('email'), (list, tuple)):

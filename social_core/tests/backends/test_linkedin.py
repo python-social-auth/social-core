@@ -3,7 +3,7 @@ import json
 from .oauth import OAuth2Test
 
 
-class BaseLinkedinTest(object):
+class BaseLinkedinTest:
     user_data_url = 'https://api.linkedin.com/v2/me' \
                     '?projection=(firstName,id,lastName)'
     expected_username = 'FooBar'

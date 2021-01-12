@@ -19,7 +19,7 @@ NO_ASCII_REGEX = re.compile(r'[^\x00-\x7F]+')
 NO_SPECIAL_REGEX = re.compile(r'[^\w.@+_-]+', re.UNICODE)
 
 
-class UserMixin(object):
+class UserMixin:
     # Consider tokens that expire in 5 seconds as already expired
     ACCESS_TOKEN_EXPIRED_THRESHOLD = 5
 
@@ -196,7 +196,7 @@ class UserMixin(object):
         raise NotImplementedError('Implement in subclass')
 
 
-class NonceMixin(object):
+class NonceMixin:
     """One use numbers"""
     server_url = ''
     timestamp = 0
@@ -208,7 +208,7 @@ class NonceMixin(object):
         raise NotImplementedError('Implement in subclass')
 
 
-class AssociationMixin(object):
+class AssociationMixin:
     """OpenId account association"""
     server_url = ''
     handle = ''
@@ -252,7 +252,7 @@ class AssociationMixin(object):
         raise NotImplementedError('Implement in subclass')
 
 
-class CodeMixin(object):
+class CodeMixin:
     email = ''
     code = ''
     verified = False
@@ -279,7 +279,7 @@ class CodeMixin(object):
         raise NotImplementedError('Implement in subclass')
 
 
-class PartialMixin(object):
+class PartialMixin:
     token = ''
     data = ''
     next_step = ''
@@ -331,7 +331,7 @@ class PartialMixin(object):
         return partial
 
 
-class BaseStorage(object):
+class BaseStorage:
     user = UserMixin
     nonce = NonceMixin
     association = AssociationMixin

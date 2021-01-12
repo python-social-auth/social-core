@@ -7,7 +7,7 @@ from .oauth import BaseOAuth2, BaseOAuth1
 from ..exceptions import AuthMissingParameter
 
 
-class BaseGoogleAuth(object):
+class BaseGoogleAuth:
     def get_user_id(self, details, response):
         """Use google email as unique id"""
         if self.setting('USE_UNIQUE_USER_ID', False):
@@ -98,7 +98,7 @@ class GooglePlusAuth(BaseGoogleOAuth2API, BaseOAuth2):
     ]
 
     def auth_complete_params(self, state=None):
-        params = super(GooglePlusAuth, self).auth_complete_params(state)
+        params = super().auth_complete_params(state)
         if self.data.get('access_token'):
             # Don't add postmessage if this is plain server-side workflow
             params['redirect_uri'] = 'postmessage'
@@ -133,8 +133,7 @@ class GooglePlusAuth(BaseGoogleOAuth2API, BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         if 'id_token' not in self.data:
-            return super(GooglePlusAuth, self).user_data(access_token, *args,
-                                                         **kwargs)
+            return super().user_data(access_token, *args, **kwargs)
         response = self.get_json(
             'https://www.googleapis.com/oauth2/v3/tokeninfo',
             params={'id_token': access_token}
@@ -164,7 +163,7 @@ class GoogleOAuth(BaseGoogleAuth, BaseOAuth1):
         registered and a security badge is displayed on authorization page.
         http://code.google.com/apis/accounts/docs/OAuth_ref.html#SigningOAuth
         """
-        key_secret = super(GoogleOAuth, self).get_key_and_secret()
+        key_secret = super().get_key_and_secret()
         if key_secret == (None, None):
             key_secret = ('anonymous', 'anonymous')
         return key_secret

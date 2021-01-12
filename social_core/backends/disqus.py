@@ -40,8 +40,7 @@ class DisqusOAuth2(BaseOAuth2):
 
     def extra_data(self, user, uid, response, details=None, *args, **kwargs):
         meta_response = dict(response, **response.get('response', {}))
-        return super(DisqusOAuth2, self).extra_data(user, uid, meta_response,
-                                                    details, *args, **kwargs)
+        return super().extra_data(user, uid, meta_response, details, *args, **kwargs)
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
