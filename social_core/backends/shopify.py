@@ -3,7 +3,6 @@ Shopify OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/shopify.html
 """
 import imp
-import six
 
 from ..utils import handle_http_errors
 from .oauth import BaseOAuth2
@@ -36,7 +35,7 @@ class ShopifyOAuth2(BaseOAuth2):
     def get_user_details(self, response):
         """Use the shopify store name as the username"""
         return {
-            'username': six.text_type(response.get('shop', '')).replace(
+            'username': str(response.get('shop', '')).replace(
                 '.myshopify.com', ''
             )
         }

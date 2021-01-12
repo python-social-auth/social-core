@@ -1,13 +1,10 @@
 """Models mixins for Social Auth"""
+import base64
 import re
 import time
-import base64
 import uuid
 import warnings
-
 from datetime import datetime, timedelta
-
-import six
 
 from openid.association import Association as OpenIdAssociation
 
@@ -112,8 +109,7 @@ class UserMixin:
 
     def set_extra_data(self, extra_data=None):
         if extra_data and self.extra_data != extra_data:
-            if self.extra_data and not isinstance(
-                    self.extra_data, six.string_types):
+            if self.extra_data and not isinstance(self.extra_data, str):
                 self.extra_data.update(extra_data)
             else:
                 self.extra_data = extra_data
@@ -230,7 +226,7 @@ class AssociationMixin:
     @classmethod
     def openid_association(cls, assoc):
         secret = assoc.secret
-        if not isinstance(secret, six.binary_type):
+        if not isinstance(secret, bytes):
             secret = secret.encode()
         return OpenIdAssociation(assoc.handle, base64.decodebytes(secret),
                                  assoc.issued, assoc.lifetime,

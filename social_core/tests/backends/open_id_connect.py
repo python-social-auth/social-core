@@ -7,7 +7,6 @@ import datetime
 import base64
 from calendar import timegm
 
-import six
 from jose import jwt
 from httpretty import HTTPretty
 
@@ -137,10 +136,7 @@ class OpenIdConnectTestMixin:
         if tamper_message:
             header, msg, sig = body['id_token'].split('.')
             id_token['sub'] = '1235'
-            if six.PY3:
-                msg = base64.encodebytes(json.dumps(id_token).encode()).decode()
-            else:
-                msg = base64.encodestring(json.dumps(id_token).encode()).decode()
+            msg = base64.encodebytes(json.dumps(id_token).encode()).decode()
             body['id_token'] = '.'.join([header, msg, sig])
 
         return json.dumps(body)

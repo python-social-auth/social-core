@@ -2,8 +2,6 @@
 XING OAuth1 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/xing.html
 """
-import six
-
 from requests_oauthlib import OAuth1
 from oauthlib.oauth1 import SIGNATURE_TYPE_AUTH_HEADER
 
@@ -46,14 +44,10 @@ class XingOAuth(BaseOAuth1):
             raise AuthTokenError(self, 'Missing oauth_token')
         if not resource_owner_secret:
             raise AuthTokenError(self, 'Missing oauth_token_secret')
-        # decoding='utf-8' produces errors with python-requests on Python3
-        # since the final URL will be of type bytes
-        decoding = None if six.PY3 else 'utf-8'
         return OAuth1(key, secret,
                       resource_owner_key=resource_owner_key,
                       resource_owner_secret=resource_owner_secret,
-                      signature_type=SIGNATURE_TYPE_AUTH_HEADER,
-                      decoding=decoding)
+                      signature_type=SIGNATURE_TYPE_AUTH_HEADER)
 
     def user_data(self, access_token, *args, **kwargs):
         """Return user data provided"""
