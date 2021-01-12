@@ -53,3 +53,4 @@ changelog.sh
 .pytest_cache/
 
 files/local.env
+.env
