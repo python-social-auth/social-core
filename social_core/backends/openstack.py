@@ -13,7 +13,7 @@ class OpenStackOpenId(OpenIdAuth):
 
     def get_user_details(self, response):
         """Generate username from identity url"""
-        values = super(OpenStackOpenId, self).get_user_details(response)
+        values = super().get_user_details(response)
         values['username'] = values.get('username') or \
             urlsplit(response.identity_url).path.strip('/')
         values['nickname'] = values.get('nickname', '')

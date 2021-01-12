@@ -73,9 +73,7 @@ class GithubMemberOAuth2(GithubOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        user_data = super(GithubMemberOAuth2, self).user_data(
-            access_token, *args, **kwargs
-        )
+        user_data = super().user_data(access_token, *args, **kwargs)
         headers = {'Authorization': 'token {0}'.format(access_token)}
         try:
             self.request(self.member_url(user_data), headers=headers)

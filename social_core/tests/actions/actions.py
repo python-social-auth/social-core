@@ -55,7 +55,7 @@ class BaseActionTest(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
         self.strategy = None
-        super(BaseActionTest, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def setUp(self):
         HTTPretty.enable()

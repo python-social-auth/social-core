@@ -23,7 +23,7 @@ OID_SURNAME = "urn:oid:2.5.4.4"
 OID_USERID = "urn:oid:0.9.2342.19200300.100.1.1"
 
 
-class SAMLIdentityProvider(object):
+class SAMLIdentityProvider:
     """Wrapper around configuration for a SAML Identity provider"""
     def __init__(self, name, **kwargs):
         """Load and parse configuration"""
@@ -139,7 +139,7 @@ class DummySAMLIdentityProvider(SAMLIdentityProvider):
     config, this can be removed.
     """
     def __init__(self):
-        super(DummySAMLIdentityProvider, self).__init__(
+        super().__init__(
             'dummy',
             entity_id='https://dummy.none/saml2',
             url='https://dummy.none/SSO',
@@ -333,7 +333,7 @@ class SAMLAuth(BaseAuth):
         return self.strategy.authenticate(*args, **kwargs)
 
     def extra_data(self, user, uid, response, details=None, *args, **kwargs):
-        extra_data = super(SAMLAuth, self).extra_data(
+        extra_data = super().extra_data(
             user, uid, response['attributes'], details=details, *args, **kwargs
         )
         extra_data['session_index'] = response['session_index']

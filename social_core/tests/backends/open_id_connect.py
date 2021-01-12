@@ -40,7 +40,7 @@ JWK_KEY = {
 JWK_PUBLIC_KEY = {key: value for key, value in JWK_KEY.items() if key != 'd'}
 
 
-class OpenIdConnectTestMixin(object):
+class OpenIdConnectTestMixin:
     """
     Mixin to test OpenID Connect consumers. Inheriting classes should also
     inherit OAuth2Test.
@@ -52,7 +52,7 @@ class OpenIdConnectTestMixin(object):
     key = None
 
     def setUp(self):
-        super(OpenIdConnectTestMixin, self).setUp()
+        super().setUp()
         self.key = JWK_KEY.copy()
         self.public_key = JWK_PUBLIC_KEY.copy()
 
@@ -72,7 +72,7 @@ class OpenIdConnectTestMixin(object):
                                body=json.dumps({'keys': [self.public_key]}))
 
     def extra_settings(self):
-        settings = super(OpenIdConnectTestMixin, self).extra_settings()
+        settings = super().extra_settings()
         settings.update({
             'SOCIAL_AUTH_{0}_KEY'.format(self.name): self.client_key,
             'SOCIAL_AUTH_{0}_SECRET'.format(self.name): self.client_secret,

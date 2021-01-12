@@ -6,7 +6,7 @@ from ..utils import SSLHttpAdapter, module_member, parse_qs, user_agent
 from ..exceptions import AuthFailed
 
 
-class BaseAuth(object):
+class BaseAuth:
     """A authentication backend that authenticates the user based on
     the provider response"""
     name = ''  # provider name, it's stored in database

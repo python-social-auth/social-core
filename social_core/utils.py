@@ -33,7 +33,7 @@ class SSLHttpAdapter(HTTPAdapter):
     """
     def __init__(self, ssl_protocol):
         self.ssl_protocol = ssl_protocol
-        super(SSLHttpAdapter, self).__init__()
+        super().__init__()
 
     def init_poolmanager(self, connections, maxsize, block=False):
         self.poolmanager = PoolManager(
@@ -276,7 +276,7 @@ def get_strategy(strategy, storage, *args, **kwargs):
     return Strategy(Storage, *args, **kwargs)
 
 
-class cache(object):
+class cache:
     """
     Cache decorator that caches the return value of a method for a
     specified time.

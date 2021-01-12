@@ -29,7 +29,7 @@ class DropboxOAuth(BaseOAuth1):
             DeprecationWarning,
             stacklevel=2
         )
-        super(DropboxOAuth, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_user_details(self, response):
         """Return user details from Dropbox account"""
@@ -66,7 +66,7 @@ class DropboxOAuth2(BaseOAuth2):
             DeprecationWarning,
             stacklevel=2
         )
-        super(DropboxOAuth2, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_user_details(self, response):
         """Return user details from Dropbox account"""

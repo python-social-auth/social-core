@@ -11,7 +11,7 @@ from social_core.utils import cache
 from social_core.exceptions import AuthTokenError
 
 
-class OpenIdConnectAssociation(object):
+class OpenIdConnectAssociation:
     """ Use Association model to save the nonce by force."""
 
     def __init__(self, handle, secret='', issued=0, lifetime=0, assoc_type=''):
@@ -48,7 +48,7 @@ class OpenIdConnectAuth(BaseOAuth2):
 
     def __init__(self, *args, **kwargs):
         self.id_token = None
-        super(OpenIdConnectAuth, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def authorization_url(self):
         return self.AUTHORIZATION_URL or \
@@ -94,7 +94,7 @@ class OpenIdConnectAuth(BaseOAuth2):
 
     def auth_params(self, state=None):
         """Return extra arguments needed on auth process."""
-        params = super(OpenIdConnectAuth, self).auth_params(state)
+        params = super().auth_params(state)
         params['nonce'] = self.get_and_store_nonce(
             self.authorization_url(), state
         )

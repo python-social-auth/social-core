@@ -44,8 +44,7 @@ class ShopifyOAuth2(BaseOAuth2):
     def extra_data(self, user, uid, response, details=None, *args, **kwargs):
         """Return access_token and extra defined names to store in
         extra_data field"""
-        data = super(ShopifyOAuth2, self).extra_data(user, uid, response,
-                                                     details, *args, **kwargs)
+        data = super().extra_data(user, uid, response, details, *args, **kwargs)
         session = self.shopify_api.Session(self.data.get('shop').strip(),
                                            version=self.shopify_api_version)
         # Get, and store the permanent token

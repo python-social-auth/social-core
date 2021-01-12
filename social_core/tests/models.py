@@ -6,7 +6,7 @@ from ..storage import UserMixin, NonceMixin, AssociationMixin, \
     CodeMixin, PartialMixin, BaseStorage
 
 
-class BaseModel(object):
+class BaseModel:
     @classmethod
     def next_id(cls):
         cls.NEXT_ID += 1

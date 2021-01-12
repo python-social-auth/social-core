@@ -50,7 +50,7 @@ class AtlassianOAuth2Test(OAuth2Test):
     })
 
     def auth_handlers(self, start_url):
-        target_url = super(AtlassianOAuth2Test, self).auth_handlers(start_url)
+        target_url = super().auth_handlers(start_url)
         HTTPretty.register_uri(HTTPretty.GET,
                                self.tenant_url,
                                body=self.tenant_data_body,

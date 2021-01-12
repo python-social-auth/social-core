@@ -40,8 +40,7 @@ class OAuthAuth(BaseAuth):
     def extra_data(self, user, uid, response, details=None, *args, **kwargs):
         """Return access_token and extra defined names to store in
         extra_data field"""
-        data = super(OAuthAuth, self).extra_data(user, uid, response, details,
-                                                 *args, **kwargs)
+        data = super().extra_data(user, uid, response, details, *args, **kwargs)
         data['access_token'] = response.get('access_token', '') or \
             kwargs.get('access_token')
         return data
@@ -361,9 +360,7 @@ class BaseOAuth2(OAuthAuth):
     def extra_data(self, user, uid, response, details=None, *args, **kwargs):
         """Return access_token, token_type, and extra defined names to store in
             extra_data field"""
-        data = super(BaseOAuth2, self).extra_data(user, uid, response,
-                                                  details=details,
-                                                  *args, **kwargs)
+        data = super().extra_data(user, uid, response, details=details, *args, **kwargs)
         data['token_type'] = response.get('token_type') or \
             kwargs.get('token_type')
         return data

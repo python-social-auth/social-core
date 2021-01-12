@@ -10,7 +10,7 @@ class AssociateActionTest(BaseActionTest):
     expected_username = 'foobar'
 
     def setUp(self):
-        super(AssociateActionTest, self).setUp()
+        super().setUp()
         self.user = User(username='foobar', email='foo@bar.com')
         self.backend.strategy.session_set('username', self.user.username)
 
@@ -69,12 +69,12 @@ class MultipleAccountsTest(AssociateActionTest):
 
 class AlreadyAssociatedErrorTest(BaseActionTest):
     def setUp(self):
-        super(AlreadyAssociatedErrorTest, self).setUp()
+        super().setUp()
         self.user1 = User(username='foobar', email='foo@bar.com')
         self.user = None
 
     def tearDown(self):
-        super(AlreadyAssociatedErrorTest, self).tearDown()
+        super().tearDown()
         self.user1 = None
         self.user = None
 
