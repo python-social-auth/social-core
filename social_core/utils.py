@@ -8,7 +8,6 @@ import logging
 from urllib.parse import urlparse, urlunparse, urlencode, \
                                    parse_qs as battery_parse_qs
 
-import six
 import requests
 import social_core
 
@@ -138,7 +137,7 @@ def slugify(value):
     """Converts to lowercase, removes non-word characters (alphanumerics
     and underscores) and converts spaces to hyphens. Also strips leading
     and trailing whitespace."""
-    value = unicodedata.normalize('NFKD', six.text_type(value)) \
+    value = unicodedata.normalize('NFKD', str(value)) \
                        .encode('ascii', 'ignore') \
                        .decode('ascii')
     value = re.sub(r'[^\w\s-]', '', value).strip().lower()
@@ -161,10 +160,10 @@ def drop_lists(value):
     out = {}
     for key, val in value.items():
         val = val[0]
-        if isinstance(key, six.binary_type):
-            key = six.text_type(key, 'utf-8')
-        if isinstance(val, six.binary_type):
-            val = six.text_type(val, 'utf-8')
+        if isinstance(key, bytes):
+            key = str(key, 'utf-8')
+        if isinstance(val, bytes):
+            val = str(val, 'utf-8')
         out[key] = val
     return out
 
@@ -218,9 +217,9 @@ def build_absolute_uri(host_url, path=None):
 
 def constant_time_compare(val1, val2):
     """Compare two values and prevent timing attacks for cryptographic use."""
-    if isinstance(val1, six.text_type):
+    if isinstance(val1, str):
         val1 = val1.encode('utf-8')
-    if isinstance(val2, six.text_type):
+    if isinstance(val2, str):
         val2 = val2.encode('utf-8')
     return hmac.compare_digest(val1, val2)
 

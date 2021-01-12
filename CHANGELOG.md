@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - Updated PyJWT version to 2.0.0
+- Remove six dependency
 
 ## [4.0.2](https://github.com/python-social-auth/social-core/releases/tag/4.0.2) - 2021-01-10
 

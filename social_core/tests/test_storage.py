@@ -1,4 +1,3 @@
-import six
 import random
 import unittest2 as unittest
 
@@ -187,8 +186,7 @@ class BrokenStrategyTests(unittest.TestCase):
             self.strategy.storage.is_integrity_error(None)
 
     def test_random_string(self):
-        self.assertTrue(isinstance(self.strategy.random_string(),
-                                   six.string_types))
+        self.assertTrue(isinstance(self.strategy.random_string(), str))
 
     def test_random_string_without_systemrandom(self):
         def SystemRandom():
@@ -198,5 +196,5 @@ class BrokenStrategyTests(unittest.TestCase):
         random.SystemRandom = SystemRandom
 
         strategy = BrokenStrategyWithSettings(storage=BrokenStorage)
-        self.assertTrue(isinstance(strategy.random_string(), six.string_types))
+        self.assertTrue(isinstance(strategy.random_string(), str))
         random.SystemRandom = orig_random

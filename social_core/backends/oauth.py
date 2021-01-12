@@ -1,6 +1,5 @@
 from urllib.parse import urlencode, unquote
 
-import six
 from requests_oauthlib import OAuth1
 from oauthlib.oauth1 import SIGNATURE_TYPE_AUTH_HEADER
 
@@ -234,15 +233,11 @@ class BaseOAuth1(OAuthAuth):
         params = self.request_token_extra_arguments()
         params.update(self.get_scope_argument())
         key, secret = self.get_key_and_secret()
-        # decoding='utf-8' produces errors with python-requests on Python3
-        # since the final URL will be of type bytes
-        decoding = None if six.PY3 else 'utf-8'
         state = self.get_or_create_state()
         response = self.request(
             self.REQUEST_TOKEN_URL,
             params=params,
-            auth=OAuth1(key, secret, callback_uri=self.get_redirect_uri(state),
-                        decoding=decoding),
+            auth=OAuth1(key, secret, callback_uri=self.get_redirect_uri(state)),
             method=self.REQUEST_TOKEN_METHOD
         )
         content = response.content
@@ -280,17 +275,13 @@ class BaseOAuth1(OAuthAuth):
         else:
             resource_owner_key = None
             resource_owner_secret = None
-        # decoding='utf-8' produces errors with python-requests on Python3
-        # since the final URL will be of type bytes
-        decoding = None if six.PY3 else 'utf-8'
         state = self.get_or_create_state()
         return OAuth1(key, secret,
                       resource_owner_key=resource_owner_key,
                       resource_owner_secret=resource_owner_secret,
                       callback_uri=self.get_redirect_uri(state),
                       verifier=oauth_verifier,
-                      signature_type=signature_type,
-                      decoding=decoding)
+                      signature_type=signature_type)
 
     def oauth_request(self, token, url, params=None, method='GET'):
         """Generate OAuth request, setups callback url"""
