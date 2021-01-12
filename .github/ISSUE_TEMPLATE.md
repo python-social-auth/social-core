@@ -1,9 +1,3 @@
-<!--
-    Issue template based on the following templates:
-    * https://raw.githubusercontent.com/theos/theos/master/.github/ISSUE_TEMPLATE.md
-    * https://raw.githubusercontent.com/EddyVerbruggen/Toast-PhoneGap-Plugin/master/issue_template.md
--->
-
 ### Expected behaviour
 
 Describe what should happen.
@@ -28,3 +22,9 @@ and / or console output with the proper code blocks.
 ### Any other comments?
 
 Expand the issue with any details you find appropriate to solve or reproduce it.
+
+<!--
+    Issue template based on the following templates:
+    * https://raw.githubusercontent.com/theos/theos/master/.github/ISSUE_TEMPLATE.md
+    * https://raw.githubusercontent.com/EddyVerbruggen/Toast-PhoneGap-Plugin/master/issue_template.md
+-->
