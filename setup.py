@@ -46,8 +46,7 @@ requirements_openidconnect = read_requirements('requirements-openidconnect.txt')
 requirements_saml = read_requirements('requirements-saml.txt')
 requirements_azuread = read_requirements('requirements-azuread.txt')
 
-tests_requirements_base = read_tests_requirements('requirements-base.txt')
-tests_requirements = tests_requirements_base
+tests_requirements = read_tests_requirements('requirements.txt')
 
 requirements_all = requirements_openidconnect + \
                    requirements_saml + \
