@@ -42,16 +42,12 @@ def read_tests_requirements(filename):
 
 
 requirements = read_requirements('requirements-base.txt')
-# May be able to just use environment markers in requirements-base.txt
-# at least on  setuptools 36.2.0 and up.
-requirements_py3 = read_requirements('requirements-python3.txt')
 requirements_openidconnect = read_requirements('requirements-openidconnect.txt')
-requirements_saml = read_requirements('requirements-saml-python3.txt')
+requirements_saml = read_requirements('requirements-saml.txt')
 requirements_azuread = read_requirements('requirements-azuread.txt')
 
 tests_requirements_base = read_tests_requirements('requirements-base.txt')
-tests_requirements = tests_requirements_base + \
-    read_tests_requirements('requirements-python3.txt')
+tests_requirements = tests_requirements_base
 
 requirements_all = requirements_openidconnect + \
                    requirements_saml + \
@@ -85,8 +81,8 @@ setup(
         'saml': [requirements_saml],
         'azuread': [requirements_azuread],
         'all': [requirements_all],
-        'allpy3': [requirements_all, requirements_py3],
-        ':python_version >= "3.0"': [requirements_py3],
+        # Kept for compatibility
+        'allpy3': [requirements_all],
     },
     classifiers=[
         'Development Status :: 4 - Beta',
