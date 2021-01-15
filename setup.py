@@ -76,6 +76,7 @@ setup(
     long_description=long_description() or LONG_DESCRIPTION,
     long_description_content_type='text/markdown',
     install_requires=requirements,
+    python_requires='>=3.6',
     extras_require={
         'openidconnect': [requirements_openidconnect],
         'saml': [requirements_saml],
