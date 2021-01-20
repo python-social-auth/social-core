@@ -45,6 +45,7 @@ class AppleIdAuth(BaseOAuth2):
     TOKEN_KEY = 'id_token'
     STATE_PARAMETER = True
     REDIRECT_STATE = False
+    SCOPE_SEPARATOR = '%20'
 
     TOKEN_AUDIENCE = 'https://appleid.apple.com'
     TOKEN_TTL_SEC = 6 * 30 * 24 * 60 * 60
@@ -58,7 +59,7 @@ class AppleIdAuth(BaseOAuth2):
         Apple requires to set `response_mode` to `form_post` if `scope`
         parameter is passed.
         """
-        params = super(AppleIdAuth, self).auth_params(*args, **kwargs)
+        params = super().auth_params(*args, **kwargs)
         if self.RESPONSE_MODE:
             params['response_mode'] = self.RESPONSE_MODE
         elif self.get_scope():
@@ -125,7 +126,7 @@ class AppleIdAuth(BaseOAuth2):
                 id_token,
                 key=public_key,
                 audience=self.get_audience(),
-                algorithm='RS256',
+                algorithms=['RS256'],
             )
         except PyJWTError:
             raise AuthFailed(self, 'Token validation failed')
@@ -133,7 +134,7 @@ class AppleIdAuth(BaseOAuth2):
         return decoded
 
     def get_user_details(self, response):
-        name = response.get('name') or {}
+        name = json.loads(self.data.get('user', '{}')).get('name', {})
         fullname, first_name, last_name = self.get_user_names(
             fullname='',
             first_name=name.get('firstName', ''),
@@ -144,6 +145,7 @@ class AppleIdAuth(BaseOAuth2):
         apple_id = response.get(self.ID_KEY, '')
         # prevent updating User with empty strings
         user_details = {
+            'fullname': fullname or None,
             'first_name': first_name or None,
             'last_name': last_name or None,
             'email': email,
@@ -163,9 +165,4 @@ class AppleIdAuth(BaseOAuth2):
             raise AuthFailed(self, 'Missing id_token parameter')
 
         decoded_data = self.decode_id_token(jwt_string)
-        return super(AppleIdAuth, self).do_auth(
-            access_token,
-            response=decoded_data,
-            *args,
-            **kwargs
-        )
+        return super().do_auth(access_token, response=decoded_data, *args, **kwargs)

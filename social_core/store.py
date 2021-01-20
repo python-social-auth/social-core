@@ -13,7 +13,7 @@ class OpenIdStore(BaseOpenIDStore):
     """Storage class"""
     def __init__(self, strategy):
         """Init method"""
-        super(OpenIdStore, self).__init__()
+        super().__init__()
         self.strategy = strategy
         self.storage = strategy.storage
         self.assoc = self.storage.association
@@ -67,7 +67,7 @@ class OpenIdSessionWrapper(dict):
     )
 
     def __getitem__(self, name):
-        value = super(OpenIdSessionWrapper, self).__getitem__(name)
+        value = super().__getitem__(name)
         if name in self.pickle_instances:
             value = pickle.loads(value)
         return value
@@ -75,7 +75,7 @@ class OpenIdSessionWrapper(dict):
     def __setitem__(self, name, value):
         if name in self.pickle_instances:
             value = pickle.dumps(value, 0)
-        super(OpenIdSessionWrapper, self).__setitem__(name, value)
+        super().__setitem__(name, value)
 
     def get(self, name, default=None):
         try:

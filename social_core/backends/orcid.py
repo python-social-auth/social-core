@@ -21,12 +21,12 @@ class ORCIDOAuth2(BaseOAuth2):
     ]
 
     def auth_params(self, state=None):
-        params = super(ORCIDOAuth2, self).auth_params(state)
+        params = super().auth_params(state)
         return params
 
     def get_user_details(self, response):
         """Return user details from ORCID account"""
-        fullname= response.get('name', '')
+        fullname = response.get('name', '')
         first_name = last_name = email = ''
         person = response.get('person')
         if person:
@@ -43,11 +43,11 @@ class ORCIDOAuth2(BaseOAuth2):
 
                     if len(emails_list) > 1:
                         for email_dict in emails_list:
-                            if email_dict.get('primary','') == True:
-                                email = email_dict.get('email', '')
+                            if email_dict.get('primary'):
+                                email = email_dict['email']
                                 break
                     else:
-                        mail = emails_list[0].get('email', '')
+                        email = emails_list[0].get('email', '')
 
         return {'username': response.get('orcid'),
                 'email': email,
@@ -64,7 +64,7 @@ class ORCIDOAuth2(BaseOAuth2):
                             kwargs['response']['orcid']),
                             headers={'Content-Type': 'application/json'},
                             params=params)
-        except ValueError as e:
+        except ValueError:
             return None
 
 

@@ -6,7 +6,7 @@ from ..utils import SSLHttpAdapter, module_member, parse_qs, user_agent
 from ..exceptions import AuthFailed
 
 
-class BaseAuth(object):
+class BaseAuth:
     """A authentication backend that authenticates the user based on
     the provider response"""
     name = ''  # provider name, it's stored in database
@@ -205,7 +205,7 @@ class BaseAuth(object):
         overridden by GET parameters."""
         extra_arguments = self.setting('AUTH_EXTRA_ARGUMENTS', {}).copy()
         extra_arguments.update((key, self.data[key]) for key in extra_arguments
-                                    if key in self.data)
+                               if key in self.data)
         return extra_arguments
 
     def uses_redirect(self):
@@ -221,7 +221,7 @@ class BaseAuth(object):
         if self.setting('VERIFY_SSL') is not None:
             kwargs.setdefault('verify', self.setting('VERIFY_SSL'))
         kwargs.setdefault('timeout', self.setting('REQUESTS_TIMEOUT') or
-                                     self.setting('URLOPEN_TIMEOUT'))
+                          self.setting('URLOPEN_TIMEOUT'))
         if self.SEND_USER_AGENT and 'User-Agent' not in kwargs['headers']:
             kwargs['headers']['User-Agent'] = self.setting('USER_AGENT') or \
                                               user_agent()

@@ -1,7 +1,5 @@
 """ SciStarter OAuth2 Auth """
 
-from six.moves.urllib_parse import unquote, urlencode
-
 from .oauth import BaseOAuth2
 
 

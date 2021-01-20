@@ -7,12 +7,7 @@ implementation for GitLab support on his blog post [Weblate with
 GitLab as OAuth provider](http://widerin.net/blog/weblate-gitlab-oauth-login/).
 His code was a great reference when working on this implementation.
 """
-from requests import HTTPError
-
-from six.moves.urllib.parse import urljoin
-
 from .oauth import BaseOAuth2
-from ..exceptions import AuthFailed
 
 
 class GitLabOAuth2(BaseOAuth2):

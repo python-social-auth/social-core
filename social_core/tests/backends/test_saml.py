@@ -1,19 +1,19 @@
-import re
+
 import json
+import os
+import re
 import sys
 import unittest2
-import requests
-import os
 from os import path
+from urllib.parse import urlparse, urlunparse, urlencode, parse_qs
 
+import requests
 
 try:
     from unittest.mock import patch
 except ImportError:
     from mock import patch
 from httpretty import HTTPretty
-
-from six.moves.urllib_parse import urlparse, urlunparse, urlencode, parse_qs
 
 try:
     from onelogin.saml2.utils import OneLogin_Saml2_Utils
@@ -46,7 +46,7 @@ class SAMLTest(BaseBackendTest):
     def setUp(self):
         """Patch the time so that we can replay canned
         request/response pairs"""
-        super(SAMLTest, self).setUp()
+        super().setUp()
 
         @staticmethod
         def fixed_time():

@@ -35,18 +35,18 @@ class QiitaOAuth2(BaseOAuth2):
     ]
 
     def auth_complete_params(self, state=None):
-        data = super(QiitaOAuth2, self).auth_complete_params(state)
-        if "grant_type" in data:
-            del data["grant_type"]
-        if "redirect_uri" in data:
-            del data["redirect_uri"]
+        data = super().auth_complete_params(state)
+        if 'grant_type' in data:
+            del data['grant_type']
+        if 'redirect_uri' in data:
+            del data['redirect_uri']
         return json.dumps(data)
 
     def auth_headers(self):
         return {'Content-Type': 'application/json'}
 
     def request_access_token(self, *args, **kwargs):
-        data = super(QiitaOAuth2, self).request_access_token(*args, **kwargs)
+        data = super().request_access_token(*args, **kwargs)
         data.update({'access_token': data['token']})
         return data
 
@@ -61,6 +61,7 @@ class QiitaOAuth2(BaseOAuth2):
         """Loads user data from service"""
         return self.get_json(
             'https://qiita.com/api/v2/authenticated_user',
-           headers={
+            headers={
                 'Authorization': 'Bearer {0}'.format(access_token)
-            })
+            }
+        )

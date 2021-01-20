@@ -1,11 +1,9 @@
-import requests
+from urllib.parse import urlparse
 
+import requests
 from httpretty import HTTPretty
 
-from six.moves.urllib_parse import urlencode, urlparse
-
 from ...utils import parse_qs, url_add_parameters
-
 from ..models import User
 from .base import BaseBackendTest
 
@@ -87,7 +85,7 @@ class BaseOAuthTest(BaseBackendTest):
 class OAuth1Test(BaseOAuthTest):
     request_token_body = None
     raw_complete_url = '/complete/{0}/?oauth_verifier=bazqux&' \
-                                      'oauth_token=foobar'
+        'oauth_token=foobar'
 
     def request_token_handler(self):
         HTTPretty.register_uri(self._method(self.backend.REQUEST_TOKEN_METHOD),
@@ -97,7 +95,7 @@ class OAuth1Test(BaseOAuthTest):
 
     def do_start(self):
         self.request_token_handler()
-        return super(OAuth1Test, self).do_start()
+        return super().do_start()
 
 
 class OAuth2Test(BaseOAuthTest):

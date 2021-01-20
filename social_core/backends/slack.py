@@ -24,7 +24,7 @@ class SlackOAuth2(BaseOAuth2):
     ]
 
     def auth_extra_arguments(self):
-        params = super(SlackOAuth2, self).auth_extra_arguments() or {}
+        params = super().auth_extra_arguments() or {}
         if self.setting('TEAM'):
             params['team'] = self.setting('TEAM')
         return params

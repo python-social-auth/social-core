@@ -2,13 +2,13 @@
 Okta OAuth2 and OpenIdConnect:
     https://python-social-auth.readthedocs.io/en/latest/backends/okta.html
 """
-from six.moves.urllib.parse import urljoin
+from urllib.parse import urljoin
 
 from ..utils import append_slash
 from .oauth import BaseOAuth2
 
 
-class OktaMixin(object):
+class OktaMixin:
     def api_url(self):
         return append_slash(self.setting('API_URL'))
 
@@ -24,7 +24,7 @@ class OktaMixin(object):
     def oidc_config(self):
         return self.get_json(
             self._url(
-                '/.well-known/openid-configuration?client_id={}'.format(
+                './.well-known/openid-configuration?client_id={}'.format(
                     self.setting('KEY')
                 )
             )
@@ -37,7 +37,7 @@ class OktaOAuth2(OktaMixin, BaseOAuth2):
     REDIRECT_STATE = False
     ACCESS_TOKEN_METHOD = 'POST'
     SCOPE_SEPARATOR = ' '
-    ID_KEY = "preferred_username"
+    ID_KEY = 'preferred_username'
 
     DEFAULT_SCOPE = [
         'openid', 'profile', 'email'

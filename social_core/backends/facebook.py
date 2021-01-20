@@ -14,7 +14,7 @@ from ..exceptions import AuthException, AuthCanceled, AuthUnknownError, \
                          AuthMissingParameter
 
 
-API_VERSION = 3.2
+API_VERSION = 8.0
 
 
 class FacebookOAuth2(BaseOAuth2):
@@ -38,7 +38,7 @@ class FacebookOAuth2(BaseOAuth2):
     ]
 
     def auth_params(self, state=None):
-        params = super(FacebookOAuth2, self).auth_params(state)
+        params = super().auth_params(state)
         params['return_scopes'] = 'true'
         return params
 
@@ -81,10 +81,10 @@ class FacebookOAuth2(BaseOAuth2):
                              params=params)
 
     def process_error(self, data):
-        super(FacebookOAuth2, self).process_error(data)
+        super().process_error(data)
         if data.get('error_code'):
             raise AuthCanceled(self, data.get('error_message') or
-                                     data.get('error_code'))
+                               data.get('error_code'))
 
     @handle_http_errors
     def auth_complete(self, *args, **kwargs):
@@ -160,7 +160,7 @@ class FacebookOAuth2(BaseOAuth2):
         return {'access_token': token}
 
     def process_revoke_token_response(self, response):
-        return super(FacebookOAuth2, self).process_revoke_token_response(
+        return super().process_revoke_token_response(
             response
         ) and response.content == 'true'
 

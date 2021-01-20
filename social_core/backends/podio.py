@@ -34,5 +34,6 @@ class PodioOAuth2(BaseOAuth2):
         }
 
     def user_data(self, access_token, *args, **kwargs):
-        return self.get_json('https://api.podio.com/user/status',
-            headers={'Authorization': 'OAuth2 ' + access_token})
+        return self.get_json('https://api.podio.com/user/status', headers={
+            'Authorization': 'OAuth2 ' + access_token
+        })

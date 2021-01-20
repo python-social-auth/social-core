@@ -1,16 +1,17 @@
 """
 Discord Auth OAuth2 backend, docs at:
-    https://discordapp.com/developers/docs/topics/oauth2
+    https://discord.com/developers/docs/topics/oauth2
 """
 from .oauth import BaseOAuth2
 
 
 class DiscordOAuth2(BaseOAuth2):
     name = 'discord'
-    AUTHORIZATION_URL = 'https://discordapp.com/api/oauth2/authorize'
-    ACCESS_TOKEN_URL = 'https://discordapp.com/api/oauth2/token'
+    HOSTNAME = 'discord.com'
+    AUTHORIZATION_URL = 'https://%s/api/oauth2/authorize' % HOSTNAME
+    ACCESS_TOKEN_URL = 'https://%s/api/oauth2/token' % HOSTNAME
     ACCESS_TOKEN_METHOD = 'POST'
-    REVOKE_TOKEN_URL = 'https://discordapp.com/api/oauth2/token/revoke'
+    REVOKE_TOKEN_URL = 'https://%s/api/oauth2/token/revoke' % HOSTNAME
     REVOKE_TOKEN_METHOD = 'GET'
     DEFAULT_SCOPE = ['identify']
     SCOPE_SEPARATOR = '+'
@@ -25,6 +26,6 @@ class DiscordOAuth2(BaseOAuth2):
                 'email': response.get('email') or ''}
 
     def user_data(self, access_token, *args, **kwargs):
-        url = 'https://discordapp.com/api/users/@me'
-        auth_header = {"Authorization": "Bearer %s" % access_token}
+        url = 'https://%s/api/users/@me' % self.HOSTNAME
+        auth_header = {'Authorization': 'Bearer %s' % access_token}
         return self.get_json(url, headers=auth_header)

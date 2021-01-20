@@ -41,7 +41,13 @@ def associate_user(backend, uid, user=None, social=None, *args, **kwargs):
             # Protect for possible race condition, those bastard with FTL
             # clicking capabilities, check issue #131:
             #   https://github.com/omab/django-social-auth/issues/131
-            return social_user(backend, uid, user, *args, **kwargs)
+            result = social_user(backend, uid, user, *args, **kwargs)
+            # Check if matching social auth really exists. In case it does
+            # not, the integrity error probably had different cause than
+            # existing entry and should not be hidden.
+            if not result['social']:
+                raise
+            return result
         else:
             return {'social': social,
                     'user': social.user,

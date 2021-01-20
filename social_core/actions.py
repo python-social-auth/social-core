@@ -1,4 +1,4 @@
-from six.moves.urllib_parse import quote
+from urllib.parse import quote
 
 from .utils import sanitize_redirect, user_is_authenticated, \
                    user_is_active, partial_pipeline_data, setting_url
@@ -47,7 +47,7 @@ def do_complete(backend, login, user=None, redirect_name='next',
     # pop redirect value before the session is trashed on login(), but after
     # the pipeline so that the pipeline can change the redirect if needed
     redirect_value = backend.strategy.session_get(redirect_name, '') or \
-                     data.get(redirect_name, '')
+        data.get(redirect_name, '')
 
     # check if the output value is something else than a user and just
     # return it to the client
@@ -92,13 +92,13 @@ def do_complete(backend, login, user=None, redirect_name='next',
     if redirect_value and redirect_value != url:
         redirect_value = quote(redirect_value)
         url += ('&' if '?' in url else '?') + \
-               '{0}={1}'.format(redirect_name, redirect_value)
+            '{0}={1}'.format(redirect_name, redirect_value)
 
     if backend.setting('SANITIZE_REDIRECTS', True):
         allowed_hosts = backend.setting('ALLOWED_REDIRECT_HOSTS', []) + \
                         [backend.strategy.request_host()]
         url = sanitize_redirect(allowed_hosts, url) or \
-              backend.setting('LOGIN_REDIRECT_URL')
+            backend.setting('LOGIN_REDIRECT_URL')
     return backend.strategy.redirect(url)
 
 

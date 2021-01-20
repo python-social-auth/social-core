@@ -1,8 +1,7 @@
 import datetime
+from urllib.parse import urlencode
 
 from httpretty import HTTPretty
-
-from six.moves.urllib_parse import urlencode
 
 from ...exceptions import AuthMissingParameter
 
@@ -16,15 +15,15 @@ class LiveJournalOpenIdTest(OpenIdTest):
     backend_path = 'social_core.backends.livejournal.LiveJournalOpenId'
     expected_username = 'foobar'
     discovery_body = ''.join([
-      '<xrds:XRDS xmlns:xrds="xri://$xrds" xmlns="xri://$xrd*($v*2.0)">',
-      '<XRD>',
-      '<Service priority="0">',
-      '<Type>http://specs.openid.net/auth/2.0/signon</Type>',
-      '<URI>http://www.livejournal.com/openid/server.bml</URI>',
-      '<LocalID>http://foobar.livejournal.com/</LocalID>',
-      '</Service>',
-      '</XRD>',
-      '</xrds:XRDS>'
+        '<xrds:XRDS xmlns:xrds="xri://$xrds" xmlns="xri://$xrd*($v*2.0)">',
+        '<XRD>',
+        '<Service priority="0">',
+        '<Type>http://specs.openid.net/auth/2.0/signon</Type>',
+        '<URI>http://www.livejournal.com/openid/server.bml</URI>',
+        '<LocalID>http://foobar.livejournal.com/</LocalID>',
+        '</Service>',
+        '</XRD>',
+        '</xrds:XRDS>'
     ])
     server_response = urlencode({
         'janrain_nonce': JANRAIN_NONCE,
@@ -55,7 +54,7 @@ class LiveJournalOpenIdTest(OpenIdTest):
     ])
 
     def openid_url(self):
-        return super(LiveJournalOpenIdTest, self).openid_url() + '/data/yadis'
+        return super().openid_url() + '/data/yadis'
 
     def post_start(self):
         self.strategy.remove_from_request_data('openid_lj_user')
