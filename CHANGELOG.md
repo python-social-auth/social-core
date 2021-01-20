@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - Get Apple user first and last name from `self.data`
+- Instagram Legacy API has been replaced with Instagram Basic Display API since the first one was deprecated, [see](https://www.instagram.com/developer/).
 
 ## [4.0.3](https://github.com/python-social-auth/social-core/releases/tag/4.0.3) - 2021-01-12
 
