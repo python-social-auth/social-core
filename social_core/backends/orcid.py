@@ -26,14 +26,15 @@ class ORCIDOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from ORCID account"""
-        orcid_identifier = response.get('orcid-identifier', None)
+        orcid_identifier = response.get('orcid-identifier')
 
         fullname = response.get('name', '')
 
-        first_name = last_name = email = ''
+        first_name = last_name = email = username = ''
 
-        person = response.get('person', None)
+        person = response.get('person')
 
+        # Although we're checking here, the response will always have the orcid-identifier key:
         if orcid_identifier:
             username = orcid_identifier['path']
 
