@@ -1,5 +1,5 @@
 import random
-import unittest2 as unittest
+import unittest
 
 from ..strategy import BaseStrategy
 from ..storage import UserMixin, NonceMixin, AssociationMixin, \

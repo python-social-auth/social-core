@@ -1,4 +1,4 @@
-import unittest2 as unittest
+import unittest as unittest
 
 from ..models import TestStorage
 from ..strategy import TestStrategy

@@ -2,10 +2,7 @@ import json
 
 from .oauth import OAuth2Test
 
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch
+from unittest.mock import patch
 
 
 TEST_KEY = """
