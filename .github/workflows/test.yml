@@ -10,6 +10,7 @@ jobs:
         python-version: [3.6, 3.7, 3.8, 3.9]
     env:
       PYTHON_VERSION: ${{ matrix.python-version }}
+      PYTHONUNBUFFERED: 1
 
     steps:
     - uses: actions/checkout@v2
