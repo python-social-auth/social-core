@@ -1,4 +1,4 @@
-import unittest2 as unittest
+import unittest
 
 from ...backends.base import BaseAuth
 from ..strategy import TestStrategy

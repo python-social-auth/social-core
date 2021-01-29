@@ -1,10 +1,6 @@
 import sys
-import unittest2 as unittest
-
-try:
-    from unittest.mock import Mock
-except ImportError:
-    from mock import Mock
+import unittest
+from unittest.mock import Mock
 
 from ..utils import sanitize_redirect, user_is_authenticated, \
     user_is_active, slugify, build_absolute_uri, \

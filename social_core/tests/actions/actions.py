@@ -1,6 +1,6 @@
 import json
 import requests
-import unittest2 as unittest
+import unittest
 from urllib.parse import urlparse
 
 from httpretty import HTTPretty
