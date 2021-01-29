@@ -12,10 +12,10 @@ class ORCIDOAuth2Test(OAuth2Test):
         'access_token': 'foobar',
     })
     user_data_body = json.dumps({
-        "sub":"0000-0002-2601-8132",
-        "name":"Credit Name",
-        "family_name":"Jones",
-        "given_name":"Tom"
+        'sub': '0000-0002-2601-8132',
+        'name': 'Credit Name',
+        'family_name': 'Jones',
+        'given_name': 'Tom'
     })
 
     def test_login(self):
