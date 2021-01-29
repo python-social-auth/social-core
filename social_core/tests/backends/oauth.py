@@ -13,6 +13,7 @@ class BaseOAuthTest(BaseBackendTest):
     backend_path = None
     user_data_body = None
     user_data_url = ''
+    user_data_url_post = False
     user_data_content_type = 'application/json'
     access_token_body = None
     access_token_status = 200
@@ -63,7 +64,7 @@ class BaseOAuthTest(BaseBackendTest):
                                body=self.access_token_body or '',
                                content_type='text/json')
         if self.user_data_url:
-            HTTPretty.register_uri(HTTPretty.GET,
+            HTTPretty.register_uri(HTTPretty.POST if self.user_data_url_post else HTTPretty.GET,
                                    self.user_data_url,
                                    body=self.user_data_body or '',
                                    content_type=self.user_data_content_type)
