@@ -26,11 +26,39 @@ class ORCIDOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from ORCID account"""
+
+        # response data will be of the following format:
+        # {
+        #     'orcid-identifier': {
+        #         'uri': 'http://orcid.org/0000-0002-2601-8132',
+        #         'path': '0000-0002-2601-8132',
+        #         'host': 'orcid.org'
+        #     },
+        #     'person': {
+        #         'last-modified-date': None,
+        #         'name': {
+        #             'created-date': {
+        #                 'value': 1578249746904
+        #             },
+        #             'last-modified-date': {
+        #                 'value': 1578249746904
+        #             },
+        #             'given-names': {
+        #                 'value': 'Janani Kantharooban'
+        #             },
+        #             'family-name': {
+        #                 'value': 'Umachanger'
+        #             },
+        #             'credit-name': None,
+        #             'source': None,
+        #             'visibility': 'PUBLIC',
+        #             'path': '0000-0002-2601-8132'
+        #         },
+        #     }
+        # }
         orcid_identifier = response.get('orcid-identifier')
 
-        fullname = response.get('name', '')
-
-        first_name = last_name = email = username = ''
+        fullname = first_name = last_name = email = username = ''
 
         person = response.get('person')
 
@@ -40,6 +68,9 @@ class ORCIDOAuth2(BaseOAuth2):
 
         if person:
             name = person.get('name')
+
+            fullname = name
+
             if name:
                 first_name = name.get('given-names', {}).get('value', '')
                 last_name = name.get('family-name', {}).get('value', '')
@@ -94,6 +125,7 @@ class ORCIDOAuth2(BaseOAuth2):
         except Exception as ex:
             pass
 
+        # We can now attempt to access the ORCID public API with the Orcid:
         try:
             return self.get_json(
                     self.USER_DATA_URL.format(orcid),
