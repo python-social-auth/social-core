@@ -80,16 +80,19 @@ class ORCIDOAuth2(BaseOAuth2):
         #     "family_name":"Jones",
         #     "given_name":"Tom"
         # }
-        response = self.get_json(
-            self.USER_ID_URL,
-            headers={
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer {}'.format(str(access_token))
-            },
-        )
+        try:
+            response = self.get_json(
+                self.USER_ID_URL,
+                headers={
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer {}'.format(str(access_token))
+                },
+            )
 
-        # Update Jan 28 2021: Now we definitely have an ORCID id of format "0000-0000-0000-0000"
-        orcid = response['sub']
+            # Update Jan 28 2021: Now we definitely have an ORCID id of format "0000-0000-0000-0000"
+            orcid = response['sub']
+        except Exception as ex:
+            pass
 
         try:
             return self.get_json(
