@@ -63,6 +63,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Improve Python 3.9 compatibility
 - Send proxies in request
 - Improve error handling in Apple backend
+- Properly support case insensitive matching of whitelist settings
 
 ## [3.3.3](https://github.com/python-social-auth/social-core/releases/tag/3.3.3) - 2020-04-16
 

@@ -58,7 +58,7 @@ class DummyOAuth2Test(OAuth2Test):
         'url': 'http://dummy.com/user/foobar',
         'first_name': 'Foo',
         'last_name': 'Bar',
-        'email': 'foo@bar.com'
+        'email': 'foo@bAr.coM'  # mixed case domain for testing case sensitivity
     })
 
     def test_login(self):
@@ -98,6 +98,17 @@ class WhitelistEmailsTest(DummyOAuth2Test):
         with self.assertRaises(AuthForbidden):
             self.do_login()
 
+    def test_login_case_sensitive_local_part(self):
+        self.strategy.set_settings({
+            'SOCIAL_AUTH_WHITELISTED_EMAILS': ['fOo@bar.com']
+        })
+        self.do_login()
+
+    def test_login_case_sensitive_domain(self):
+        self.strategy.set_settings({
+            'SOCIAL_AUTH_WHITELISTED_EMAILS': ['foo@bAR.com']
+        })
+        self.do_login()
 
 class WhitelistDomainsTest(DummyOAuth2Test):
     def test_valid_login(self):

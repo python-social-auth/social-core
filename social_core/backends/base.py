@@ -148,11 +148,12 @@ class BaseAuth:
     def auth_allowed(self, response, details):
         """Return True if the user should be allowed to authenticate, by
         default check if email is whitelisted (if there's a whitelist)"""
-        emails = self.setting('WHITELISTED_EMAILS', [])
-        domains = self.setting('WHITELISTED_DOMAINS', [])
+        emails = [email.lower() for email in self.setting('WHITELISTED_EMAILS', [])]
+        domains = [domain.lower() for domain in self.setting('WHITELISTED_DOMAINS', [])]
         email = details.get('email')
         allowed = True
         if email and (emails or domains):
+            email = email.lower()
             domain = email.split('@', 1)[1]
             allowed = email in emails or domain in domains
         return allowed
