@@ -150,9 +150,10 @@ class BaseAuth(object):
         default check if email is whitelisted (if there's a whitelist)"""
         emails = [email.lower() for email in self.setting('WHITELISTED_EMAILS', [])]
         domains = [domain.lower() for domain in self.setting('WHITELISTED_DOMAINS', [])]
+        email = details.get('email')
         allowed = True
         if email and (emails or domains):
-            email = details.get('email').lower()
+            email = email.lower()
             domain = email.split('@', 1)[1]
             allowed = email in emails or domain in domains
         return allowed
