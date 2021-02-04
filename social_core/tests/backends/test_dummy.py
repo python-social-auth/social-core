@@ -98,14 +98,13 @@ class WhitelistEmailsTest(DummyOAuth2Test):
         with self.assertRaises(AuthForbidden):
             self.do_login()
 
-    def test_invalid_login_case_sensitive_local_part(self):
+    def test_login_case_sensitive_local_part(self):
         self.strategy.set_settings({
             'SOCIAL_AUTH_WHITELISTED_EMAILS': ['fOo@bar.com']
         })
-        with self.assertRaises(AuthForbidden):
-            self.do_login()
+        self.do_login()
 
-    def test_invalid_login_case_sensitive_domain(self):
+    def test_login_case_sensitive_domain(self):
         self.strategy.set_settings({
             'SOCIAL_AUTH_WHITELISTED_EMAILS': ['foo@bAR.com']
         })
