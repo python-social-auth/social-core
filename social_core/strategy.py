@@ -6,6 +6,7 @@ from .utils import setting_name, module_member, PARTIAL_TOKEN_SESSION_NAME
 from .store import OpenIdStore, OpenIdSessionWrapper
 from .pipeline import DEFAULT_AUTH_PIPELINE, DEFAULT_DISCONNECT_PIPELINE
 from .pipeline.utils import partial_load, partial_store, partial_prepare
+from .backends.utils import get_backend
 
 
 class BaseTemplateStrategy:
@@ -169,6 +170,15 @@ class BaseStrategy:
     def get_backends(self):
         """Return configured backends"""
         return self.setting('AUTHENTICATION_BACKENDS', [])
+
+    def get_backend_class(self, name):
+        """Return a configured backend class"""
+        return get_backend(self.get_backends(), name)
+
+    def get_backend(self, name, redirect_uri=None, *args, **kwargs):
+        """Return a configured backend instance"""
+        Backend = self.get_backend_class(name)
+        return Backend(self, redirect_uri=redirect_uri, *args, **kwargs)
 
     # Implement the following methods on strategies sub-classes
 

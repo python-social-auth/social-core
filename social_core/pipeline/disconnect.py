@@ -21,7 +21,7 @@ def revoke_tokens(strategy, entries, *args, **kwargs):
     if revoke_tokens:
         for entry in entries:
             if 'access_token' in entry.extra_data:
-                backend = entry.get_backend(strategy)(strategy)
+                backend = entry.get_backend_instance(strategy)
                 backend.revoke_token(entry.extra_data['access_token'],
                                      entry.uid)
 
