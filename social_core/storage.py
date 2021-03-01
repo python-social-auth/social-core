@@ -9,7 +9,6 @@ from datetime import datetime, timedelta
 from openid.association import Association as OpenIdAssociation
 
 from .exceptions import MissingBackend
-from .backends.utils import get_backend
 
 
 NO_ASCII_REGEX = re.compile(r'[^\x00-\x7F]+')
@@ -26,15 +25,13 @@ class UserMixin:
     extra_data = None
 
     def get_backend(self, strategy):
-        return get_backend(strategy.get_backends(), self.provider)
+        return strategy.get_backend_class(self.provider)
 
     def get_backend_instance(self, strategy):
         try:
-            backend_class = self.get_backend(strategy)
+            return strategy.get_backend(self.provider)
         except MissingBackend:
             return None
-        else:
-            return backend_class(strategy=strategy)
 
     @property
     def access_token(self):
@@ -49,9 +46,8 @@ class UserMixin:
     def refresh_token(self, strategy, *args, **kwargs):
         token = self.extra_data.get('refresh_token') or \
                 self.extra_data.get('access_token')
-        backend = self.get_backend(strategy)
+        backend = self.get_backend_instance(strategy)
         if token and backend and hasattr(backend, 'refresh_token'):
-            backend = backend(strategy=strategy)
             response = backend.refresh_token(token, *args, **kwargs)
             extra_data = backend.extra_data(self,
                                             self.uid,
