@@ -111,8 +111,11 @@ class AzureADTenantOAuth2(AzureADOAuth2):
 
 class AzureADV2TenantOAuth2(AzureADTenantOAuth2):
     name = 'azuread-v2-tenant-oauth2'
+    OPENID_CONFIGURATION_URL = \
+        'https://login.microsoftonline.com/{tenant_id}/v2.0/.well-known/openid-configuration'
     AUTHORIZATION_URL = 'https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/authorize'
     ACCESS_TOKEN_URL = 'https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token'
+    JWKS_URL = 'https://login.microsoftonline.com/{tenant_id}/discovery/v2.0/keys'
     DEFAULT_SCOPE = ['openid', 'profile', 'offline_access']
 
     def get_user_id(self, details, response):
