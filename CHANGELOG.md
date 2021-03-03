@@ -9,13 +9,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 - Discourse backend
+- Osso backend
 - Add `get` and `delete` class methods for `NonceMixin`
-- Use stretegies as interface to fetch backends
+- Use strategies as interface to fetch backends
 
 ### Changed
 - Get Apple user first and last name from `self.data`
 - Instagram Legacy API has been replaced with Instagram Basic Display API since the first one was deprecated, [see](https://www.instagram.com/developer/).
 - Store `expires_in` for Zoom backend
+- Dropped support no longer working Dropbox v1 API
+- Several improvements to the ORCIDOAuth2 backend
+- Make WHITELIST_\* settings properly case insensitive
+- Fixed token validation in the AzureADV2TenantOAuth2 backend
 
 ## [4.0.3](https://github.com/python-social-auth/social-core/releases/tag/4.0.3) - 2021-01-12
 
