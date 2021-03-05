@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Several improvements to the ORCIDOAuth2 backend
 - Make WHITELIST_\* settings properly case insensitive
 - Fixed token validation in the AzureADV2TenantOAuth2 backend
+- Fixed Slack user identity API call with Bearer headers
 
 ## [4.0.3](https://github.com/python-social-auth/social-core/releases/tag/4.0.3) - 2021-01-12
 
