@@ -125,6 +125,7 @@ class FacebookOAuth2(BaseOAuth2):
             'client_secret': client_secret
         }
 
+    @handle_http_errors
     def do_auth(self, access_token, response=None, *args, **kwargs):
         response = response or {}
 
