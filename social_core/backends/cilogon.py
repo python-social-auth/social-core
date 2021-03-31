@@ -7,13 +7,13 @@ class CILogonOAuth2(BaseOAuth2):
     Docs: https://www.cilogon.org/oidc
     """
 
-    name = "cilogon-oauth2"
-    AUTHORIZATION_URL = "https://cilogon.org/authorize"
-    ACCESS_TOKEN_URL = "https://cilogon.org/oauth2/token"
+    name = 'cilogon-oauth2'
+    AUTHORIZATION_URL = 'https://cilogon.org/authorize'
+    ACCESS_TOKEN_URL = 'https://cilogon.org/oauth2/token'
     ACCESS_TOKEN_METHOD = 'POST'
     DEFAULT_SCOPE = ['openid', 'email', 'profile', 'org.cilogon.userinfo']
     REDIRECT_STATE = False
-    SCOPE_SEPARATOR = "+"
+    SCOPE_SEPARATOR = '+'
 
     def user_data(self, token, *args, **kwargs):
         """Loads user data from endpoint"""
@@ -28,7 +28,7 @@ class CILogonOAuth2(BaseOAuth2):
         """Return user unique id provided by service
            In this case it is a combination of the `sub`
            and `iss` respective values."""
-        return response.get('sub', '') + " " + response.get('iss', '')
+        return response.get('sub', '') + ' ' + response.get('iss', '')
 
     def get_user_details(self, response):
         """Return user details from CI Logon service"""
