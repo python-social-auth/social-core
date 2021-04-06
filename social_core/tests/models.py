@@ -28,6 +28,7 @@ class User(BaseModel):
         self.id = User.next_id()
         self.username = username
         self.email = email
+        self.first_name = None
         self.password = None
         self.slug = None
         self.social = []
