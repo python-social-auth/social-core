@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased](https://github.com/python-social-auth/social-core/)
 
 ### Added
-
+- Add fields that populate on create but not update `SOCIAL_AUTH_IMMUTABLE_USER_FIELDS`
 
 ### Changed
 - Fixed Slack user identity API call with Bearer headers
@@ -73,7 +73,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - Directly use `access_token` in Azure Tenant backend
-- Support Apple JWT audience 
+- Support Apple JWT audience
 - Update partial session cleanup to remove old token from session too
 - Fetch user email in Okta integration
 - Improve Python 3.9 compatibility

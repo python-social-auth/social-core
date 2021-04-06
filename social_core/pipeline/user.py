@@ -112,6 +112,10 @@ def user_details(strategy, details, backend, user=None, *args, **kwargs):
         if current_value == value:
             continue
 
+        immutable_fields = tuple(strategy.setting('IMMUTABLE_USER_FIELDS', []))
+        if name in immutable_fields and current_value:
+            continue
+
         changed = True
         setattr(user, name, value)
 
