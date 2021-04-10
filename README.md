@@ -1,5 +1,5 @@
 > ## THIS PROJECT IS OPEN FOR MAINTAINERS
-> Development on the ptyhon-social-auth projects has been stagnated for a while,
+> Development on the python-social-auth projects has been stagnated for a while,
 > #445 was open a long time ago to discuss this matter and a plan (failed) was
 > presented to fix the situation. For that reason, I'm opening the organization to
 > new maintainers that will have the proper permissions to unstuck development.
@@ -48,7 +48,7 @@ This project follows the BSD license. See the [LICENSE](LICENSE) for details.
 
 ## Donations
 
-This project is maintened on my spare time, consider donating to keep
+This project is maintained on my spare time, consider donating to keep
 it improving.
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-orange.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=matiasaguirre%40gmail%2ecom&lc=US&item_name=Python%20Social%20Auth&no_note=0&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHostedGuest)
