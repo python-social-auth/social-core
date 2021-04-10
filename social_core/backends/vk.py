@@ -166,6 +166,7 @@ class VKAppOAuth2(VKOAuth2):
             'request': self.strategy.request_data(),
             'response': {
                 self.ID_KEY: user_id,
+                'access_token': self.data['access_token']
             }
         }
         auth_data['response'].update(json.loads(auth_data['request']['api_result'])['response'][0])

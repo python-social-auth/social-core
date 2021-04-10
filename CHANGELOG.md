@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - Fixed Slack user identity API call with Bearer headers
+- Fixed bug where `access_token` is not being saved for VKAppOAuth2 backend
 
 
 ## [4.1.0](https://github.com/python-social-auth/social-core/releases/tag/4.1.0) - 2021-03-01
@@ -73,7 +74,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - Directly use `access_token` in Azure Tenant backend
-- Support Apple JWT audience 
+- Support Apple JWT audience
 - Update partial session cleanup to remove old token from session too
 - Fetch user email in Okta integration
 - Improve Python 3.9 compatibility
