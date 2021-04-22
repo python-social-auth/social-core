@@ -24,7 +24,7 @@ class OktaMixin:
     def oidc_config(self):
         return self.get_json(
             self._url(
-                './.well-known/openid-configuration?client_id={}'.format(
+                '/.well-known/openid-configuration?client_id={}'.format(
                     self.setting('KEY')
                 )
             )
