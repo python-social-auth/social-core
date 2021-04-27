@@ -86,7 +86,6 @@ class YahooOAuth2(BaseOAuth2):
             first_name=response.get('given_name'),
             last_name=response.get('family_name')
         )
-
         email = response.get('email')
         return {
             'username': response.get('nickname'),
@@ -98,9 +97,7 @@ class YahooOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-
         url = 'https://api.login.yahoo.com/openid/v1/userinfo'
-
         return self.get_json(url, headers={
             'Authorization': 'Bearer {0}'.format(access_token)
         }, method='GET')

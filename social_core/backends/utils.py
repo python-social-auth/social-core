@@ -75,8 +75,9 @@ def user_backends_data(user, backends, storage):
               'backends': available}
     if user_is_authenticated(user):
         associated = storage.user.get_social_auth_for_user(user)
-        not_associated = list(set(available) -
-                              set(assoc.provider for assoc in associated))
+        # commented out as this hits the RW database and is unused by the CC code
+        # not_associated = list(set(available) -
+        #                       set(assoc.provider for assoc in associated))
         values['associated'] = associated
-        values['not_associated'] = not_associated
+        values['not_associated'] = []  # not_associated
     return values
