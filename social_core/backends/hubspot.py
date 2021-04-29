@@ -2,8 +2,6 @@
 HubSpot OAuth2 backend, docs at:
     https://developers.hubspot.com/docs/methods/oauth2/oauth2-overview
 """
-import time
-import datetime
 from .oauth import BaseOAuth2
 
 

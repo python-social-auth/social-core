@@ -1,4 +1,0 @@
--r requirements-base.txt
-unittest2==0.5.1
-mock==1.0.1
-pytest>=4.5

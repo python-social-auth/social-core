@@ -51,7 +51,7 @@ class JawboneOAuth2(BaseOAuth2):
                 raise AuthUnknownError(self, 'Jawbone error was {0}'.format(
                     error
                 ))
-        return super(JawboneOAuth2, self).process_error(data)
+        return super().process_error(data)
 
     def auth_complete_params(self, state=None):
         client_id, client_secret = self.get_key_and_secret()

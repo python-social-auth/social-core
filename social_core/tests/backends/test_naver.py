@@ -14,17 +14,17 @@ class NaverOAuth2Test(OAuth2Test):
 
     user_data_content_type = 'text/json'
     user_data_body = json.dumps({
-        "resultcode": "00",
-        "message": "success",
-        "response": {
-            "email": "openapi@naver.com",
-            "nickname": "foobar",
-            "profile_image": "https://ssl.pstatic.net/static/pwe/address/nodata_33x33.gif",
-            "age": "40-49",
-            "gender": "F",
-            "id": "32742776",
-            "name": "foobar",
-            "birthday": "10-01",
+        'resultcode': '00',
+        'message': 'success',
+        'response': {
+            'email': 'openapi@naver.com',
+            'nickname': 'foobar',
+            'profile_image': 'https://ssl.pstatic.net/static/pwe/address/nodata_33x33.gif',
+            'age': '40-49',
+            'gender': 'F',
+            'id': '32742776',
+            'name': 'foobar',
+            'birthday': '10-01',
         }
     })
 

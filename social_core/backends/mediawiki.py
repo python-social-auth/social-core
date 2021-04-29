@@ -5,12 +5,10 @@ MediaWiki OAuth1 backend, docs at:
 
 import re
 import time
-import six
+from urllib.parse import parse_qs, urlencode, urlparse
+
 import requests
 import jwt
-
-from six import b
-from six.moves.urllib.parse import parse_qs, urlencode, urlparse
 from requests_oauthlib import OAuth1
 
 from .oauth import BaseOAuth1
@@ -21,13 +19,10 @@ def force_unicode(value):
     """
     Return string in unicode.
     """
-    if isinstance(value, six.text_type):
+    if isinstance(value, str):
         return value
     else:
-        if six.PY3:
-            return str(value, "unicode-escape")
-        else:
-            return unicode(value, "unicode-escape")
+        return str(value, 'unicode-escape')
 
 
 class MediaWiki(BaseOAuth1):
@@ -50,15 +45,13 @@ class MediaWiki(BaseOAuth1):
         params.update(self.get_scope_argument())
         params['title'] = 'Special:OAuth/initiate'
         key, secret = self.get_key_and_secret()
-        decoding = None if six.PY3 else 'utf-8'
         response = self.request(
             self.setting('MEDIAWIKI_URL'),
             params=params,
             auth=OAuth1(
                 key,
                 secret,
-                callback_uri=self.setting('CALLBACK'),
-                decoding=decoding
+                callback_uri=self.setting('CALLBACK')
             ),
             method=self.REQUEST_TOKEN_METHOD
         )
@@ -97,8 +90,8 @@ class MediaWiki(BaseOAuth1):
             auth=auth_token
         )
         credentials = parse_qs(response.content)
-        oauth_token_key = credentials.get(b('oauth_token'))[0]
-        oauth_token_secret = credentials.get(b('oauth_token_secret'))[0]
+        oauth_token_key = credentials.get(b'oauth_token')[0]
+        oauth_token_secret = credentials.get(b'oauth_token_secret')[0]
         oauth_token_key = oauth_token_key.decode()
         oauth_token_secret = oauth_token_secret.decode()
 

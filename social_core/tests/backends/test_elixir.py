@@ -1,6 +1,4 @@
-import unittest2
-
-from .oauth import OAuth1Test, OAuth2Test
+from .oauth import OAuth2Test
 from .open_id_connect import OpenIdConnectTestMixin
 
 

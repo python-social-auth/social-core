@@ -6,7 +6,7 @@ from ..exceptions import AuthForbidden
 from .oauth import BaseOAuth1, BaseOAuth2
 
 
-class BitbucketOAuthBase(object):
+class BitbucketOAuthBase:
     ID_KEY = 'uuid'
 
     def get_user_id(self, details, response):
@@ -38,7 +38,7 @@ class BitbucketOAuthBase(object):
                 break
 
         if self.setting('VERIFIED_EMAILS_ONLY', False) and \
-            not address['is_confirmed']:
+           not address['is_confirmed']:
             raise AuthForbidden(
                 self,
                 'Bitbucket account has no verified email'
@@ -88,9 +88,6 @@ class BitbucketOAuth(BitbucketOAuthBase, BaseOAuth1):
     AUTHORIZATION_URL = 'https://bitbucket.org/api/1.0/oauth/authenticate'
     REQUEST_TOKEN_URL = 'https://bitbucket.org/api/1.0/oauth/request_token'
     ACCESS_TOKEN_URL = 'https://bitbucket.org/api/1.0/oauth/access_token'
-
-    def oauth_auth(self, *args, **kwargs):
-        return super(BitbucketOAuth, self).oauth_auth(*args, **kwargs)
 
     def _get_user(self, access_token=None):
         return self.get_json('https://api.bitbucket.org/2.0/user',

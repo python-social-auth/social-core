@@ -1,16 +1,13 @@
-import unittest2 as unittest
-try:
-    from mock import Mock, patch
-except ImportError:
-    from unittest.mock import Mock, patch
+import unittest
+from unittest.mock import Mock, patch
 
 from ..utils import PARTIAL_TOKEN_SESSION_NAME
 from ..pipeline.partial import partial, partial_step
 
-class PartialDecoratorTestCase(unittest.TestCase):
 
+class PartialDecoratorTestCase(unittest.TestCase):
     def setUp(self):
-        super(PartialDecoratorTestCase, self).setUp()
+        super().setUp()
         self.mock_current_partial_token = Mock()
         self.mock_current_partial = Mock(token=self.mock_current_partial_token)
 

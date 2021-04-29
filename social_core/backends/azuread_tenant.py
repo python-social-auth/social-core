@@ -1,9 +1,9 @@
 import base64
-import json
 
-from cryptography.x509 import load_pem_x509_certificate
+from cryptography.x509 import load_der_x509_certificate
 from cryptography.hazmat.backends import default_backend
-from jwt import DecodeError, ExpiredSignature, decode as jwt_decode
+from jwt import DecodeError, ExpiredSignatureError, decode as jwt_decode, \
+    get_unverified_header
 
 from ..exceptions import AuthTokenError
 from .azuread import AzureADOAuth2
@@ -81,11 +81,7 @@ class AzureADTenantOAuth2(AzureADOAuth2):
         else:
             raise DecodeError('Cannot find kid={}'.format(kid))
 
-        certificate = '-----BEGIN CERTIFICATE-----\n' \
-                      '{}\n' \
-                      '-----END CERTIFICATE-----'.format(x5c)
-
-        return load_pem_x509_certificate(certificate.encode(),
+        return load_der_x509_certificate(base64.b64decode(x5c),
                                          default_backend())
 
     def get_user_id(self, details, response):
@@ -96,14 +92,8 @@ class AzureADTenantOAuth2(AzureADOAuth2):
         response = kwargs.get('response')
         id_token = response.get('id_token')
 
-        # decode the JWT header as JSON dict
-        jwt_header = json.loads(
-            base64.b64decode(id_token.split('.', 1)[0]).decode()
-        )
-
         # get key id and algorithm
-        key_id = jwt_header['kid']
-        algorithm = jwt_header['alg']
+        key_id = get_unverified_header(id_token)['kid']
 
         try:
             # retrieve certificate for key_id
@@ -112,8 +102,35 @@ class AzureADTenantOAuth2(AzureADOAuth2):
             return jwt_decode(
                 id_token,
                 key=certificate.public_key(),
-                algorithms=algorithm,
+                algorithms=['RS256'],
                 audience=self.setting('KEY')
             )
-        except (DecodeError, ExpiredSignature) as error:
+        except (DecodeError, ExpiredSignatureError) as error:
             raise AuthTokenError(self, error)
+
+
+class AzureADV2TenantOAuth2(AzureADTenantOAuth2):
+    name = 'azuread-v2-tenant-oauth2'
+    OPENID_CONFIGURATION_URL = \
+        'https://login.microsoftonline.com/{tenant_id}/v2.0/.well-known/openid-configuration'
+    AUTHORIZATION_URL = 'https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/authorize'
+    ACCESS_TOKEN_URL = 'https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token'
+    JWKS_URL = 'https://login.microsoftonline.com/{tenant_id}/discovery/v2.0/keys'
+    DEFAULT_SCOPE = ['openid', 'profile', 'offline_access']
+
+    def get_user_id(self, details, response):
+        """Use upn as unique id"""
+        return response.get('preferred_username')
+
+    def get_user_details(self, response):
+        """Return user details from Azure AD account"""
+        fullname, first_name, last_name = (
+            response.get('name', ''),
+            response.get('given_name', ''),
+            response.get('family_name', '')
+        )
+        return {'username': fullname,
+                'email': response.get('preferred_username'),
+                'fullname': fullname,
+                'first_name': first_name,
+                'last_name': last_name}

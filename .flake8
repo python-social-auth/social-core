@@ -1,0 +1,6 @@
+[flake8]
+select = Q0
+inline-quotes = single
+multiline-quotes = double
+avoid-escape = False
+exclude = .git,.tox,.env,.github,.pytest_cache,__pycache__,files,dist,build,social_auth_core.egg-info

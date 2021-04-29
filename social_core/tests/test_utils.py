@@ -1,14 +1,10 @@
 import sys
-import unittest2 as unittest
-
-try:
-    from unittest.mock import Mock
-except ImportError:
-    from mock import Mock
+import unittest
+from unittest.mock import Mock
 
 from ..utils import sanitize_redirect, user_is_authenticated, \
-                    user_is_active, slugify, build_absolute_uri, \
-                    partial_pipeline_data
+    user_is_active, slugify, build_absolute_uri, \
+    partial_pipeline_data
 from .models import TestPartial
 
 
@@ -65,12 +61,12 @@ class UserIsAuthenticatedTest(unittest.TestCase):
         self.assertEqual(user_is_authenticated(object()), True)
 
     def test_user_has_is_authenticated(self):
-        class User(object):
+        class User:
             is_authenticated = True
         self.assertEqual(user_is_authenticated(User()), True)
 
     def test_user_has_is_authenticated_callable(self):
-        class User(object):
+        class User:
             def is_authenticated(self):
                 return True
         self.assertEqual(user_is_authenticated(User()), True)
@@ -84,12 +80,12 @@ class UserIsActiveTest(unittest.TestCase):
         self.assertEqual(user_is_active(object()), True)
 
     def test_user_has_is_active(self):
-        class User(object):
+        class User:
             is_active = True
         self.assertEqual(user_is_active(User()), True)
 
     def test_user_has_is_active_callable(self):
-        class User(object):
+        class User:
             def is_active(self):
                 return True
         self.assertEqual(user_is_active(User()), True)

@@ -23,7 +23,7 @@ class CognitoAuth2Test(OAuth2Test):
         return self.backend.user_data_url()
 
     def extra_settings(self):
-        settings = super(CognitoAuth2Test, self).extra_settings()
+        settings = super().extra_settings()
         settings.update({
             'SOCIAL_AUTH_' + self.name + '_POOL_DOMAIN': self.pool_domain,
         })

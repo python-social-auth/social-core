@@ -41,10 +41,10 @@ class LineOAuth2(BaseOAuth2):
 
     def process_error(self, data):
         error_code = data.get('errorCode') or \
-                     data.get('statusCode') or \
-                     data.get('error')
+            data.get('statusCode') or \
+            data.get('error')
         error_message = data.get('errorMessage') or \
-                        data.get('error_description')
+            data.get('error_description')
         if error_code is not None or error_message is not None:
             raise AuthFailed(self, error_message or error_code)
 
@@ -96,7 +96,7 @@ class LineOAuth2(BaseOAuth2):
             response = self.get_json(
                 self.USER_INFO_URL,
                 headers={
-                    "Authorization": "Bearer {}".format(access_token)
+                    'Authorization': 'Bearer {}'.format(access_token)
                 }
             )
             self.process_error(response)

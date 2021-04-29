@@ -5,14 +5,7 @@ Yahoo OpenId, OAuth1 and OAuth2 backends, docs at:
 from requests.auth import HTTPBasicAuth
 
 from ..utils import handle_http_errors
-from .open_id import OpenIdAuth
 from .oauth import BaseOAuth2, BaseOAuth1
-
-
-class YahooOpenId(OpenIdAuth):
-    """Yahoo OpenID authentication backend"""
-    name = 'yahoo'
-    URL = 'http://me.yahoo.com'
 
 
 class YahooOAuth(BaseOAuth1):
@@ -36,7 +29,7 @@ class YahooOAuth(BaseOAuth1):
             last_name=response.get('familyName')
         )
         emails = [email for email in response.get('emails', [])
-                        if email.get('handle')]
+                  if email.get('handle')]
         emails.sort(key=lambda e: e.get('primary', False), reverse=True)
         return {'username': response.get('nickname'),
                 'email': emails[0]['handle'] if emails else '',
@@ -88,6 +81,7 @@ class YahooOAuth2(BaseOAuth2):
         Return user details from Yahoo Profile.
         To Get user email you need the profile private read permission.
         """
+
         fullname, first_name, last_name = self.get_user_names(
             first_name=response.get('given_name'),
             last_name=response.get('family_name')

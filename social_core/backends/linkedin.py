@@ -68,19 +68,19 @@ class LinkedinOAuth2(BaseOAuth2):
             """
             FirstName & Last Name object
             {
-                  "localized":{
-                     "en_US":"Smith"
+                  'localized': {
+                     'en_US': 'Smith'
                   },
-                  "preferredLocale":{
-                     "country":"US",
-                     "language":"en"
+                  'preferredLocale': {
+                     'country': 'US',
+                     'language': 'en'
                   }
             }
             :return the localizedName from the lastName object
             """
-            locale = "{}_{}".format(
-                name["preferredLocale"]["language"],
-                name["preferredLocale"]["country"]
+            locale = '{}_{}'.format(
+                name['preferredLocale']['language'],
+                name['preferredLocale']['country']
             )
             return name['localized'].get(locale, '')
 
@@ -109,12 +109,10 @@ class LinkedinOAuth2(BaseOAuth2):
         # LinkedIn expects a POST request with querystring parameters, despite
         # the spec http://tools.ietf.org/html/rfc6749#section-4.1.3
         kwargs['params'] = kwargs.pop('data')
-        return super(LinkedinOAuth2, self).request_access_token(
-            *args, **kwargs
-        )
+        return super().request_access_token(*args, **kwargs)
 
     def process_error(self, data):
-        super(LinkedinOAuth2, self).process_error(data)
+        super().process_error(data)
         if data.get('serviceErrorCode'):
             raise AuthCanceled(self, data.get('message') or data.get('status'))
 
@@ -123,7 +121,6 @@ class LinkedinMobileOAuth2(LinkedinOAuth2):
     name = 'linkedin-mobile-oauth2'
 
     def user_data_headers(self, access_token):
-        headers = super(LinkedinMobileOAuth2, self).user_data_headers(
-            access_token)
+        headers = super().user_data_headers(access_token)
         headers['x-li-src'] = 'msdk'
         return headers

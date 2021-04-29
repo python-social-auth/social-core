@@ -2,7 +2,6 @@ import json
 import datetime
 from calendar import timegm
 
-import six
 from jose import jwk, jwt
 from jose.jwt import JWTError, JWTClaimsError, ExpiredSignatureError
 from jose.utils import base64url_decode
@@ -12,7 +11,7 @@ from social_core.utils import cache
 from social_core.exceptions import AuthTokenError
 
 
-class OpenIdConnectAssociation(object):
+class OpenIdConnectAssociation:
     """ Use Association model to save the nonce by force."""
 
     def __init__(self, handle, secret='', issued=0, lifetime=0, assoc_type=''):
@@ -44,11 +43,12 @@ class OpenIdConnectAuth(BaseOAuth2):
     REVOKE_TOKEN_URL = ''
     USERINFO_URL = ''
     JWKS_URI = ''
+    JWT_ALGORITHMS = ['RS256']
     JWT_DECODE_OPTIONS = dict()
 
     def __init__(self, *args, **kwargs):
         self.id_token = None
-        super(OpenIdConnectAuth, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def authorization_url(self):
         return self.AUTHORIZATION_URL or \
@@ -94,7 +94,7 @@ class OpenIdConnectAuth(BaseOAuth2):
 
     def auth_params(self, state=None):
         """Return extra arguments needed on auth process."""
-        params = super(OpenIdConnectAuth, self).auth_params(state)
+        params = super().auth_params(state)
         params['nonce'] = self.get_and_store_nonce(
             self.authorization_url(), state
         )
@@ -162,14 +162,13 @@ class OpenIdConnectAuth(BaseOAuth2):
         if not key:
             raise AuthTokenError(self, 'Signature verification failed')
 
-        alg = key['alg']
         rsakey = jwk.construct(key)
 
         try:
             claims = jwt.decode(
                 id_token,
                 rsakey.to_pem().decode('utf-8'),
-                algorithms=[alg],
+                algorithms=self.JWT_ALGORITHMS,
                 audience=client_id,
                 issuer=self.id_token_issuer(),
                 access_token=access_token,

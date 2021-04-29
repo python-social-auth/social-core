@@ -1,8 +1,6 @@
 """
 Bungie OAuth2 backend
 """
-import requests
-
 from social_core.backends.oauth import BaseOAuth2
 
 

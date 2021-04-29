@@ -1,5 +1,6 @@
 import json
 
+from ..pipeline.user import user_details
 from ..utils import PARTIAL_TOKEN_SESSION_NAME
 from ..exceptions import AuthException
 
@@ -30,9 +31,7 @@ class IntegrityErrorUserSocialAuth(TestUserSocialAuth):
             user = list(User.cache.values())[0]
             return IntegrityErrorUserSocialAuth(user, provider, uid)
         else:
-            return super(IntegrityErrorUserSocialAuth, cls).get_social_auth(
-                provider, uid
-            )
+            return super().get_social_auth(provider, uid)
 
 
 class IntegrityErrorStorage(TestStorage):
@@ -57,7 +56,7 @@ class UnknownErrorStorage(IntegrityErrorStorage):
 class IntegrityErrorOnLoginTest(BaseActionTest):
     def setUp(self):
         self.strategy = TestStrategy(IntegrityErrorStorage)
-        super(IntegrityErrorOnLoginTest, self).setUp()
+        super().setUp()
 
     def test_integrity_error(self):
         self.do_login()
@@ -66,7 +65,7 @@ class IntegrityErrorOnLoginTest(BaseActionTest):
 class UnknownErrorOnLoginTest(BaseActionTest):
     def setUp(self):
         self.strategy = TestStrategy(UnknownErrorStorage)
-        super(UnknownErrorOnLoginTest, self).setUp()
+        super().setUp()
 
     def test_unknown_error(self):
         with self.assertRaises(UnknownError):
@@ -232,3 +231,35 @@ class UserPersistsInPartialPipeline(BaseActionTest):
         token = self.strategy.session_pop(PARTIAL_TOKEN_SESSION_NAME)
         partial = self.strategy.partial_load(token)
         self.backend.continue_pipeline(partial)
+
+
+
+class TestUserDetails(BaseActionTest):
+
+    def test_user_details(self):
+        self.strategy.set_settings({})
+        details = {'first_name': 'Test'}
+        user = User(username='foobar')
+        backend = None
+        user_details(self.strategy, details, backend, user)
+        self.assertEqual(user.first_name, 'Test')
+
+        # Also test mutation
+        details = {'first_name': 'Test2'}
+        user_details(self.strategy, details, backend, user)
+        self.assertEqual(user.first_name, 'Test2')
+
+    def test_user_details_(self):
+        self.strategy.set_settings({
+            'SOCIAL_AUTH_IMMUTABLE_USER_FIELDS': ('first_name',)
+        })
+        details = {'first_name': 'Test'}
+        user = User(username='foobar')
+        backend = None
+        user_details(self.strategy, details, backend, user)
+        self.assertEqual(user.first_name, 'Test')
+
+        # Also test mutation does not change field
+        details = {'first_name': 'Test2'}
+        user_details(self.strategy, details, backend, user)
+        self.assertEqual(user.first_name, 'Test')

@@ -133,9 +133,7 @@ class GithubEnterpriseOrganizationOAuth2Test(GithubEnterpriseOAuth2Test):
     def auth_handlers(self, start_url):
         url = 'https://www.example.com/api/v3/orgs/foobar/members/foobar'
         HTTPretty.register_uri(HTTPretty.GET, url, status=204, body='')
-        return super(GithubEnterpriseOrganizationOAuth2Test, self).auth_handlers(
-            start_url
-        )
+        return super().auth_handlers(start_url)
 
     def test_login(self):
         self.strategy.set_settings({
@@ -162,9 +160,7 @@ class GithubEnterpriseOrganizationOAuth2FailTest(GithubEnterpriseOAuth2Test):
         HTTPretty.register_uri(HTTPretty.GET, url, status=404,
                                body='{"message": "Not Found"}',
                                content_type='application/json')
-        return super(GithubEnterpriseOrganizationOAuth2FailTest, self).auth_handlers(
-            start_url
-        )
+        return super().auth_handlers(start_url)
 
     def test_login(self):
         self.strategy.set_settings({
@@ -191,9 +187,7 @@ class GithubEnterpriseTeamOAuth2Test(GithubEnterpriseOAuth2Test):
     def auth_handlers(self, start_url):
         url = 'https://www.example.com/api/v3/teams/123/members/foobar'
         HTTPretty.register_uri(HTTPretty.GET, url, status=204, body='')
-        return super(GithubEnterpriseTeamOAuth2Test, self).auth_handlers(
-            start_url
-        )
+        return super().auth_handlers(start_url)
 
     def test_login(self):
         self.strategy.set_settings({
@@ -220,9 +214,7 @@ class GithubEnterpriseTeamOAuth2FailTest(GithubEnterpriseOAuth2Test):
         HTTPretty.register_uri(HTTPretty.GET, url, status=404,
                                body='{"message": "Not Found"}',
                                content_type='application/json')
-        return super(GithubEnterpriseTeamOAuth2FailTest, self).auth_handlers(
-            start_url
-        )
+        return super().auth_handlers(start_url)
 
     def test_login(self):
         self.strategy.set_settings({

@@ -14,16 +14,16 @@ from .base import BaseAuth
 from ..exceptions import AuthFailed, AuthMissingParameter
 
 # Helpful constants:
-OID_COMMON_NAME = "urn:oid:2.5.4.3"
-OID_EDU_PERSON_PRINCIPAL_NAME = "urn:oid:1.3.6.1.4.1.5923.1.1.1.6"
-OID_EDU_PERSON_ENTITLEMENT = "urn:oid:1.3.6.1.4.1.5923.1.1.1.7"
-OID_GIVEN_NAME = "urn:oid:2.5.4.42"
-OID_MAIL = "urn:oid:0.9.2342.19200300.100.1.3"
-OID_SURNAME = "urn:oid:2.5.4.4"
-OID_USERID = "urn:oid:0.9.2342.19200300.100.1.1"
+OID_COMMON_NAME = 'urn:oid:2.5.4.3'
+OID_EDU_PERSON_PRINCIPAL_NAME = 'urn:oid:1.3.6.1.4.1.5923.1.1.1.6'
+OID_EDU_PERSON_ENTITLEMENT = 'urn:oid:1.3.6.1.4.1.5923.1.1.1.7'
+OID_GIVEN_NAME = 'urn:oid:2.5.4.42'
+OID_MAIL = 'urn:oid:0.9.2342.19200300.100.1.3'
+OID_SURNAME = 'urn:oid:2.5.4.4'
+OID_USERID = 'urn:oid:0.9.2342.19200300.100.1.1'
 
 
-class SAMLIdentityProvider(object):
+class SAMLIdentityProvider:
     """Wrapper around configuration for a SAML Identity provider"""
     def __init__(self, name, **kwargs):
         """Load and parse configuration"""
@@ -114,9 +114,9 @@ class SAMLIdentityProvider(object):
         }
 
         if self.slo_url:
-            result["singleLogoutService"] = {
-                "url": self.slo_url,
-                "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+            result['singleLogoutService'] = {
+                'url': self.slo_url,
+                'binding': 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect'
             }
 
         cert = self.conf.get('x509cert', None)
@@ -127,7 +127,7 @@ class SAMLIdentityProvider(object):
         if cert:
             result['x509certMulti'] = cert
             return result
-        raise KeyError("IDP must contain x509cert or x509certMulti")
+        raise KeyError('IDP must contain x509cert or x509certMulti')
 
 
 class DummySAMLIdentityProvider(SAMLIdentityProvider):
@@ -139,7 +139,7 @@ class DummySAMLIdentityProvider(SAMLIdentityProvider):
     config, this can be removed.
     """
     def __init__(self):
-        super(DummySAMLIdentityProvider, self).__init__(
+        super().__init__(
             'dummy',
             entity_id='https://dummy.none/saml2',
             url='https://dummy.none/SSO',
@@ -190,7 +190,7 @@ class SAMLAuth(BaseAuth):
     SOCIAL_AUTH_SAML_SP_EXTRA = {}
     SOCIAL_AUTH_SAML_SECURITY_CONFIG = {}
     """
-    name = "saml"
+    name = 'saml'
     EXTRA_DATA = []
 
     def get_idp(self, idp_name):
@@ -229,8 +229,8 @@ class SAMLAuth(BaseAuth):
             },
             'strict': True,  # We must force strict mode - for security
         }
-        config["security"].update(self.setting("SECURITY_CONFIG", {}))
-        config["sp"].update(self.setting("SP_EXTRA", {}))
+        config['security'].update(self.setting('SECURITY_CONFIG', {}))
+        config['sp'].update(self.setting('SP_EXTRA', {}))
         return config
 
     def generate_metadata_xml(self):
@@ -333,7 +333,7 @@ class SAMLAuth(BaseAuth):
         return self.strategy.authenticate(*args, **kwargs)
 
     def extra_data(self, user, uid, response, details=None, *args, **kwargs):
-        extra_data = super(SAMLAuth, self).extra_data(
+        extra_data = super().extra_data(
             user, uid, response['attributes'], details=details, *args, **kwargs
         )
         extra_data['session_index'] = response['session_index']

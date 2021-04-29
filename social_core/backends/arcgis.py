@@ -11,7 +11,8 @@ class ArcGISOAuth2(BaseOAuth2):
     ACCESS_TOKEN_URL = 'https://www.arcgis.com/sharing/rest/oauth2/token'
     ACCESS_TOKEN_METHOD = 'POST'
     EXTRA_DATA = [
-        ('expires_in', 'expires_in')
+        ('expires_in', 'expires_in'),
+        ('refresh_token', 'refresh_token')
     ]
 
     def get_user_details(self, response):

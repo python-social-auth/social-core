@@ -2,13 +2,12 @@
 Github OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/github.html
 """
-from requests import HTTPError
+from urllib.parse import urljoin
 
-from six.moves.urllib.parse import urljoin
+from requests import HTTPError
 
 from .oauth import BaseOAuth2
 from ..exceptions import AuthFailed
-from ..utils import handle_http_errors
 
 
 class GithubOAuth2(BaseOAuth2):
@@ -74,9 +73,7 @@ class GithubMemberOAuth2(GithubOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        user_data = super(GithubMemberOAuth2, self).user_data(
-            access_token, *args, **kwargs
-        )
+        user_data = super().user_data(access_token, *args, **kwargs)
         headers = {'Authorization': 'token {0}'.format(access_token)}
         try:
             self.request(self.member_url(user_data), headers=headers)

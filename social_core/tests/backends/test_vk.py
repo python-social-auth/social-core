@@ -21,7 +21,7 @@ class VKOAuth2Test(OAuth2Test):
             'last_name': 'Дуров',
             'screen_name': 'durov',
             'nickname': '',
-            'photo': "http:\/\/cs7003.vk.me\/v7003815\/22a1\/xgG9fb-IJ3Y.jpg"
+            'photo': r'http:\/\/cs7003.vk.me\/v7003815\/22a1\/xgG9fb-IJ3Y.jpg'
         }]
     })
 

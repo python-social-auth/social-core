@@ -5,7 +5,7 @@ from .oauth import OAuth2Test
 
 class InstagramOAuth2Test(OAuth2Test):
     backend_path = 'social_core.backends.instagram.InstagramOAuth2'
-    user_data_url = 'https://api.instagram.com/v1/users/self'
+    user_data_url = 'https://graph.instagram.com/me'
     expected_username = 'foobar'
     access_token_body = json.dumps({
         'access_token': 'foobar',
@@ -13,27 +13,8 @@ class InstagramOAuth2Test(OAuth2Test):
         'meta': {
             'code': 200
         },
-        'data': {
-            'username': 'foobar',
-            'bio': '',
-            'website': '',
-            'profile_picture': 'http://images.instagram.com/profiles/'
-                               'anonymousUser.jpg',
-            'full_name': '',
-            'counts': {
-                'media': 0,
-                'followed_by': 2,
-                'follows': 0
-            },
-            'id': '101010101'
-        },
         'user': {
             'username': 'foobar',
-            'bio': '',
-            'website': '',
-            'profile_picture': 'http://images.instagram.com/profiles/'
-                               'anonymousUser.jpg',
-            'full_name': '',
             'id': '101010101'
         }
     })
@@ -41,20 +22,8 @@ class InstagramOAuth2Test(OAuth2Test):
         'meta': {
             'code': 200
         },
-        'data': {
-            'username': 'foobar',
-            'bio': '',
-            'website': '',
-            'profile_picture': 'http://images.instagram.com/profiles/'
-                               'anonymousUser.jpg',
-            'full_name': '',
-            'counts': {
-                'media': 0,
-                'followed_by': 2,
-                'follows': 0
-            },
-            'id': '101010101'
-        }
+        'username': 'foobar',
+        'id': '101010101'
     })
 
     def test_login(self):

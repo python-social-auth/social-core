@@ -3,8 +3,7 @@ Odnoklassniki OAuth2 and Iframe Application backends, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/odnoklassnikiru.html
 """
 from hashlib import md5
-
-from six.moves.urllib_parse import unquote
+from urllib.parse import unquote
 
 from .base import BaseAuth
 from .oauth import BaseOAuth2
@@ -53,7 +52,7 @@ class OdnoklassnikiApp(BaseAuth):
 
     def extra_data(self, user, uid, response, details=None, *args, **kwargs):
         return dict([(key, value) for key, value in response.items()
-                            if key in response['extra_data_list']])
+                     if key in response['extra_data_list']])
 
     def get_user_details(self, response):
         fullname, first_name, last_name = self.get_user_names(
@@ -73,7 +72,7 @@ class OdnoklassnikiApp(BaseAuth):
         self.verify_auth_sig()
         response = self.get_response()
         fields = ('uid', 'first_name', 'last_name', 'name') + \
-                 self.setting('EXTRA_USER_DATA_LIST', ())
+            self.setting('EXTRA_USER_DATA_LIST', ())
         data = {
             'method': 'users.getInfo',
             'uids': '{0}'.format(response['logged_user_id']),
@@ -111,7 +110,7 @@ class OdnoklassnikiApp(BaseAuth):
                   'session_key', 'session_secret_key', 'authorized',
                   'apiconnection')
         return dict((name, self.data[name]) for name in fields
-                        if name in self.data)
+                    if name in self.data)
 
     def verify_auth_sig(self):
         correct_key = self.get_auth_sig()
@@ -132,8 +131,8 @@ def odnoklassniki_oauth_sig(data, client_secret):
                             client_secret).encode('utf-8')
     ).hexdigest()
     check_list = sorted(['{0:s}={1:s}'.format(key, value)
-                            for key, value in data.items()
-                                if key != 'access_token'])
+                         for key, value in data.items()
+                         if key != 'access_token'])
     return md5((''.join(check_list) + suffix).encode('utf-8')).hexdigest()
 
 
@@ -145,7 +144,7 @@ def odnoklassniki_iframe_sig(data, client_secret_or_session_secret):
     secret key. Otherwise it is signed with application secret key
     """
     param_list = sorted(['{0:s}={1:s}'.format(key, value)
-                            for key, value in data.items()])
+                         for key, value in data.items()])
     return md5(
         (''.join(param_list) + client_secret_or_session_secret).encode('utf-8')
     ).hexdigest()

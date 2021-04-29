@@ -1,7 +1,7 @@
 """
 OpenStack OpenId backend
 """
-from six.moves.urllib_parse import urlsplit
+from urllib.parse import urlsplit
 from openid.extensions import ax
 
 from .open_id import OpenIdAuth
@@ -13,7 +13,7 @@ class OpenStackOpenId(OpenIdAuth):
 
     def get_user_details(self, response):
         """Generate username from identity url"""
-        values = super(OpenStackDevOpenId, self).get_user_details(response)
+        values = super().get_user_details(response)
         values['username'] = values.get('username') or \
             urlsplit(response.identity_url).path.strip('/')
         values['nickname'] = values.get('nickname', '')

@@ -48,7 +48,7 @@ class RedditOAuth2(BaseOAuth2):
         }
 
     def refresh_token_params(self, token, redirect_uri=None, *args, **kwargs):
-        params = super(RedditOAuth2, self).refresh_token_params(token)
+        params = super().refresh_token_params(token)
         params['redirect_uri'] = self.redirect_uri or redirect_uri
         return params
 

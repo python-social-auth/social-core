@@ -68,9 +68,12 @@ class KeycloakOAuth2(BaseOAuth2):  # pylint: disable=abstract-method
 
         SOCIAL_AUTH_KEYCLOAK_KEY = 'example'
         SOCIAL_AUTH_KEYCLOAK_SECRET = '1234abcd-1234-abcd-1234-abcd1234adcd'
-        SOCIAL_AUTH_KEYCLOAK_PUBLIC_KEY = 'pempublickeythatis2048bitsinbase64andhaseg392characters'
-        SOCIAL_AUTH_KEYCLOAK_AUTHORIZATION_URL = 'https://sso.example.com/auth/realms/example/protocol/openid-connect/auth'
-        SOCIAL_AUTH_KEYCLOAK_ACCESS_TOKEN_URL = 'https://sso.example.com/auth/realms/example/protocol/openid-connect/token'
+        SOCIAL_AUTH_KEYCLOAK_PUBLIC_KEY = \
+          'pempublickeythatis2048bitsinbase64andhaseg392characters'
+        SOCIAL_AUTH_KEYCLOAK_AUTHORIZATION_URL = \
+          'https://sso.com/auth/realms/example/protocol/openid-connect/auth'
+        SOCIAL_AUTH_KEYCLOAK_ACCESS_TOKEN_URL = \
+          'https://sso.com/auth/realms/example/protocol/openid-connect/token'
 
     7. The default behaviour is to associate users via username field, but you
        can change the key with e.g.

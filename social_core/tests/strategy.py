@@ -5,7 +5,7 @@ TEST_URI = 'http://myapp.com'
 TEST_HOST = 'myapp.com'
 
 
-class Redirect(object):
+class Redirect:
     def __init__(self, url):
         self.url = url
 
@@ -25,7 +25,7 @@ class TestStrategy(BaseStrategy):
         self._request_data = {}
         self._settings = {}
         self._session = {}
-        super(TestStrategy, self).__init__(storage, tpl)
+        super().__init__(storage, tpl)
 
     def redirect(self, url):
         return Redirect(url)
@@ -100,7 +100,7 @@ class TestStrategy(BaseStrategy):
         self._request_data.pop(name, None)
 
     def authenticate(self, *args, **kwargs):
-        user = super(TestStrategy, self).authenticate(*args, **kwargs)
+        user = super().authenticate(*args, **kwargs)
         if isinstance(user, self.storage.user.user_model()):
             self.session_set('username', user.username)
         return user

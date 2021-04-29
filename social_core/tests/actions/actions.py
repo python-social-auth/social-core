@@ -1,15 +1,14 @@
 import json
 import requests
-import unittest2 as unittest
+import unittest
+from urllib.parse import urlparse
 
 from httpretty import HTTPretty
-
-from six.moves.urllib_parse import urlparse
 
 from ...utils import parse_qs, module_member
 from ...actions import do_auth, do_complete
 from ..models import TestStorage, User, TestUserSocialAuth, TestNonce, \
-                     TestAssociation
+    TestAssociation
 from ..strategy import TestStrategy
 
 
@@ -56,7 +55,7 @@ class BaseActionTest(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
         self.strategy = None
-        super(BaseActionTest, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def setUp(self):
         HTTPretty.enable()
@@ -97,7 +96,7 @@ class BaseActionTest(unittest.TestCase):
 
         start_query = parse_qs(urlparse(start_url).query)
         location_url = target_url + ('&' if '?' in target_url else '?') + \
-                       'state=' + start_query['state']
+            'state=' + start_query['state']
         location_query = parse_qs(urlparse(location_url).query)
 
         HTTPretty.register_uri(HTTPretty.GET, start_url, status=301,
@@ -162,7 +161,7 @@ class BaseActionTest(unittest.TestCase):
 
         start_query = parse_qs(urlparse(start_url).query)
         location_url = target_url + ('&' if '?' in target_url else '?') + \
-                       'state=' + start_query['state']
+            'state=' + start_query['state']
         location_query = parse_qs(urlparse(location_url).query)
 
         HTTPretty.register_uri(HTTPretty.GET, start_url, status=301,

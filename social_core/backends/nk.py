@@ -1,7 +1,5 @@
 from urllib import urlencode
 
-import six
-
 from requests_oauthlib import OAuth1
 
 from .oauth import BaseOAuth2
@@ -63,14 +61,10 @@ class NKOAuth2(BaseOAuth2):
         key, secret = self.get_key_and_secret()
         oauth_verifier = oauth_verifier or self.data.get('oauth_verifier')
         token = token or {}
-        # decoding='utf-8' produces errors with python-requests on Python3
-        # since the final URL will be of type bytes
-        decoding = None if six.PY3 else 'utf-8'
         state = self.get_or_create_state()
         return OAuth1(key, secret,
                       resource_owner_key=None,
                       resource_owner_secret=None,
                       callback_uri=self.get_redirect_uri(state),
                       verifier=oauth_verifier,
-                      signature_type=signature_type,
-                      decoding=decoding)
+                      signature_type=signature_type)

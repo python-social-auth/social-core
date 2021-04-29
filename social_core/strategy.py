@@ -6,9 +6,10 @@ from .utils import setting_name, module_member, PARTIAL_TOKEN_SESSION_NAME
 from .store import OpenIdStore, OpenIdSessionWrapper
 from .pipeline import DEFAULT_AUTH_PIPELINE, DEFAULT_DISCONNECT_PIPELINE
 from .pipeline.utils import partial_load, partial_store, partial_prepare
+from .backends.utils import get_backend
 
 
-class BaseTemplateStrategy(object):
+class BaseTemplateStrategy:
     def __init__(self, strategy):
         self.strategy = strategy
 
@@ -28,7 +29,7 @@ class BaseTemplateStrategy(object):
         raise NotImplementedError('Implement in subclass')
 
 
-class BaseStrategy(object):
+class BaseStrategy:
     ALLOWED_CHARS = 'abcdefghijklmnopqrstuvwxyz' \
                     'ABCDEFGHIJKLMNOPQRSTUVWXYZ' \
                     '0123456789'
@@ -92,7 +93,9 @@ class BaseStrategy(object):
 
     def clean_partial_pipeline(self, token):
         self.storage.partial.destroy(token)
-        self.session_pop(PARTIAL_TOKEN_SESSION_NAME)
+        current_token_in_session = self.session_get(PARTIAL_TOKEN_SESSION_NAME)
+        if current_token_in_session == token:
+            self.session_pop(PARTIAL_TOKEN_SESSION_NAME)
 
     def openid_store(self):
         return OpenIdStore(self)
@@ -167,6 +170,15 @@ class BaseStrategy(object):
     def get_backends(self):
         """Return configured backends"""
         return self.setting('AUTHENTICATION_BACKENDS', [])
+
+    def get_backend_class(self, name):
+        """Return a configured backend class"""
+        return get_backend(self.get_backends(), name)
+
+    def get_backend(self, name, redirect_uri=None, *args, **kwargs):
+        """Return a configured backend instance"""
+        Backend = self.get_backend_class(name)
+        return Backend(self, redirect_uri=redirect_uri, *args, **kwargs)
 
     # Implement the following methods on strategies sub-classes
 

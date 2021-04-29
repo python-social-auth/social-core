@@ -22,7 +22,7 @@ class SimpleLoginOAuth2(BaseOAuth2):
     ]
 
     # endpoint to get user info
-    USERINFO_URL = "https://app.simplelogin.io/oauth2/userinfo"
+    USERINFO_URL = 'https://app.simplelogin.io/oauth2/userinfo'
 
     def get_user_details(self, response):
         """Return user details from SimpleLogin account"""
