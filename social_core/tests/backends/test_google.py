@@ -40,7 +40,7 @@ class GoogleOAuth2Test(OAuth2Test):
         #     last_request.headers,
         #     {},
         # )
-        self.assertEqual(last_request.querystring, {"id_token": ["foobar"]})
+        self.assertEqual(last_request.querystring, {'id_token': ['foobar']})
 
     def test_partial_pipeline(self):
         self.do_partial_pipeline()
