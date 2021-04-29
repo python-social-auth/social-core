@@ -3,7 +3,7 @@
 """
 Weixin OAuth2 backend
 """
-from six.moves.urllib_parse import urlencode
+from urllib.parse import urlencode
 from requests import HTTPError
 
 from .oauth import BaseOAuth2

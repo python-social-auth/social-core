@@ -5,10 +5,135 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
+## [Unreleased](https://github.com/python-social-auth/social-core/)
+
+### Added
+- Add fields that populate on create but not update `SOCIAL_AUTH_IMMUTABLE_USER_FIELDS`
+
+### Changed
+- Fixed Slack user identity API call with Bearer headers
+
+
+## [4.1.0](https://github.com/python-social-auth/social-core/releases/tag/4.1.0) - 2021-03-01
+
+### Added
+- Discourse backend
+- Osso backend
+- Add `get` and `delete` class methods for `NonceMixin`
+- Use strategies as interface to fetch backends
+
+### Changed
+- Get Apple user first and last name from `self.data`
+- Instagram Legacy API has been replaced with Instagram Basic Display API since the first one was deprecated, [see](https://www.instagram.com/developer/).
+- Store `expires_in` for Zoom backend
+- Dropped support no longer working Dropbox v1 API
+- Several improvements to the ORCIDOAuth2 backend
+- Make WHITELIST_\* settings properly case insensitive
+- Fixed token validation in the AzureADV2TenantOAuth2 backend
+
+## [4.0.3](https://github.com/python-social-auth/social-core/releases/tag/4.0.3) - 2021-01-12
+
+### Changed
+- Updated PyJWT version to 2.0.0
+- Remove six dependency
+
+## [4.0.2](https://github.com/python-social-auth/social-core/releases/tag/4.0.2) - 2021-01-10
+
+### Changed
+- Fixes to Github-action release mechanism
+
+## [4.0.1](https://github.com/python-social-auth/social-core/releases/tag/4.0.1) - 2021-01-10
+
+### Changed
+- Fixes to Github-action release mechanism
+
+## [4.0.0](https://github.com/python-social-auth/social-core/releases/tag/4.0.0) - 2021-01-10
+
+### Added
+- PayPal backend
+- Fence OIDC-based backend
+
+### Changed
+- Dropped Python 2 support from testing stack
+- Remove discontinued Google OpenId backend
+- Remove discontinued Yahoo OpenId backend
+- Fix `jwt.decode()` passed algorithm
+- Prevent `PyJWT` v2.0.0 being installed
+- Update Facebook Graph API to 8.0
+- Update Amazon fetch-profile URL
+- Fix Azure AD Tenant, unable to load certificate
+- Fix Okta well-known URL
+- Updated Discord's API hostname from discordapp.com to discord.com
+- Pass `client_secret` in auth-complete on Kakao backend
+
+## [3.4.0](https://github.com/python-social-auth/social-core/releases/tag/3.4.0) - 2020-06-21
+
+### Added
+- Zoom backend
+
+### Changed
+- Directly use `access_token` in Azure Tenant backend
+- Support Apple JWT audience
+- Update partial session cleanup to remove old token from session too
+- Fetch user email in Okta integration
+- Improve Python 3.9 compatibility
+- Send proxies in request
+- Improve error handling in Apple backend
+- Properly support case insensitive matching of whitelist settings
+
+## [3.3.3](https://github.com/python-social-auth/social-core/releases/tag/3.3.3) - 2020-04-16
+
+### Changed
+- Updated list of default user protected fields to include admin flags and password
+
+## [3.3.2](https://github.com/python-social-auth/social-core/releases/tag/3.3.2) - 2020-03-25
+
+### Changed
+- Updated package upload method to use `twine`
+
+## [3.3.1](https://github.com/python-social-auth/social-core/releases/tag/3.3.1) - 2020-03-25
+
+### Changed
+- Reverted [PR #388](https://github.com/python-social-auth/social-core/pull/388/) due to
+  dependency license incompatibility
+
+## [3.3.0](https://github.com/python-social-auth/social-core/releases/tag/3.3.0) - 2020-03-17
+
+### Added
+- Okta backend
+- Support for SAML Single Logout
+- SimpleLogin backend
+- SurveyMonkey backend
+- HubSpot backend
+- MRG backend
+- Sign in with Apple backend
+- Allow ignoring of default protected user fields with option `SOCIAL_AUTH_NO_DEFAULT_PROTECTED_USER_FIELDS`
+- Support for users field names mapping
+- Added GithubAppAuth backend
+
+### Changed
+- Add refresh token to Strava backend, change username and remove email
+- Update test runner to PyTest
+- Add python 3.7 CI target
+- Send User-Agent header on Untappd backend
+- Updated Naver API support from XML to JSON format
+- Use `unidecode` to cleanup usernames from unicode characters
+- Update Twitch API support from v3 to v5
+- Properly setup `pytest` version for Python2 and Python3
+- Fix some spelling mistakes in docstrings
+- Fix old fields from FIELDS_STORED_IN_SESSION persisting in session
+- Github: pass access token in a header instead of in a query parameter.
+- Update Kakao API support from v1 to v2
+- Update Twitch API support to v5
+- Updated Patreon API support from v1 to v2 per issue #307
+- Fix `user_details` in user pipeline to allow model attributes to be updated
+- Updated Atlassian API urls
+
+## [3.2.0](https://github.com/python-social-auth/social-core/releases/tag/3.2.0) - 2019-05-30
 
 ### Added
 - Cognito backend
+- OpenStack (openstackid and openstackid-dev) backends
 
 ### Changed
 - Updated Linkedin backend to v2 API
@@ -23,6 +148,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Include `email_verified` as part of user details on Auth0 backend
 - Include Shopify `version` parameter on Shopify session setup
 - Define `SOCIAL_AUTH_SHOPIFY_API_VERSION` setting to override default API version
+- Check user `id` attribute existence before using it
+- Pull `last_name` from `family_name` in Cognito backend
+- Ignore key errors on Naver backend for missing attributes
 
 ## [3.1.0](https://github.com/python-social-auth/social-core/releases/tag/3.1.0) - 2019-02-20
 

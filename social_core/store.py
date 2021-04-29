@@ -13,7 +13,7 @@ class OpenIdStore(BaseOpenIDStore):
     """Storage class"""
     def __init__(self, strategy):
         """Init method"""
-        super(OpenIdStore, self).__init__()
+        super().__init__()
         self.strategy = strategy
         self.storage = strategy.storage
         self.assoc = self.storage.association
@@ -21,7 +21,7 @@ class OpenIdStore(BaseOpenIDStore):
         self.max_nonce_age = 6 * 60 * 60  # Six hours
 
     def storeAssociation(self, server_url, association):
-        """Store new assocition if doesn't exist"""
+        """Store new association if it does not exist"""
         self.assoc.store(server_url, association)
 
     def removeAssociation(self, server_url, handle):
@@ -38,7 +38,7 @@ class OpenIdStore(BaseOpenIDStore):
             return assoc.expiresIn
 
     def getAssociation(self, server_url, handle=None):
-        """Return stored assocition"""
+        """Return stored association"""
         associations, expired = [], []
         for assoc_id, association in self.assoc.oids(server_url, handle):
             expires = self.expiresIn(association)
@@ -67,7 +67,7 @@ class OpenIdSessionWrapper(dict):
     )
 
     def __getitem__(self, name):
-        value = super(OpenIdSessionWrapper, self).__getitem__(name)
+        value = super().__getitem__(name)
         if name in self.pickle_instances:
             value = pickle.loads(value)
         return value
@@ -75,7 +75,7 @@ class OpenIdSessionWrapper(dict):
     def __setitem__(self, name, value):
         if name in self.pickle_instances:
             value = pickle.dumps(value, 0)
-        super(OpenIdSessionWrapper, self).__setitem__(name, value)
+        super().__setitem__(name, value)
 
     def get(self, name, default=None):
         try:

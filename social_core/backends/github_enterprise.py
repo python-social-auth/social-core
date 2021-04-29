@@ -2,14 +2,14 @@
 Github Enterprise OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/github_enterprise.html
 """
-from six.moves.urllib.parse import urljoin
+from urllib.parse import urljoin
 
 from ..utils import append_slash
 from .github import GithubOAuth2, GithubOrganizationOAuth2, \
                     GithubTeamOAuth2
 
 
-class GithubEnterpriseMixin(object):
+class GithubEnterpriseMixin:
     def api_url(self):
         return append_slash(self.setting('API_URL'))
 

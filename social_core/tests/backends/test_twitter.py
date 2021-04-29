@@ -1,6 +1,5 @@
 import json
-
-from six.moves.urllib_parse import urlencode
+from urllib.parse import urlencode
 
 from .oauth import OAuth1Test
 
@@ -8,7 +7,7 @@ from .oauth import OAuth1Test
 class TwitterOAuth1Test(OAuth1Test):
     backend_path = 'social_core.backends.twitter.TwitterOAuth'
     user_data_url = 'https://api.twitter.com/1.1/account/' \
-                        'verify_credentials.json'
+        'verify_credentials.json'
     expected_username = 'foobar'
     access_token_body = json.dumps({
         'access_token': 'foobar',
@@ -135,7 +134,7 @@ class TwitterOAuth1Test(OAuth1Test):
 class TwitterOAuth1IncludeEmailTest(OAuth1Test):
     backend_path = 'social_core.backends.twitter.TwitterOAuth'
     user_data_url = 'https://api.twitter.com/1.1/account/' \
-                        'verify_credentials.json?include_email=true'
+        'verify_credentials.json?include_email=true'
     expected_username = 'foobar'
     access_token_body = json.dumps({
         'access_token': 'foobar',
@@ -255,7 +254,7 @@ class TwitterOAuth1IncludeEmailTest(OAuth1Test):
 
     def test_login(self):
         user = self.do_login()
-        self.assertEquals(user.email, 'foo@bar.bas')
+        self.assertEqual(user.email, 'foo@bar.bas')
 
     def test_partial_pipeline(self):
         self.do_partial_pipeline()

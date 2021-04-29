@@ -28,16 +28,14 @@ See https://nicksnettravels.builttoroam.com/post/2017/01/24/Verifying-Azure-Acti
 """
 
 import json
-import six
 
 from cryptography.hazmat.primitives import serialization
-from jwt import DecodeError, ExpiredSignature, decode as jwt_decode
-from jwt.utils import base64url_decode
-
+from jwt import DecodeError, ExpiredSignatureError, decode as jwt_decode, \
+    get_unverified_header
 
 try:
     from jwt.algorithms import RSAAlgorithm
-except ImportError as e:
+except ImportError:
     raise Exception(
         # Python 3.3 is not supported because of compatibility in
         # Cryptography package in Python3.3 You are welcome to patch
@@ -112,7 +110,7 @@ class AzureADB2COAuth2(AzureADOAuth2):
 
         However, B2C backends provides `id_token`.
         """
-        response = super(AzureADB2COAuth2, self).request_access_token(
+        response = super().request_access_token(
             *args,
             **kwargs
         )
@@ -126,7 +124,7 @@ class AzureADB2COAuth2(AzureADOAuth2):
 
         The defaults can be overridden by GET parameters.
         """
-        extra_arguments = super(AzureADB2COAuth2, self).auth_extra_arguments()
+        extra_arguments = super().auth_extra_arguments()
         extra_arguments['p'] = self.policy or self.data.get('p')
         return extra_arguments
 
@@ -149,7 +147,7 @@ class AzureADB2COAuth2(AzureADOAuth2):
         Email address is returned on a different attribute for AzureAD
         B2C backends.
         """
-        details = super(AzureADB2COAuth2, self).get_user_details(response)
+        details = super().get_user_details(response)
         if not details['email'] and response.get('emails'):
             details['email'] = response['emails']
         if isinstance(details.get('email'), (list, tuple)):
@@ -173,24 +171,18 @@ class AzureADB2COAuth2(AzureADOAuth2):
         response = kwargs.get('response')
 
         id_token = response.get('id_token')
-        if six.PY2:
-            # str() to fix a bug in Python's base64
-            # https://stackoverflow.com/a/2230623/161278
-            id_token = str(id_token)
-
-        jwt_header_json = base64url_decode(id_token.split('.')[0])
-        jwt_header = json.loads(jwt_header_json.decode('ascii'))
 
         # `kid` is short for key id
-        key = self.get_public_key(jwt_header['kid'])
+        kid = get_unverified_header(id_token)['kid']
+        key = self.get_public_key(kid)
 
         try:
             return jwt_decode(
                 id_token,
                 key=key,
-                algorithms=jwt_header['alg'],
+                algorithms=['RS256'],
                 audience=self.setting('KEY'),
                 leeway=self.setting('JWT_LEEWAY', default=0),
             )
-        except (DecodeError, ExpiredSignature) as error:
+        except (DecodeError, ExpiredSignatureError) as error:
             raise AuthTokenError(self, error)

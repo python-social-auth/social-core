@@ -1,18 +1,11 @@
-import datetime
-from calendar import timegm
-
-import six
-
 from openid.consumer.consumer import Consumer, SUCCESS, CANCEL, FAILURE
 from openid.consumer.discover import DiscoveryFailure
 from openid.extensions import sreg, ax, pape
 
-from ..utils import url_add_parameters, cache
+from ..utils import url_add_parameters
 from .base import BaseAuth
-from .oauth import BaseOAuth2
 from ..exceptions import AuthException, AuthFailed, AuthCanceled, \
-                         AuthUnknownError, AuthMissingParameter, \
-                         AuthTokenError
+                         AuthUnknownError, AuthMissingParameter
 
 
 # OpenID configuration
@@ -72,7 +65,7 @@ class OpenIdAuth(BaseAuth):
             resp = sreg.SRegResponse.fromSuccessResponse(response)
             if resp:
                 values.update((alias, resp.get(name) or '')
-                                    for name, alias in sreg_names)
+                              for name, alias in sreg_names)
 
         # Use Attribute Exchange attributes if provided
         if ax_names:
@@ -109,8 +102,9 @@ class OpenIdAuth(BaseAuth):
         username_key = self.setting('USERNAME_KEY') or self.USERNAME_KEY
         values.update({'fullname': fullname, 'first_name': first_name,
                        'last_name': last_name,
-                       'username': values.get(username_key) or
-                                   (first_name.title() + last_name.title()),
+                       'username': values.get(username_key) or (
+                           first_name.title() + last_name.title()
+                       ),
                        'email': email})
         return values
 
@@ -128,9 +122,7 @@ class OpenIdAuth(BaseAuth):
         sreg_names = self.setting('SREG_EXTRA_DATA')
         ax_names = self.setting('AX_EXTRA_DATA')
         values = self.values_from_response(response, sreg_names, ax_names)
-        from_details = super(OpenIdAuth, self).extra_data(
-            user, uid, {}, details, *args, **kwargs
-        )
+        from_details = super().extra_data(user, uid, {}, details, *args, **kwargs)
         values.update(from_details)
         return values
 
@@ -152,7 +144,7 @@ class OpenIdAuth(BaseAuth):
     def trust_root(self):
         """Return trust-root option"""
         return self.setting('OPENID_TRUST_ROOT') or \
-               self.strategy.absolute_uri('/')
+            self.strategy.absolute_uri('/')
 
     def continue_pipeline(self, partial):
         """Continue previous halted pipeline"""

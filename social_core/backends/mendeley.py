@@ -5,7 +5,7 @@ Mendeley OAuth1 backend, docs at:
 from .oauth import BaseOAuth1, BaseOAuth2
 
 
-class MendeleyMixin(object):
+class MendeleyMixin:
     SCOPE_SEPARATOR = '+'
     EXTRA_DATA = [('profile_id', 'profile_id'),
                   ('name', 'name'),

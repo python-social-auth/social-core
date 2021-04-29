@@ -6,7 +6,7 @@ from ..utils import SSLHttpAdapter, module_member, parse_qs, user_agent
 from ..exceptions import AuthFailed
 
 
-class BaseAuth(object):
+class BaseAuth:
     """A authentication backend that authenticates the user based on
     the provider response"""
     name = ''  # provider name, it's stored in database
@@ -148,11 +148,12 @@ class BaseAuth(object):
     def auth_allowed(self, response, details):
         """Return True if the user should be allowed to authenticate, by
         default check if email is whitelisted (if there's a whitelist)"""
-        emails = self.setting('WHITELISTED_EMAILS', [])
-        domains = self.setting('WHITELISTED_DOMAINS', [])
+        emails = [email.lower() for email in self.setting('WHITELISTED_EMAILS', [])]
+        domains = [domain.lower() for domain in self.setting('WHITELISTED_DOMAINS', [])]
         email = details.get('email')
         allowed = True
         if email and (emails or domains):
+            email = email.lower()
             domain = email.split('@', 1)[1]
             allowed = email in emails or domain in domains
         return allowed
@@ -205,7 +206,7 @@ class BaseAuth(object):
         overridden by GET parameters."""
         extra_arguments = self.setting('AUTH_EXTRA_ARGUMENTS', {}).copy()
         extra_arguments.update((key, self.data[key]) for key in extra_arguments
-                                    if key in self.data)
+                               if key in self.data)
         return extra_arguments
 
     def uses_redirect(self):
@@ -215,10 +216,13 @@ class BaseAuth(object):
 
     def request(self, url, method='GET', *args, **kwargs):
         kwargs.setdefault('headers', {})
+        if self.setting('PROXIES') is not None:
+            kwargs.setdefault('proxies', self.setting('PROXIES'))
+
         if self.setting('VERIFY_SSL') is not None:
             kwargs.setdefault('verify', self.setting('VERIFY_SSL'))
         kwargs.setdefault('timeout', self.setting('REQUESTS_TIMEOUT') or
-                                     self.setting('URLOPEN_TIMEOUT'))
+                          self.setting('URLOPEN_TIMEOUT'))
         if self.SEND_USER_AGENT and 'User-Agent' not in kwargs['headers']:
             kwargs['headers']['User-Agent'] = self.setting('USER_AGENT') or \
                                               user_agent()

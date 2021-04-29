@@ -1,14 +1,13 @@
 import json
+from urllib.parse import urlencode
 
 from httpretty import HTTPretty
-
-from six.moves.urllib_parse import urlencode
 
 from ...exceptions import AuthForbidden
 from .oauth import OAuth1Test, OAuth2Test
 
 
-class BitbucketOAuthMixin(object):
+class BitbucketOAuthMixin:
     user_data_url = 'https://api.bitbucket.org/2.0/user'
     expected_username = 'foobar'
     bb_api_user_emails = 'https://api.bitbucket.org/2.0/user/emails'
@@ -40,7 +39,7 @@ class BitbucketOAuthMixin(object):
                 u'email': u'foo@bar.com',
                 u'is_confirmed': True,
                 u'is_primary': True,
-                u'links': { u'self': {u'href': u'https://api.bitbucket.org/2.0/user/emails/foo@bar.com'}},
+                u'links': {u'self': {u'href': u'https://api.bitbucket.org/2.0/user/emails/foo@bar.com'}},
                 u'type': u'email'
             },
             {
@@ -91,7 +90,7 @@ class BitbucketOAuth1FailTest(BitbucketOAuth1Test):
                 u'email': u'foo@bar.com',
                 u'is_confirmed': False,
                 u'is_primary': True,
-                u'links': { u'self': {u'href': u'https://api.bitbucket.org/2.0/user/emails/foo@bar.com'}},
+                u'links': {u'self': {u'href': u'https://api.bitbucket.org/2.0/user/emails/foo@bar.com'}},
                 u'type': u'email'
             }
         ]
@@ -102,14 +101,14 @@ class BitbucketOAuth1FailTest(BitbucketOAuth1Test):
             'SOCIAL_AUTH_BITBUCKET_VERIFIED_EMAILS_ONLY': True
         })
         with self.assertRaises(AuthForbidden):
-            super(BitbucketOAuth1FailTest, self).test_login()
+            super().test_login()
 
     def test_partial_pipeline(self):
         self.strategy.set_settings({
             'SOCIAL_AUTH_BITBUCKET_VERIFIED_EMAILS_ONLY': True
         })
         with self.assertRaises(AuthForbidden):
-            super(BitbucketOAuth1FailTest, self).test_partial_pipeline()
+            super().test_partial_pipeline()
 
 
 class BitbucketOAuth2Test(BitbucketOAuthMixin, OAuth2Test):
@@ -146,7 +145,7 @@ class BitbucketOAuth2FailTest(BitbucketOAuth2Test):
                 u'email': u'foo@bar.com',
                 u'is_confirmed': False,
                 u'is_primary': True,
-                u'links': { u'self': {u'href': u'https://api.bitbucket.org/2.0/user/emails/foo@bar.com'}},
+                u'links': {u'self': {u'href': u'https://api.bitbucket.org/2.0/user/emails/foo@bar.com'}},
                 u'type': u'email'
             }
         ]
@@ -157,11 +156,11 @@ class BitbucketOAuth2FailTest(BitbucketOAuth2Test):
             'SOCIAL_AUTH_BITBUCKET_OAUTH2_VERIFIED_EMAILS_ONLY': True
         })
         with self.assertRaises(AuthForbidden):
-            super(BitbucketOAuth2FailTest, self).test_login()
+            super().test_login()
 
     def test_partial_pipeline(self):
         self.strategy.set_settings({
             'SOCIAL_AUTH_BITBUCKET_OAUTH2_VERIFIED_EMAILS_ONLY': True
         })
         with self.assertRaises(AuthForbidden):
-            super(BitbucketOAuth2FailTest, self).test_partial_pipeline()
+            super().test_partial_pipeline()

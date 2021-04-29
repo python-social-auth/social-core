@@ -12,17 +12,17 @@ class CoinbaseOAuth2Test(OAuth2Test):
         'token_type': 'bearer'
     })
     user_data_body = json.dumps({
-        "data": {
-            "id": "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
-            'name': "Satoshi Nakamoto",
-            "username": "satoshi_nakomoto",
-            "profile_location": None,
-            "profile_bio": None,
-            "profile_url": "https://coinbase.com/satoshi_nakomoto",
-            "avatar_url": None,
-            "resource": "user",
-            "resource_path": "/v2/user"
-          }
+        'data': {
+            'id': '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
+            'name': 'Satoshi Nakamoto',
+            'username': 'satoshi_nakomoto',
+            'profile_location': None,
+            'profile_bio': None,
+            'profile_url': 'https://coinbase.com/satoshi_nakomoto',
+            'avatar_url': None,
+            'resource': 'user',
+            'resource_path': '/v2/user'
+        }
     })
 
     def test_login(self):

@@ -8,10 +8,10 @@ class QuizletOAuth2Test(OAuth2Test):
     expected_username = 'foo_bar'
 
     access_token_body = json.dumps({
-        "access_token": "EE1IDxytP04tJ767GbjH7ED9PpGmYvL",
-        "token_type": "Bearer",
-        "expires_in": 3600,
-        "scope": "read",
+        'access_token': 'EE1IDxytP04tJ767GbjH7ED9PpGmYvL',
+        'token_type': 'Bearer',
+        'expires_in': 3600,
+        'scope': 'read',
         'user_id': 'foo_bar'
     })
 

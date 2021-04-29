@@ -1,9 +1,9 @@
 """
 Openshift OAuth2 backend
 """
-import requests
+from urllib.parse import urljoin
 
-from six.moves.urllib.parse import urljoin
+import requests
 
 from ..utils import append_slash
 from .oauth import BaseOAuth2

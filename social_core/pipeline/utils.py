@@ -1,9 +1,4 @@
-import six
-
-
-SERIALIZABLE_TYPES = (dict, list, tuple, set, bool, type(None)) + \
-                     six.integer_types + six.string_types + \
-                     (six.text_type, six.binary_type,)
+SERIALIZABLE_TYPES = (dict, list, tuple, set, bool, type(None), int, str, bytes)
 
 
 def is_dict_type(value):
@@ -23,7 +18,7 @@ def partial_prepare(strategy, backend, next_step, user=None, social=None,
         'uid': kwargs.get('uid'),
         'is_new': kwargs.get('is_new') or False,
         'new_association': kwargs.get('new_association') or False,
-        'user': user and user.id or None,
+        'user': hasattr(user, 'id') and user.id or None,
         'social': social and {
             'provider': social.provider,
             'uid': social.uid
@@ -69,5 +64,5 @@ def partial_load(strategy, token):
 
         partial.args = [strategy.from_session_value(val) for val in args]
         partial.kwargs = dict((key, strategy.from_session_value(val))
-                            for key, val in kwargs.items())
+                              for key, val in kwargs.items())
     return partial

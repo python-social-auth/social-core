@@ -19,7 +19,7 @@ class DigitalOceanOAuthTest(OAuth2Test):
         }
     })
     user_data_body = json.dumps({
-        "account": {
+        'account': {
             'droplet_limit': 25,
             'email': 'sammy@digitalocean.com',
             'uuid': 'b6fr89dbf6d9156cace5f3c78dc9851d957381ef',

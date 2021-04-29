@@ -1,13 +1,11 @@
 import json
 import time
-import unittest
-
 import jwt
 
 from .oauth import OAuth2Test
 
 
-_PRIVATE_KEY_HEADERLESS = '''
+_PRIVATE_KEY_HEADERLESS = """
 MIIEowIBAAKCAQEAvyo2hx1L3ALHeUd/6xk/lIhTyZ/HJZ+Sss/ge6T6gPdES4Dw
 BvwGlAp21iEbmjmizsv6+ZsyuKZUiC1J4A90lmIA57aYXHHoh9GBWQZzXeCNgghP
 JpGYYSCN+1qeD4nbwD9cQBtPrGBpPpPtv2a/xdPqDm5ko6adMhmbm8e4Me/ppWPi
@@ -33,17 +31,17 @@ bKtKOBLmSeQyfJGRcR7dzB3WQ9shVETxnfZK2V2KBiTcEGh4AaHfWH4lQuETNfJW
 qXz0vQKBgDVz+ZvULA/OZWXrOI1il7KoahWdb9vr8VhWgHKnDW7hInDFh6SEQHn6
 mSNns0AssDwr4TheET7klb7AvbBKrNSP/Tz9AzkwMz148T2ffkPFMZRuvRT+eQ5Z
 ey4gIBKESJF6X9fefiawCrI3+PC7x9x0ngP9R4t/OzDWVAYn9gmd
-'''.strip()
+""".strip()
 
-_PRIVATE_KEY = '''
+_PRIVATE_KEY = """
 -----BEGIN RSA PRIVATE KEY-----
 {_PRIVATE_KEY_HEADERLESS}
 -----END RSA PRIVATE KEY-----
-'''.format(
+""".format(
     _PRIVATE_KEY_HEADERLESS=_PRIVATE_KEY_HEADERLESS
 )
 
-_PUBLIC_KEY_HEADERLESS = '''
+_PUBLIC_KEY_HEADERLESS = """
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvyo2hx1L3ALHeUd/6xk/
 lIhTyZ/HJZ+Sss/ge6T6gPdES4DwBvwGlAp21iEbmjmizsv6+ZsyuKZUiC1J4A90
 lmIA57aYXHHoh9GBWQZzXeCNgghPJpGYYSCN+1qeD4nbwD9cQBtPrGBpPpPtv2a/
@@ -51,13 +49,13 @@ xdPqDm5ko6adMhmbm8e4Me/ppWPi0U+skWQJepBhjEt3x+AOMKDv2TUBWOc3mYFN
 kr9qNOPe7FxnqUk6ZtkI3QNjZTkyAU7cat87u1vT5thAxVY18i1GfSZwtQbU3Ba6
 hXI5SIHB1lS88SJ9/+E/flJJPD2NNzv2z3HAVuTUOYi48fnXFHpJLGv+mGLNtE77
 hwIDAQAB
-'''.strip()
+""".strip()
 
-_PUBLIC_KEY = '''
+_PUBLIC_KEY = """
 -----BEGIN PUBLIC KEY-----
 {_PUBLIC_KEY_HEADERLESS}
 -----END PUBLIC KEY-----
-'''.format(
+""".format(
     _PUBLIC_KEY_HEADERLESS=_PUBLIC_KEY_HEADERLESS
 )
 
@@ -84,20 +82,11 @@ _PAYLOAD = {
 }
 
 
-def _encode(
-    payload,
-    key=_PRIVATE_KEY,
-    algorithm=_ALGORITHM
-):
-    return jwt.encode(payload, key=key, algorithm=algorithm).decode('utf-8')
+def _encode(payload, key=_PRIVATE_KEY, algorithm=_ALGORITHM):
+    return jwt.encode(payload, key=key, algorithm=algorithm)
 
 
-def _decode(
-    token,
-    key=_PUBLIC_KEY,
-    algorithms=_ALGORITHM,
-    audience=_KEY,
-):
+def _decode(token, key=_PUBLIC_KEY, algorithms=[_ALGORITHM], audience=_KEY):
     return jwt.decode(token, key=key, algorithms=algorithms, audience=audience)
 
 

@@ -1,4 +1,4 @@
-import unittest2 as unittest
+import unittest as unittest
 
 from ..models import TestStorage
 from ..strategy import TestStrategy
@@ -40,8 +40,8 @@ class GetBackendTest(BaseBackendUtilsTest):
         self.assertEqual(backend, GithubOAuth2)
 
     def test_get_missing_backend(self):
-        with self.assertRaisesRegexp(MissingBackend,
-                                     'Missing backend "foobar" entry'):
+        with self.assertRaisesRegex(MissingBackend,
+                                    'Missing backend "foobar" entry'):
             get_backend(('social_core.backends.github.GithubOAuth2',
                          'social_core.backends.facebook.FacebookOAuth2',
                          'social_core.backends.flickr.FlickrOAuth'),

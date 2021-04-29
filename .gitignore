@@ -49,3 +49,8 @@ changelog.sh
 \#*\#
 
 .python-version
+
+.pytest_cache/
+
+files/local.env
+.env

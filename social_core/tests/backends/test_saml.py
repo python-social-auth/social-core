@@ -1,19 +1,16 @@
-import re
+
 import json
-import sys
-import unittest2
-import requests
 import os
+import re
+import sys
+import unittest
 from os import path
+from urllib.parse import urlparse, urlunparse, urlencode, parse_qs
 
+import requests
 
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch
+from unittest.mock import patch
 from httpretty import HTTPretty
-
-from six.moves.urllib_parse import urlparse, urlunparse, urlencode, parse_qs
 
 try:
     from onelogin.saml2.utils import OneLogin_Saml2_Utils
@@ -28,10 +25,10 @@ from ...exceptions import AuthMissingParameter
 DATA_DIR = path.join(path.dirname(__file__), 'data')
 
 
-@unittest2.skipIf('TRAVIS' in os.environ,
+@unittest.skipIf('TRAVIS' in os.environ,
                   'Travis-ci segfaults probably due to a bad '
                   'dependencies build')
-@unittest2.skipIf('__pypy__' in sys.builtin_module_names,
+@unittest.skipIf('__pypy__' in sys.builtin_module_names,
                   'dm.xmlsec not compatible with pypy')
 class SAMLTest(BaseBackendTest):
     backend_path = 'social_core.backends.saml.SAMLAuth'
@@ -46,7 +43,7 @@ class SAMLTest(BaseBackendTest):
     def setUp(self):
         """Patch the time so that we can replay canned
         request/response pairs"""
-        super(SAMLTest, self).setUp()
+        super().setUp()
 
         @staticmethod
         def fixed_time():

@@ -18,7 +18,7 @@ class ClefOAuth2(BaseOAuth2):
     SCOPE_SEPARATOR = ','
 
     def auth_params(self, *args, **kwargs):
-        params = super(ClefOAuth2, self).auth_params(*args, **kwargs)
+        params = super().auth_params(*args, **kwargs)
         params['app_id'] = params.pop('client_id')
         params['redirect_url'] = params.pop('redirect_uri')
         return params
