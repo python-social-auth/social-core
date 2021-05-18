@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Facebook Limited Login backend
+
 ### Changed
 - Updated `user_data` method in `StripeOAuth2` to return `email` in `get_user_details`
 - Removes fixed version of `lxml`
