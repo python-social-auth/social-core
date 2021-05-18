@@ -3,6 +3,7 @@ import json
 from ...backends.facebook import API_VERSION
 from ...exceptions import AuthCanceled, AuthUnknownError
 from .oauth import OAuth2Test
+from .open_id_connect import OpenIdConnectTestMixin
 
 
 class FacebookOAuth2Test(OAuth2Test):
@@ -67,3 +68,39 @@ class FacebookOAuth2AuthCancelTest(FacebookOAuth2Test):
         with self.assertRaises(AuthCanceled) as cm:
             self.do_partial_pipeline()
         self.assertIn("error", cm.exception.response.json())
+
+
+class FacebookLimitedLoginTest(OpenIdConnectTestMixin, OAuth2Test):
+    backend_path = "social_core.backends.facebook.FacebookLimitedLogin"
+    issuer = "https://facebook.com"
+    openid_config_body = """
+    {
+      "issuer": "https://facebook.com",
+      "authorization_endpoint": "https://facebook.com/dialog/oauth/",
+      "jwks_uri": "https://facebook.com/.well-known/oauth/openid/jwks/",
+      "response_types_supported": [
+        "id_token",
+        "token id_token"
+      ],
+      "subject_types_supported": "pairwise",
+      "id_token_signing_alg_values_supported": [
+        "RS256"
+      ],
+      "claims_supported": [
+        "iss",
+        "aud",
+        "sub",
+        "iat",
+        "exp",
+        "jti",
+        "nonce",
+        "at_hash",
+        "name",
+        "email",
+        "picture",
+        "user_friends",
+        "user_birthday",
+        "user_age_range"
+      ]
+    }
+    """

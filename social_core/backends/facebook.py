@@ -1,5 +1,5 @@
 """
-Facebook OAuth2 and Canvas Application backends, docs at:
+Facebook OAuth2, Canvas Application and Limited Login backends, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/facebook.html
 """
 import base64
@@ -16,6 +16,7 @@ from ..exceptions import (
 )
 from ..utils import constant_time_compare, handle_http_errors, parse_qs
 from .oauth import BaseOAuth2
+from .open_id_connect import OpenIdConnectAuth
 
 API_VERSION = 12.0
 
@@ -247,3 +248,18 @@ class FacebookAppOAuth2(FacebookOAuth2):
                 time.time() - 86400
             ):
                 return data
+
+
+class FacebookLimitedLogin(OpenIdConnectAuth):
+    """Facebook Limited Login (OIDC) backend"""
+
+    name = "facebook-limited-login"
+    OIDC_ENDPOINT = "https://www.facebook.com"
+    ACCESS_TOKEN_URL = "https://facebook.com/dialog/oauth/"
+
+    def get_user_details(self, response):
+        return {
+            "fullname": response.get("name"),
+            "email": response.get("email"),
+            "picture": response.get("picture"),
+        }
