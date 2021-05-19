@@ -257,6 +257,16 @@ class FacebookLimitedLogin(OpenIdConnectAuth):
     OIDC_ENDPOINT = "https://www.facebook.com"
     ACCESS_TOKEN_URL = "https://facebook.com/dialog/oauth/"
 
+    def authenticate(self, *args, **kwargs):
+        if 'backend' not in kwargs or kwargs['backend'].name != self.name or \
+           'strategy' not in kwargs or 'response' not in kwargs:
+            return None
+
+        # Replace response with the decoded JWT
+        raw_jwt = kwargs.get('response', {}).get('access_token')
+        kwargs['response'] = self.validate_and_return_id_token(raw_jwt, '')
+        return super().authenticate(*args, **kwargs)
+
     def get_user_details(self, response):
         return {
             "fullname": response.get("name"),
