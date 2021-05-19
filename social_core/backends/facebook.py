@@ -273,3 +273,7 @@ class FacebookLimitedLogin(OpenIdConnectAuth):
             "email": response.get("email"),
             "picture": response.get("picture"),
         }
+
+    def user_data(self, access_token, *args, **kwargs):
+        # We don't have an access token to call any API for the user details.
+        return None
