@@ -104,3 +104,7 @@ class FacebookLimitedLoginTest(OpenIdConnectTestMixin, OAuth2Test):
       ]
     }
     """
+
+    def test_invalid_nonce(self):
+        # The nonce isn't generated server-side so the test isn't relevant here.
+        pass
