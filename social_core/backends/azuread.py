@@ -60,7 +60,7 @@ class AzureADOAuth2(BaseOAuth2):
 
     def get_user_id(self, details, response):
         """Use upn as unique id"""
-        return response.get('upn')
+        return response.get('email')
 
     def get_user_details(self, response):
         """Return user details from Azure AD account"""
@@ -70,7 +70,7 @@ class AzureADOAuth2(BaseOAuth2):
             response.get('family_name', '')
         )
         return {'username': fullname,
-                'email': response.get('upn'),
+                'email': response.get('email'),
                 'fullname': fullname,
                 'first_name': first_name,
                 'last_name': last_name}
