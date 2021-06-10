@@ -14,17 +14,17 @@ class GiteaOAuth2Test(OAuth2Test):
         'refresh_token': 'barfoo'
     })
     user_data_body = json.dumps({
-        "id": 123456,
-        "login": "foobar",
-        "full_name": "Foo Bar",
-        "email": "foobar@example.com",
-        "avatar_url": "https://gitea.com/user/avatar/foobar/-1",
-        "language": "en-US",
-        "is_admin": False,
-        "last_login": "2016-12-28T12:26:19+01:00",
-        "created": "2016-12-28T12:26:19+01:00",
-        "restricted": False,
-        "username": "foobar"
+        'id': 123456,
+        'login': 'foobar',
+        'full_name': 'Foo Bar',
+        'email': 'foobar@example.com',
+        'avatar_url': 'https://gitea.com/user/avatar/foobar/-1',
+        'language': 'en-US',
+        'is_admin': False,
+        'last_login': '2016-12-28T12:26:19+01:00',
+        'created': '2016-12-28T12:26:19+01:00',
+        'restricted': False,
+        'username': 'foobar'
     })
 
     def test_login(self):
@@ -45,17 +45,17 @@ class GiteaCustomDomainOAuth2Test(OAuth2Test):
         'refresh_token': 'barfoo'
     })
     user_data_body = json.dumps({
-        "id": 123456,
-        "login": "foobar",
-        "full_name": "Foo Bar",
-        "email": "foobar@example.com",
-        "avatar_url": "https://example.com/user/avatar/foobar/-1",
-        "language": "en-US",
-        "is_admin": False,
-        "last_login": "2016-12-28T12:26:19+01:00",
-        "created": "2016-12-28T12:26:19+01:00",
-        "restricted": False,
-        "username": "foobar"
+        'id': 123456,
+        'login': 'foobar',
+        'full_name': 'Foo Bar',
+        'email': 'foobar@example.com',
+        'avatar_url': 'https://example.com/user/avatar/foobar/-1',
+        'language': 'en-US',
+        'is_admin': False,
+        'last_login': '2016-12-28T12:26:19+01:00',
+        'created': '2016-12-28T12:26:19+01:00',
+        'restricted': False,
+        'username': 'foobar'
     })
 
     def test_login(self):
