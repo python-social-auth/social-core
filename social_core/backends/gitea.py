@@ -6,7 +6,7 @@ from .oauth import BaseOAuth2
 
 
 class GiteaOAuth2   (BaseOAuth2):
-    """Github OAuth authentication backend"""
+    """Gitea OAuth authentication backend"""
 
     name = 'gitea'
     API_URL = 'https://gitea.com'
