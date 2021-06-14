@@ -87,7 +87,7 @@ class NGPVANActionIDOpenIDTest(OpenIdTest):
 
         # Mock out the NGP VAN endpoints
         HTTPretty.register_uri(
-            HTTPretty.POST,
+            HTTPretty.GET,
             'https://accounts.ngpvan.com/Home/Xrds',
             status=200,
             body=self.discovery_body
