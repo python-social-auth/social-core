@@ -13,7 +13,6 @@ from ..models import TestStorage, User, TestUserSocialAuth, \
 from ..strategy import TestStrategy
 from .base import BaseBackendTest
 
-
 sys.path.insert(0, '..')
 
 
@@ -69,6 +68,7 @@ class OpenIdTest(BaseBackendTest):
         TestNonce.reset_cache()
         TestAssociation.reset_cache()
         HTTPretty.disable()
+        HTTPretty.reset()
 
     def get_form_data(self, html):
         parser = FormHTMLParser()

@@ -42,6 +42,7 @@ class BaseBackendTest(unittest.TestCase):
 
     def tearDown(self):
         HTTPretty.disable()
+        HTTPretty.reset()
         self.backend = None
         self.strategy = None
         self.name = None
