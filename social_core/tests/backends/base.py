@@ -18,7 +18,7 @@ class BaseBackendTest(unittest.TestCase):
     raw_complete_url = '/complete/{0}'
 
     def setUp(self):
-        HTTPretty.enable()
+        HTTPretty.enable(allow_net_connect=False)
         Backend = module_member(self.backend_path)
         self.strategy = TestStrategy(TestStorage)
         self.backend = Backend(self.strategy, redirect_uri=self.complete_url)
