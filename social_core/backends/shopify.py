@@ -22,7 +22,7 @@ class ShopifyOAuth2(BaseOAuth2):
 
     @property
     def shopify_api_version(self):
-        return self.setting('API_VERSION', '2019-04')
+        return self.setting('API_VERSION', '2020-10')
 
     @property
     def shopify_api(self):
