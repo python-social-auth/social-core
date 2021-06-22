@@ -21,7 +21,9 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Install System dependencies
-      run: sudo apt install -qq -y --no-install-recommends libxmlsec1-dev swig
+      run: |
+        sudo apt-get update
+        sudo apt-get install -qq -y --no-install-recommends libxmlsec1-dev swig
 
     - name: Install Python dependencies
       run: |
