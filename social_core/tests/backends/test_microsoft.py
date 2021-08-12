@@ -8,16 +8,16 @@ class MicrosoftOAuth2Test(OAuth2Test):
     user_data_url = 'https://graph.microsoft.com/v1.0/me'
     expected_username = 'foobar'
     user_data_body = json.dumps({
-        "displayName": "foo bar",
-        "givenName": "foobar",
-        "jobTitle": "Auditor",
-        "mail": "foobar@foobar.com",
-        "mobilePhone": None,
-        "officeLocation": "12/1110",
-        "preferredLanguage": "en-US",
-        "surname": "Bowen",
-        "userPrincipalName": "foobar",
-        "id": "48d31887-5fad-4d73-a9f5-3c356e68a038"
+        'displayName': 'foo bar',
+        'givenName': 'foobar',
+        'jobTitle': 'Auditor',
+        'mail': 'foobar@foobar.com',
+        'mobilePhone': None,
+        'officeLocation': '12/1110',
+        'preferredLanguage': 'en-US',
+        'surname': 'Bowen',
+        'userPrincipalName': 'foobar',
+        'id': '48d31887-5fad-4d73-a9f5-3c356e68a038'
     })
     access_token_body = json.dumps({
         'access_token': 'foobar',
