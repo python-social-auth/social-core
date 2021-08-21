@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Add fields that populate on create but not update `SOCIAL_AUTH_IMMUTABLE_USER_FIELDS`
 - Add Gitea oauth2 backend
+- Add Twitch OpenId backend
 
 ### Changed
 - Fixed Slack user identity API call with Bearer headers
