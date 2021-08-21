@@ -1,5 +1,52 @@
 import json
 from .oauth import OAuth2Test
+from .open_id_connect import OpenIdConnectTestMixin
+
+
+class TwitchOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
+    backend_path = 'social_core.backends.twitch.TwitchOpenIdConnect'
+    user_data_url = 'https://id.twitch.tv/oauth2/userinfo'
+    issuer = 'https://id.twitch.tv/oauth2'
+    expected_username = 'test_user1'
+    openid_config_body = json.dumps({
+        "authorization_endpoint": "https://id.twitch.tv/oauth2/authorize",
+        "claims_parameter_supported": True,
+        "claims_supported": [
+            "iss",
+            "azp",
+            "preferred_username",
+            "updated_at",
+            "aud", "exp",
+            "iat",
+            "picture",
+            "sub",
+            "email",
+            "email_verified",
+        ],
+        "id_token_signing_alg_values_supported": [
+            "RS256",
+        ],
+        "issuer": "https://id.twitch.tv/oauth2",
+        "jwks_uri": "https://id.twitch.tv/oauth2/keys",
+        "response_types_supported": [
+            "id_token",
+            "code",
+            "token",
+            "code id_token",
+            "token id_token",
+        ],
+        "scopes_supported": [
+            "openid",
+        ],
+        "subject_types_supported": [
+            "public",
+        ],
+        "token_endpoint": "https://id.twitch.tv/oauth2/token",
+        "token_endpoint_auth_methods_supported": [
+            "client_secret_post",
+        ],
+        "userinfo_endpoint": "https://id.twitch.tv/oauth2/userinfo"
+    })
 
 
 class TwitchOAuth2Test(OAuth2Test):

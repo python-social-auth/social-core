@@ -3,6 +3,32 @@ Twitch OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/twitch.html
 """
 from .oauth import BaseOAuth2
+from .open_id_connect import OpenIdConnectAuth
+
+
+class TwitchOpenIdConnect(OpenIdConnectAuth):
+    """Twitch OpenID Connect authentication backend"""
+    name = 'twitch'
+    USERNAME_KEY = 'preferred_username'
+    OIDC_ENDPOINT = 'https://id.twitch.tv/oauth2'
+    DEFAULT_SCOPE = ['openid', 'user:read:email']
+    TWITCH_CLAIMS = '{"id_token":{"email": null,"email_verified":null,"preferred_username":null}}'
+
+    def auth_params(self, state=None):
+        params = super().auth_params(state)
+        # Twitch uses a non-compliant OpenID implementation where the claims must be passed as a param
+        params['claims'] = self.TWITCH_CLAIMS
+        return params
+
+    def get_user_details(self, response):
+        return {
+            'username': self.id_token['preferred_username'],
+            'email': self.id_token['email'],
+            # Twitch does not provide this information
+            'fullname': '',
+            'first_name': '',
+            'last_name': '',
+        }
 
 
 class TwitchOAuth2(BaseOAuth2):
