@@ -9,43 +9,44 @@ class TwitchOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
     issuer = 'https://id.twitch.tv/oauth2'
     expected_username = 'test_user1'
     openid_config_body = json.dumps({
-        "authorization_endpoint": "https://id.twitch.tv/oauth2/authorize",
-        "claims_parameter_supported": True,
-        "claims_supported": [
-            "iss",
-            "azp",
-            "preferred_username",
-            "updated_at",
-            "aud", "exp",
-            "iat",
-            "picture",
-            "sub",
-            "email",
-            "email_verified",
+        'authorization_endpoint': 'https://id.twitch.tv/oauth2/authorize',
+        'claims_parameter_supported': True,
+        'claims_supported': [
+            'iss',
+            'azp',
+            'preferred_username',
+            'updated_at',
+            'aud',
+            'exp',
+            'iat',
+            'picture',
+            'sub',
+            'email',
+            'email_verified',
         ],
-        "id_token_signing_alg_values_supported": [
-            "RS256",
+        'id_token_signing_alg_values_supported': [
+            'RS256',
         ],
-        "issuer": "https://id.twitch.tv/oauth2",
-        "jwks_uri": "https://id.twitch.tv/oauth2/keys",
-        "response_types_supported": [
-            "id_token",
-            "code",
-            "token",
-            "code id_token",
-            "token id_token",
+        'issuer': 'https://id.twitch.tv/oauth2',
+        'jwks_uri': 'https://id.twitch.tv/oauth2/keys',
+        'response_types_supported': [
+            'id_token',
+            'code',
+            'token',
+            'code id_token',
+            'token id_token',
         ],
-        "scopes_supported": [
-            "openid",
+        'scopes_supported': [
+            'openid',
         ],
-        "subject_types_supported": [
-            "public",
+        'subject_types_supported': [
+            'public',
         ],
-        "token_endpoint": "https://id.twitch.tv/oauth2/token",
-        "token_endpoint_auth_methods_supported": [
-            "client_secret_post",
+        'token_endpoint': 'https://id.twitch.tv/oauth2/token',
+        'token_endpoint_auth_methods_supported': [
+            'client_secret_post',
         ],
-        "userinfo_endpoint": "https://id.twitch.tv/oauth2/userinfo"
+        'userinfo_endpoint': 'https://id.twitch.tv/oauth2/userinfo',
     })
 
 
