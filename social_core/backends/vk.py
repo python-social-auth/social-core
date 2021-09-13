@@ -78,7 +78,7 @@ class VKOAuth2(BaseOAuth2):
     """VKOAuth2 authentication backend"""
     name = 'vk-oauth2'
     ID_KEY = 'id'
-    AUTHORIZATION_URL = 'http://oauth.vk.com/authorize'
+    AUTHORIZATION_URL = 'https://oauth.vk.com/authorize'
     ACCESS_TOKEN_URL = 'https://oauth.vk.com/access_token'
     ACCESS_TOKEN_METHOD = 'POST'
     EXTRA_DATA = [
@@ -187,7 +187,7 @@ def vk_api(backend, method, data):
 
         data['method'] = method
         data['format'] = 'json'
-        url = 'http://api.vk.com/api.php'
+        url = 'https://api.vk.com/api.php'
         param_list = sorted(list(item + '=' + data[item] for item in data))
         data['sig'] = md5(
             (''.join(param_list) + secret).encode('utf-8')
