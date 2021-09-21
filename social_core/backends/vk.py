@@ -12,6 +12,46 @@ from .base import BaseAuth
 from .oauth import BaseOAuth2
 from ..exceptions import AuthTokenRevoked, AuthException
 
+DEFAULT_API_VERSION = '5.131'
+
+
+class VKApiCaller:
+    API_BASE_URL = 'https://api.vk.com'
+
+    def get_api_url(self, method, data):
+        if 'access_token' in data:
+            return self.API_BASE_URL + '/method/' + method
+        return self.API_BASE_URL + '/api.php'
+            
+    def make_sure_access_token_exists(self, method, data):
+        if 'access_token' in data:
+            return data
+
+        # We need to perform server-side call if no access_token
+        key, secret = self.get_key_and_secret()
+        if 'api_id' not in data:
+            data['api_id'] = key
+
+        data['method'] = method
+        data['format'] = 'json'
+        param_list = sorted(list(item + '=' + data[item] for item in data))
+        data['sig'] = md5((''.join(param_list) + secret).encode('utf-8')).hexdigest()
+        return data
+
+    def call_api(self, method, data):
+        """
+        Calls VK.com OpenAPI method, check:
+            https://vk.com/apiclub
+            http://goo.gl/yLcaa
+        """
+        data['v'] = self.setting('API_VERSION', DEFAULT_API_VERSION)
+        data = self.make_sure_access_token_exists(method, data)
+        url = self.get_api_url(method, data)
+        try:
+            return self.get_json(url, params=data)
+        except (TypeError, KeyError, IOError, ValueError, IndexError):
+            return None
+
 
 class VKontakteOpenAPI(BaseAuth):
     """VK.COM OpenAPI authentication backend"""
@@ -58,7 +98,7 @@ class VKontakteOpenAPI(BaseAuth):
         check_str = ''.join(item + '=' + mapping[item]
                             for item in ['expire', 'mid', 'secret', 'sid'])
 
-        key, secret = self.get_key_and_secret()
+        _, secret = self.get_key_and_secret()
         hash = md5((check_str + secret).encode('utf-8')).hexdigest()
         if hash != mapping['sig'] or int(mapping['expire']) < time():
             raise ValueError('VK.com authentication failed: Invalid Hash')
@@ -74,7 +114,7 @@ class VKontakteOpenAPI(BaseAuth):
         return False
 
 
-class VKOAuth2(BaseOAuth2):
+class VKOAuth2(VKApiCaller, BaseOAuth2):
     """VKOAuth2 authentication backend"""
     name = 'vk-oauth2'
     ID_KEY = 'id'
@@ -104,10 +144,13 @@ class VKOAuth2(BaseOAuth2):
                         'photo'] + self.setting('EXTRA_DATA', [])
 
         fields = ','.join(set(request_data))
-        data = vk_api(self, 'users.get', {
-            'access_token': access_token,
-            'fields': fields,
-        })
+        data = self.call_api(
+            'users.get', 
+            {
+                'access_token': access_token, 
+                'fields': fields,
+            }
+        )
 
         if data and data.get('error'):
             error = data['error']
@@ -152,11 +195,9 @@ class VKAppOAuth2(VKOAuth2):
             if user_check == 1:
                 is_user = self.data.get('is_app_user')
             elif user_check == 2:
-                is_user = vk_api(
-                    self,
-                    'isAppUser',
-                    {'user_id': user_id}
-                ).get('response', 0)
+                response = self.call_api('isAppUser', {'user_id': user_id})
+                is_user = response.get('response', 0)
+
             if not int(is_user):
                 return None
 
@@ -170,32 +211,3 @@ class VKAppOAuth2(VKOAuth2):
         }
         auth_data['response'].update(json.loads(auth_data['request']['api_result'])['response'][0])
         return self.strategy.authenticate(*args, **auth_data)
-
-
-def vk_api(backend, method, data):
-    """
-    Calls VK.com OpenAPI method, check:
-        https://vk.com/apiclub
-        http://goo.gl/yLcaa
-    """
-    # We need to perform server-side call if no access_token
-    data['v'] = backend.setting('API_VERSION', '5.131')
-    if 'access_token' not in data:
-        key, secret = backend.get_key_and_secret()
-        if 'api_id' not in data:
-            data['api_id'] = key
-
-        data['method'] = method
-        data['format'] = 'json'
-        url = 'https://api.vk.com/api.php'
-        param_list = sorted(list(item + '=' + data[item] for item in data))
-        data['sig'] = md5(
-            (''.join(param_list) + secret).encode('utf-8')
-        ).hexdigest()
-    else:
-        url = 'https://api.vk.com/method/' + method
-
-    try:
-        return backend.get_json(url, params=data)
-    except (TypeError, KeyError, IOError, ValueError, IndexError):
-        return None
