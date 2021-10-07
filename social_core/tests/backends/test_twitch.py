@@ -52,29 +52,29 @@ class TwitchOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
 
 class TwitchOAuth2Test(OAuth2Test):
     backend_path = 'social_core.backends.twitch.TwitchOAuth2'
-    user_data_url = 'https://api.twitch.tv/kraken/user/'
+    user_data_url = 'https://api.twitch.tv/helix/users'
     expected_username = 'test_user1'
     access_token_body = json.dumps({
         'access_token': 'foobar',
+        'token_type': 'bearer',
     })
     user_data_body = json.dumps({
-        'type': 'user',
-        'name': 'test_user1',
-        'created_at': '2011-06-03T17:49:19Z',
-        'updated_at': '2012-06-18T17:19:57Z',
-        'logo': 'http://static-cdn.jtvnw.net/jtv_user_pictures/'
-                'test_user1-profile_image-62e8318af864d6d7-300x300.jpeg',
-        '_id': 22761313,
-        'display_name': 'test_user1',
-        'bio': 'test bio woo I\'m a test user',
-        'email': 'asdf@asdf.com',
-        'email_verified': True,
-        'partnered': True,
-        'twitter_connected': False,
-        'notifications': {
-            'push': True,
-            'email': True
-        }
+        'data': [
+            {
+                'id': '689563726',
+                'login': 'test_user1',
+                'display_name': 'test_user1',
+                'type': '',
+                'broadcaster_type': '',
+                'description': '',
+                'profile_image_url': 'https://static-cdn.jtvnw.net/jtv_user_pictures/foo.png',
+                'offline_image_url': '',
+                'view_count': 0,
+                'email': 'example@reply.com',
+                'created_at': '2021-05-21T18:59:25Z',
+                'access_token': 'hmkgz15x7j54jm63rpwfwhcnue6t4fxwv'
+            }
+        ]
     })
 
     def test_login(self):
