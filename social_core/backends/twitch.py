@@ -38,19 +38,31 @@ class TwitchOAuth2(BaseOAuth2):
     AUTHORIZATION_URL = 'https://id.twitch.tv/oauth2/authorize'
     ACCESS_TOKEN_URL = 'https://id.twitch.tv/oauth2/token'
     ACCESS_TOKEN_METHOD = 'POST'
-    DEFAULT_SCOPE = ['user_read']
+    DEFAULT_SCOPE = ['user:read:email']
     REDIRECT_STATE = False
+
+    def get_user_id(self, details, response):
+        """
+        Use twitch user id as unique id
+        """
+        return response.get('id')
 
     def get_user_details(self, response):
         return {
-            'username': response.get('name'),
+            'username': response.get('login'),
             'email': response.get('email'),
             'first_name': '',
             'last_name': ''
         }
 
     def user_data(self, access_token, *args, **kwargs):
-        return self.get_json(
-            'https://api.twitch.tv/kraken/user/',
-            params={'oauth_token': access_token, 'api_version': 5},
-        )
+        client_id, _ = self.get_key_and_secret()
+        auth_headers = {
+            'Authorization': 'Bearer %s' % access_token,
+            'Client-Id': client_id
+        }
+        url = 'https://api.twitch.tv/helix/users'
+
+        data = self.get_json(url, headers=auth_headers)
+
+        return data['data'][0] if data.get('data') else {}
