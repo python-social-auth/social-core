@@ -53,7 +53,6 @@ from .azuread import AzureADOAuth2
 class AzureADB2COAuth2(AzureADOAuth2):
     name = 'azuread-b2c-oauth2'
 
-    BASE_URL = 'https://login.microsoftonline.com/{tenant_id}'
     AUTHORIZATION_URL = '{base_url}/oauth2/v2.0/authorize'
     OPENID_CONFIGURATION_URL = '{base_url}/v2.0/.well-known/openid-configuration?p={policy}'
     ACCESS_TOKEN_URL = '{base_url}/oauth2/v2.0/token?p={policy}'
@@ -83,10 +82,6 @@ class AzureADB2COAuth2(AzureADOAuth2):
             raise AuthException('SOCIAL_AUTH_AZUREAD_B2C_OAUTH2_POLICY is '
                                 'required and should start with `b2c_`')
         return policy
-
-    @property
-    def base_url(self):
-        return self.BASE_URL.format(tenant_id=self.tenant_id)
 
     def openid_configuration_url(self):
         return self.OPENID_CONFIGURATION_URL.format(base_url=self.base_url,
