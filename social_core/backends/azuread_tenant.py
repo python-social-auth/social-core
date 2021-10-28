@@ -47,27 +47,18 @@ for verifying JWT tokens.
 class AzureADTenantOAuth2(AzureADOAuth2):
     name = 'azuread-tenant-oauth2'
     OPENID_CONFIGURATION_URL = \
-        'https://login.microsoftonline.com/{tenant_id}/.well-known/openid-configuration'
-    AUTHORIZATION_URL = \
-        'https://login.microsoftonline.com/{tenant_id}/oauth2/authorize'
-    ACCESS_TOKEN_URL = 'https://login.microsoftonline.com/{tenant_id}/oauth2/token'
-    JWKS_URL = 'https://login.microsoftonline.com/{tenant_id}/discovery/keys'
+        '{base_url}/.well-known/openid-configuration'
+    JWKS_URL = '{base_url}/discovery/keys'
 
     @property
     def tenant_id(self):
         return self.setting('TENANT_ID', 'common')
 
     def openid_configuration_url(self):
-        return self.OPENID_CONFIGURATION_URL.format(tenant_id=self.tenant_id)
-
-    def authorization_url(self):
-        return self.AUTHORIZATION_URL.format(tenant_id=self.tenant_id)
-
-    def access_token_url(self):
-        return self.ACCESS_TOKEN_URL.format(tenant_id=self.tenant_id)
+        return self.OPENID_CONFIGURATION_URL.format(base_url=self.base_url)
 
     def jwks_url(self):
-        return self.JWKS_URL.format(tenant_id=self.tenant_id)
+        return self.JWKS_URL.format(base_url=self.base_url)
 
     def get_certificate(self, kid):
         # retrieve keys from jwks_url
@@ -112,11 +103,10 @@ class AzureADTenantOAuth2(AzureADOAuth2):
 
 class AzureADV2TenantOAuth2(AzureADTenantOAuth2):
     name = 'azuread-v2-tenant-oauth2'
-    OPENID_CONFIGURATION_URL = \
-        'https://login.microsoftonline.com/{tenant_id}/v2.0/.well-known/openid-configuration'
-    AUTHORIZATION_URL = 'https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/authorize'
-    ACCESS_TOKEN_URL = 'https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token'
-    JWKS_URL = 'https://login.microsoftonline.com/{tenant_id}/discovery/v2.0/keys'
+    OPENID_CONFIGURATION_URL = '{base_url}/v2.0/.well-known/openid-configuration'
+    AUTHORIZATION_URL = '{base_url}/oauth2/v2.0/authorize'
+    ACCESS_TOKEN_URL = '{base_url}/oauth2/v2.0/token'
+    JWKS_URL = '{base_url}/discovery/v2.0/keys'
     DEFAULT_SCOPE = ['openid', 'profile', 'offline_access']
 
     def get_user_id(self, details, response):
