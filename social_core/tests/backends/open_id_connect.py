@@ -7,11 +7,13 @@ import datetime
 import base64
 from calendar import timegm
 from unittest import mock
+from urllib.parse import urlparse
 
 from jose import jwt
 from httpretty import HTTPretty
 
 from social_core.backends.open_id_connect import OpenIdConnectAuth
+from ...utils import parse_qs
 from .oauth import OAuth2Test
 
 
@@ -53,6 +55,7 @@ class OpenIdConnectTestMixin:
     issuer = None  # id_token issuer
     openid_config_body = None
     key = None
+    access_token_kwargs = {}
 
     def setUp(self):
         super().setUp()
@@ -129,7 +132,7 @@ class OpenIdConnectTestMixin:
         )
 
         body['id_token'] = jwt.encode(
-            id_token,
+            claims=id_token,
             key=dict(self.key,
                      iat=timegm(issue_datetime.utctimetuple()),
                      nonce=nonce),
@@ -147,11 +150,19 @@ class OpenIdConnectTestMixin:
         return json.dumps(body)
 
     def authtoken_raised(self, expected_message, **access_token_kwargs):
-        self.access_token_body = self.prepare_access_token_body(
-            **access_token_kwargs
-        )
+        self.access_token_kwargs = access_token_kwargs
         with self.assertRaisesRegex(AuthTokenError, expected_message):
             self.do_login()
+
+    def pre_complete_callback(self, start_url):
+        nonce = parse_qs(urlparse(start_url).query)['nonce']
+
+        self.access_token_kwargs.setdefault('nonce', nonce)
+        self.access_token_body = self.prepare_access_token_body(
+            **self.access_token_kwargs
+        )
+        super().pre_complete_callback(start_url)
+
 
     def test_invalid_signature(self):
         self.authtoken_raised(
@@ -207,3 +218,16 @@ class OpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
         'revocation_endpoint': 'https://example.com/oidc/revoke',
         'jwks_uri': 'https://example.com/oidc/certs',
     })
+
+    expected_username = "cartman"
+
+    def pre_complete_callback(self, start_url):
+        super().pre_complete_callback(start_url)
+        HTTPretty.register_uri("GET",
+                               uri=self.backend.userinfo_url(),
+                               status=200,
+                               body=json.dumps({'preferred_username': self.expected_username}),
+                               content_type='text/json')
+
+    def test_everything_works(self):
+        self.do_login()
