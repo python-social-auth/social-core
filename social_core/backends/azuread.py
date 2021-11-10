@@ -70,7 +70,7 @@ class AzureADOAuth2(BaseOAuth2):
             response.get('family_name', '')
         )
         return {'username': fullname,
-                'email': response.get('email'),
+                'email': response.get('email', response.get('upn')),
                 'fullname': fullname,
                 'first_name': first_name,
                 'last_name': last_name}
