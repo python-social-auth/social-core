@@ -194,16 +194,16 @@ class OpenIdConnectTestMixin:
         self.authtoken_raised(
             'Token error: Incorrect id_token: nonce',
             nonce='something-wrong',
-            kid="testkey",
+            kid='testkey',
         )
 
     def test_invalid_kid(self):
-        self.authtoken_raised('Token error: Signature verification failed', kid="doesnotexist")
+        self.authtoken_raised('Token error: Signature verification failed', kid='doesnotexist')
 
 
 class ExampleOpenIdConnectAuth(OpenIdConnectAuth):
-    name = "example123"
-    OIDC_ENDPOINT = "https://example.com/oidc"
+    name = 'example123'
+    OIDC_ENDPOINT = 'https://example.com/oidc'
 
 
 class OpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
@@ -219,11 +219,11 @@ class OpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
         'jwks_uri': 'https://example.com/oidc/certs',
     })
 
-    expected_username = "cartman"
+    expected_username = 'cartman'
 
     def pre_complete_callback(self, start_url):
         super().pre_complete_callback(start_url)
-        HTTPretty.register_uri("GET",
+        HTTPretty.register_uri('GET',
                                uri=self.backend.userinfo_url(),
                                status=200,
                                body=json.dumps({'preferred_username': self.expected_username}),
