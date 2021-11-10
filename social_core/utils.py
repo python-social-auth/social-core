@@ -305,4 +305,9 @@ class cache:
                     if not cached_value:
                         raise
             return cached_value
+
+        wrapped.invalidate = self._invalidate
         return wrapped
+
+    def _invalidate(self):
+        self.cache.clear()

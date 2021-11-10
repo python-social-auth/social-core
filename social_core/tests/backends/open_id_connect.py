@@ -6,9 +6,13 @@ import json
 import datetime
 import base64
 from calendar import timegm
+from unittest import mock
 
 from jose import jwt
 from httpretty import HTTPretty
+
+from social_core.backends.open_id_connect import OpenIdConnectAuth
+from .oauth import OAuth2Test
 
 
 sys.path.insert(0, '..')
@@ -96,7 +100,7 @@ class OpenIdConnectTestMixin:
         }
 
     def prepare_access_token_body(self, client_key=None, tamper_message=False,
-                                  expiration_datetime=None,
+                                  expiration_datetime=None, kid=None,
                                   issue_datetime=None, nonce=None,
                                   issuer=None):
         """
@@ -130,7 +134,8 @@ class OpenIdConnectTestMixin:
                      iat=timegm(issue_datetime.utctimetuple()),
                      nonce=nonce),
             algorithm='RS256',
-            access_token='foobar'
+            access_token='foobar',
+            headers=dict(kid=kid),
         )
 
         if tamper_message:
@@ -177,5 +182,28 @@ class OpenIdConnectTestMixin:
     def test_invalid_nonce(self):
         self.authtoken_raised(
             'Token error: Incorrect id_token: nonce',
-            nonce='something-wrong'
+            nonce='something-wrong',
+            kid="testkey",
         )
+
+    def test_invalid_kid(self):
+        self.authtoken_raised('Token error: Signature verification failed', kid="doesnotexist")
+
+
+class ExampleOpenIdConnectAuth(OpenIdConnectAuth):
+    name = "example123"
+    OIDC_ENDPOINT = "https://example.com/oidc"
+
+
+class OpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
+    backend_path = \
+        'social_core.tests.backends.open_id_connect.ExampleOpenIdConnectAuth'
+    issuer = 'https://example.com'
+    openid_config_body = json.dumps({
+        'issuer': 'https://example.com',
+        'authorization_endpoint': 'https://example.com/oidc/auth',
+        'token_endpoint': 'https://example.com/oidc/token',
+        'userinfo_endpoint': 'https://example.com/oidc/userinfo',
+        'revocation_endpoint': 'https://example.com/oidc/revoke',
+        'jwks_uri': 'https://example.com/oidc/certs',
+    })
