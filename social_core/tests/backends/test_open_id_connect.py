@@ -208,7 +208,7 @@ class ExampleOpenIdConnectAuth(OpenIdConnectAuth):
 
 class OpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
     backend_path = \
-        'social_core.tests.backends.open_id_connect.ExampleOpenIdConnectAuth'
+        'social_core.tests.backends.test_open_id_connect.ExampleOpenIdConnectAuth'
     issuer = 'https://example.com'
     openid_config_body = json.dumps({
         'issuer': 'https://example.com',
