@@ -64,28 +64,28 @@ class UserMixin:
         timedelta is inferred from current time (using UTC timezone). None is
         returned if there's no value stored or it's invalid.
         """
-        if self.extra_data and 'expires' in self.extra_data:
-            try:
-                expires = int(self.extra_data.get('expires'))
-            except (ValueError, TypeError):
-                return None
+        if not self.extra_data or 'expires' not in self.extra_data:
+            return
+        try:
+            expires = int(self.extra_data.get('expires'))
+        except (ValueError, TypeError):
+            return None
 
-            now = datetime.utcnow()
+        now = datetime.utcnow()
 
             # Detect if expires is a timestamp
-            if expires > time.mktime(now.timetuple()):
-                # expires is a datetime, return the remaining difference
-                return datetime.utcfromtimestamp(expires) - now
-            else:
-                # expires is the time to live seconds since creation,
-                # check against auth_time if present, otherwise return
-                # the value
-                auth_time = self.extra_data.get('auth_time')
-                if auth_time:
-                    reference = datetime.utcfromtimestamp(auth_time)
-                    return (reference + timedelta(seconds=expires)) - now
-                else:
-                    return timedelta(seconds=expires)
+        if expires > time.mktime(now.timetuple()):
+            # expires is a datetime, return the remaining difference
+            return datetime.utcfromtimestamp(expires) - now
+        # expires is the time to live seconds since creation,
+        # check against auth_time if present, otherwise return
+        # the value
+        auth_time = self.extra_data.get('auth_time')
+        if not auth_time:
+            return timedelta(seconds=expires)
+
+        reference = datetime.utcfromtimestamp(auth_time)
+        return (reference + timedelta(seconds=expires)) - now
 
     def expiration_datetime(self):
         # backward compatible alias

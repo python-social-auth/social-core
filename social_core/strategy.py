@@ -139,15 +139,15 @@ class BaseStrategy:
 
     def validate_email(self, email, code):
         verification_code = self.storage.code.get_code(code)
-        if not verification_code or verification_code.code != code:
+        if (
+            not verification_code
+            or verification_code.code != code
+            or verification_code.email != email
+            or verification_code.verified
+        ):
             return False
-        elif verification_code.email != email:
-            return False
-        elif verification_code.verified:
-            return False
-        else:
-            verification_code.verify()
-            return True
+        verification_code.verify()
+        return True
 
     def render_html(self, tpl=None, html=None, context=None):
         """Render given template or raw html with given context"""
