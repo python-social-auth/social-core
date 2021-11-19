@@ -233,6 +233,7 @@ def setting_url(backend, *names):
         value = backend.setting(name)
         if is_url(value):
             return value
+        return None
 
 
 def handle_http_errors(func):
