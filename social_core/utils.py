@@ -107,26 +107,24 @@ def sanitize_redirect(hosts, redirect_to):
 
 
 def user_is_authenticated(user):
-    if user and hasattr(user, 'is_authenticated'):
-        return (
-            user.is_authenticated()
-            if callable(user.is_authenticated)
-            else user.is_authenticated
-        )
+    if user:
+        if hasattr(user, 'is_authenticated'):
+            return (
+                user.is_authenticated()
+                if callable(user.is_authenticated)
+                else user.is_authenticated
+            )
 
-    elif user:
-        return True
-    else:
-        return False
+        else:
+            return True
 
 
 def user_is_active(user):
-    if user and hasattr(user, 'is_active'):
-        return user.is_active() if callable(user.is_active) else user.is_active
-    elif user:
-        return True
-    else:
-        return False
+    if user:
+        if hasattr(user, 'is_active'):
+            return user.is_active() if callable(user.is_active) else user.is_active
+        else:
+            return True
 
 
 # This slugify version was borrowed from django revision a61dbd6
