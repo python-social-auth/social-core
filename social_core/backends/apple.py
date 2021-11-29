@@ -129,7 +129,7 @@ class AppleIdAuth(BaseOAuth2):
                 algorithms=['RS256'],
             )
         except PyJWTError as error:
-            raise AuthFailed(self, 'Token validation failed by: ' + error.__str__())
+            raise AuthFailed(self, f'Token validation failed by {error}')
 
         return decoded
 
