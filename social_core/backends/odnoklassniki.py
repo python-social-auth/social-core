@@ -51,8 +51,8 @@ class OdnoklassnikiApp(BaseAuth):
     ID_KEY = 'uid'
 
     def extra_data(self, user, uid, response, details=None, *args, **kwargs):
-        return dict([(key, value) for key, value in response.items()
-                     if key in response['extra_data_list']])
+        return {key: value for key, value in response.items()
+                     if key in response['extra_data_list']}
 
     def get_user_details(self, response):
         fullname, first_name, last_name = self.get_user_names(
@@ -109,8 +109,8 @@ class OdnoklassnikiApp(BaseAuth):
         fields = ('logged_user_id', 'api_server', 'application_key',
                   'session_key', 'session_secret_key', 'authorized',
                   'apiconnection')
-        return dict((name, self.data[name]) for name in fields
-                    if name in self.data)
+        return {name: self.data[name] for name in fields
+                    if name in self.data}
 
     def verify_auth_sig(self):
         correct_key = self.get_auth_sig()
