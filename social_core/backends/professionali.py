@@ -44,7 +44,7 @@ class ProfessionaliOAuth2(BaseOAuth2):
         }
         try:
             return self.get_json(url, params)[0]
-        except (TypeError, KeyError, IOError, ValueError, IndexError):
+        except (TypeError, KeyError, OSError, ValueError, IndexError):
             return None
 
     def get_json(self, url, *args, **kwargs):
