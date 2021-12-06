@@ -7,12 +7,12 @@ import re
 import time
 from urllib.parse import parse_qs, urlencode, urlparse
 
-import requests
 import jwt
+import requests
 from requests_oauthlib import OAuth1
 
-from .oauth import BaseOAuth1
 from ..exceptions import AuthException
+from .oauth import BaseOAuth1
 
 
 def force_unicode(value):

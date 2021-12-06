@@ -1,10 +1,10 @@
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import parse_qs, urlparse
 
 import requests
 from httpretty import HTTPretty
 
-from .base import BaseBackendTest
 from ...exceptions import AuthException
+from .base import BaseBackendTest
 
 
 class DiscourseTest(BaseBackendTest):

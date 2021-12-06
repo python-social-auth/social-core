@@ -1,7 +1,7 @@
 import json
 
-from jose import jwt
 from httpretty import HTTPretty
+from jose import jwt
 
 from .oauth import OAuth2Test
 

@@ -1,7 +1,7 @@
 import base64
 
-from ..storage import UserMixin, NonceMixin, AssociationMixin, \
-    CodeMixin, PartialMixin, BaseStorage
+from ..storage import (AssociationMixin, BaseStorage, CodeMixin, NonceMixin,
+                       PartialMixin, UserMixin)
 
 
 class BaseModel:

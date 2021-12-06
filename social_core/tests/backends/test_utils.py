@@ -1,10 +1,10 @@
 import unittest as unittest
 
+from ...backends.github import GithubOAuth2
+from ...backends.utils import get_backend, load_backends
+from ...exceptions import MissingBackend
 from ..models import TestStorage
 from ..strategy import TestStrategy
-from ...backends.utils import load_backends, get_backend
-from ...backends.github import GithubOAuth2
-from ...exceptions import MissingBackend
 
 
 class BaseBackendUtilsTest(unittest.TestCase):

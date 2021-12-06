@@ -4,11 +4,10 @@ import re
 import sys
 import unittest
 from os import path
-from urllib.parse import urlparse, urlunparse, urlencode, parse_qs
+from unittest.mock import patch
+from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 import requests
-
-from unittest.mock import patch
 from httpretty import HTTPretty
 
 try:
@@ -17,9 +16,8 @@ except ImportError:
     # Only available for python 2.7 at the moment, so don't worry if this fails
     pass
 
-from .base import BaseBackendTest
 from ...exceptions import AuthMissingParameter
-
+from .base import BaseBackendTest
 
 DATA_DIR = path.join(path.dirname(__file__), 'data')
 

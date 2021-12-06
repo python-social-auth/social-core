@@ -30,8 +30,9 @@ See https://nicksnettravels.builttoroam.com/post/2017/01/24/Verifying-Azure-Acti
 import json
 
 from cryptography.hazmat.primitives import serialization
-from jwt import DecodeError, ExpiredSignatureError, decode as jwt_decode, \
-    get_unverified_header
+from jwt import DecodeError, ExpiredSignatureError
+from jwt import decode as jwt_decode
+from jwt import get_unverified_header
 
 try:
     from jwt.algorithms import RSAAlgorithm

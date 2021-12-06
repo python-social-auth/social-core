@@ -1,12 +1,12 @@
-import time
-import random
 import hashlib
+import random
+import time
 
-from .utils import setting_name, module_member, PARTIAL_TOKEN_SESSION_NAME
-from .store import OpenIdStore, OpenIdSessionWrapper
-from .pipeline import DEFAULT_AUTH_PIPELINE, DEFAULT_DISCONNECT_PIPELINE
-from .pipeline.utils import partial_load, partial_store, partial_prepare
 from .backends.utils import get_backend
+from .pipeline import DEFAULT_AUTH_PIPELINE, DEFAULT_DISCONNECT_PIPELINE
+from .pipeline.utils import partial_load, partial_prepare, partial_store
+from .store import OpenIdSessionWrapper, OpenIdStore
+from .utils import PARTIAL_TOKEN_SESSION_NAME, module_member, setting_name
 
 
 class BaseTemplateStrategy:

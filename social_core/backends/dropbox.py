@@ -5,6 +5,7 @@ Dropbox OAuth2 backend, docs at:
 
 from .oauth import BaseOAuth2
 
+
 class DropboxOAuth2V2(BaseOAuth2):
     name = 'dropbox-oauth2'
     ID_KEY = 'uid'

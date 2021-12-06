@@ -6,7 +6,6 @@ from httpretty import HTTPretty
 
 from .open_id import OpenIdTest
 
-
 JANRAIN_NONCE = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
 
 

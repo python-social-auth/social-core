@@ -4,8 +4,8 @@ LiveJournal OpenId backend, docs at:
 """
 from urllib.parse import urlsplit
 
-from .open_id import OpenIdAuth
 from ..exceptions import AuthMissingParameter
+from .open_id import OpenIdAuth
 
 
 class LiveJournalOpenId(OpenIdAuth):

@@ -5,8 +5,7 @@ Github Enterprise OAuth2 backend, docs at:
 from urllib.parse import urljoin
 
 from ..utils import append_slash
-from .github import GithubOAuth2, GithubOrganizationOAuth2, \
-                    GithubTeamOAuth2
+from .github import GithubOAuth2, GithubOrganizationOAuth2, GithubTeamOAuth2
 
 
 class GithubEnterpriseMixin:

@@ -1,7 +1,7 @@
 import time
 
-from .oauth import BaseOAuth2
 from ..utils import handle_http_errors
+from .oauth import BaseOAuth2
 
 
 class ItembaseOAuth2(BaseOAuth2):

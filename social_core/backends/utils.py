@@ -1,9 +1,8 @@
 from collections import OrderedDict
 
-from .base import BaseAuth
 from ..exceptions import MissingBackend
 from ..utils import module_member, user_is_authenticated
-
+from .base import BaseAuth
 
 # Cache for discovered backends.
 BACKENDSCACHE = OrderedDict()

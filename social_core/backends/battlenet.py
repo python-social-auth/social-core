@@ -1,6 +1,5 @@
 from .oauth import BaseOAuth2
 
-
 # This provides a backend for python-social-auth. This should not be confused
 # with officially battle.net offerings. This piece of code is not officially
 # affiliated with Blizzard Entertainment, copyrights to their respective

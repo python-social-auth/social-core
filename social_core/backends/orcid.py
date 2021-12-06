@@ -4,6 +4,7 @@
 """
 from .oauth import BaseOAuth2
 
+
 class ORCIDOAuth2(BaseOAuth2):
     """ORCID OAuth2 authentication backend"""
     name = 'orcid'

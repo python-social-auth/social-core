@@ -1,12 +1,10 @@
 import requests
-
 from httpretty import HTTPretty
 
 from ...actions import do_disconnect
 from ...exceptions import NotAllowedToDisconnect
 from ...utils import parse_qs
-
-from ..models import User, TestUserSocialAuth
+from ..models import TestUserSocialAuth, User
 from .actions import BaseActionTest
 
 

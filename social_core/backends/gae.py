@@ -4,8 +4,8 @@ Google App Engine support using User API
 
 from google.appengine.api import users
 
-from .base import BaseAuth
 from ..exceptions import AuthException
+from .base import BaseAuth
 
 
 class GoogleAppEngineAuth(BaseAuth):

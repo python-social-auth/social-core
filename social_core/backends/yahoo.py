@@ -5,7 +5,7 @@ Yahoo OpenId, OAuth1 and OAuth2 backends, docs at:
 from requests.auth import HTTPBasicAuth
 
 from ..utils import handle_http_errors
-from .oauth import BaseOAuth2, BaseOAuth1
+from .oauth import BaseOAuth1, BaseOAuth2
 
 
 class YahooOAuth(BaseOAuth1):

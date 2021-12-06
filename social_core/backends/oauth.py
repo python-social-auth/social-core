@@ -1,13 +1,13 @@
-from urllib.parse import urlencode, unquote
+from urllib.parse import unquote, urlencode
 
-from requests_oauthlib import OAuth1
 from oauthlib.oauth1 import SIGNATURE_TYPE_AUTH_HEADER
+from requests_oauthlib import OAuth1
 
-from ..utils import url_add_parameters, parse_qs, handle_http_errors, \
-                    constant_time_compare
-from ..exceptions import AuthFailed, AuthCanceled, AuthUnknownError, \
-                         AuthMissingParameter, AuthStateMissing, \
-                         AuthStateForbidden, AuthTokenError
+from ..exceptions import (AuthCanceled, AuthFailed, AuthMissingParameter,
+                          AuthStateForbidden, AuthStateMissing, AuthTokenError,
+                          AuthUnknownError)
+from ..utils import (constant_time_compare, handle_http_errors, parse_qs,
+                     url_add_parameters)
 from .base import BaseAuth
 
 

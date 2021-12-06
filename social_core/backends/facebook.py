@@ -2,17 +2,16 @@
 Facebook OAuth2 and Canvas Application backends, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/facebook.html
 """
-import hmac
-import time
-import json
 import base64
 import hashlib
+import hmac
+import json
+import time
 
-from ..utils import parse_qs, constant_time_compare, handle_http_errors
+from ..exceptions import (AuthCanceled, AuthException, AuthMissingParameter,
+                          AuthUnknownError)
+from ..utils import constant_time_compare, handle_http_errors, parse_qs
 from .oauth import BaseOAuth2
-from ..exceptions import AuthException, AuthCanceled, AuthUnknownError, \
-                         AuthMissingParameter
-
 
 API_VERSION = 14.0
 

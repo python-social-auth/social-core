@@ -10,7 +10,6 @@ from openid.association import Association as OpenIdAssociation
 
 from .exceptions import MissingBackend
 
-
 NO_ASCII_REGEX = re.compile(r'[^\x00-\x7F]+')
 NO_SPECIAL_REGEX = re.compile(r'[^\w.@+_-]+', re.UNICODE)
 
