@@ -209,7 +209,7 @@ class BaseOAuth1(OAuthAuth):
                 utoken = parse_qs(utoken)
             if utoken.get(self.OAUTH_TOKEN_PARAMETER_NAME) == data_token:
                 self.strategy.session_set(name, list(set(unauthed_tokens) -
-                                                     set([orig_utoken])))
+                                                     {orig_utoken}))
                 token = utoken
                 break
         else:

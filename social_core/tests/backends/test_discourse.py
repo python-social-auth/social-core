@@ -50,9 +50,9 @@ class DiscourseTest(BaseBackendTest):
         )
 
         response = requests.get(start_url)
-        query_values = dict(
-            (k, v[0]) for k, v in parse_qs(urlparse(response.url).query).items()
-        )
+        query_values = {
+            k: v[0] for k, v in parse_qs(urlparse(response.url).query).items()
+        }
         self.strategy.set_request_data(query_values, self.backend)
 
         return self.backend.complete()

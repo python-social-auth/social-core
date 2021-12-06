@@ -63,6 +63,6 @@ def partial_load(strategy, token):
             kwargs['user'] = strategy.storage.user.get_user(user)
 
         partial.args = [strategy.from_session_value(val) for val in args]
-        partial.kwargs = dict((key, strategy.from_session_value(val))
-                              for key, val in kwargs.items())
+        partial.kwargs = {key: strategy.from_session_value(val)
+                              for key, val in kwargs.items()}
     return partial

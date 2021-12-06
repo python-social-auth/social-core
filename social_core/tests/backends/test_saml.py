@@ -80,8 +80,8 @@ class SAMLTest(BaseBackendTest):
         response = requests.get(start_url)
         self.assertTrue(response.url.startswith(return_url))
         self.assertEqual(response.text, 'foobar')
-        query_values = dict((k, v[0]) for k, v in
-                            parse_qs(urlparse(response.url).query).items())
+        query_values = {k: v[0] for k, v in
+                            parse_qs(urlparse(response.url).query).items()}
         self.assertNotIn(' ', query_values['SAMLResponse'])
         self.strategy.set_request_data(query_values, self.backend)
         return self.backend.complete()
@@ -110,8 +110,8 @@ class SAMLTest(BaseBackendTest):
         """
         # Parse the SAML Request URL to get the XML being sent to TestShib
         url_parts = urlparse(start_url)
-        query = dict((k, v[0]) for (k, v) in
-                     parse_qs(url_parts.query).items())
+        query = {k: v[0] for (k, v) in
+                     parse_qs(url_parts.query).items()}
         xml = OneLogin_Saml2_Utils.decode_base64_and_inflate(
             query['SAMLRequest']
         )
