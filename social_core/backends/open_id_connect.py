@@ -215,7 +215,7 @@ class OpenIdConnectAuth(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         return self.get_json(self.userinfo_url(), headers={
-            'Authorization': 'Bearer {0}'.format(access_token)
+            'Authorization': f'Bearer {access_token}'
         })
 
     def get_user_details(self, response):

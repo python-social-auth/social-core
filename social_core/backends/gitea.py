@@ -24,7 +24,7 @@ class GiteaOAuth2   (BaseOAuth2):
 
     def api_url(self, path):
         api_url = self.setting('API_URL') or self.API_URL
-        return '{0}{1}'.format(api_url.rstrip('/'), path)
+        return '{}{}'.format(api_url.rstrip('/'), path)
 
     def authorization_url(self):
         return self.api_url('/login/oauth/authorize')

@@ -102,7 +102,7 @@ class YahooOAuth2(BaseOAuth2):
         url = 'https://api.login.yahoo.com/openid/v1/userinfo'
 
         return self.get_json(url, headers={
-            'Authorization': 'Bearer {0}'.format(access_token)
+            'Authorization': f'Bearer {access_token}'
         }, method='GET')
 
     @handle_http_errors

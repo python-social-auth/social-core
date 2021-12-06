@@ -116,7 +116,7 @@ class ORCIDOAuth2(BaseOAuth2):
                 self.USER_ID_URL,
                 headers={
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer {}'.format(str(access_token))
+                    'Authorization': f'Bearer {str(access_token)}'
                 },
             )
 

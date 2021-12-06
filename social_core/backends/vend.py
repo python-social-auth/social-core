@@ -32,8 +32,8 @@ class VendOAuth2(BaseOAuth2):
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
         prefix = kwargs['response']['domain_prefix']
-        url = 'https://{0}.vendhq.com/api/users'.format(prefix)
+        url = f'https://{prefix}.vendhq.com/api/users'
         data = self.get_json(url, headers={
-            'Authorization': 'Bearer {0}'.format(access_token)
+            'Authorization': f'Bearer {access_token}'
         })
         return data['users'][0] if data.get('users') else {}

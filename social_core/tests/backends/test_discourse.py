@@ -35,9 +35,9 @@ class DiscourseTest(BaseBackendTest):
         # NOTE: the signature was verified using the 'foo' key, like so:
         # hmac.new('foo', sso, sha256).hexdigest()
         sig = '04063f17c99a97b1a765c1e0d7bbb61afb8471d79a39ddcd6af5ba3c93eb10e1'
-        response_query_params = 'sso={0}&sig={1}'.format(sso, sig)
+        response_query_params = f'sso={sso}&sig={sig}'
 
-        response_url = '{0}?{1}'.format(return_url, response_query_params)
+        response_url = f'{return_url}?{response_query_params}'
         HTTPretty.register_uri(
             HTTPretty.GET, start_url, status=301, location=response_url
         )
