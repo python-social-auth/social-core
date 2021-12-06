@@ -15,12 +15,12 @@ class SlackOAuth2Test(OAuth2Test):
         'user': {
             'email': 'foobar@example.com',
             'name': 'Foo Bar',
-            'id': u'123456'
+            'id': '123456'
         },
         'team': {
-            'id': u'456789'
+            'id': '456789'
         },
-        'scope': u'identity.basic,identity.email'
+        'scope': 'identity.basic,identity.email'
     })
     expected_username = 'foobar'
 
@@ -38,13 +38,13 @@ class SlackOAuth2TestTeamName(SlackOAuth2Test):
         'user': {
             'email': 'foobar@example.com',
             'name': 'Foo Bar',
-            'id': u'123456'
+            'id': '123456'
         },
         'team': {
-            'id': u'456789',
-            'name': u'Square',
+            'id': '456789',
+            'name': 'Square',
         },
-        'scope': u'identity.basic,identity.email,identity.team'
+        'scope': 'identity.basic,identity.email,identity.team'
     })
 
 
@@ -54,13 +54,13 @@ class SlackOAuth2TestUnicodeTeamName(SlackOAuth2Test):
         'user': {
             'email': 'foobar@example.com',
             'name': 'Foo Bar',
-            'id': u'123456'
+            'id': '123456'
         },
         'team': {
-            'id': u'456789',
-            'name': u'Square \u221a team',
+            'id': '456789',
+            'name': 'Square \u221a team',
         },
-        'scope': u'identity.basic,identity.email,identity.team'
+        'scope': 'identity.basic,identity.email,identity.team'
     })
 
     def test_login(self):
