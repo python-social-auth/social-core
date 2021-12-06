@@ -92,7 +92,7 @@ def do_complete(backend, login, user=None, redirect_name='next',
     if redirect_value and redirect_value != url:
         redirect_value = quote(redirect_value)
         url += ('&' if '?' in url else '?') + \
-            '{0}={1}'.format(redirect_name, redirect_value)
+            f'{redirect_name}={redirect_value}'
 
     if backend.setting('SANITIZE_REDIRECTS', True):
         allowed_hosts = backend.setting('ALLOWED_REDIRECT_HOSTS', []) + \

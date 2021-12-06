@@ -80,9 +80,9 @@ class OpenIdConnectTestMixin:
     def extra_settings(self):
         settings = super().extra_settings()
         settings.update({
-            'SOCIAL_AUTH_{0}_KEY'.format(self.name): self.client_key,
-            'SOCIAL_AUTH_{0}_SECRET'.format(self.name): self.client_secret,
-            'SOCIAL_AUTH_{0}_ID_TOKEN_DECRYPTION_KEY'.format(self.name):
+            f'SOCIAL_AUTH_{self.name}_KEY': self.client_key,
+            f'SOCIAL_AUTH_{self.name}_SECRET': self.client_secret,
+            f'SOCIAL_AUTH_{self.name}_ID_TOKEN_DECRYPTION_KEY':
                 self.client_secret
         })
         return settings

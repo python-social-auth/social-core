@@ -40,4 +40,4 @@ class CourseraOAuth2(BaseOAuth2):
         )
 
     def get_auth_header(self, access_token):
-        return {'Authorization': 'Bearer {0}'.format(access_token)}
+        return {'Authorization': f'Bearer {access_token}'}

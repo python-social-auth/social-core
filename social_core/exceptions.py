@@ -8,14 +8,14 @@ class WrongBackend(SocialAuthBaseException):
         self.backend_name = backend_name
 
     def __str__(self):
-        return 'Incorrect authentication service "{0}"'.format(
+        return 'Incorrect authentication service "{}"'.format(
             self.backend_name
         )
 
 
 class MissingBackend(WrongBackend):
     def __str__(self):
-        return 'Missing backend "{0}" entry'.format(self.backend_name)
+        return f'Missing backend "{self.backend_name}" entry'
 
 
 class NotAllowedToDisconnect(SocialAuthBaseException):
@@ -36,7 +36,7 @@ class AuthFailed(AuthException):
         msg = super().__str__()
         if msg == 'access_denied':
             return 'Authentication process was canceled'
-        return 'Authentication failed: {0}'.format(msg)
+        return f'Authentication failed: {msg}'
 
 
 class AuthCanceled(AuthException):
@@ -48,7 +48,7 @@ class AuthCanceled(AuthException):
     def __str__(self):
         msg = super().__str__()
         if msg:
-            return 'Authentication process canceled: {0}'.format(msg)
+            return f'Authentication process canceled: {msg}'
         return 'Authentication process canceled'
 
 
@@ -56,14 +56,14 @@ class AuthUnknownError(AuthException):
     """Unknown auth process error."""
     def __str__(self):
         msg = super().__str__()
-        return 'An unknown error happened while authenticating {0}'.format(msg)
+        return f'An unknown error happened while authenticating {msg}'
 
 
 class AuthTokenError(AuthException):
     """Auth token error."""
     def __str__(self):
         msg = super().__str__()
-        return 'Token error: {0}'.format(msg)
+        return f'Token error: {msg}'
 
 
 class AuthMissingParameter(AuthException):
@@ -73,7 +73,7 @@ class AuthMissingParameter(AuthException):
         super().__init__(backend, *args, **kwargs)
 
     def __str__(self):
-        return 'Missing needed parameter {0}'.format(self.parameter)
+        return f'Missing needed parameter {self.parameter}'
 
 
 class AuthStateMissing(AuthException):

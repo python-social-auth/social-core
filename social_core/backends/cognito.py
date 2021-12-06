@@ -12,13 +12,13 @@ class CognitoOAuth2(BaseOAuth2):
         return self.setting('POOL_DOMAIN')
 
     def authorization_url(self):
-        return '{}/login'.format(self.user_pool_domain())
+        return f'{self.user_pool_domain()}/login'
 
     def access_token_url(self):
-        return '{}/oauth2/token'.format(self.user_pool_domain())
+        return f'{self.user_pool_domain()}/oauth2/token'
 
     def user_data_url(self):
-        return '{}/oauth2/userInfo'.format(self.user_pool_domain())
+        return f'{self.user_pool_domain()}/oauth2/userInfo'
 
     def get_user_details(self, response):
         """Return user details from their cognito pool account"""
@@ -38,7 +38,7 @@ class CognitoOAuth2(BaseOAuth2):
         """Grab user profile information from cognito."""
         response = self.get_json(
             url=self.user_data_url(),
-            headers={'Authorization': 'Bearer {}'.format(access_token)},
+            headers={'Authorization': f'Bearer {access_token}'},
         )
 
         user_data = {

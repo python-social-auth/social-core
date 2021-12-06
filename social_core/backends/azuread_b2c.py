@@ -165,7 +165,7 @@ class AzureADB2COAuth2(AzureADOAuth2):
         for key in resp.json()['keys']:
             if key['kid'] == kid:
                 return self.jwt_key_to_pem(key)
-        raise DecodeError('Cannot find kid={}'.format(kid))
+        raise DecodeError(f'Cannot find kid={kid}')
 
     def user_data(self, access_token, *args, **kwargs):
         response = kwargs.get('response')

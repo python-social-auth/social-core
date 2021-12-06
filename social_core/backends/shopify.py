@@ -91,7 +91,7 @@ class ShopifyOAuth2(BaseOAuth2):
             'backend': self,
             'response': {
                 'shop': shop_url,
-                'website': 'http://{0}'.format(website),
+                'website': f'http://{website}',
                 'access_token': access_token
             }
         })

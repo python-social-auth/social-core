@@ -45,7 +45,7 @@ class ExactTargetOAuth2(BaseOAuth2):
                 'email': 'example@example.com'
             }
         """
-        return '{0}'.format(details.get('id'))
+        return '{}'.format(details.get('id'))
 
     def uses_redirect(self):
         return False

@@ -258,7 +258,7 @@ class BaseOAuth1(OAuthAuth):
         )
         state = self.get_or_create_state()
         params[self.REDIRECT_URI_PARAMETER_NAME] = self.get_redirect_uri(state)
-        return '{0}?{1}'.format(self.authorization_url(), urlencode(params))
+        return f'{self.authorization_url()}?{urlencode(params)}'
 
     def oauth_auth(self, token=None, oauth_verifier=None,
                    signature_type=SIGNATURE_TYPE_AUTH_HEADER):
@@ -329,7 +329,7 @@ class BaseOAuth2(OAuthAuth):
             # redirect_uri matching is strictly enforced, so match the
             # providers value exactly.
             params = unquote(params)
-        return '{0}?{1}'.format(self.authorization_url(), params)
+        return f'{self.authorization_url()}?{params}'
 
     def auth_complete_params(self, state=None):
         client_id, client_secret = self.get_key_and_secret()

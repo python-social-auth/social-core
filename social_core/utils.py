@@ -265,7 +265,7 @@ def append_slash(url):
     'http://www.example.com/api/user/1/'
     """
     if url and not url.endswith('/'):
-        url = '{0}/'.format(url)
+        url = f'{url}/'
     return url
 
 

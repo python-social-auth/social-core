@@ -38,5 +38,5 @@ class EVEOnlineOAuth2(BaseOAuth2):
         """Get Character data from EVE server"""
         return self.get_json(
             'https://login.eveonline.com/oauth/verify',
-            headers={'Authorization': 'Bearer {0}'.format(access_token)}
+            headers={'Authorization': f'Bearer {access_token}'}
         )

@@ -39,7 +39,7 @@ class KakaoOAuth2(BaseOAuth2):
         return self.get_json(
             'https://kapi.kakao.com/v2/user/me',
             headers={
-                'Authorization': 'Bearer {0}'.format(access_token),
+                'Authorization': f'Bearer {access_token}',
                 'Content_Type': 'application/x-www-form-urlencoded;charset=utf-8',
             },
             params={'access_token': access_token}
