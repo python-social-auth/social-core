@@ -213,7 +213,7 @@ class FacebookAppOAuth2(FacebookOAuth2):
     def load_signed_request(self, signed_request):
         def base64_url_decode(data):
             data = data.encode('ascii')
-            data += '='.encode('ascii') * (4 - (len(data) % 4))
+            data += b'=' * (4 - (len(data) % 4))
             return base64.urlsafe_b64decode(data)
 
         key, secret = self.get_key_and_secret()
