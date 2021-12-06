@@ -197,5 +197,5 @@ def vk_api(backend, method, data):
 
     try:
         return backend.get_json(url, params=data)
-    except (TypeError, KeyError, IOError, ValueError, IndexError):
+    except (TypeError, KeyError, OSError, ValueError, IndexError):
         return None

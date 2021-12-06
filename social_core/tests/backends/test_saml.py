@@ -36,7 +36,7 @@ class SAMLTest(BaseBackendTest):
 
     def extra_settings(self):
         name = path.join(DATA_DIR, 'saml_config.json')
-        with open(name, 'r') as config_file:
+        with open(name) as config_file:
             config_str = config_file.read()
         return json.loads(config_str)
 
@@ -61,7 +61,7 @@ class SAMLTest(BaseBackendTest):
         # data in the query string.  A pre-recorded correct response
         # is kept in this .txt file:
         name = path.join(DATA_DIR, 'saml_response.txt')
-        with open(name, 'r') as response_file:
+        with open(name) as response_file:
             response_url = response_file.read()
         HTTPretty.register_uri(HTTPretty.GET, start_url, status=301,
                                location=response_url)
