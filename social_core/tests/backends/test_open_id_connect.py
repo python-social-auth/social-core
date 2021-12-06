@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from ...exceptions import AuthTokenError
 import os
 import sys

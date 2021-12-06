@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Professionaly OAuth 2.0 support.
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # author:duoduo3369@gmail.com  https://github.com/duoduo369
 """
 Weixin OAuth2 backend
