@@ -1,12 +1,11 @@
 import json
 
+from ..exceptions import AuthException
 from ..pipeline.user import user_details
 from ..utils import PARTIAL_TOKEN_SESSION_NAME
-from ..exceptions import AuthException
-
-from .models import TestUserSocialAuth, TestStorage, User
-from .strategy import TestStrategy
 from .actions.actions import BaseActionTest
+from .models import TestStorage, TestUserSocialAuth, User
+from .strategy import TestStrategy
 
 
 class IntegrityError(Exception):

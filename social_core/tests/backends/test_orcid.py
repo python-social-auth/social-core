@@ -1,8 +1,9 @@
 import json
 
+from social_core.backends.orcid import ORCIDOAuth2
+
 from .oauth import OAuth2Test
 
-from social_core.backends.orcid import ORCIDOAuth2
 
 class ORCIDOAuth2Test(OAuth2Test):
     backend_path = 'social_core.backends.orcid.ORCIDOAuth2'

@@ -1,20 +1,20 @@
-from ...exceptions import AuthTokenError
+import base64
+import datetime
+import json
 import os
 import sys
-import json
-import datetime
-import base64
 from calendar import timegm
 from unittest import mock
 from urllib.parse import urlparse
 
-from jose import jwt
 from httpretty import HTTPretty
+from jose import jwt
 
 from social_core.backends.open_id_connect import OpenIdConnectAuth
+
+from ...exceptions import AuthTokenError
 from ...utils import parse_qs
 from .oauth import OAuth2Test
-
 
 sys.path.insert(0, '..')
 

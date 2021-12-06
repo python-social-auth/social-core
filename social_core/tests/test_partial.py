@@ -1,8 +1,8 @@
 import unittest
 from unittest.mock import Mock, patch
 
-from ..utils import PARTIAL_TOKEN_SESSION_NAME
 from ..pipeline.partial import partial, partial_step
+from ..utils import PARTIAL_TOKEN_SESSION_NAME
 
 
 class PartialDecoratorTestCase(unittest.TestCase):

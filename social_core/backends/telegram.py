@@ -1,10 +1,10 @@
+import hashlib
 import hmac
 import time
-import hashlib
 
-from .base import BaseAuth
 from ..exceptions import AuthFailed, AuthMissingParameter
 from ..utils import handle_http_errors
+from .base import BaseAuth
 
 
 class TelegramAuth(BaseAuth):

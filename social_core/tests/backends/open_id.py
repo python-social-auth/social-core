@@ -6,9 +6,9 @@ from httpretty import HTTPretty
 from openid import oidutil
 
 from ...backends.utils import load_backends
-from ...utils import parse_qs, module_member
-from ..models import TestStorage, User, TestUserSocialAuth, \
-    TestNonce, TestAssociation
+from ...utils import module_member, parse_qs
+from ..models import (TestAssociation, TestNonce, TestStorage,
+                      TestUserSocialAuth, User)
 from ..strategy import TestStrategy
 from .base import BaseBackendTest
 

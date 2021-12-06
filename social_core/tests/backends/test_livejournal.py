@@ -4,9 +4,7 @@ from urllib.parse import urlencode
 from httpretty import HTTPretty
 
 from ...exceptions import AuthMissingParameter
-
 from .open_id import OpenIdTest
-
 
 JANRAIN_NONCE = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
 

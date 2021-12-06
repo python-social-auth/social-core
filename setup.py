@@ -1,9 +1,7 @@
 import re
-
-from os.path import join, dirname
+from os.path import dirname, join
 
 from setuptools import setup
-
 
 VERSION_RE = re.compile(r'__version__ = \'([\d\.]+)\'')
 

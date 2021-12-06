@@ -1,7 +1,7 @@
 from urllib.parse import quote
 
-from .utils import sanitize_redirect, user_is_authenticated, \
-                   user_is_active, partial_pipeline_data, setting_url
+from .utils import (partial_pipeline_data, sanitize_redirect, setting_url,
+                    user_is_active, user_is_authenticated)
 
 
 def do_auth(backend, redirect_name='next'):

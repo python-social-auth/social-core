@@ -1,10 +1,12 @@
 import unittest
 
-from ..exceptions import SocialAuthBaseException, WrongBackend, \
-    AuthFailed, AuthTokenError, AuthMissingParameter, AuthStateMissing, \
-    NotAllowedToDisconnect, AuthException, AuthCanceled, AuthUnknownError, \
-    AuthStateForbidden, AuthAlreadyAssociated, AuthTokenRevoked, \
-    AuthForbidden, AuthUnreachableProvider, InvalidEmail, MissingBackend
+from ..exceptions import (AuthAlreadyAssociated, AuthCanceled, AuthException,
+                          AuthFailed, AuthForbidden, AuthMissingParameter,
+                          AuthStateForbidden, AuthStateMissing, AuthTokenError,
+                          AuthTokenRevoked, AuthUnknownError,
+                          AuthUnreachableProvider, InvalidEmail,
+                          MissingBackend, NotAllowedToDisconnect,
+                          SocialAuthBaseException, WrongBackend)
 
 
 class BaseExceptionTestCase(unittest.TestCase):

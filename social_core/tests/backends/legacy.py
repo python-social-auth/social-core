@@ -1,5 +1,4 @@
 import requests
-
 from httpretty import HTTPretty
 
 from ...utils import parse_qs

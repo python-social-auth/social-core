@@ -5,9 +5,7 @@ from urllib.parse import urlencode
 from httpretty import HTTPretty
 
 from ...exceptions import AuthFailed
-
 from .open_id import OpenIdTest
-
 
 INFO_URL = 'http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?'
 JANRAIN_NONCE = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')

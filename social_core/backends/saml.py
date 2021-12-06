@@ -10,8 +10,8 @@ Terminology:
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
 from onelogin.saml2.settings import OneLogin_Saml2_Settings
 
-from .base import BaseAuth
 from ..exceptions import AuthFailed, AuthMissingParameter
+from .base import BaseAuth
 
 # Helpful constants:
 OID_COMMON_NAME = 'urn:oid:2.5.4.3'

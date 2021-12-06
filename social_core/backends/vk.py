@@ -3,13 +3,13 @@ VK.com OpenAPI, OAuth2 and Iframe application OAuth2 backends, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/vk.html
 """
 import json
-from time import time
 from hashlib import md5
+from time import time
 
+from ..exceptions import AuthException, AuthTokenRevoked
 from ..utils import parse_qs
 from .base import BaseAuth
 from .oauth import BaseOAuth2
-from ..exceptions import AuthTokenRevoked, AuthException
 
 
 class VKontakteOpenAPI(BaseAuth):

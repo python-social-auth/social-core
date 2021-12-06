@@ -1,9 +1,12 @@
 import json
 from urllib.parse import urlencode
+
 from httpretty import HTTPretty
 
-from .oauth import OAuth2Test
 from social_core.backends.osso import OssoOAuth2
+
+from .oauth import OAuth2Test
+
 
 class OssoOAuth2Test(OAuth2Test):
     backend_path = 'social_core.backends.osso.OssoOAuth2'

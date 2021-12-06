@@ -1,13 +1,13 @@
 import unittest
-import requests
 
+import requests
 from httpretty import HTTPretty
 
-from ...utils import module_member, parse_qs, PARTIAL_TOKEN_SESSION_NAME
-from ...backends.utils import user_backends_data, load_backends
+from ...backends.utils import load_backends, user_backends_data
+from ...utils import PARTIAL_TOKEN_SESSION_NAME, module_member, parse_qs
+from ..models import (TestAssociation, TestCode, TestNonce, TestStorage,
+                      TestUserSocialAuth, User)
 from ..strategy import TestStrategy
-from ..models import User, TestUserSocialAuth, TestNonce, \
-    TestAssociation, TestCode, TestStorage
 
 
 class BaseBackendTest(unittest.TestCase):

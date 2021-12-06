@@ -1,14 +1,14 @@
-import json
 import datetime
+import json
 from calendar import timegm
 
 from jose import jwk, jwt
-from jose.jwt import JWTError, JWTClaimsError, ExpiredSignatureError
+from jose.jwt import ExpiredSignatureError, JWTClaimsError, JWTError
 from jose.utils import base64url_decode
 
 from social_core.backends.oauth import BaseOAuth2
-from social_core.utils import cache
 from social_core.exceptions import AuthTokenError
+from social_core.utils import cache
 
 
 class OpenIdConnectAssociation:
