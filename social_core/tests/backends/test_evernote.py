@@ -1,6 +1,6 @@
-from requests import HTTPError
+from urllib.parse import urlencode
 
-from six.moves.urllib_parse import urlencode
+from requests import HTTPError
 
 from ...exceptions import AuthCanceled
 from .oauth import OAuth1Test

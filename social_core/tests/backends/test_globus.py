@@ -1,8 +1,7 @@
 import json
-import unittest2
 
-from .oauth import OAuth1Test, OAuth2Test
-from .open_id_connect import OpenIdConnectTestMixin
+from .oauth import OAuth2Test
+from .test_open_id_connect import OpenIdConnectTestMixin
 
 
 class GlobusOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
@@ -45,5 +44,5 @@ class GlobusOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
             'iss',
             'sub'
         ],
-        'subject_types_supported' : ['public']
+        'subject_types_supported': ['public']
     })

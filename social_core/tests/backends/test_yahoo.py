@@ -1,8 +1,8 @@
 import json
+from urllib.parse import urlencode
+
 import requests
 from httpretty import HTTPretty
-
-from six.moves.urllib_parse import urlencode
 
 from .oauth import OAuth1Test
 
@@ -67,6 +67,10 @@ class YahooOAuth1Test(OAuth1Test):
         self.do_login()
 
     def test_partial_pipeline(self):
+        HTTPretty.register_uri(HTTPretty.GET,
+                               'https://social.yahooapis.com/v1/me/guid?format=json',
+                               status=200,
+                               body=self.guid_body)
         self.do_partial_pipeline()
 
     def test_get_user_details(self):

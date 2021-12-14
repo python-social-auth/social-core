@@ -18,6 +18,6 @@ class PushbulletOAuth2(BaseOAuth2):
         return {'username': response.get('access_token')}
 
     def get_user_id(self, details, response):
-        auth = 'Basic {0}'.format(base64.b64encode(details['username']))
+        auth = 'Basic {}'.format(base64.b64encode(details['username']))
         return self.get_json('https://api.pushbullet.com/v2/users/me',
                              headers={'Authorization': auth})['iden']

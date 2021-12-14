@@ -2,7 +2,6 @@ import json
 import datetime
 from calendar import timegm
 
-import six
 from jose import jwk, jwt
 from jose.jwt import JWTError, JWTClaimsError, ExpiredSignatureError
 from jose.utils import base64url_decode
@@ -12,7 +11,7 @@ from social_core.utils import cache
 from social_core.exceptions import AuthTokenError
 
 
-class OpenIdConnectAssociation(object):
+class OpenIdConnectAssociation:
     """ Use Association model to save the nonce by force."""
 
     def __init__(self, handle, secret='', issued=0, lifetime=0, assoc_type=''):
@@ -44,11 +43,12 @@ class OpenIdConnectAuth(BaseOAuth2):
     REVOKE_TOKEN_URL = ''
     USERINFO_URL = ''
     JWKS_URI = ''
+    JWT_ALGORITHMS = ['RS256']
     JWT_DECODE_OPTIONS = dict()
 
     def __init__(self, *args, **kwargs):
         self.id_token = None
-        super(OpenIdConnectAuth, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def authorization_url(self):
         return self.AUTHORIZATION_URL or \
@@ -94,7 +94,7 @@ class OpenIdConnectAuth(BaseOAuth2):
 
     def auth_params(self, state=None):
         """Return extra arguments needed on auth process."""
-        params = super(OpenIdConnectAuth, self).auth_params(state)
+        params = super().auth_params(state)
         params['nonce'] = self.get_and_store_nonce(
             self.authorization_url(), state
         )
@@ -143,12 +143,28 @@ class OpenIdConnectAuth(BaseOAuth2):
             raise AuthTokenError(self, 'Incorrect id_token: nonce')
 
     def find_valid_key(self, id_token):
-        for key in self.get_jwks_keys():
-            rsakey = jwk.construct(key)
-            message, encoded_sig = id_token.rsplit('.', 1)
-            decoded_sig = base64url_decode(encoded_sig.encode('utf-8'))
-            if rsakey.verify(message.encode('utf-8'), decoded_sig):
-                return key
+        kid = jwt.get_unverified_header(id_token).get('kid')
+
+        keys = self.get_jwks_keys()
+        if kid is not None:
+            for key in keys:
+                if kid == key.get('kid'):
+                    break
+            else:
+                # In case the key id is not found in the cached keys, just
+                # reload the JWKS keys. Ideally this should be done by
+                # invalidating the cache.
+                self.get_jwks_keys.invalidate()
+                keys = self.get_jwks_keys()
+
+        for key in keys:
+            if kid is None or kid == key.get('kid'):
+                rsakey = jwk.construct(key)
+                message, encoded_sig = id_token.rsplit('.', 1)
+                decoded_sig = base64url_decode(encoded_sig.encode('utf-8'))
+                if rsakey.verify(message.encode('utf-8'), decoded_sig):
+                    return key
+        return None
 
     def validate_and_return_id_token(self, id_token, access_token):
         """
@@ -162,14 +178,13 @@ class OpenIdConnectAuth(BaseOAuth2):
         if not key:
             raise AuthTokenError(self, 'Signature verification failed')
 
-        alg = key['alg']
         rsakey = jwk.construct(key)
 
         try:
             claims = jwt.decode(
                 id_token,
                 rsakey.to_pem().decode('utf-8'),
-                algorithms=[alg],
+                algorithms=self.JWT_ALGORITHMS,
                 audience=client_id,
                 issuer=self.id_token_issuer(),
                 access_token=access_token,
@@ -200,7 +215,7 @@ class OpenIdConnectAuth(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         return self.get_json(self.userinfo_url(), headers={
-            'Authorization': 'Bearer {0}'.format(access_token)
+            'Authorization': f'Bearer {access_token}'
         })
 
     def get_user_details(self, response):

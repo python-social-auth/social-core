@@ -52,16 +52,16 @@ class FitbitOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        auth_header = {"Authorization": "Bearer %s" % access_token}
+        auth_header = {'Authorization': 'Bearer %s' % access_token}
         return self.get_json(
             'https://api.fitbit.com/1/user/-/profile.json',
             headers=auth_header
         )['user']
 
     def auth_headers(self):
-        tokens = '{0}:{1}'.format(*self.get_key_and_secret())
+        tokens = '{}:{}'.format(*self.get_key_and_secret())
         tokens = base64.urlsafe_b64encode(tokens.encode())
         tokens = tokens.decode()
         return {
-            'Authorization': 'Basic {0}'.format(tokens)
+            'Authorization': f'Basic {tokens}'
         }

@@ -5,7 +5,7 @@ Mendeley OAuth1 backend, docs at:
 from .oauth import BaseOAuth1, BaseOAuth2
 
 
-class MendeleyMixin(object):
+class MendeleyMixin:
     SCOPE_SEPARATOR = '+'
     EXTRA_DATA = [('profile_id', 'profile_id'),
                   ('name', 'name'),
@@ -63,5 +63,5 @@ class MendeleyOAuth2(MendeleyMixin, BaseOAuth2):
         """Loads user data from service"""
         return self.get_json(
             'https://api.mendeley.com/profiles/me/',
-            headers={'Authorization': 'Bearer {0}'.format(access_token)}
+            headers={'Authorization': f'Bearer {access_token}'}
         )

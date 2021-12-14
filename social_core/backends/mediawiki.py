@@ -5,12 +5,10 @@ MediaWiki OAuth1 backend, docs at:
 
 import re
 import time
-import six
+from urllib.parse import parse_qs, urlencode, urlparse
+
 import requests
 import jwt
-
-from six import b
-from six.moves.urllib.parse import parse_qs, urlencode, urlparse
 from requests_oauthlib import OAuth1
 
 from .oauth import BaseOAuth1
@@ -21,13 +19,10 @@ def force_unicode(value):
     """
     Return string in unicode.
     """
-    if isinstance(value, six.text_type):
+    if isinstance(value, str):
         return value
     else:
-        if six.PY3:
-            return str(value, "unicode-escape")
-        else:
-            return unicode(value, "unicode-escape")
+        return str(value, 'unicode-escape')
 
 
 class MediaWiki(BaseOAuth1):
@@ -50,15 +45,13 @@ class MediaWiki(BaseOAuth1):
         params.update(self.get_scope_argument())
         params['title'] = 'Special:OAuth/initiate'
         key, secret = self.get_key_and_secret()
-        decoding = None if six.PY3 else 'utf-8'
         response = self.request(
             self.setting('MEDIAWIKI_URL'),
             params=params,
             auth=OAuth1(
                 key,
                 secret,
-                callback_uri=self.setting('CALLBACK'),
-                decoding=decoding
+                callback_uri=self.setting('CALLBACK')
             ),
             method=self.REQUEST_TOKEN_METHOD
         )
@@ -79,7 +72,7 @@ class MediaWiki(BaseOAuth1):
         state = self.get_or_create_state()
         base_url = self.setting('MEDIAWIKI_URL')
 
-        return '{0}?{1}'.format(base_url, urlencode({
+        return '{}?{}'.format(base_url, urlencode({
             'title': 'Special:Oauth/authenticate',
             self.OAUTH_TOKEN_PARAMETER_NAME: oauth_token,
             self.REDIRECT_URI_PARAMETER_NAME: self.get_redirect_uri(state)
@@ -97,8 +90,8 @@ class MediaWiki(BaseOAuth1):
             auth=auth_token
         )
         credentials = parse_qs(response.content)
-        oauth_token_key = credentials.get(b('oauth_token'))[0]
-        oauth_token_secret = credentials.get(b('oauth_token_secret'))[0]
+        oauth_token_key = credentials.get(b'oauth_token')[0]
+        oauth_token_secret = credentials.get(b'oauth_token_secret')[0]
         oauth_token_key = oauth_token_key.decode()
         oauth_token_secret = oauth_token_secret.decode()
 
@@ -130,7 +123,7 @@ class MediaWiki(BaseOAuth1):
             raise AuthException(
                 self,
                 'An error occurred while trying to read json ' +
-                'content: {0}'.format(exception)
+                f'content: {exception}'
             )
 
         issuer = urlparse(identity['iss']).netloc
@@ -139,7 +132,7 @@ class MediaWiki(BaseOAuth1):
         if not issuer == expected_domain:
             raise AuthException(
                 self,
-                'Unexpected issuer {0}, expected {1}'.format(
+                'Unexpected issuer {}, expected {}'.format(
                     issuer,
                     expected_domain
                 )
@@ -150,7 +143,7 @@ class MediaWiki(BaseOAuth1):
         if not now >= (issued_at - self.LEEWAY):
             raise AuthException(
                 self,
-                'Identity issued {0} seconds in the future'.format(
+                'Identity issued {} seconds in the future'.format(
                     issued_at - now
                 )
             )
@@ -164,7 +157,7 @@ class MediaWiki(BaseOAuth1):
         if identity['nonce'] != request_nonce:
             raise AuthException(
                 self,
-                'Replay attack detected: {0} != {1}'.format(
+                'Replay attack detected: {} != {}'.format(
                     identity['nonce'],
                     request_nonce
                 )

@@ -1,9 +1,5 @@
 import json
 
-from httpretty import HTTPretty
-
-from ...exceptions import AuthFailed
-
 from .oauth import OAuth2Test
 
 

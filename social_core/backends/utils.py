@@ -76,7 +76,7 @@ def user_backends_data(user, backends, storage):
     if user_is_authenticated(user):
         associated = storage.user.get_social_auth_for_user(user)
         not_associated = list(set(available) -
-                              set(assoc.provider for assoc in associated))
+                              {assoc.provider for assoc in associated})
         values['associated'] = associated
         values['not_associated'] = not_associated
     return values

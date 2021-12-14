@@ -23,12 +23,12 @@ class ChatworkOAuth2(BaseOAuth2):
 
     def api_url(self, path):
         api_url = self.setting('API_URL') or self.API_URL
-        return '{0}{1}'.format(api_url.rstrip('/'), path)
+        return '{}{}'.format(api_url.rstrip('/'), path)
 
     def auth_headers(self):
         return {
             'Authorization': b'Basic ' + base64.b64encode(
-                '{0}:{1}'.format(*self.get_key_and_secret()).encode()
+                '{}:{}'.format(*self.get_key_and_secret()).encode()
             )
         }
 
@@ -45,11 +45,11 @@ class ChatworkOAuth2(BaseOAuth2):
             response.get('name')
         )
         username = response.get('chatwork_id') or \
-                   response.get('login_mail') or \
-                   response.get('account_id')
+            response.get('login_mail') or \
+            response.get('account_id')
         email = response.get('mail') or \
-                response.get('login_mail') or \
-                ''
+            response.get('login_mail') or \
+            ''
         return {
             'username': username,
             'email': email,

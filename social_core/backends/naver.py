@@ -1,5 +1,3 @@
-from xml.dom import minidom
-
 from .oauth import BaseOAuth2
 
 
@@ -29,7 +27,7 @@ class NaverOAuth2(BaseOAuth2):
         response = self.request(
             'https://openapi.naver.com/v1/nid/me',
             headers={
-                'Authorization': 'Bearer {0}'.format(access_token),
+                'Authorization': f'Bearer {access_token}',
                 'Content_Type': 'text/json'
             }
         )

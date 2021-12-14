@@ -3,8 +3,7 @@ Twilio auth backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/twilio.html
 """
 from re import sub
-
-from six.moves.urllib_parse import urlencode
+from urllib.parse import urlencode
 
 from .base import BaseAuth
 
@@ -29,7 +28,7 @@ class TwilioAuth(BaseAuth):
         callback = self.strategy.absolute_uri(self.redirect_uri)
         callback = sub(r'^https', 'http', callback)
         query = urlencode({'cb': callback})
-        return 'https://www.twilio.com/authorize/{0}?{1}'.format(key, query)
+        return f'https://www.twilio.com/authorize/{key}?{query}'
 
     def auth_complete(self, *args, **kwargs):
         """Completes login process, must return user instance"""

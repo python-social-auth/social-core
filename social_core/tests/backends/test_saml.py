@@ -1,19 +1,15 @@
-import re
 import json
-import sys
-import unittest2
-import requests
 import os
+import re
+import sys
+import unittest
 from os import path
+from urllib.parse import urlparse, urlunparse, urlencode, parse_qs
 
+import requests
 
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch
+from unittest.mock import patch
 from httpretty import HTTPretty
-
-from six.moves.urllib_parse import urlparse, urlunparse, urlencode, parse_qs
 
 try:
     from onelogin.saml2.utils import OneLogin_Saml2_Utils
@@ -28,10 +24,10 @@ from ...exceptions import AuthMissingParameter
 DATA_DIR = path.join(path.dirname(__file__), 'data')
 
 
-@unittest2.skipIf('TRAVIS' in os.environ,
+@unittest.skipIf('TRAVIS' in os.environ,
                   'Travis-ci segfaults probably due to a bad '
                   'dependencies build')
-@unittest2.skipIf('__pypy__' in sys.builtin_module_names,
+@unittest.skipIf('__pypy__' in sys.builtin_module_names,
                   'dm.xmlsec not compatible with pypy')
 class SAMLTest(BaseBackendTest):
     backend_path = 'social_core.backends.saml.SAMLAuth'
@@ -39,14 +35,14 @@ class SAMLTest(BaseBackendTest):
 
     def extra_settings(self):
         name = path.join(DATA_DIR, 'saml_config.json')
-        with open(name, 'r') as config_file:
+        with open(name) as config_file:
             config_str = config_file.read()
         return json.loads(config_str)
 
     def setUp(self):
         """Patch the time so that we can replay canned
         request/response pairs"""
-        super(SAMLTest, self).setUp()
+        super().setUp()
 
         @staticmethod
         def fixed_time():
@@ -64,7 +60,7 @@ class SAMLTest(BaseBackendTest):
         # data in the query string.  A pre-recorded correct response
         # is kept in this .txt file:
         name = path.join(DATA_DIR, 'saml_response.txt')
-        with open(name, 'r') as response_file:
+        with open(name) as response_file:
             response_url = response_file.read()
         HTTPretty.register_uri(HTTPretty.GET, start_url, status=301,
                                location=response_url)
@@ -83,8 +79,8 @@ class SAMLTest(BaseBackendTest):
         response = requests.get(start_url)
         self.assertTrue(response.url.startswith(return_url))
         self.assertEqual(response.text, 'foobar')
-        query_values = dict((k, v[0]) for k, v in
-                            parse_qs(urlparse(response.url).query).items())
+        query_values = {k: v[0] for k, v in
+                            parse_qs(urlparse(response.url).query).items()}
         self.assertNotIn(' ', query_values['SAMLResponse'])
         self.strategy.set_request_data(query_values, self.backend)
         return self.backend.complete()
@@ -113,8 +109,8 @@ class SAMLTest(BaseBackendTest):
         """
         # Parse the SAML Request URL to get the XML being sent to TestShib
         url_parts = urlparse(start_url)
-        query = dict((k, v[0]) for (k, v) in
-                     parse_qs(url_parts.query).items())
+        query = {k: v[0] for (k, v) in
+                     parse_qs(url_parts.query).items()}
         xml = OneLogin_Saml2_Utils.decode_base64_and_inflate(
             query['SAMLRequest']
         )

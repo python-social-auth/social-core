@@ -43,6 +43,6 @@ class StravaOAuth(BaseOAuth2):
                              params={'access_token': access_token})
 
     def revoke_token_params(self, token, uid):
-        params = super(StravaOAuth, self).revoke_token_params(token, uid)
+        params = super().revoke_token_params(token, uid)
         params['access_token'] = token
         return params

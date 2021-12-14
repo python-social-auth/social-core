@@ -39,15 +39,17 @@ class KakaoOAuth2(BaseOAuth2):
         return self.get_json(
             'https://kapi.kakao.com/v2/user/me',
             headers={
-                'Authorization': 'Bearer {0}'.format(access_token),
+                'Authorization': f'Bearer {access_token}',
                 'Content_Type': 'application/x-www-form-urlencoded;charset=utf-8',
             },
             params={'access_token': access_token}
         )
 
     def auth_complete_params(self, state=None):
+        client_id, client_secret = self.get_key_and_secret()
         return {
             'grant_type': 'authorization_code',
             'code': self.data.get('code', ''),
-            'client_id': self.get_key_and_secret()[0],
+            'client_id': client_id,
+            'client_secret': client_secret,
         }

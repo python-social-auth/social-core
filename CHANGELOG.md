@@ -5,7 +5,87 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased](https://github.com/python-social-auth/social-core/commits/master)
+## [Unreleased](https://github.com/python-social-auth/social-core/)
+
+### Added
+- Add fields that populate on create but not update `SOCIAL_AUTH_IMMUTABLE_USER_FIELDS`
+- Add Gitea oauth2 backend
+- Add Twitch OpenId backend
+
+### Changed
+- Fixed Slack user identity API call with Bearer headers
+- Fixed microsoft-graph login error
+- Fixed Twitch OAuth2 backend
+
+
+## [4.1.0](https://github.com/python-social-auth/social-core/releases/tag/4.1.0) - 2021-03-01
+
+### Added
+- Discourse backend
+- Osso backend
+- Add `get` and `delete` class methods for `NonceMixin`
+- Use strategies as interface to fetch backends
+
+### Changed
+- Get Apple user first and last name from `self.data`
+- Instagram Legacy API has been replaced with Instagram Basic Display API since the first one was deprecated, [see](https://www.instagram.com/developer/).
+- Store `expires_in` for Zoom backend
+- Dropped support no longer working Dropbox v1 API
+- Several improvements to the ORCIDOAuth2 backend
+- Make WHITELIST_\* settings properly case insensitive
+- Fixed token validation in the AzureADV2TenantOAuth2 backend
+
+## [4.0.3](https://github.com/python-social-auth/social-core/releases/tag/4.0.3) - 2021-01-12
+
+### Changed
+- Updated PyJWT version to 2.0.0
+- Remove six dependency
+
+## [4.0.2](https://github.com/python-social-auth/social-core/releases/tag/4.0.2) - 2021-01-10
+
+### Changed
+- Fixes to Github-action release mechanism
+
+## [4.0.1](https://github.com/python-social-auth/social-core/releases/tag/4.0.1) - 2021-01-10
+
+### Changed
+- Fixes to Github-action release mechanism
+
+## [4.0.0](https://github.com/python-social-auth/social-core/releases/tag/4.0.0) - 2021-01-10
+
+### Added
+- PayPal backend
+- Fence OIDC-based backend
+
+### Changed
+- Dropped Python 2 support from testing stack
+- Remove discontinued Google OpenId backend
+- Remove discontinued Yahoo OpenId backend
+- Fix `jwt.decode()` passed algorithm
+- Prevent `PyJWT` v2.0.0 being installed
+- Update Facebook Graph API to 8.0
+- Update Amazon fetch-profile URL
+- Fix Azure AD Tenant, unable to load certificate
+- Fix Okta well-known URL
+- Updated Discord's API hostname from discordapp.com to discord.com
+- Pass `client_secret` in auth-complete on Kakao backend
+
+## [3.4.0](https://github.com/python-social-auth/social-core/releases/tag/3.4.0) - 2020-06-21
+
+### Added
+- Zoom backend
+
+### Changed
+- Directly use `access_token` in Azure Tenant backend
+- Support Apple JWT audience
+- Update partial session cleanup to remove old token from session too
+- Fetch user email in Okta integration
+- Improve Python 3.9 compatibility
+- Send proxies in request
+- Improve error handling in Apple backend
+- Properly support case insensitive matching of whitelist settings
+
+## [3.3.3](https://github.com/python-social-auth/social-core/releases/tag/3.3.3) - 2020-04-16
 
 ### Changed
 - Updated list of default user protected fields to include admin flags and password

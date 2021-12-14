@@ -1,7 +1,5 @@
-import unittest2
-
-from .oauth import OAuth1Test, OAuth2Test
-from .open_id_connect import OpenIdConnectTestMixin
+from .oauth import OAuth2Test
+from .test_open_id_connect import OpenIdConnectTestMixin
 
 
 class ElixirOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):

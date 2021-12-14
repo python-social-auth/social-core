@@ -18,7 +18,7 @@ class ShimmeringOAuth2(BaseOAuth2):
         last_name = response.get('last_name')
         email = response.get('email')
         username = response.get('username')
-        fullname = '{} {}'.format(first_name, last_name)
+        fullname = f'{first_name} {last_name}'
         return {
             'username': username,
             'fullname': fullname,

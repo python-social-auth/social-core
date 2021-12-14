@@ -25,7 +25,7 @@ class SpotifyOAuth2Test(OAuth2Test):
         'images': [],
         'type': 'user',
         'uri': 'spotify:user:foobar'
-        })
+    })
 
     def test_login(self):
         self.do_login()

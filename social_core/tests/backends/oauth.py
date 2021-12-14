@@ -1,11 +1,9 @@
-import requests
+from urllib.parse import urlparse
 
+import requests
 from httpretty import HTTPretty
 
-from six.moves.urllib_parse import urlencode, urlparse
-
 from ...utils import parse_qs, url_add_parameters
-
 from ..models import User
 from .base import BaseBackendTest
 
@@ -15,6 +13,7 @@ class BaseOAuthTest(BaseBackendTest):
     backend_path = None
     user_data_body = None
     user_data_url = ''
+    user_data_url_post = False
     user_data_content_type = 'application/json'
     access_token_body = None
     access_token_status = 200
@@ -59,17 +58,19 @@ class BaseOAuthTest(BaseBackendTest):
                                target_url,
                                status=200,
                                body='foobar')
+        if self.user_data_url:
+            HTTPretty.register_uri(HTTPretty.POST if self.user_data_url_post else HTTPretty.GET,
+                                   self.user_data_url,
+                                   body=self.user_data_body or '',
+                                   content_type=self.user_data_content_type)
+        return target_url
+
+    def pre_complete_callback(self, start_url):
         HTTPretty.register_uri(self._method(self.backend.ACCESS_TOKEN_METHOD),
                                uri=self.backend.access_token_url(),
                                status=self.access_token_status,
                                body=self.access_token_body or '',
                                content_type='text/json')
-        if self.user_data_url:
-            HTTPretty.register_uri(HTTPretty.GET,
-                                   self.user_data_url,
-                                   body=self.user_data_body or '',
-                                   content_type=self.user_data_content_type)
-        return target_url
 
     def do_start(self):
         start_url = self.backend.start().url
@@ -81,13 +82,14 @@ class BaseOAuthTest(BaseBackendTest):
                                        self.backend)
         self.strategy.set_request_data(parse_qs(urlparse(target_url).query),
                                        self.backend)
+        self.pre_complete_callback(start_url)
         return self.backend.complete()
 
 
 class OAuth1Test(BaseOAuthTest):
     request_token_body = None
     raw_complete_url = '/complete/{0}/?oauth_verifier=bazqux&' \
-                                      'oauth_token=foobar'
+        'oauth_token=foobar'
 
     def request_token_handler(self):
         HTTPretty.register_uri(self._method(self.backend.REQUEST_TOKEN_METHOD),
@@ -97,7 +99,7 @@ class OAuth1Test(BaseOAuthTest):
 
     def do_start(self):
         self.request_token_handler()
-        return super(OAuth1Test, self).do_start()
+        return super().do_start()
 
 
 class OAuth2Test(BaseOAuthTest):

@@ -14,7 +14,7 @@ from ..exceptions import AuthException, AuthCanceled, AuthUnknownError, \
                          AuthMissingParameter
 
 
-API_VERSION = 3.2
+API_VERSION = 14.0
 
 
 class FacebookOAuth2(BaseOAuth2):
@@ -38,7 +38,7 @@ class FacebookOAuth2(BaseOAuth2):
     ]
 
     def auth_params(self, state=None):
-        params = super(FacebookOAuth2, self).auth_params(state)
+        params = super().auth_params(state)
         params['return_scopes'] = 'true'
         return params
 
@@ -65,7 +65,7 @@ class FacebookOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        params = self.setting('PROFILE_EXTRA_PARAMS', {})
+        params = self.setting('PROFILE_EXTRA_PARAMS', {}).copy()
         params['access_token'] = access_token
 
         if self.setting('APPSECRET_PROOF', True):
@@ -81,10 +81,10 @@ class FacebookOAuth2(BaseOAuth2):
                              params=params)
 
     def process_error(self, data):
-        super(FacebookOAuth2, self).process_error(data)
+        super().process_error(data)
         if data.get('error_code'):
             raise AuthCanceled(self, data.get('error_message') or
-                                     data.get('error_code'))
+                               data.get('error_code'))
 
     @handle_http_errors
     def auth_complete(self, *args, **kwargs):
@@ -125,6 +125,7 @@ class FacebookOAuth2(BaseOAuth2):
             'client_secret': client_secret
         }
 
+    @handle_http_errors
     def do_auth(self, access_token, response=None, *args, **kwargs):
         response = response or {}
 
@@ -160,7 +161,7 @@ class FacebookOAuth2(BaseOAuth2):
         return {'access_token': token}
 
     def process_revoke_token_response(self, response):
-        return super(FacebookOAuth2, self).process_revoke_token_response(
+        return super().process_revoke_token_response(
             response
         ) and response.content == 'true'
 
@@ -212,7 +213,7 @@ class FacebookAppOAuth2(FacebookOAuth2):
     def load_signed_request(self, signed_request):
         def base64_url_decode(data):
             data = data.encode('ascii')
-            data += '='.encode('ascii') * (4 - (len(data) % 4))
+            data += b'=' * (4 - (len(data) % 4))
             return base64.urlsafe_b64decode(data)
 
         key, secret = self.get_key_and_secret()

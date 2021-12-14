@@ -1,4 +1,4 @@
-import unittest2 as unittest
+import unittest
 
 from ...backends.base import BaseAuth
 from ..strategy import TestStrategy
@@ -18,20 +18,20 @@ class BrokenBackendTest(unittest.TestCase):
 
     def test_auth_url(self):
         with self.assertRaisesRegex(NotImplementedError,
-                                     'Implement in subclass'):
+                                    'Implement in subclass'):
             self.backend.auth_url()
 
     def test_auth_html(self):
         with self.assertRaisesRegex(NotImplementedError,
-                                     'Implement in subclass'):
+                                    'Implement in subclass'):
             self.backend.auth_html()
 
     def test_auth_complete(self):
         with self.assertRaisesRegex(NotImplementedError,
-                                     'Implement in subclass'):
+                                    'Implement in subclass'):
             self.backend.auth_complete()
 
     def test_get_user_details(self):
         with self.assertRaisesRegex(NotImplementedError,
-                                     'Implement in subclass'):
+                                    'Implement in subclass'):
             self.backend.get_user_details(None)

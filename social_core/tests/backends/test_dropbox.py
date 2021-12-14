@@ -1,34 +1,27 @@
 import json
+from urllib.parse import urlencode
 
-from six.moves.urllib_parse import urlencode
-
-from .oauth import OAuth1Test
+from .oauth import OAuth2Test
 
 
-class DropboxOAuth1Test(OAuth1Test):
-    backend_path = 'social_core.backends.dropbox.DropboxOAuth'
-    user_data_url = 'https://api.dropbox.com/1/account/info'
-    expected_username = '10101010'
+class DropboxOAuth2Test(OAuth2Test):
+    backend_path = 'social_core.backends.dropbox.DropboxOAuth2V2'
+    user_data_url = 'https://api.dropboxapi.com/2/users/get_current_account'
+    user_data_url_post = True
+    expected_username = 'dbidAAH4f99T0taONIb-OurWxbNQ6ywGRopQngc'
     access_token_body = json.dumps({
         'access_token': 'foobar',
         'token_type': 'bearer'
     })
-    request_token_body = urlencode({
-        'oauth_token_secret': 'foobar-secret',
-        'oauth_token': 'foobar',
-        'oauth_callback_confirmed': 'true'
-    })
     user_data_body = json.dumps({
-        'referral_link': 'https://www.dropbox.com/referrals/foobar',
-        'display_name': 'Foo Bar',
-        'uid': 10101010,
-        'country': 'US',
-        'quota_info': {
-            'shared': 138573,
-            'quota': 2952790016,
-            'normal': 157327
+        'account_id': 'dbid:AAH4f99T0taONIb-OurWxbNQ6ywGRopQngc',
+        'name': {
+            'given_name': 'Franz',
+            'surname': 'Ferdinand',
+            'familiar_name': 'Franz',
+            'display_name': 'Franz Ferdinand (Personal)',
+            'abbreviated_name': 'FF'
         },
-        'email': 'foo@bar.com'
     })
 
     def test_login(self):

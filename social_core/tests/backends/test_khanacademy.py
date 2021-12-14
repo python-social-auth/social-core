@@ -1,6 +1,5 @@
 import json
-
-from six.moves.urllib_parse import urlencode
+from urllib.parse import urlencode
 
 
 from .oauth import OAuth1Test
@@ -20,8 +19,8 @@ class KhanAcademyOAuth1Test(OAuth1Test):
         'oauth_callback_confirmed': 'true'
     })
     user_data_body = json.dumps({
-        "email": "foo@bar.com",
-        "user_id": "http://googleid.khanacademy.org/11111111111111",
+        'email': 'foo@bar.com',
+        'user_id': 'http://googleid.khanacademy.org/11111111111111',
     })
 
     def test_login(self):

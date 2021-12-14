@@ -1,4 +1,3 @@
-# coding:utf-8
 # author:hepochen@gmail.com  https://github.com/hepochen
 """
 Weibo OAuth2 backend, docs at:

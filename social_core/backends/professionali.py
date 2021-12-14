@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Professionaly OAuth 2.0 support.
 
@@ -26,9 +25,9 @@ class ProfessionaliOAuth2(BaseOAuth2):
         first_name, last_name = map(response.get, ('firstname', 'lastname'))
         email = ''
         if self.setting('FAKE_EMAIL'):
-            email = '{0}@professionali.ru'.format(time())
+            email = f'{time()}@professionali.ru'
         return {
-            'username': '{0}_{1}'.format(last_name, first_name),
+            'username': f'{last_name}_{first_name}',
             'first_name': first_name,
             'last_name': last_name,
             'email': email
@@ -45,7 +44,7 @@ class ProfessionaliOAuth2(BaseOAuth2):
         }
         try:
             return self.get_json(url, params)[0]
-        except (TypeError, KeyError, IOError, ValueError, IndexError):
+        except (TypeError, KeyError, OSError, ValueError, IndexError):
             return None
 
     def get_json(self, url, *args, **kwargs):
