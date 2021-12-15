@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import re
 
 from os.path import join, dirname
@@ -21,7 +20,7 @@ and ORMs.
 def long_description():
     try:
         return open(join(dirname(__file__), 'README.md')).read()
-    except IOError:
+    except OSError:
         return None
 
 
@@ -33,12 +32,12 @@ def read_version():
 
 
 def read_requirements(filename):
-    with open(filename, 'r') as file:
+    with open(filename) as file:
         return [line for line in file.readlines() if not line.startswith('-')]
 
 
 def read_tests_requirements(filename):
-    return read_requirements('social_core/tests/{0}'.format(filename))
+    return read_requirements(f'social_core/tests/{filename}')
 
 
 requirements = read_requirements('requirements-base.txt')

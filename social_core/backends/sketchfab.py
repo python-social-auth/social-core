@@ -35,5 +35,5 @@ class SketchfabOAuth2(BaseOAuth2):
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
         return self.get_json('https://sketchfab.com/v2/users/me', headers={
-            'Authorization': 'Bearer {0}'.format(access_token)
+            'Authorization': f'Bearer {access_token}'
         })

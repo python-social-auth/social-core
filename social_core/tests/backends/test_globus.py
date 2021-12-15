@@ -1,7 +1,7 @@
 import json
 
 from .oauth import OAuth2Test
-from .open_id_connect import OpenIdConnectTestMixin
+from .test_open_id_connect import OpenIdConnectTestMixin
 
 
 class GlobusOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):

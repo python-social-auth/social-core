@@ -33,9 +33,9 @@ class PatreonOAuth2(BaseOAuth2):
 
     def get_api(self, access_token, suffix):
         return self.get_json(
-            'https://www.patreon.com/api/oauth2/v2/{}'.format(suffix),
+            f'https://www.patreon.com/api/oauth2/v2/{suffix}',
             headers=self.get_auth_header(access_token)
         )
 
     def get_auth_header(self, access_token):
-        return {'Authorization': 'Bearer {0}'.format(access_token)}
+        return {'Authorization': f'Bearer {access_token}'}

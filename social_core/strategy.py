@@ -116,7 +116,7 @@ class BaseStrategy:
             random.SystemRandom()
         except NotImplementedError:
             key = self.setting('SECRET_KEY', '')
-            seed = '{0}{1}{2}'.format(random.getstate(), time.time(), key)
+            seed = f'{random.getstate()}{time.time()}{key}'
             random.seed(hashlib.sha256(seed.encode()).digest())
         return ''.join([random.choice(chars) for i in range(length)])
 

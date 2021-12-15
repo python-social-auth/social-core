@@ -303,7 +303,7 @@ class SAMLAuth(BaseAuth):
         """
         idp = self.get_idp(response['idp_name'])
         uid = idp.get_user_permanent_id(response['attributes'])
-        return '{0}:{1}'.format(idp.name, uid)
+        return f'{idp.name}:{uid}'
 
     def auth_complete(self, *args, **kwargs):
         """
@@ -318,7 +318,7 @@ class SAMLAuth(BaseAuth):
         if errors or not auth.is_authenticated():
             reason = auth.get_last_error_reason()
             raise AuthFailed(
-                self, 'SAML login failed: {0} ({1})'.format(errors, reason)
+                self, f'SAML login failed: {errors} ({reason})'
             )
 
         attributes = auth.get_attributes()

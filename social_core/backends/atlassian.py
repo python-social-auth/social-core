@@ -30,8 +30,8 @@ class AtlassianOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         resources = self.get_json('https://api.atlassian.com/oauth/token/accessible-resources',
-                                  headers={'Authorization': 'Bearer {}'.format(access_token)})
+                                  headers={'Authorization': f'Bearer {access_token}'})
         user_info = self.get_json('https://api.atlassian.com/ex/jira/{}/rest/api/2/myself'.format(resources[0]['id']),
-                                  headers={'Authorization': 'Bearer {}'.format(access_token)})
+                                  headers={'Authorization': f'Bearer {access_token}'})
         user_info['resources'] = resources
         return user_info

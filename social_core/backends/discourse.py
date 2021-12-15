@@ -39,7 +39,7 @@ class DiscourseAuth(BaseAuth):
             'sso': base_64_payload,
             'sig': payload_signature
         })
-        return '{0}?{1}'.format(self.get_idp_url(), encoded_params)
+        return f'{self.get_idp_url()}?{encoded_params}'
 
     def get_idp_url(self):
         return self.setting('SERVER_URL') + '/session/sso_provider'

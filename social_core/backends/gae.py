@@ -1,7 +1,6 @@
 """
 Google App Engine support using User API
 """
-from __future__ import absolute_import
 
 from google.appengine.api import users
 

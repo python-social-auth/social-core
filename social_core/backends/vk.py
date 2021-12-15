@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 VK.com OpenAPI, OAuth2 and Iframe application OAuth2 backends, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/vk.html

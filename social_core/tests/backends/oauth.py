@@ -58,17 +58,19 @@ class BaseOAuthTest(BaseBackendTest):
                                target_url,
                                status=200,
                                body='foobar')
-        HTTPretty.register_uri(self._method(self.backend.ACCESS_TOKEN_METHOD),
-                               uri=self.backend.access_token_url(),
-                               status=self.access_token_status,
-                               body=self.access_token_body or '',
-                               content_type='text/json')
         if self.user_data_url:
             HTTPretty.register_uri(HTTPretty.POST if self.user_data_url_post else HTTPretty.GET,
                                    self.user_data_url,
                                    body=self.user_data_body or '',
                                    content_type=self.user_data_content_type)
         return target_url
+
+    def pre_complete_callback(self, start_url):
+        HTTPretty.register_uri(self._method(self.backend.ACCESS_TOKEN_METHOD),
+                               uri=self.backend.access_token_url(),
+                               status=self.access_token_status,
+                               body=self.access_token_body or '',
+                               content_type='text/json')
 
     def do_start(self):
         start_url = self.backend.start().url
@@ -80,6 +82,7 @@ class BaseOAuthTest(BaseBackendTest):
                                        self.backend)
         self.strategy.set_request_data(parse_qs(urlparse(target_url).query),
                                        self.backend)
+        self.pre_complete_callback(start_url)
         return self.backend.complete()
 
 

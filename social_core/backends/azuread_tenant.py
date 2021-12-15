@@ -79,7 +79,7 @@ class AzureADTenantOAuth2(AzureADOAuth2):
                 x5c = key['x5c'][0]
                 break
         else:
-            raise DecodeError('Cannot find kid={}'.format(kid))
+            raise DecodeError(f'Cannot find kid={kid}')
 
         return load_der_x509_certificate(base64.b64decode(x5c),
                                          default_backend())

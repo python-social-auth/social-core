@@ -265,7 +265,7 @@ def append_slash(url):
     'http://www.example.com/api/user/1/'
     """
     if url and not url.endswith('/'):
-        url = '{0}/'.format(url)
+        url = f'{url}/'
     return url
 
 
@@ -305,4 +305,9 @@ class cache:
                     if not cached_value:
                         raise
             return cached_value
+
+        wrapped.invalidate = self._invalidate
         return wrapped
+
+    def _invalidate(self):
+        self.cache.clear()

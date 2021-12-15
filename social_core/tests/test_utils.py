@@ -45,7 +45,7 @@ class SanitizeRedirectTest(unittest.TestCase):
     def test_multiple_hosts(self):
         allowed_hosts = ['myapp1.com', 'myapp2.com']
         for host in allowed_hosts:
-            url = 'http://{}/path/'.format(host)
+            url = f'http://{host}/path/'
             self.assertEqual(sanitize_redirect(allowed_hosts, url), url)
 
     def test_multiple_hosts_wrong_host(self):

@@ -14,7 +14,7 @@ from ..exceptions import AuthException, AuthCanceled, AuthUnknownError, \
                          AuthMissingParameter
 
 
-API_VERSION = 8.0
+API_VERSION = 14.0
 
 
 class FacebookOAuth2(BaseOAuth2):
@@ -65,7 +65,7 @@ class FacebookOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        params = self.setting('PROFILE_EXTRA_PARAMS', {})
+        params = self.setting('PROFILE_EXTRA_PARAMS', {}).copy()
         params['access_token'] = access_token
 
         if self.setting('APPSECRET_PROOF', True):
@@ -213,7 +213,7 @@ class FacebookAppOAuth2(FacebookOAuth2):
     def load_signed_request(self, signed_request):
         def base64_url_decode(data):
             data = data.encode('ascii')
-            data += '='.encode('ascii') * (4 - (len(data) % 4))
+            data += b'=' * (4 - (len(data) % 4))
             return base64.urlsafe_b64decode(data)
 
         key, secret = self.get_key_and_secret()
