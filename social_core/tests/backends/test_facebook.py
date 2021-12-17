@@ -3,7 +3,7 @@ import json
 from ...backends.facebook import API_VERSION
 from ...exceptions import AuthCanceled, AuthUnknownError
 from .oauth import OAuth2Test
-from .open_id_connect import OpenIdConnectTestMixin
+from .test_open_id_connect import OpenIdConnectTestMixin
 
 
 class FacebookOAuth2Test(OAuth2Test):
