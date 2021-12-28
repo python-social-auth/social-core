@@ -178,7 +178,7 @@ def vk_api(backend, method, data):
         http://goo.gl/yLcaa
     """
     # We need to perform server-side call if no access_token
-    data['v'] = backend.setting('API_VERSION', '5.131')
+    data['v'] = backend.setting('API_VERSION', '5.81')
     if 'access_token' not in data:
         key, secret = backend.get_key_and_secret()
         if 'api_id' not in data:
