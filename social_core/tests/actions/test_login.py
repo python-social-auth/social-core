@@ -4,6 +4,14 @@ from .actions import BaseActionTest
 
 
 class LoginActionTest(BaseActionTest):
+    def setUp(self):
+        super().setUp()
+        User.set_authenticated(False)
+
+    def tearDown(self):
+        super().tearDown()
+        User.set_authenticated(True)
+
     def test_login(self):
         self.do_login()
 

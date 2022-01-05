@@ -23,6 +23,7 @@ class User(BaseModel):
     NEXT_ID = 1
     cache = {}
     _is_active = True
+    _is_authenticated = True
 
     def __init__(self, username, email=None, **extra_user_fields):
         self.id = User.next_id()
@@ -39,9 +40,16 @@ class User(BaseModel):
     def is_active(self):
         return self._is_active
 
+    def is_authenticated(self):
+        return self._is_authenticated
+
     @classmethod
     def set_active(cls, is_active=True):
         cls._is_active = is_active
+
+    @classmethod
+    def set_authenticated(cls, is_authenticated=True):
+        cls._is_authenticated = is_authenticated
 
     def set_password(self, password):
         self.password = password
