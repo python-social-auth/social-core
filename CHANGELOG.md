@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Fixed Slack user identity API call with Bearer headers
 - Fixed microsoft-graph login error
+- Re-calculate whether the user is still authenticated after the pipeline in the `do_complete` function.
 
 
 ## [4.1.0](https://github.com/python-social-auth/social-core/releases/tag/4.1.0) - 2021-03-01
