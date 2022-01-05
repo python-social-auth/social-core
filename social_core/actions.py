@@ -55,6 +55,7 @@ def do_complete(backend, login, user=None, redirect_name='next',
     if user and not isinstance(user, user_model):
         return user
 
+    is_authenticated = user_is_authenticated(user)
     if is_authenticated:
         if not user:
             url = setting_url(backend, redirect_value, 'LOGIN_REDIRECT_URL')
