@@ -33,16 +33,16 @@ def do_complete(backend, login, user=None, redirect_name='next',
                 *args, **kwargs):
     data = backend.strategy.request_data()
 
-    is_authenticated = user_is_authenticated(user)
-    user = user if is_authenticated else None
+    is_authenticated_pre_pipeline = user_is_authenticated(user)
+    pre_pipeline_user = user if is_authenticated else None
 
-    partial = partial_pipeline_data(backend, user, *args, **kwargs)
+    partial = partial_pipeline_data(backend, pre_pipeline_user, *args, **kwargs)
     if partial:
-        user = backend.continue_pipeline(partial)
+        post_pipeline_user = backend.continue_pipeline(partial)
         # clean partial data after usage
         backend.strategy.clean_partial_pipeline(partial.token)
     else:
-        user = backend.complete(user=user, *args, **kwargs)
+        post_pipeline_user = backend.complete(user=pre_pipeline_user, *args, **kwargs)
 
     # pop redirect value before the session is trashed on login(), but after
     # the pipeline so that the pipeline can change the redirect if needed
@@ -52,23 +52,23 @@ def do_complete(backend, login, user=None, redirect_name='next',
     # check if the output value is something else than a user and just
     # return it to the client
     user_model = backend.strategy.storage.user.user_model()
-    if user and not isinstance(user, user_model):
-        return user
+    if post_pipeline_user and not isinstance(post_pipeline_user, user_model):
+        return post_pipeline_user
 
-    is_authenticated = user_is_authenticated(user)
+    is_authenticated_post_pipeline = user_is_authenticated(post_pipeline_user)
     if is_authenticated:
-        if not user:
+        if not post_pipeline_user:
             url = setting_url(backend, redirect_value, 'LOGIN_REDIRECT_URL')
         else:
             url = setting_url(backend, redirect_value,
                               'NEW_ASSOCIATION_REDIRECT_URL',
                               'LOGIN_REDIRECT_URL')
-    elif user:
-        if user_is_active(user):
+    elif post_pipeline_user:
+        if user_is_active(post_pipeline_user):
             # catch is_new/social_user in case login() resets the instance
-            is_new = getattr(user, 'is_new', False)
-            social_user = user.social_user
-            login(backend, user, social_user)
+            is_new = getattr(post_pipeline_user, 'is_new', False)
+            social_user = post_pipeline_user.social_user
+            login(backend, post_pipeline_user, social_user)
             # store last login backend name in session
             backend.strategy.session_set('social_auth_last_login_backend',
                                          social_user.provider)
@@ -83,8 +83,8 @@ def do_complete(backend, login, user=None, redirect_name='next',
                                   'LOGIN_REDIRECT_URL')
         else:
             if backend.setting('INACTIVE_USER_LOGIN', False):
-                social_user = user.social_user
-                login(backend, user, social_user)
+                social_user = post_pipeline_user.social_user
+                login(backend, post_pipeline_user, social_user)
             url = setting_url(backend, 'INACTIVE_USER_URL', 'LOGIN_ERROR_URL',
                               'LOGIN_URL')
     else:
