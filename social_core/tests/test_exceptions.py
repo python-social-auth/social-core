@@ -52,7 +52,7 @@ class AuthStateMissingTest(BaseExceptionTestCase):
 
 class NotAllowedToDisconnectTest(BaseExceptionTestCase):
     exception = NotAllowedToDisconnect()
-    expected_message = ''
+    expected_message = 'This account is not allowed to be disconnected.'
 
 
 class AuthExceptionTest(BaseExceptionTestCase):
@@ -83,7 +83,7 @@ class AuthStateForbiddenTest(BaseExceptionTestCase):
 
 class AuthAlreadyAssociatedTest(BaseExceptionTestCase):
     exception = AuthAlreadyAssociated('foobar')
-    expected_message = ''
+    expected_message = 'This account is already in use.'
 
 
 class AuthTokenRevokedTest(BaseExceptionTestCase):

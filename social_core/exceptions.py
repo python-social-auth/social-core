@@ -20,7 +20,8 @@ class MissingBackend(WrongBackend):
 
 class NotAllowedToDisconnect(SocialAuthBaseException):
     """User is not allowed to disconnect it's social account."""
-    pass
+    def __str__(self):
+        return 'This account is not allowed to be disconnected.'
 
 
 class AuthException(SocialAuthBaseException):
@@ -90,7 +91,8 @@ class AuthStateForbidden(AuthException):
 
 class AuthAlreadyAssociated(AuthException):
     """A different user has already associated the target social account"""
-    pass
+    def __str__(self):
+        return 'This account is already in use.'
 
 
 class AuthTokenRevoked(AuthException):
