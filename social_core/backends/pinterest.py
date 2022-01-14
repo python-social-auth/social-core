@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
 """
 Pinterest OAuth2 backend, docs at:
     https://developers.pinterest.com/docs/api/authentication/
 """
 
-from __future__ import unicode_literals
 
 import ssl
 

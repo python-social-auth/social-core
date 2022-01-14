@@ -1,8 +1,7 @@
-
 import json
 
-from jose import jwt
 from httpretty import HTTPretty
+from jose import jwt
 
 from .oauth import OAuth2Test
 
@@ -43,7 +42,7 @@ class Auth0OAuth2Test(OAuth2Test):
             'name': 'John Doe',
             'picture': 'http://example.com/image.png',
             'sub': '123456',
-            'iss': 'https://{}/'.format(DOMAIN),
+            'iss': f'https://{DOMAIN}/',
         }, JWK_KEY, algorithm='RS256')
     })
     expected_username = 'foobar'

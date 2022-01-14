@@ -3,7 +3,6 @@ import json
 from httpretty import HTTPretty
 
 from ...exceptions import AuthFailed
-
 from .oauth import OAuth2Test
 
 
@@ -124,6 +123,11 @@ class GithubEnterpriseOAuth2NoEmailTest(GithubEnterpriseOAuth2Test):
             'SOCIAL_AUTH_GITHUB_ENTERPRISE_URL': 'https://www.example.com'})
         self.strategy.set_settings({
             'SOCIAL_AUTH_GITHUB_ENTERPRISE_API_URL': 'https://www.example.com/api/v3'})
+        HTTPretty.register_uri(HTTPretty.GET,
+                               'https://www.example.com/api/v3/user/emails',
+                               status=200,
+                               body=json.dumps([{'email': 'foo@bar.com'}]),
+                               content_type='application/json')
         self.do_partial_pipeline()
 
 

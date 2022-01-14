@@ -7,7 +7,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9]
+        python-version: 
+          - "3.6"
+          - "3.7"
+          - "3.8"
+          - "3.9"
+          - "3.10"
     env:
       PYTHON_VERSION: ${{ matrix.python-version }}
       PYTHONUNBUFFERED: 1
@@ -21,7 +26,9 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Install System dependencies
-      run: sudo apt install -qq -y --no-install-recommends libxmlsec1-dev swig
+      run: |
+        sudo apt-get update
+        sudo apt-get install -qq -y --no-install-recommends libxmlsec1-dev swig
 
     - name: Install Python dependencies
       run: |

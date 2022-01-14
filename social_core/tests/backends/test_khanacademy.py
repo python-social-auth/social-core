@@ -1,7 +1,6 @@
 import json
 from urllib.parse import urlencode
 
-
 from .oauth import OAuth1Test
 
 

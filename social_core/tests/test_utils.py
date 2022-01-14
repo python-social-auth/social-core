@@ -2,11 +2,10 @@ import sys
 import unittest
 from unittest.mock import Mock
 
-from ..utils import sanitize_redirect, user_is_authenticated, \
-    user_is_active, slugify, build_absolute_uri, \
-    partial_pipeline_data
+from ..utils import (build_absolute_uri, partial_pipeline_data,
+                     sanitize_redirect, slugify, user_is_active,
+                     user_is_authenticated)
 from .models import TestPartial
-
 
 PY3 = sys.version_info[0] == 3
 
@@ -45,7 +44,7 @@ class SanitizeRedirectTest(unittest.TestCase):
     def test_multiple_hosts(self):
         allowed_hosts = ['myapp1.com', 'myapp2.com']
         for host in allowed_hosts:
-            url = 'http://{}/path/'.format(host)
+            url = f'http://{host}/path/'
             self.assertEqual(sanitize_redirect(allowed_hosts, url), url)
 
     def test_multiple_hosts_wrong_host(self):

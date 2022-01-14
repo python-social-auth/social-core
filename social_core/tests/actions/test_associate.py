@@ -1,7 +1,6 @@
 import json
 
 from ...exceptions import AuthAlreadyAssociated
-
 from ..models import User
 from .actions import BaseActionTest
 

@@ -45,7 +45,7 @@ class AzureADOAuth2(BaseOAuth2):
     ACCESS_TOKEN_URL = 'https://login.microsoftonline.com/common/oauth2/token'
     ACCESS_TOKEN_METHOD = 'POST'
     REDIRECT_STATE = False
-    DEFAULT_SCOPE = ['openid', 'profile', 'user_impersonation']
+    DEFAULT_SCOPE = ['openid', 'profile', 'user_impersonation', 'email']
     EXTRA_DATA = [
         ('access_token', 'access_token'),
         ('id_token', 'id_token'),
@@ -70,7 +70,7 @@ class AzureADOAuth2(BaseOAuth2):
             response.get('family_name', '')
         )
         return {'username': fullname,
-                'email': response.get('upn'),
+                'email': response.get('email', response.get('upn')),
                 'fullname': fullname,
                 'first_name': first_name,
                 'last_name': last_name}

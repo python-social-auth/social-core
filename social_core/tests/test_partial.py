@@ -1,8 +1,8 @@
 import unittest
 from unittest.mock import Mock, patch
 
-from ..utils import PARTIAL_TOKEN_SESSION_NAME
 from ..pipeline.partial import partial, partial_step
+from ..utils import PARTIAL_TOKEN_SESSION_NAME
 
 
 class PartialDecoratorTestCase(unittest.TestCase):
@@ -17,8 +17,8 @@ class PartialDecoratorTestCase(unittest.TestCase):
         self.mock_partial_store = Mock()
         self.mock_strategy.storage.partial.store = self.mock_partial_store
 
-        self.mock_sesstion_set = Mock()
-        self.mock_strategy.session_set = self.mock_sesstion_set
+        self.mock_session_set = Mock()
+        self.mock_strategy.session_set = self.mock_session_set
 
     def test_save_to_session(self):
         # GIVEN
@@ -42,10 +42,10 @@ class PartialDecoratorTestCase(unittest.TestCase):
             self.assertEqual((self.mock_current_partial,),
                              self.mock_partial_store.call_args[0])
 
-            self.assertEqual(1, self.mock_sesstion_set.call_count)
+            self.assertEqual(1, self.mock_session_set.call_count)
             self.assertEqual((PARTIAL_TOKEN_SESSION_NAME,
                               self.mock_current_partial_token),
-                             self.mock_sesstion_set.call_args[0])
+                             self.mock_session_set.call_args[0])
 
     def test_not_to_save_to_session(self):
         # GIVEN
@@ -69,7 +69,7 @@ class PartialDecoratorTestCase(unittest.TestCase):
             self.assertEqual((self.mock_current_partial,),
                              self.mock_partial_store.call_args[0])
 
-            self.assertEqual(0, self.mock_sesstion_set.call_count)
+            self.assertEqual(0, self.mock_session_set.call_count)
 
     def test_save_to_session_by_backward_compatible_decorator(self):
         # GIVEN
@@ -93,10 +93,10 @@ class PartialDecoratorTestCase(unittest.TestCase):
             self.assertEqual((self.mock_current_partial,),
                              self.mock_partial_store.call_args[0])
 
-            self.assertEqual(1, self.mock_sesstion_set.call_count)
+            self.assertEqual(1, self.mock_session_set.call_count)
             self.assertEqual((PARTIAL_TOKEN_SESSION_NAME,
                               self.mock_current_partial_token),
-                             self.mock_sesstion_set.call_args[0])
+                             self.mock_session_set.call_args[0])
 
     def test_not_to_save_to_session_when_the_response_is_a_dict(self):
         # GIVEN
@@ -114,4 +114,4 @@ class PartialDecoratorTestCase(unittest.TestCase):
         # THEN
         self.assertEqual(expected_response, response)
         self.assertEqual(0, self.mock_partial_store.call_count)
-        self.assertEqual(0, self.mock_sesstion_set.call_count)
+        self.assertEqual(0, self.mock_session_set.call_count)

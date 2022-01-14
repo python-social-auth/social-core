@@ -1,4 +1,5 @@
 from requests.auth import HTTPBasicAuth
+
 from ..utils import handle_http_errors
 from .oauth import BaseOAuth2
 
@@ -31,7 +32,7 @@ class JustGivingOAuth2(BaseOAuth2):
         """Loads user data from service"""
         key, secret = self.get_key_and_secret()
         return self.get_json(self.USER_DATA_URL, headers={
-            'Authorization': 'Bearer {0}'.format(access_token),
+            'Authorization': f'Bearer {access_token}',
             'Content-Type': 'application/json',
             'x-application-key': secret,
             'x-api-key': key

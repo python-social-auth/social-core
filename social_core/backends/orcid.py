@@ -4,6 +4,7 @@
 """
 from .oauth import BaseOAuth2
 
+
 class ORCIDOAuth2(BaseOAuth2):
     """ORCID OAuth2 authentication backend"""
     name = 'orcid'
@@ -116,7 +117,7 @@ class ORCIDOAuth2(BaseOAuth2):
                 self.USER_ID_URL,
                 headers={
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer {}'.format(str(access_token))
+                    'Authorization': f'Bearer {str(access_token)}'
                 },
             )
 

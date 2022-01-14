@@ -1,6 +1,5 @@
 from ..strategy import BaseStrategy, BaseTemplateStrategy
 
-
 TEST_URI = 'http://myapp.com'
 TEST_HOST = 'myapp.com'
 

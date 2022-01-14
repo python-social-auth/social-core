@@ -1,5 +1,5 @@
-from .base import BaseAuth
 from ..exceptions import AuthMissingParameter
+from .base import BaseAuth
 
 
 class LegacyAuth(BaseAuth):

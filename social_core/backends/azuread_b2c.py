@@ -30,8 +30,9 @@ See https://nicksnettravels.builttoroam.com/post/2017/01/24/Verifying-Azure-Acti
 import json
 
 from cryptography.hazmat.primitives import serialization
-from jwt import DecodeError, ExpiredSignatureError, decode as jwt_decode, \
-    get_unverified_header
+from jwt import DecodeError, ExpiredSignatureError
+from jwt import decode as jwt_decode
+from jwt import get_unverified_header
 
 try:
     from jwt.algorithms import RSAAlgorithm
@@ -165,7 +166,7 @@ class AzureADB2COAuth2(AzureADOAuth2):
         for key in resp.json()['keys']:
             if key['kid'] == kid:
                 return self.jwt_key_to_pem(key)
-        raise DecodeError('Cannot find kid={}'.format(kid))
+        raise DecodeError(f'Cannot find kid={kid}')
 
     def user_data(self, access_token, *args, **kwargs):
         response = kwargs.get('response')

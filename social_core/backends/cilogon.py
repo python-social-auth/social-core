@@ -1,5 +1,6 @@
 from .oauth import BaseOAuth2
 
+
 class CILogonOAuth2(BaseOAuth2):
     """
     CI Logon Authentication Backend

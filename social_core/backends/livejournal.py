@@ -4,8 +4,8 @@ LiveJournal OpenId backend, docs at:
 """
 from urllib.parse import urlsplit
 
-from .open_id import OpenIdAuth
 from ..exceptions import AuthMissingParameter
+from .open_id import OpenIdAuth
 
 
 class LiveJournalOpenId(OpenIdAuth):
@@ -23,4 +23,4 @@ class LiveJournalOpenId(OpenIdAuth):
         """Returns LiveJournal authentication URL"""
         if not self.data.get('openid_lj_user'):
             raise AuthMissingParameter(self, 'openid_lj_user')
-        return 'http://{0}.livejournal.com'.format(self.data['openid_lj_user'])
+        return 'http://{}.livejournal.com'.format(self.data['openid_lj_user'])

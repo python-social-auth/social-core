@@ -1,9 +1,5 @@
+import pickle
 import time
-
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
 
 from openid.store.interface import OpenIDStore as BaseOpenIDStore
 from openid.store.nonce import SKEW

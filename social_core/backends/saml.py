@@ -10,8 +10,8 @@ Terminology:
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
 from onelogin.saml2.settings import OneLogin_Saml2_Settings
 
-from .base import BaseAuth
 from ..exceptions import AuthFailed, AuthMissingParameter
+from .base import BaseAuth
 
 # Helpful constants:
 OID_COMMON_NAME = 'urn:oid:2.5.4.3'
@@ -303,7 +303,7 @@ class SAMLAuth(BaseAuth):
         """
         idp = self.get_idp(response['idp_name'])
         uid = idp.get_user_permanent_id(response['attributes'])
-        return '{0}:{1}'.format(idp.name, uid)
+        return f'{idp.name}:{uid}'
 
     def auth_complete(self, *args, **kwargs):
         """
@@ -318,7 +318,7 @@ class SAMLAuth(BaseAuth):
         if errors or not auth.is_authenticated():
             reason = auth.get_last_error_reason()
             raise AuthFailed(
-                self, 'SAML login failed: {0} ({1})'.format(errors, reason)
+                self, f'SAML login failed: {errors} ({reason})'
             )
 
         attributes = auth.get_attributes()

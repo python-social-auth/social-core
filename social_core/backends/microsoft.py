@@ -67,6 +67,14 @@ class MicrosoftOAuth2(BaseOAuth2):
             method='GET'
         )
 
+    def refresh_token_params(self, token, *args, **kwargs):
+        return {
+            'client_id': self.setting('KEY'),
+            'client_secret': self.setting('SECRET'),
+            'refresh_token': token,
+            'grant_type': 'refresh_token',
+        }
+
     def get_auth_token(self, user_id):
         """Return the access token for the given user, after ensuring that it
         has not expired, or refreshing it if so."""

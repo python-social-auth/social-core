@@ -1,12 +1,11 @@
-from openid.consumer.consumer import Consumer, SUCCESS, CANCEL, FAILURE
+from openid.consumer.consumer import CANCEL, FAILURE, SUCCESS, Consumer
 from openid.consumer.discover import DiscoveryFailure
-from openid.extensions import sreg, ax, pape
+from openid.extensions import ax, pape, sreg
 
+from ..exceptions import (AuthCanceled, AuthException, AuthFailed,
+                          AuthMissingParameter, AuthUnknownError)
 from ..utils import url_add_parameters
 from .base import BaseAuth
-from ..exceptions import AuthException, AuthFailed, AuthCanceled, \
-                         AuthUnknownError, AuthMissingParameter
-
 
 # OpenID configuration
 OLD_AX_ATTRS = [
@@ -239,7 +238,7 @@ class OpenIdAuth(BaseAuth):
             return self.consumer().begin(url_add_parameters(self.openid_url(),
                                          params))
         except DiscoveryFailure as err:
-            raise AuthException(self, 'OpenID discovery error: {0}'.format(
+            raise AuthException(self, 'OpenID discovery error: {}'.format(
                 err
             ))
 

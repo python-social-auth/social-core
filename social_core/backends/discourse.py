@@ -1,13 +1,12 @@
 import hmac
 import time
-
 from base64 import urlsafe_b64decode, urlsafe_b64encode
 from hashlib import sha256
 from urllib.parse import urlencode
 
-from .base import BaseAuth
 from ..exceptions import AuthException, AuthTokenError
 from ..utils import parse_qs
+from .base import BaseAuth
 
 
 class DiscourseAuth(BaseAuth):
@@ -39,7 +38,7 @@ class DiscourseAuth(BaseAuth):
             'sso': base_64_payload,
             'sig': payload_signature
         })
-        return '{0}?{1}'.format(self.get_idp_url(), encoded_params)
+        return f'{self.get_idp_url()}?{encoded_params}'
 
     def get_idp_url(self):
         return self.setting('SERVER_URL') + '/session/sso_provider'

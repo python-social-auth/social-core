@@ -1,5 +1,7 @@
 import json
 
+from httpretty import HTTPretty
+
 from .oauth import OAuth2Test
 
 
@@ -40,6 +42,14 @@ class AmazonOAuth2BrokenServerResponseTest(OAuth2Test):
             'PrimaryEmail': 'foo@bar.com'
         }
     })
+
+    def setUp(self):
+        super().setUp()
+        HTTPretty.register_uri(HTTPretty.GET,
+                               'https://api.amazon.com/user/profile',
+                               status=200,
+                               body=self.user_data_body,
+                               content_type='application/json')
 
     def test_login(self):
         self.do_login()

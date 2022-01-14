@@ -6,8 +6,8 @@ from urllib.parse import urljoin
 
 from requests import HTTPError
 
-from .oauth import BaseOAuth2
 from ..exceptions import AuthFailed
+from .oauth import BaseOAuth2
 
 
 class GithubOAuth2(BaseOAuth2):
@@ -64,8 +64,8 @@ class GithubOAuth2(BaseOAuth2):
         return data
 
     def _user_data(self, access_token, path=None):
-        url = urljoin(self.api_url(), 'user{0}'.format(path or ''))
-        return self.get_json(url, headers={'Authorization': 'token {0}'.format(access_token)})
+        url = urljoin(self.api_url(), 'user{}'.format(path or ''))
+        return self.get_json(url, headers={'Authorization': f'token {access_token}'})
 
 
 class GithubMemberOAuth2(GithubOAuth2):
@@ -74,7 +74,7 @@ class GithubMemberOAuth2(GithubOAuth2):
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
         user_data = super().user_data(access_token, *args, **kwargs)
-        headers = {'Authorization': 'token {0}'.format(access_token)}
+        headers = {'Authorization': f'token {access_token}'}
         try:
             self.request(self.member_url(user_data), headers=headers)
         except HTTPError as err:

@@ -1,13 +1,13 @@
-# -*- coding: utf-8 -*-
 # author:duoduo3369@gmail.com  https://github.com/duoduo369
 """
 Weixin OAuth2 backend
 """
 from urllib.parse import urlencode
+
 from requests import HTTPError
 
-from .oauth import BaseOAuth2
 from ..exceptions import AuthCanceled, AuthUnknownError
+from .oauth import BaseOAuth2
 
 
 class WeixinOAuth2(BaseOAuth2):

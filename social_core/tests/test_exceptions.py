@@ -1,10 +1,12 @@
 import unittest
 
-from ..exceptions import SocialAuthBaseException, WrongBackend, \
-    AuthFailed, AuthTokenError, AuthMissingParameter, AuthStateMissing, \
-    NotAllowedToDisconnect, AuthException, AuthCanceled, AuthUnknownError, \
-    AuthStateForbidden, AuthAlreadyAssociated, AuthTokenRevoked, \
-    AuthForbidden, AuthUnreachableProvider, InvalidEmail, MissingBackend
+from ..exceptions import (AuthAlreadyAssociated, AuthCanceled, AuthException,
+                          AuthFailed, AuthForbidden, AuthMissingParameter,
+                          AuthStateForbidden, AuthStateMissing, AuthTokenError,
+                          AuthTokenRevoked, AuthUnknownError,
+                          AuthUnreachableProvider, InvalidEmail,
+                          MissingBackend, NotAllowedToDisconnect,
+                          SocialAuthBaseException, WrongBackend)
 
 
 class BaseExceptionTestCase(unittest.TestCase):
@@ -52,7 +54,7 @@ class AuthStateMissingTest(BaseExceptionTestCase):
 
 class NotAllowedToDisconnectTest(BaseExceptionTestCase):
     exception = NotAllowedToDisconnect()
-    expected_message = ''
+    expected_message = 'This account is not allowed to be disconnected.'
 
 
 class AuthExceptionTest(BaseExceptionTestCase):
@@ -83,7 +85,7 @@ class AuthStateForbiddenTest(BaseExceptionTestCase):
 
 class AuthAlreadyAssociatedTest(BaseExceptionTestCase):
     exception = AuthAlreadyAssociated('foobar')
-    expected_message = ''
+    expected_message = 'This account is already in use.'
 
 
 class AuthTokenRevokedTest(BaseExceptionTestCase):

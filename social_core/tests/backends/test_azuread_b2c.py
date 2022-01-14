@@ -24,14 +24,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 import json
-import jwt
-
 from time import time
+
+import jwt
 from httpretty import HTTPretty
 from jwt.algorithms import RSAAlgorithm
 
 from .oauth import OAuth2Test
-
 
 # Dummy private and private keys:
 RSA_PUBLIC_JWT_KEY = {

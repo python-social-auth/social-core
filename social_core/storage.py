@@ -10,7 +10,6 @@ from openid.association import Association as OpenIdAssociation
 
 from .exceptions import MissingBackend
 
-
 NO_ASCII_REGEX = re.compile(r'[^\x00-\x7F]+')
 NO_SPECIAL_REGEX = re.compile(r'[^\w.@+_-]+', re.UNICODE)
 
@@ -224,10 +223,10 @@ class AssociationMixin:
         kwargs = {'server_url': server_url}
         if handle is not None:
             kwargs['handle'] = handle
-        return sorted([
+        return sorted((
             (assoc.id, cls.openid_association(assoc))
             for assoc in cls.get(**kwargs)
-        ], key=lambda x: x[1].issued, reverse=True)
+        ), key=lambda x: x[1].issued, reverse=True)
 
     @classmethod
     def openid_association(cls, assoc):

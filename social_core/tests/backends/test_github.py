@@ -3,7 +3,6 @@ import json
 from httpretty import HTTPretty
 
 from ...exceptions import AuthFailed
-
 from .oauth import OAuth2Test
 
 
@@ -104,6 +103,10 @@ class GithubOAuth2NoEmailTest(GithubOAuth2Test):
         self.do_login()
 
     def test_partial_pipeline(self):
+        url = 'https://api.github.com/user/emails'
+        HTTPretty.register_uri(HTTPretty.GET, url, status=200,
+                               body=json.dumps([{'email': 'foo@bar.com'}]),
+                               content_type='application/json')
         self.do_partial_pipeline()
 
 

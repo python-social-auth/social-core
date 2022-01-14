@@ -1,7 +1,7 @@
 import time
 
-from .oauth import BaseOAuth2
 from ..utils import handle_http_errors
+from .oauth import BaseOAuth2
 
 
 class ItembaseOAuth2(BaseOAuth2):
@@ -50,14 +50,14 @@ class ItembaseOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         return self.get_json(self.USER_DETAILS_URL, headers={
-            'Authorization': 'Bearer {0}'.format(access_token)
+            'Authorization': f'Bearer {access_token}'
         })
 
     def activation_data(self, response):
         # returns activation_data dict with activation_url inside
         # see http://developers.itembase.com/authentication/activation
         return self.get_json(self.ACTIVATION_ENDPOINT, headers={
-            'Authorization': 'Bearer {0}'.format(response['access_token'])
+            'Authorization': 'Bearer {}'.format(response['access_token'])
         })
 
     @handle_http_errors

@@ -1,14 +1,14 @@
 import json
-import requests
 import unittest
 from urllib.parse import urlparse
 
+import requests
 from httpretty import HTTPretty
 
-from ...utils import parse_qs, module_member
 from ...actions import do_auth, do_complete
-from ..models import TestStorage, User, TestUserSocialAuth, TestNonce, \
-    TestAssociation
+from ...utils import module_member, parse_qs
+from ..models import (TestAssociation, TestNonce, TestStorage,
+                      TestUserSocialAuth, User)
 from ..strategy import TestStrategy
 
 
