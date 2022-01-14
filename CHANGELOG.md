@@ -5,17 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased](https://github.com/python-social-auth/social-core/)
+## [4.2.0](https://github.com/python-social-auth/social-core/releases/tag/4.2.0) - 2022-01-17
 
 ### Added
 - Add fields that populate on create but not update `SOCIAL_AUTH_IMMUTABLE_USER_FIELDS`
 - Add Gitea oauth2 backend
 - Add Twitch OpenId backend
+- Add CI Logon backend
+- Add support for Python 3.10
 
 ### Changed
 - Fixed Slack user identity API call with Bearer headers
 - Fixed microsoft-graph login error
 - Fixed Twitch OAuth2 backend
+- Fixed Facebook API version
+- Fixed Okta authentication URLs
+- Fixed Globus JWT signature algorithm
+- Fixed kid key rotation for OpenID Connect
+- Fixed e-mail fetching from Azure
+- Fixed vkontakte API version
+- Restricted lxml to 4.6.x to avoid problems in SAML
 
 
 ## [4.1.0](https://github.com/python-social-auth/social-core/releases/tag/4.1.0) - 2021-03-01
