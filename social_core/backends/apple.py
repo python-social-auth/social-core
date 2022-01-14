@@ -128,8 +128,8 @@ class AppleIdAuth(BaseOAuth2):
                 audience=self.get_audience(),
                 algorithms=['RS256'],
             )
-        except PyJWTError:
-            raise AuthFailed(self, 'Token validation failed')
+        except PyJWTError as error:
+            raise AuthFailed(self, f'Token validation failed by {error}')
 
         return decoded
 

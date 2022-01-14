@@ -5,6 +5,7 @@ Dropbox OAuth2 backend, docs at:
 
 from .oauth import BaseOAuth2
 
+
 class DropboxOAuth2V2(BaseOAuth2):
     name = 'dropbox-oauth2'
     ID_KEY = 'uid'
@@ -26,6 +27,6 @@ class DropboxOAuth2V2(BaseOAuth2):
         """Loads user data from service"""
         return self.get_json(
             'https://api.dropboxapi.com/2/users/get_current_account',
-            headers={'Authorization': 'Bearer {0}'.format(access_token)},
+            headers={'Authorization': f'Bearer {access_token}'},
             method='POST'
         )

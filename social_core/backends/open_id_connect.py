@@ -1,14 +1,14 @@
-import json
 import datetime
+import json
 from calendar import timegm
 
 from jose import jwk, jwt
-from jose.jwt import JWTError, JWTClaimsError, ExpiredSignatureError
+from jose.jwt import ExpiredSignatureError, JWTClaimsError, JWTError
 from jose.utils import base64url_decode
 
 from social_core.backends.oauth import BaseOAuth2
-from social_core.utils import cache
 from social_core.exceptions import AuthTokenError
+from social_core.utils import cache
 
 
 class OpenIdConnectAssociation:
@@ -143,12 +143,28 @@ class OpenIdConnectAuth(BaseOAuth2):
             raise AuthTokenError(self, 'Incorrect id_token: nonce')
 
     def find_valid_key(self, id_token):
-        for key in self.get_jwks_keys():
-            rsakey = jwk.construct(key)
-            message, encoded_sig = id_token.rsplit('.', 1)
-            decoded_sig = base64url_decode(encoded_sig.encode('utf-8'))
-            if rsakey.verify(message.encode('utf-8'), decoded_sig):
-                return key
+        kid = jwt.get_unverified_header(id_token).get('kid')
+
+        keys = self.get_jwks_keys()
+        if kid is not None:
+            for key in keys:
+                if kid == key.get('kid'):
+                    break
+            else:
+                # In case the key id is not found in the cached keys, just
+                # reload the JWKS keys. Ideally this should be done by
+                # invalidating the cache.
+                self.get_jwks_keys.invalidate()
+                keys = self.get_jwks_keys()
+
+        for key in keys:
+            if kid is None or kid == key.get('kid'):
+                rsakey = jwk.construct(key)
+                message, encoded_sig = id_token.rsplit('.', 1)
+                decoded_sig = base64url_decode(encoded_sig.encode('utf-8'))
+                if rsakey.verify(message.encode('utf-8'), decoded_sig):
+                    return key
+        return None
 
     def validate_and_return_id_token(self, id_token, access_token):
         """
@@ -199,7 +215,7 @@ class OpenIdConnectAuth(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         return self.get_json(self.userinfo_url(), headers={
-            'Authorization': 'Bearer {0}'.format(access_token)
+            'Authorization': f'Bearer {access_token}'
         })
 
     def get_user_details(self, response):

@@ -1,9 +1,9 @@
 import time
 
-from requests import request, ConnectionError
+from requests import ConnectionError, request
 
-from ..utils import SSLHttpAdapter, module_member, parse_qs, user_agent
 from ..exceptions import AuthFailed
+from ..utils import SSLHttpAdapter, module_member, parse_qs, user_agent
 
 
 class BaseAuth:

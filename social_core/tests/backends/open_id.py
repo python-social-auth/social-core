@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import sys
 from html.parser import HTMLParser
 
@@ -7,12 +6,11 @@ from httpretty import HTTPretty
 from openid import oidutil
 
 from ...backends.utils import load_backends
-from ...utils import parse_qs, module_member
-from ..models import TestStorage, User, TestUserSocialAuth, \
-    TestNonce, TestAssociation
+from ...utils import module_member, parse_qs
+from ..models import (TestAssociation, TestNonce, TestStorage,
+                      TestUserSocialAuth, User)
 from ..strategy import TestStrategy
 from .base import BaseBackendTest
-
 
 sys.path.insert(0, '..')
 
@@ -45,7 +43,7 @@ class OpenIdTest(BaseBackendTest):
     raw_complete_url = '/complete/{0}/'
 
     def setUp(self):
-        HTTPretty.enable()
+        HTTPretty.enable(allow_net_connect=False)
         Backend = module_member(self.backend_path)
         self.strategy = TestStrategy(TestStorage)
         self.complete_url = self.raw_complete_url.format(Backend.name)
@@ -69,6 +67,7 @@ class OpenIdTest(BaseBackendTest):
         TestNonce.reset_cache()
         TestAssociation.reset_cache()
         HTTPretty.disable()
+        HTTPretty.reset()
 
     def get_form_data(self, html):
         parser = FormHTMLParser()

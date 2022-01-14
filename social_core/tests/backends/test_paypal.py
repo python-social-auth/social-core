@@ -1,7 +1,8 @@
 import json
 
-from .oauth import OAuth2Test
 from social_core.backends.paypal import PayPalOAuth2
+
+from .oauth import OAuth2Test
 
 
 class PayPalOAuth2Test(OAuth2Test):

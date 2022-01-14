@@ -8,8 +8,8 @@ If username is not specified, OpenID 2.0 url used for authentication.
 """
 from urllib.parse import urlsplit
 
-from .open_id import OpenIdAuth
 from .oauth import BaseOAuth2
+from .open_id import OpenIdAuth
 
 
 class YandexOpenId(OpenIdAuth):

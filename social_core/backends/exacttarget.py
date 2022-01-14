@@ -3,11 +3,11 @@ ExactTarget OAuth support.
 Support Authentication from IMH using JWT token and pre-shared key.
 Requires package pyjwt
 """
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
 
 import jwt
 
-from ..exceptions import AuthFailed, AuthCanceled
+from ..exceptions import AuthCanceled, AuthFailed
 from .oauth import BaseOAuth2
 
 
@@ -45,7 +45,7 @@ class ExactTargetOAuth2(BaseOAuth2):
                 'email': 'example@example.com'
             }
         """
-        return '{0}'.format(details.get('id'))
+        return '{}'.format(details.get('id'))
 
     def uses_redirect(self):
         return False

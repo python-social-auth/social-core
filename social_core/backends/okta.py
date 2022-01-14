@@ -24,7 +24,7 @@ class OktaMixin:
     def oidc_config(self):
         return self.get_json(
             self._url(
-                './.well-known/openid-configuration?client_id={}'.format(
+                '/.well-known/openid-configuration?client_id={}'.format(
                     self.setting('KEY')
                 )
             )
@@ -60,6 +60,6 @@ class OktaOAuth2(OktaMixin, BaseOAuth2):
         return self.get_json(
             self._url('v1/userinfo'),
             headers={
-                'Authorization': 'Bearer {}'.format(access_token),
+                'Authorization': f'Bearer {access_token}',
             }
         )

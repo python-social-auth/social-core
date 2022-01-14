@@ -1,13 +1,13 @@
-from urllib.parse import urlencode, unquote
+from urllib.parse import unquote, urlencode
 
-from requests_oauthlib import OAuth1
 from oauthlib.oauth1 import SIGNATURE_TYPE_AUTH_HEADER
+from requests_oauthlib import OAuth1
 
-from ..utils import url_add_parameters, parse_qs, handle_http_errors, \
-                    constant_time_compare
-from ..exceptions import AuthFailed, AuthCanceled, AuthUnknownError, \
-                         AuthMissingParameter, AuthStateMissing, \
-                         AuthStateForbidden, AuthTokenError
+from ..exceptions import (AuthCanceled, AuthFailed, AuthMissingParameter,
+                          AuthStateForbidden, AuthStateMissing, AuthTokenError,
+                          AuthUnknownError)
+from ..utils import (constant_time_compare, handle_http_errors, parse_qs,
+                     url_add_parameters)
 from .base import BaseAuth
 
 
@@ -209,7 +209,7 @@ class BaseOAuth1(OAuthAuth):
                 utoken = parse_qs(utoken)
             if utoken.get(self.OAUTH_TOKEN_PARAMETER_NAME) == data_token:
                 self.strategy.session_set(name, list(set(unauthed_tokens) -
-                                                     set([orig_utoken])))
+                                                     {orig_utoken}))
                 token = utoken
                 break
         else:
@@ -258,7 +258,7 @@ class BaseOAuth1(OAuthAuth):
         )
         state = self.get_or_create_state()
         params[self.REDIRECT_URI_PARAMETER_NAME] = self.get_redirect_uri(state)
-        return '{0}?{1}'.format(self.authorization_url(), urlencode(params))
+        return f'{self.authorization_url()}?{urlencode(params)}'
 
     def oauth_auth(self, token=None, oauth_verifier=None,
                    signature_type=SIGNATURE_TYPE_AUTH_HEADER):
@@ -329,7 +329,7 @@ class BaseOAuth2(OAuthAuth):
             # redirect_uri matching is strictly enforced, so match the
             # providers value exactly.
             params = unquote(params)
-        return '{0}?{1}'.format(self.authorization_url(), params)
+        return f'{self.authorization_url()}?{params}'
 
     def auth_complete_params(self, state=None):
         client_id, client_secret = self.get_key_and_secret()

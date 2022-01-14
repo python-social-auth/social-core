@@ -1,5 +1,7 @@
-from .oauth import BaseOAuth2
 from urllib.parse import urlencode
+
+from .oauth import BaseOAuth2
+
 
 class OssoOAuth2(BaseOAuth2):
     """Osso OAuth authentication backend"""
@@ -44,7 +46,7 @@ class OssoOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads normalized user profile from Osso"""
-        url = '{osso_base_url}/oauth/me?'.format(osso_base_url=self.osso_base_url) + urlencode({
+        url = f'{self.osso_base_url}/oauth/me?' + urlencode({
             'access_token': access_token
         })
         return self.get_json(url)

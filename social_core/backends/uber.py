@@ -34,6 +34,6 @@ class UberOAuth2(BaseOAuth2):
         """Loads user data from service"""
         response = kwargs.pop('response')
         return self.get_json('https://api.uber.com/v1/me', headers={
-            'Authorization': '{0} {1}'.format(response.get('token_type'),
+            'Authorization': '{} {}'.format(response.get('token_type'),
                                               access_token)
         })

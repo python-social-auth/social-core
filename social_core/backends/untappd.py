@@ -1,8 +1,8 @@
 import requests
 
-from .oauth import BaseOAuth2
 from ..exceptions import AuthFailed
 from ..utils import handle_http_errors
+from .oauth import BaseOAuth2
 
 
 class UntappdOAuth2(BaseOAuth2):

@@ -43,6 +43,6 @@ class CodingOAuth2(BaseOAuth2):
     def _user_data(self, access_token, path=None):
         url = urljoin(
             self.api_url(),
-            'account/current_user{0}'.format(path or '')
+            'account/current_user{}'.format(path or '')
         )
         return self.get_json(url, params={'access_token': access_token})

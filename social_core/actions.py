@@ -1,7 +1,7 @@
 from urllib.parse import quote
 
-from .utils import sanitize_redirect, user_is_authenticated, \
-                   user_is_active, partial_pipeline_data, setting_url
+from .utils import (partial_pipeline_data, sanitize_redirect, setting_url,
+                    user_is_active, user_is_authenticated)
 
 
 def do_auth(backend, redirect_name='next'):
@@ -114,7 +114,7 @@ def do_complete(backend, login, user=None, redirect_name='next',
     if redirect_value and redirect_value != url:
         redirect_value = quote(redirect_value)
         url += ('&' if '?' in url else '?') + \
-            '{0}={1}'.format(redirect_name, redirect_value)
+            f'{redirect_name}={redirect_value}'
 
     if backend.setting('SANITIZE_REDIRECTS', True):
         allowed_hosts = backend.setting('ALLOWED_REDIRECT_HOSTS', []) + \

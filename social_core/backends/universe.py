@@ -31,5 +31,5 @@ class UniverseOAuth2(BaseOAuth2):
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
         return self.get_json(self.USER_INFO_URL, headers={
-            'Authorization': 'Bearer {}'.format(access_token)
+            'Authorization': f'Bearer {access_token}'
         })

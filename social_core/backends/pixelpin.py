@@ -30,6 +30,6 @@ class PixelPinOpenIDConnect(OpenIdConnectAuth):
         return self.get_json(
             'https://login.pixelpin.io/connect/userinfo',
             headers={
-                'Authorization': 'Bearer {0}'.format(access_token)
+                'Authorization': f'Bearer {access_token}'
             }
         )

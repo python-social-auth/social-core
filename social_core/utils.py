@@ -1,21 +1,20 @@
+import functools
+import hmac
+import logging
 import re
 import sys
 import time
 import unicodedata
-import functools
-import hmac
-import logging
-from urllib.parse import urlparse, urlunparse, urlencode, \
-                                   parse_qs as battery_parse_qs
+from urllib.parse import parse_qs as battery_parse_qs
+from urllib.parse import urlencode, urlparse, urlunparse
 
 import requests
-import social_core
-
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.poolmanager import PoolManager
 
-from .exceptions import AuthCanceled, AuthForbidden, AuthUnreachableProvider
+import social_core
 
+from .exceptions import AuthCanceled, AuthForbidden, AuthUnreachableProvider
 
 SETTING_PREFIX = 'SOCIAL_AUTH'
 
@@ -265,7 +264,7 @@ def append_slash(url):
     'http://www.example.com/api/user/1/'
     """
     if url and not url.endswith('/'):
-        url = '{0}/'.format(url)
+        url = f'{url}/'
     return url
 
 
@@ -305,4 +304,9 @@ class cache:
                     if not cached_value:
                         raise
             return cached_value
+
+        wrapped.invalidate = self._invalidate
         return wrapped
+
+    def _invalidate(self):
+        self.cache.clear()

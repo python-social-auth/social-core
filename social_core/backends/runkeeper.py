@@ -43,5 +43,5 @@ class RunKeeperOAuth2(BaseOAuth2):
         return dict(user_data, **profile_data)
 
     def _user_data(self, access_token, path):
-        url = 'https://api.runkeeper.com{0}'.format(path)
+        url = f'https://api.runkeeper.com{path}'
         return self.get_json(url, params={'access_token': access_token})

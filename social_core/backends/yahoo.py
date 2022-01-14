@@ -5,7 +5,7 @@ Yahoo OpenId, OAuth1 and OAuth2 backends, docs at:
 from requests.auth import HTTPBasicAuth
 
 from ..utils import handle_http_errors
-from .oauth import BaseOAuth2, BaseOAuth1
+from .oauth import BaseOAuth1, BaseOAuth2
 
 
 class YahooOAuth(BaseOAuth1):
@@ -99,7 +99,7 @@ class YahooOAuth2(BaseOAuth2):
         """Loads user data from service"""
         url = 'https://api.login.yahoo.com/openid/v1/userinfo'
         return self.get_json(url, headers={
-            'Authorization': 'Bearer {0}'.format(access_token)
+            'Authorization': f'Bearer {access_token}'
         }, method='GET')
 
     @handle_http_errors

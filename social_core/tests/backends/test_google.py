@@ -4,10 +4,9 @@ from urllib.parse import urlencode
 from httpretty import HTTPretty
 
 from ...actions import do_disconnect
-
 from ..models import User
 from .oauth import OAuth1Test, OAuth2Test
-from .open_id_connect import OpenIdConnectTestMixin
+from .test_open_id_connect import OpenIdConnectTestMixin
 
 
 class GoogleOAuth2Test(OAuth2Test):

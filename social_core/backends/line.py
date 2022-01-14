@@ -2,12 +2,13 @@
 LINE Login OAuth2 backend, docs at:
     https://developers.line.me/en/docs/line-login/
 """
-import requests
 import json
 
-from .oauth import BaseOAuth2
+import requests
+
 from ..exceptions import AuthFailed
 from ..utils import handle_http_errors
+from .oauth import BaseOAuth2
 
 
 class LineOAuth2(BaseOAuth2):
@@ -96,7 +97,7 @@ class LineOAuth2(BaseOAuth2):
             response = self.get_json(
                 self.USER_INFO_URL,
                 headers={
-                    'Authorization': 'Bearer {}'.format(access_token)
+                    'Authorization': f'Bearer {access_token}'
                 }
             )
             self.process_error(response)

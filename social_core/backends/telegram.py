@@ -1,10 +1,10 @@
+import hashlib
 import hmac
 import time
-import hashlib
 
-from .base import BaseAuth
 from ..exceptions import AuthFailed, AuthMissingParameter
 from ..utils import handle_http_errors
+from .base import BaseAuth
 
 
 class TelegramAuth(BaseAuth):
@@ -23,7 +23,7 @@ class TelegramAuth(BaseAuth):
         if received_hash_string is None or auth_date is None:
             raise AuthMissingParameter('telegram', 'hash or auth_date')
 
-        data_check_string = ['{}={}'.format(k, v)
+        data_check_string = [f'{k}={v}'
                              for k, v in response.items() if k != 'hash']
         data_check_string = '\n'.join(sorted(data_check_string))
         secret_key = hashlib.sha256(bot_token.encode()).digest()
@@ -43,7 +43,7 @@ class TelegramAuth(BaseAuth):
     def get_user_details(self, response):
         first_name = response.get('first_name', '')
         last_name = response.get('last_name', '')
-        fullname = '{} {}'.format(first_name, last_name).strip()
+        fullname = f'{first_name} {last_name}'.strip()
         return {
             'username': response.get('username') or response[self.ID_KEY],
             'first_name': first_name,

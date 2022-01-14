@@ -1,8 +1,7 @@
 import json
 
 from ...backends.facebook import API_VERSION
-from ...exceptions import AuthUnknownError, AuthCanceled
-
+from ...exceptions import AuthCanceled, AuthUnknownError
 from .oauth import OAuth2Test
 
 

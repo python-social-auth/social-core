@@ -1,15 +1,13 @@
-
 import json
 import os
 import re
 import sys
 import unittest
 from os import path
-from urllib.parse import urlparse, urlunparse, urlencode, parse_qs
+from unittest.mock import patch
+from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 import requests
-
-from unittest.mock import patch
 from httpretty import HTTPretty
 
 try:
@@ -18,9 +16,8 @@ except ImportError:
     # Only available for python 2.7 at the moment, so don't worry if this fails
     pass
 
-from .base import BaseBackendTest
 from ...exceptions import AuthMissingParameter
-
+from .base import BaseBackendTest
 
 DATA_DIR = path.join(path.dirname(__file__), 'data')
 
@@ -36,7 +33,7 @@ class SAMLTest(BaseBackendTest):
 
     def extra_settings(self):
         name = path.join(DATA_DIR, 'saml_config.json')
-        with open(name, 'r') as config_file:
+        with open(name) as config_file:
             config_str = config_file.read()
         return json.loads(config_str)
 
@@ -61,7 +58,7 @@ class SAMLTest(BaseBackendTest):
         # data in the query string.  A pre-recorded correct response
         # is kept in this .txt file:
         name = path.join(DATA_DIR, 'saml_response.txt')
-        with open(name, 'r') as response_file:
+        with open(name) as response_file:
             response_url = response_file.read()
         HTTPretty.register_uri(HTTPretty.GET, start_url, status=301,
                                location=response_url)
@@ -80,8 +77,8 @@ class SAMLTest(BaseBackendTest):
         response = requests.get(start_url)
         self.assertTrue(response.url.startswith(return_url))
         self.assertEqual(response.text, 'foobar')
-        query_values = dict((k, v[0]) for k, v in
-                            parse_qs(urlparse(response.url).query).items())
+        query_values = {k: v[0] for k, v in
+                            parse_qs(urlparse(response.url).query).items()}
         self.assertNotIn(' ', query_values['SAMLResponse'])
         self.strategy.set_request_data(query_values, self.backend)
         return self.backend.complete()
@@ -110,8 +107,8 @@ class SAMLTest(BaseBackendTest):
         """
         # Parse the SAML Request URL to get the XML being sent to TestShib
         url_parts = urlparse(start_url)
-        query = dict((k, v[0]) for (k, v) in
-                     parse_qs(url_parts.query).items())
+        query = {k: v[0] for (k, v) in
+                     parse_qs(url_parts.query).items()}
         xml = OneLogin_Saml2_Utils.decode_base64_and_inflate(
             query['SAMLRequest']
         )
