@@ -53,11 +53,11 @@ from .azuread import AzureADOAuth2
 class AzureADB2COAuth2(AzureADOAuth2):
     name = 'azuread-b2c-oauth2'
 
-    BASE_URL = 'https://login.microsoftonline.com/{tenant_id}'
+    BASE_URL = 'https://{tenant_name}.b2clogin.com/{tenant_name}.onmicrosoft.com/{policy}'
     AUTHORIZATION_URL = '{base_url}/oauth2/v2.0/authorize'
-    OPENID_CONFIGURATION_URL = '{base_url}/v2.0/.well-known/openid-configuration?p={policy}'
-    ACCESS_TOKEN_URL = '{base_url}/oauth2/v2.0/token?p={policy}'
-    JWKS_URL = '{base_url}/discovery/v2.0/keys?p={policy}'
+    OPENID_CONFIGURATION_URL = '{base_url}/v2.0/.well-known/openid-configuration'
+    ACCESS_TOKEN_URL = '{base_url}/oauth2/v2.0/token'
+    JWKS_URL = '{base_url}/discovery/v2.0/keys'
     DEFAULT_SCOPE = ['openid', 'email']
     EXTRA_DATA = [
         ('access_token', 'access_token'),
@@ -73,8 +73,8 @@ class AzureADB2COAuth2(AzureADOAuth2):
     ]
 
     @property
-    def tenant_id(self):
-        return self.setting('TENANT_ID', 'common')
+    def tenant_name(self):
+        return self.setting('TENANT_NAME', 'common')
 
     @property
     def policy(self):
@@ -86,23 +86,20 @@ class AzureADB2COAuth2(AzureADOAuth2):
 
     @property
     def base_url(self):
-        return self.BASE_URL.format(tenant_id=self.tenant_id)
+        return self.BASE_URL.format(tenant_name=self.tenant_name, policy=self.policy)
 
     def openid_configuration_url(self):
-        return self.OPENID_CONFIGURATION_URL.format(base_url=self.base_url,
-                                                    policy=self.policy)
+        return self.OPENID_CONFIGURATION_URL.format(base_url=self.base_url)
 
     def authorization_url(self):
         # Policy is required, but added later by `auth_extra_arguments()`
         return self.AUTHORIZATION_URL.format(base_url=self.base_url)
 
     def access_token_url(self):
-        return self.ACCESS_TOKEN_URL.format(base_url=self.base_url,
-                                            policy=self.policy)
+        return self.ACCESS_TOKEN_URL.format(base_url=self.base_url)
 
     def jwks_url(self):
-        return self.JWKS_URL.format(base_url=self.base_url,
-                                    policy=self.policy)
+        return self.JWKS_URL.format(base_url=self.base_url)
 
     def request_access_token(self, *args, **kwargs):
         """
