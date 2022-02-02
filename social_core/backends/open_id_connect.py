@@ -159,6 +159,8 @@ class OpenIdConnectAuth(BaseOAuth2):
 
         for key in keys:
             if kid is None or kid == key.get('kid'):
+                if 'alg' not in key:
+                    key['alg'] = 'RSA256'
                 rsakey = jwk.construct(key)
                 message, encoded_sig = id_token.rsplit('.', 1)
                 decoded_sig = base64url_decode(encoded_sig.encode('utf-8'))
