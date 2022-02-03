@@ -28,7 +28,7 @@ class OktaMixin(BaseOAuth2):
         # If the URL path does not contain an authorizedServerId, we need
         # to truncate the path in order to generate a proper openid-configuration
         # URL.
-        if url.path == "/oauth2/":
+        if url.path == '/oauth2/':
             url = url._replace(path='')
 
         return urljoin(
