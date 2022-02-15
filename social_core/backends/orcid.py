@@ -70,11 +70,11 @@ class ORCIDOAuth2(BaseOAuth2):
         if person:
             name = person.get('name')
 
-            fullname = name
-
             if name:
                 first_name = name.get('given-names', {}).get('value', '')
                 last_name = name.get('family-name', {}).get('value', '')
+                fullname = first_name + ' ' + last_name
+                fullname = fullname.strip()
 
             emails = person.get('emails')
             if emails:
