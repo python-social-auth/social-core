@@ -297,14 +297,18 @@ class BaseOAuth1(OAuthAuth):
 class BaseOAuth2(OAuthAuth):
     """Base class for OAuth2 providers.
 
-    OAuth2 draft details at:
-        http://tools.ietf.org/html/draft-ietf-oauth-v2-10
+    OAuth2 details at:
+        https://datatracker.ietf.org/doc/html/rfc6749
     """
     REFRESH_TOKEN_URL = None
     REFRESH_TOKEN_METHOD = 'POST'
     RESPONSE_TYPE = 'code'
     REDIRECT_STATE = True
     STATE_PARAMETER = True
+    USE_BASIC_AUTH = False
+
+    def use_basic_auth(self):
+        return self.USE_BASIC_AUTH
 
     def auth_params(self, state=None):
         client_id, client_secret = self.get_key_and_secret()
@@ -332,16 +336,22 @@ class BaseOAuth2(OAuthAuth):
         return f'{self.authorization_url()}?{params}'
 
     def auth_complete_params(self, state=None):
-        client_id, client_secret = self.get_key_and_secret()
-        return {
+        params = {
             'grant_type': 'authorization_code',  # request auth code
             'code': self.data.get('code', ''),  # server response code
-            'client_id': client_id,
-            'client_secret': client_secret,
             'redirect_uri': self.get_redirect_uri(state)
         }
+        if not self.use_basic_auth():
+            client_id, client_secret = self.get_key_and_secret()
+            params.update({
+                'client_id': client_id,
+                'client_secret': client_secret,
+            })
+        return params
 
     def auth_complete_credentials(self):
+        if self.use_basic_auth():
+            return self.get_key_and_secret()
         return None
 
     def auth_headers(self):

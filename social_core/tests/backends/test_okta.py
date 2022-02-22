@@ -132,7 +132,8 @@ class OktaOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
         self.public_key = JWK_PUBLIC_KEY.copy()
 
         HTTPretty.register_uri(HTTPretty.GET,
-                               self.backend.OIDC_ENDPOINT + '/.well-known/openid-configuration',
+                               # Note: okta.py strips the /oauth2 prefix using urljoin with absolute path
+                               'https://dev-000000.oktapreview.com/.well-known/openid-configuration?client_id=a-key',
                                status=200,
                                body=self.openid_config_body)
         oidc_config = json.loads(self.openid_config_body)
@@ -147,3 +148,14 @@ class OktaOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
 
         self.backend.JWKS_URI = oidc_config.get('jwks_uri')
         self.backend.ID_TOKEN_ISSUER = oidc_config.get('issuer')
+
+    def pre_complete_callback(self, start_url):
+        super().pre_complete_callback(start_url)
+        HTTPretty.register_uri('GET',
+                               uri=self.backend.userinfo_url(),
+                               status=200,
+                               body=json.dumps({'preferred_username': self.expected_username}),
+                               content_type='text/json')
+
+    def test_everything_works(self):
+        self.do_login()
