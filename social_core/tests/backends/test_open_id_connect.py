@@ -54,7 +54,11 @@ class OpenIdConnectTestMixin:
     issuer = None  # id_token issuer
     openid_config_body = None
     key = None
-    access_token_kwargs = {}
+    # Avoid sharing access_token_kwargs between different subclasses
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        cls.access_token_kwargs = getattr(cls, 'access_token_kwargs', {})
+
 
     def setUp(self):
         super().setUp()
@@ -62,7 +66,7 @@ class OpenIdConnectTestMixin:
         self.public_key = JWK_PUBLIC_KEY.copy()
 
         HTTPretty.register_uri(HTTPretty.GET,
-                               self.backend.OIDC_ENDPOINT + '/.well-known/openid-configuration',
+                               self.backend.oidc_endpoint() + '/.well-known/openid-configuration',
                                status=200,
                                body=self.openid_config_body
                                )
@@ -200,12 +204,46 @@ class OpenIdConnectTestMixin:
         self.authtoken_raised('Token error: Signature verification failed', kid='doesnotexist')
 
 
+class BaseOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
+    backend_path = \
+        'social_core.backends.open_id_connect.OpenIdConnectAuth'
+    issuer = 'https://example.com'
+    openid_config_body = json.dumps({
+        'issuer': 'https://example.com',
+        'authorization_endpoint': 'https://example.com/oidc/auth',
+        'token_endpoint': 'https://example.com/oidc/token',
+        'userinfo_endpoint': 'https://example.com/oidc/userinfo',
+        'revocation_endpoint': 'https://example.com/oidc/revoke',
+        'jwks_uri': 'https://example.com/oidc/certs',
+    })
+
+    expected_username = 'cartman'
+
+    def extra_settings(self):
+        settings = super().extra_settings()
+        settings.update({
+            f'SOCIAL_AUTH_OIDC_OIDC_ENDPOINT': 'https://example.com/oidc',
+        })
+        return settings
+
+    def pre_complete_callback(self, start_url):
+        super().pre_complete_callback(start_url)
+        HTTPretty.register_uri('GET',
+                               uri=self.backend.userinfo_url(),
+                               status=200,
+                               body=json.dumps({'preferred_username': self.expected_username}),
+                               content_type='text/json')
+
+    def test_everything_works(self):
+        self.do_login()
+
+
 class ExampleOpenIdConnectAuth(OpenIdConnectAuth):
     name = 'example123'
     OIDC_ENDPOINT = 'https://example.com/oidc'
 
 
-class OpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
+class ExampleOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
     backend_path = \
         'social_core.tests.backends.test_open_id_connect.ExampleOpenIdConnectAuth'
     issuer = 'https://example.com'
