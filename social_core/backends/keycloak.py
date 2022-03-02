@@ -88,6 +88,7 @@ class KeycloakOAuth2(BaseOAuth2):  # pylint: disable=abstract-method
     name = 'keycloak'
     ID_KEY = 'username'
     ACCESS_TOKEN_METHOD = 'POST'
+    REDIRECT_STATE = False
 
     def authorization_url(self):
         return self.setting('AUTHORIZATION_URL')
