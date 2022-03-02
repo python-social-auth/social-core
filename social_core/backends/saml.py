@@ -269,7 +269,6 @@ class SAMLAuth(BaseAuth):
             'https': 'on' if self.strategy.request_is_secure() else 'off',
             'http_host': self.strategy.request_host(),
             'script_name': self.strategy.request_path(),
-            'server_port': self.strategy.request_port(),
             'get_data': self.strategy.request_get(),
             'post_data': self.strategy.request_post(),
         }
