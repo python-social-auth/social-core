@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.3.0](https://github.com/python-social-auth/social-core/releases/tag/4.3.0) - 2022-06-13
+
+### Added
+- Add backend for Hashicorp Vault OIDC backend
+- Add generic OpenID Connect backend
+- Add Grafana OAuth2 backend
+- Add MusicBrainz OAuth2 backend
+
+### Changed
+- Fixed redirect state for Keycloak backend
+- Add fallback to RSA256 in OpenID Connect when alg is not set
+- Fixed Azure backend so it can be used with all Azure authority hosts
+
+
 ## [4.2.0](https://github.com/python-social-auth/social-core/releases/tag/4.2.0) - 2022-01-17
 
 ### Added
