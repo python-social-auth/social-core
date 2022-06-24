@@ -105,7 +105,7 @@ def sanitize_redirect(hosts, redirect_to):
             return redirect_to
 
 
-def user_is_authenticated(user):
+ def built_in_user_is_authenticated(user):
     if user and hasattr(user, 'is_authenticated'):
         if callable(user.is_authenticated):
             authenticated = user.is_authenticated()
@@ -116,6 +116,13 @@ def user_is_authenticated(user):
     else:
         authenticated = False
     return authenticated
+
+
+def user_is_authenticated(user):
+    return built_in_user_is_authenticated(user) and (not user.profile.is_anonymous)
+
+def user_is_anonymous(user):
+    return built_in_user_is_authenticated(user) and user.profile.is_anonymous
 
 
 def user_is_active(user):

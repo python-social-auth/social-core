@@ -194,7 +194,7 @@ class BaseAuth:
         """
         return self.strategy.get_user(user_id)
 
-    def continue_pipeline(self, partial):
+    def continue_pipeline(self, partial, anonymous_user=None):
         """Continue previous halted pipeline"""
         return self.strategy.authenticate(self,
                                           pipeline_index=partial.next_step,
