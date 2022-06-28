@@ -248,5 +248,4 @@ class OpenIdConnectAuth(BaseOAuth2):
             'fullname': response.get('name'),
             'first_name': response.get('given_name'),
             'last_name': response.get('family_name'),
-            'groups': response.get('groups'),    # not standardized but widely implemented
         }
