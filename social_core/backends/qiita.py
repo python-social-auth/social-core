@@ -2,8 +2,11 @@
 Qiita OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/qiita.html
     http://qiita.com/api/v2/docs#get-apiv2oauthauthorize
+    https://qiita.com/api/v2/docs#get-apiv2authenticated_user
 """
 import json
+
+from social_core.exceptions import AuthException
 
 from .oauth import BaseOAuth2
 
@@ -29,9 +32,13 @@ class QiitaOAuth2(BaseOAuth2):
         ('location', 'location'),
         ('name', 'name'),
         ('organization', 'organization'),
+        ('permanent_id', 'permanent_id'),
         ('profile_image_url', 'profile_image_url'),
+        ('team_only', 'team_only'),
         ('twitter_screen_name', 'twitter_screen_name'),
         ('website_url', 'website_url'),
+        ('image_monthly_upload_limit', 'image_monthly_upload_limit'),
+        ('image_monthly_upload_remaining', 'image_monthly_upload_remaining'),
     ]
 
     def auth_complete_params(self, state=None):
@@ -65,3 +72,16 @@ class QiitaOAuth2(BaseOAuth2):
                 'Authorization': f'Bearer {access_token}'
             }
         )
+
+    def get_user_id(self, details, response):
+        """Return user id"""
+        user_id = None
+        if self.setting('IDENTIFIED_BY_PERMANENT_ID'):
+            user_id = response.get('permanent_id')
+        else:
+            user_id =  response.get('id')
+
+        if user_id is not None:
+            return str(user_id)
+        else:
+            raise AuthException('failed to get user id')
