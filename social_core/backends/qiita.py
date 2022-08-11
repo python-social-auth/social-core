@@ -79,7 +79,7 @@ class QiitaOAuth2(BaseOAuth2):
         if self.setting('IDENTIFIED_BY_PERMANENT_ID'):
             user_id = response.get('permanent_id')
         else:
-            user_id =  response.get('id')
+            user_id = response.get('id')
 
         if user_id is not None:
             return str(user_id)
