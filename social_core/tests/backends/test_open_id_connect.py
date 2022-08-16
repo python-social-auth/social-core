@@ -4,7 +4,6 @@ import json
 import os
 import sys
 from calendar import timegm
-from unittest import mock
 from urllib.parse import urlparse
 
 from httpretty import HTTPretty

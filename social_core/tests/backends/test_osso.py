@@ -1,9 +1,4 @@
 import json
-from urllib.parse import urlencode
-
-from httpretty import HTTPretty
-
-from social_core.backends.osso import OssoOAuth2
 
 from .oauth import OAuth2Test
 
