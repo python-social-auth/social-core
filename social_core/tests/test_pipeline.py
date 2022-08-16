@@ -232,7 +232,6 @@ class UserPersistsInPartialPipeline(BaseActionTest):
         self.backend.continue_pipeline(partial)
 
 
-
 class TestUserDetails(BaseActionTest):
 
     def test_user_details(self):
