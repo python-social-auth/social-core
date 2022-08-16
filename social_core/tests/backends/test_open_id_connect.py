@@ -59,7 +59,6 @@ class OpenIdConnectTestMixin:
         super().__init_subclass__(**kwargs)
         cls.access_token_kwargs = getattr(cls, 'access_token_kwargs', {})
 
-
     def setUp(self):
         super().setUp()
         self.key = JWK_KEY.copy()
@@ -165,7 +164,6 @@ class OpenIdConnectTestMixin:
             **self.access_token_kwargs
         )
         super().pre_complete_callback(start_url)
-
 
     def test_invalid_signature(self):
         self.authtoken_raised(
