@@ -124,7 +124,7 @@ class ORCIDOAuth2(BaseOAuth2):
 
             # Update Jan 28 2021: Now we definitely have an ORCID id of format "0000-0000-0000-0000"
             orcid = response['sub']
-        except Exception as ex:
+        except Exception:
             pass
 
         # We can now attempt to access the ORCID public API with the Orcid:
@@ -136,7 +136,7 @@ class ORCIDOAuth2(BaseOAuth2):
                     },
                     params=params
                 )
-        except Exception as ex:
+        except Exception:
             return None
 
 
