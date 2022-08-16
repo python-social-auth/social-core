@@ -109,6 +109,7 @@ class WhitelistEmailsTest(DummyOAuth2Test):
         })
         self.do_login()
 
+
 class WhitelistDomainsTest(DummyOAuth2Test):
     def test_valid_login(self):
         self.strategy.set_settings({
