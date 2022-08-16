@@ -132,7 +132,7 @@ def odnoklassniki_oauth_sig(data, client_secret):
     search for "little bit different way"
     """
     suffix = md5(
-        '{:s}{:s}'.format(\
+        '{:s}{:s}'.format(
             data['access_token'],
             client_secret).encode('utf-8')
     ).hexdigest()
