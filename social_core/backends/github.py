@@ -82,7 +82,7 @@ class GithubMemberOAuth2(GithubOAuth2):
             # will be 204, see http://bit.ly/ZS6vFl
             if err.response.status_code != 204:
                 raise AuthFailed(self,
-                                 'User doesn\'t belong to the organization')
+                                 "User doesn't belong to the organization")
         return user_data
 
     def member_url(self, user_data):
@@ -92,7 +92,7 @@ class GithubMemberOAuth2(GithubOAuth2):
 class GithubOrganizationOAuth2(GithubMemberOAuth2):
     """Github OAuth2 authentication backend for organizations"""
     name = 'github-org'
-    no_member_string = 'User doesn\'t belong to the organization'
+    no_member_string = "User doesn't belong to the organization"
 
     def member_url(self, user_data):
         return urljoin(
@@ -107,7 +107,7 @@ class GithubOrganizationOAuth2(GithubMemberOAuth2):
 class GithubTeamOAuth2(GithubMemberOAuth2):
     """Github OAuth2 authentication backend for teams"""
     name = 'github-team'
-    no_member_string = 'User doesn\'t belong to the team'
+    no_member_string = "User doesn't belong to the team"
 
     def member_url(self, user_data):
         return urljoin(

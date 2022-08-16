@@ -95,7 +95,7 @@ class AuthTokenRevokedTest(BaseExceptionTestCase):
 
 class AuthForbiddenTest(BaseExceptionTestCase):
     exception = AuthForbidden('foobar')
-    expected_message = 'Your credentials aren\'t allowed'
+    expected_message = "Your credentials aren't allowed"
 
 
 class AuthUnreachableProviderTest(BaseExceptionTestCase):
@@ -105,7 +105,7 @@ class AuthUnreachableProviderTest(BaseExceptionTestCase):
 
 class InvalidEmailTest(BaseExceptionTestCase):
     exception = InvalidEmail('foobar')
-    expected_message = 'Email couldn\'t be validated'
+    expected_message = "Email couldn't be validated"
 
 
 class MissingBackendTest(BaseExceptionTestCase):

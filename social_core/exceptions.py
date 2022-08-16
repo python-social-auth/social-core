@@ -104,7 +104,7 @@ class AuthTokenRevoked(AuthException):
 class AuthForbidden(AuthException):
     """Authentication for this user is forbidden"""
     def __str__(self):
-        return 'Your credentials aren\'t allowed'
+        return "Your credentials aren't allowed"
 
 
 class AuthUnreachableProvider(AuthException):
@@ -115,4 +115,4 @@ class AuthUnreachableProvider(AuthException):
 
 class InvalidEmail(AuthException):
     def __str__(self):
-        return 'Email couldn\'t be validated'
+        return "Email couldn't be validated"
