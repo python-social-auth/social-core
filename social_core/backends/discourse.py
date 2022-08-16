@@ -52,8 +52,7 @@ class DiscourseAuth(BaseAuth):
             'email': response.get('email'),
             'name': response.get('name'),
             'groups': response.get('groups', '').split(','),
-            'is_staff': response.get('admin') == 'true' or
-                        response.get('moderator') == 'true',
+            'is_staff': response.get('admin') == 'true' or response.get('moderator') == 'true',
             'is_superuser': response.get('admin') == 'true',
         }
         return results
