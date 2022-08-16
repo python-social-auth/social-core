@@ -54,6 +54,7 @@ class OpenIdConnectTestMixin:
     issuer = None  # id_token issuer
     openid_config_body = None
     key = None
+
     # Avoid sharing access_token_kwargs between different subclasses
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
