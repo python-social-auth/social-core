@@ -48,4 +48,3 @@ class GiteaOAuth2   (BaseOAuth2):
         return self.get_json(self.api_url('/api/v1/user'), params={
             'access_token': access_token
         })
-
