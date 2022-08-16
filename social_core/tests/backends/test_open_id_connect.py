@@ -220,7 +220,7 @@ class BaseOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
     def extra_settings(self):
         settings = super().extra_settings()
         settings.update({
-            f'SOCIAL_AUTH_OIDC_OIDC_ENDPOINT': 'https://example.com/oidc',
+            'SOCIAL_AUTH_OIDC_OIDC_ENDPOINT': 'https://example.com/oidc',
         })
         return settings
 
