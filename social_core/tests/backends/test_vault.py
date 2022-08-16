@@ -17,8 +17,8 @@ class VaultOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
       'token_endpoint': 'https://vault.example.net:8200/v1/identity/oidc/provider/default/token',
       'userinfo_endpoint': 'https://vault.example.net:8200/v1/identity/oidc/provider/default/userinfo',
       'request_uri_parameter_supported': False,
-      'grant_types_supported': [ 'authorization_code' ],
-      'token_endpoint_auth_methods_supported': [ 'client_secret_basic' ],
+      'grant_types_supported': ['authorization_code'],
+      'token_endpoint_auth_methods_supported': ['client_secret_basic'],
     })
 
     expected_username = 'cartman'
