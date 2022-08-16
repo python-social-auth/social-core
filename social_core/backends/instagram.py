@@ -36,8 +36,9 @@ class InstagramOAuth2(BaseOAuth2):
         # In fact there are not very many of them.
         fields = 'id,username'
         params = {'access_token': access_token, 'fields': fields}
-        response = self.get_json('https://graph.instagram.com/me',
-                             params=params)
+        response = self.get_json(
+            'https://graph.instagram.com/me',
+            params=params)
         return {'user': response}
 
     def auth_html(self):
