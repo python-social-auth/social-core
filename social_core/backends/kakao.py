@@ -22,7 +22,7 @@ class KakaoOAuth2(BaseOAuth2):
     def get_user_details(self, response):
         """Return user details from Kakao account"""
 
-        kaccount_email =  ''
+        kaccount_email = ''
         kakao_account = response.get('kakao_account', '')
         if kakao_account:
             kaccount_email = kakao_account.get('email', '')
