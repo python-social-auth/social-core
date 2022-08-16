@@ -103,7 +103,8 @@ class ORCIDOAuth2(BaseOAuth2):
         params = self.setting('PROFILE_EXTRA_PARAMS', {})
         params['access_token'] = access_token
 
-        # Reference Docs: ORCID Auth Flow: https://github.com/ORCID/ORCID-Source/blob/master/orcid-web/ORCID_AUTH_WITH_OPENID_CONNECT.md#other-endpoints
+        # Reference Docs: ORCID Auth Flow:
+        #   https://github.com/ORCID/ORCID-Source/blob/master/orcid-web/ORCID_AUTH_WITH_OPENID_CONNECT.md#other-endpoints
         # Sample headers: -H "Accept: application/json" -H "Authorization: Bearer <access_token>"
         # This will respond with a json document like this:
         # {
