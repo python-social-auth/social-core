@@ -26,7 +26,8 @@ class VaultOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
     def extra_settings(self):
         settings = super().extra_settings()
         settings.update({
-            f'SOCIAL_AUTH_{self.name}_OIDC_ENDPOINT': 'https://vault.example.net:8200/v1/identity/oidc/provider/default',
+            f'SOCIAL_AUTH_{self.name}_OIDC_ENDPOINT':
+                'https://vault.example.net:8200/v1/identity/oidc/provider/default',
         })
         return settings
 
