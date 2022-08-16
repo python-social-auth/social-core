@@ -22,11 +22,13 @@ from .base import BaseBackendTest
 DATA_DIR = path.join(path.dirname(__file__), 'data')
 
 
-@unittest.skipIf('TRAVIS' in os.environ,
-                  'Travis-ci segfaults probably due to a bad '
-                  'dependencies build')
-@unittest.skipIf('__pypy__' in sys.builtin_module_names,
-                  'dm.xmlsec not compatible with pypy')
+@unittest.skipIf(
+    'TRAVIS' in os.environ,
+    'Travis-ci segfaults probably due to a bad '
+    'dependencies build')
+@unittest.skipIf(
+    '__pypy__' in sys.builtin_module_names,
+    'dm.xmlsec not compatible with pypy')
 class SAMLTest(BaseBackendTest):
     backend_path = 'social_core.backends.saml.SAMLAuth'
     expected_username = 'myself'
@@ -77,8 +79,10 @@ class SAMLTest(BaseBackendTest):
         response = requests.get(start_url)
         self.assertTrue(response.url.startswith(return_url))
         self.assertEqual(response.text, 'foobar')
-        query_values = {k: v[0] for k, v in
-                            parse_qs(urlparse(response.url).query).items()}
+        query_values = {
+            k: v[0] for k, v in
+            parse_qs(urlparse(response.url).query).items()
+        }
         self.assertNotIn(' ', query_values['SAMLResponse'])
         self.strategy.set_request_data(query_values, self.backend)
         return self.backend.complete()
@@ -107,8 +111,10 @@ class SAMLTest(BaseBackendTest):
         """
         # Parse the SAML Request URL to get the XML being sent to TestShib
         url_parts = urlparse(start_url)
-        query = {k: v[0] for (k, v) in
-                     parse_qs(url_parts.query).items()}
+        query = {
+            k: v[0] for (k, v) in
+            parse_qs(url_parts.query).items()
+        }
         xml = OneLogin_Saml2_Utils.decode_base64_and_inflate(
             query['SAMLRequest']
         )

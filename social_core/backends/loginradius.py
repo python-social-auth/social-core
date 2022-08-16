@@ -65,5 +65,7 @@ class LoginRadiusAuth(BaseOAuth2):
         """Return a unique ID for the current user, by default from server
         response. Since LoginRadius handles multiple providers, we need to
         distinguish them to prevent conflicts."""
-        return '{}-{}'.format(response.get('Provider'),
-                                response.get(self.ID_KEY))
+        return '{}-{}'.format(
+            response.get('Provider'),
+            response.get(self.ID_KEY)
+        )
