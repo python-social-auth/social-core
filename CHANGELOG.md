@@ -168,7 +168,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Send User-Agent header on GitHub backend
 - Remove profile scope and verification at hash on Elixir backend
 - Mark description as Markdown for PyPI
-- Use `hmac.compare_digest` for constant time comparision
+- Use `hmac.compare_digest` for constant time comparison
 - Replace deprecated Google+ API usage in GoogleOpenIdConnect
 - Defined scope separator for Strava backend
 - Ensure `saml_config.json` is included by addint it to `MANIFEST.in`
