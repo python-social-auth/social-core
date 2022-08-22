@@ -1,5 +1,6 @@
 from social_core.backends.oauth import BaseOAuth2
 
+
 class MusicBrainzOAuth2(BaseOAuth2):
     """MusicBrainz OAuth authentication backend"""
     name = 'musicbrainz'
