@@ -10,6 +10,7 @@ from .base import BaseAuth
 
 class GoogleAppEngineAuth(BaseAuth):
     """GoogleAppengine authentication backend"""
+
     name = 'google-appengine'
 
     def get_user_id(self, details, response):
@@ -21,11 +22,13 @@ class GoogleAppEngineAuth(BaseAuth):
     def get_user_details(self, response):
         """Return user basic information (id and email only)."""
         user = users.get_current_user()
-        return {'username': user.user_id(),
-                'email': user.email(),
-                'fullname': '',
-                'first_name': '',
-                'last_name': ''}
+        return {
+            'username': user.user_id(),
+            'email': user.email(),
+            'fullname': '',
+            'first_name': '',
+            'last_name': '',
+        }
 
     def auth_url(self):
         """Build and return complete URL."""

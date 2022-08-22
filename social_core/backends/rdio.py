@@ -14,18 +14,19 @@ class BaseRdio(OAuthAuth):
         fullname, first_name, last_name = self.get_user_names(
             fullname=response['displayName'],
             first_name=response['firstName'],
-            last_name=response['lastName']
+            last_name=response['lastName'],
         )
         return {
             'username': response['username'],
             'fullname': fullname,
             'first_name': first_name,
-            'last_name': last_name
+            'last_name': last_name,
         }
 
 
 class RdioOAuth1(BaseRdio, BaseOAuth1):
     """Rdio OAuth authentication backend"""
+
     name = 'rdio-oauth1'
     REQUEST_TOKEN_URL = 'http://api.rdio.com/oauth/request_token'
     AUTHORIZATION_URL = 'https://www.rdio.com/oauth/authorize'
@@ -40,12 +41,14 @@ class RdioOAuth1(BaseRdio, BaseOAuth1):
 
     def user_data(self, access_token, *args, **kwargs):
         """Return user data provided"""
-        params = {'method': 'currentUser',
-                  'extras': 'username,displayName,streamRegion'}
-        request = self.oauth_request(access_token, RDIO_API,
-                                     params, method='POST')
-        return self.get_json(request.url, method='POST',
-                             data=request.to_postdata())['result']
+        params = {
+            'method': 'currentUser',
+            'extras': 'username,displayName,streamRegion',
+        }
+        request = self.oauth_request(access_token, RDIO_API, params, method='POST')
+        return self.get_json(request.url, method='POST', data=request.to_postdata())[
+            'result'
+        ]
 
 
 class RdioOAuth2(BaseRdio, BaseOAuth2):
@@ -64,8 +67,12 @@ class RdioOAuth2(BaseRdio, BaseOAuth2):
     ]
 
     def user_data(self, access_token, *args, **kwargs):
-        return self.get_json(RDIO_API, method='POST', data={
-            'method': 'currentUser',
-            'extras': 'username,displayName,streamRegion',
-            'access_token': access_token
-        })['result']
+        return self.get_json(
+            RDIO_API,
+            method='POST',
+            data={
+                'method': 'currentUser',
+                'extras': 'username,displayName,streamRegion',
+                'access_token': access_token,
+            },
+        )['result']

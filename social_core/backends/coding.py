@@ -23,14 +23,14 @@ class CodingOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Github account"""
-        fullname, first_name, last_name = self.get_user_names(
-            response.get('name')
-        )
-        return {'username': response.get('name'),
-                'email': response.get('email') or '',
-                'fullname': fullname,
-                'first_name': first_name,
-                'last_name': last_name}
+        fullname, first_name, last_name = self.get_user_names(response.get('name'))
+        return {
+            'username': response.get('name'),
+            'email': response.get('email') or '',
+            'fullname': fullname,
+            'first_name': first_name,
+            'last_name': last_name,
+        }
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
@@ -41,8 +41,5 @@ class CodingOAuth2(BaseOAuth2):
         return data.get('data')
 
     def _user_data(self, access_token, path=None):
-        url = urljoin(
-            self.api_url(),
-            'account/current_user{}'.format(path or '')
-        )
+        url = urljoin(self.api_url(), 'account/current_user{}'.format(path or ''))
         return self.get_json(url, params={'access_token': access_token})

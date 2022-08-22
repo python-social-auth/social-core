@@ -7,6 +7,7 @@ from .oauth import BaseOAuth2
 
 class SurveyMonkeyOAuth2(BaseOAuth2):
     """SurveyMonkey OAuth2 authentication backend"""
+
     name = 'surveymonkey'
     AUTHORIZATION_URL = 'https://api.surveymonkey.com/oauth/authorize'
     ACCESS_TOKEN_URL = 'https://api.surveymonkey.com/oauth/token'
@@ -26,6 +27,7 @@ class SurveyMonkeyOAuth2(BaseOAuth2):
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data information from service"""
         base_url = kwargs['response']['access_url']
-        return self.get_json(base_url + self.USER_DATA_URL, headers={
-          'Authorization': 'bearer ' + access_token
-        })
+        return self.get_json(
+            base_url + self.USER_DATA_URL,
+            headers={'Authorization': 'bearer ' + access_token},
+        )

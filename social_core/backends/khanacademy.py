@@ -17,6 +17,7 @@ class BrowserBasedOAuth1(BaseOAuth1):
         REQUEST_TOKEN_URL       Request token URL (opened in web browser)
         ACCESS_TOKEN_URL        Access token URL
     """
+
     REQUEST_TOKEN_URL = ''
     OAUTH_TOKEN_PARAMETER_NAME = 'oauth_token'
     REDIRECT_URI_PARAMETER_NAME = 'redirect_uri'
@@ -42,7 +43,7 @@ class BrowserBasedOAuth1(BaseOAuth1):
             callback_uri=self.get_redirect_uri(state),
             signature_method=SIGNATURE_HMAC,
             signature_type=SIGNATURE_TYPE_QUERY,
-            decoding=None
+            decoding=None,
         )
         url = self.REQUEST_TOKEN_URL + '?' + urlencode(params)
         url, _, _ = auth.client.sign(url)
@@ -53,14 +54,17 @@ class BrowserBasedOAuth1(BaseOAuth1):
         oauth_verifier = oauth_verifier or self.data.get('oauth_verifier')
         token = token or {}
         state = self.get_or_create_state()
-        return OAuth1(key, secret,
-                      resource_owner_key=token.get('oauth_token'),
-                      resource_owner_secret=token.get('oauth_token_secret'),
-                      callback_uri=self.get_redirect_uri(state),
-                      verifier=oauth_verifier,
-                      signature_method=SIGNATURE_HMAC,
-                      signature_type=SIGNATURE_TYPE_QUERY,
-                      decoding=None)
+        return OAuth1(
+            key,
+            secret,
+            resource_owner_key=token.get('oauth_token'),
+            resource_owner_secret=token.get('oauth_token_secret'),
+            callback_uri=self.get_redirect_uri(state),
+            verifier=oauth_verifier,
+            signature_method=SIGNATURE_HMAC,
+            signature_type=SIGNATURE_TYPE_QUERY,
+            decoding=None,
+        )
 
 
 class KhanAcademyOAuth1(BrowserBasedOAuth1):
@@ -91,6 +95,7 @@ class KhanAcademyOAuth1(BrowserBasedOAuth1):
     oauth_callback (optional) - URL to redirect to after request token is
         received and authorized by the user's chosen identity provider.
     """
+
     name = 'khanacademy-oauth1'
     ID_KEY = 'user_id'
     REQUEST_TOKEN_URL = 'http://www.khanacademy.org/api/auth/request_token'
@@ -108,7 +113,7 @@ class KhanAcademyOAuth1(BrowserBasedOAuth1):
             'fullname': response.get('nickname'),
             'first_name': '',
             'last_name': '',
-            'user_id': response.get('user_id')
+            'user_id': response.get('user_id'),
         }
 
     def user_data(self, access_token, *args, **kwargs):

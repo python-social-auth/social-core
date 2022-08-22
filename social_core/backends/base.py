@@ -9,6 +9,7 @@ from ..utils import SSLHttpAdapter, module_member, parse_qs, user_agent
 class BaseAuth:
     """A authentication backend that authenticates the user based on
     the provider response"""
+
     name = ''  # provider name, it's stored in database
     supports_inactive_user = False  # Django auth
     ID_KEY = None
@@ -22,9 +23,7 @@ class BaseAuth:
         self.strategy = strategy
         self.redirect_uri = redirect_uri
         self.data = self.strategy.request_data()
-        self.redirect_uri = self.strategy.absolute_uri(
-            self.redirect_uri
-        )
+        self.redirect_uri = self.strategy.absolute_uri(self.redirect_uri)
 
     def setting(self, name, default=None):
         """Return setting value from strategy"""
@@ -67,8 +66,12 @@ class BaseAuth:
         # response be passed in as a keyword argument, to make sure we
         # don't match the username/password calling conventions of
         # authenticate.
-        if 'backend' not in kwargs or kwargs['backend'].name != self.name or \
-           'strategy' not in kwargs or 'response' not in kwargs:
+        if (
+            'backend' not in kwargs
+            or kwargs['backend'].name != self.name
+            or 'strategy' not in kwargs
+            or 'response' not in kwargs
+        ):
             return None
 
         self.strategy = kwargs.get('strategy') or self.strategy
@@ -102,9 +105,11 @@ class BaseAuth:
         out.setdefault('request', self.strategy.request_data())
         out.setdefault('details', {})
 
-        if not isinstance(pipeline_index, int) or \
-           pipeline_index < 0 or \
-           pipeline_index >= len(pipeline):
+        if (
+            not isinstance(pipeline_index, int)
+            or pipeline_index < 0
+            or pipeline_index >= len(pipeline)
+        ):
             pipeline_index = 0
 
         for idx, name in enumerate(pipeline[pipeline_index:]):
@@ -126,7 +131,9 @@ class BaseAuth:
         if self.GET_ALL_EXTRA_DATA or self.setting('GET_ALL_EXTRA_DATA', False):
             extra_data_entries = response.keys()
         else:
-            extra_data_entries = (self.EXTRA_DATA or []) + self.setting('EXTRA_DATA', [])
+            extra_data_entries = (self.EXTRA_DATA or []) + self.setting(
+                'EXTRA_DATA', []
+            )
         for entry in extra_data_entries:
             if not isinstance(entry, (list, tuple)):
                 entry = (entry,)
@@ -165,11 +172,11 @@ class BaseAuth:
 
     def get_user_details(self, response):
         """Must return user details in a know internal struct:
-            {'username': <username if any>,
-             'email': <user email if any>,
-             'fullname': <user full name if any>,
-             'first_name': <user first name if any>,
-             'last_name': <user last name if any>}
+        {'username': <username if any>,
+         'email': <user email if any>,
+         'fullname': <user full name if any>,
+         'first_name': <user first name if any>,
+         'last_name': <user last name if any>}
         """
         raise NotImplementedError('Implement in subclass')
 
@@ -196,17 +203,17 @@ class BaseAuth:
 
     def continue_pipeline(self, partial):
         """Continue previous halted pipeline"""
-        return self.strategy.authenticate(self,
-                                          pipeline_index=partial.next_step,
-                                          *partial.args,
-                                          **partial.kwargs)
+        return self.strategy.authenticate(
+            self, pipeline_index=partial.next_step, *partial.args, **partial.kwargs
+        )
 
     def auth_extra_arguments(self):
         """Return extra arguments needed on auth process. The defaults can be
         overridden by GET parameters."""
         extra_arguments = self.setting('AUTH_EXTRA_ARGUMENTS', {}).copy()
-        extra_arguments.update((key, self.data[key]) for key in extra_arguments
-                               if key in self.data)
+        extra_arguments.update(
+            (key, self.data[key]) for key in extra_arguments if key in self.data
+        )
         return extra_arguments
 
     def uses_redirect(self):
@@ -221,11 +228,12 @@ class BaseAuth:
 
         if self.setting('VERIFY_SSL') is not None:
             kwargs.setdefault('verify', self.setting('VERIFY_SSL'))
-        kwargs.setdefault('timeout', self.setting('REQUESTS_TIMEOUT') or
-                          self.setting('URLOPEN_TIMEOUT'))
+        kwargs.setdefault(
+            'timeout',
+            self.setting('REQUESTS_TIMEOUT') or self.setting('URLOPEN_TIMEOUT'),
+        )
         if self.SEND_USER_AGENT and 'User-Agent' not in kwargs['headers']:
-            kwargs['headers']['User-Agent'] = self.setting('USER_AGENT') or \
-                                              user_agent()
+            kwargs['headers']['User-Agent'] = self.setting('USER_AGENT') or user_agent()
 
         try:
             if self.SSL_PROTOCOL:

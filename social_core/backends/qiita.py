@@ -10,6 +10,7 @@ from .oauth import BaseOAuth2
 
 class QiitaOAuth2(BaseOAuth2):
     """Qiita OAuth authentication backend"""
+
     name = 'qiita'
 
     AUTHORIZATION_URL = 'https://qiita.com/api/v2/oauth/authorize'
@@ -61,7 +62,5 @@ class QiitaOAuth2(BaseOAuth2):
         """Loads user data from service"""
         return self.get_json(
             'https://qiita.com/api/v2/authenticated_user',
-            headers={
-                'Authorization': f'Bearer {access_token}'
-            }
+            headers={'Authorization': f'Bearer {access_token}'},
         )

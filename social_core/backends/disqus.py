@@ -47,5 +47,5 @@ class DisqusOAuth2(BaseOAuth2):
         key, secret = self.get_key_and_secret()
         return self.get_json(
             'https://disqus.com/api/3.0/users/details.json',
-            params={'access_token': access_token, 'api_secret': secret}
+            params={'access_token': access_token, 'api_secret': secret},
         )

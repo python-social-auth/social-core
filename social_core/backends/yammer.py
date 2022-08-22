@@ -9,11 +9,7 @@ class YammerOAuth2(BaseOAuth2):
     name = 'yammer'
     AUTHORIZATION_URL = 'https://www.yammer.com/dialog/oauth'
     ACCESS_TOKEN_URL = 'https://www.yammer.com/oauth2/access_token'
-    EXTRA_DATA = [
-        ('id', 'id'),
-        ('expires', 'expires'),
-        ('mugshot_url', 'mugshot_url')
-    ]
+    EXTRA_DATA = [('id', 'id'), ('expires', 'expires'), ('mugshot_url', 'mugshot_url')]
 
     def get_user_id(self, details, response):
         return response['user']['id']
@@ -23,7 +19,7 @@ class YammerOAuth2(BaseOAuth2):
         fullname, first_name, last_name = self.get_user_names(
             fullname=response['user']['full_name'],
             first_name=response['user']['first_name'],
-            last_name=response['user']['last_name']
+            last_name=response['user']['last_name'],
         )
         email = response['user']['contact']['email_addresses'][0]['address']
         mugshot_url = response['user']['mugshot_url']
@@ -33,7 +29,7 @@ class YammerOAuth2(BaseOAuth2):
             'fullname': fullname,
             'first_name': first_name,
             'last_name': last_name,
-            'picture_url': mugshot_url
+            'picture_url': mugshot_url,
         }
 
 

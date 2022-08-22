@@ -7,6 +7,7 @@ from openid.store.nonce import SKEW
 
 class OpenIdStore(BaseOpenIDStore):
     """Storage class"""
+
     def __init__(self, strategy):
         """Init method"""
         super().__init__()
@@ -22,8 +23,7 @@ class OpenIdStore(BaseOpenIDStore):
 
     def removeAssociation(self, server_url, handle):
         """Remove association"""
-        associations_ids = list(dict(self.assoc.oids(server_url,
-                                                     handle)).keys())
+        associations_ids = list(dict(self.assoc.oids(server_url, handle)).keys())
         if associations_ids:
             self.assoc.remove(associations_ids)
 
@@ -59,7 +59,7 @@ class OpenIdStore(BaseOpenIDStore):
 class OpenIdSessionWrapper(dict):
     pickle_instances = (
         '_yadis_services__openid_consumer_',
-        '_openid_consumer_last_token'
+        '_openid_consumer_last_token',
     )
 
     def __getitem__(self, name):

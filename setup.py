@@ -3,7 +3,7 @@ from os.path import dirname, join
 
 from setuptools import setup
 
-VERSION_RE = re.compile(r'__version__ = \'([\d\.]+)\'')
+VERSION_RE = re.compile(r"__version__ = \'([\d\.]+)\'")
 
 LONG_DESCRIPTION = """
 Python Social Auth is an easy to setup social authentication/registration
@@ -24,8 +24,9 @@ def long_description():
 
 def read_version():
     with open('social_core/__init__.py') as file:
-        version_line = [line for line in file.readlines()
-                        if line.startswith('__version__')][0]
+        version_line = [
+            line for line in file.readlines() if line.startswith('__version__')
+        ][0]
         return VERSION_RE.match(version_line).groups()[0]
 
 
@@ -45,9 +46,7 @@ requirements_azuread = read_requirements('requirements-azuread.txt')
 
 tests_requirements = read_tests_requirements('requirements.txt')
 
-requirements_all = requirements_openidconnect + \
-                   requirements_saml + \
-                   requirements_azuread
+requirements_all = requirements_openidconnect + requirements_saml + requirements_azuread
 
 tests_requirements = tests_requirements + requirements_all
 
@@ -67,7 +66,7 @@ setup(
         'social_core.tests',
         'social_core.tests.actions',
         'social_core.tests.backends',
-        'social_core.tests.backends.data'
+        'social_core.tests.backends.data',
     ],
     long_description=long_description() or LONG_DESCRIPTION,
     long_description_content_type='text/markdown',
@@ -97,11 +96,11 @@ setup(
     package_data={
         'social_core/tests': [
             'social_core/tests/*.txt',
-            'social_core/tests/testkey.pem'
+            'social_core/tests/testkey.pem',
         ]
     },
     include_package_data=True,
     tests_require=tests_requirements,
     test_suite='social_core.tests',
-    zip_safe=False
+    zip_safe=False,
 )

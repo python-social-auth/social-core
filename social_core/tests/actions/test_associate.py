@@ -25,38 +25,40 @@ class AssociateActionTest(BaseActionTest):
 
 
 class MultipleAccountsTest(AssociateActionTest):
-    alternative_user_data_body = json.dumps({
-        'login': 'foobar2',
-        'id': 2,
-        'avatar_url': 'https://github.com/images/error/foobar2_happy.gif',
-        'gravatar_id': 'somehexcode',
-        'url': 'https://api.github.com/users/foobar2',
-        'name': 'monalisa foobar2',
-        'company': 'GitHub',
-        'blog': 'https://github.com/blog',
-        'location': 'San Francisco',
-        'email': 'foo@bar.com',
-        'hireable': False,
-        'bio': 'There once was...',
-        'public_repos': 2,
-        'public_gists': 1,
-        'followers': 20,
-        'following': 0,
-        'html_url': 'https://github.com/foobar2',
-        'created_at': '2008-01-14T04:33:35Z',
-        'type': 'User',
-        'total_private_repos': 100,
-        'owned_private_repos': 100,
-        'private_gists': 81,
-        'disk_usage': 10000,
-        'collaborators': 8,
-        'plan': {
-            'name': 'Medium',
-            'space': 400,
-            'collaborators': 10,
-            'private_repos': 20
+    alternative_user_data_body = json.dumps(
+        {
+            'login': 'foobar2',
+            'id': 2,
+            'avatar_url': 'https://github.com/images/error/foobar2_happy.gif',
+            'gravatar_id': 'somehexcode',
+            'url': 'https://api.github.com/users/foobar2',
+            'name': 'monalisa foobar2',
+            'company': 'GitHub',
+            'blog': 'https://github.com/blog',
+            'location': 'San Francisco',
+            'email': 'foo@bar.com',
+            'hireable': False,
+            'bio': 'There once was...',
+            'public_repos': 2,
+            'public_gists': 1,
+            'followers': 20,
+            'following': 0,
+            'html_url': 'https://github.com/foobar2',
+            'created_at': '2008-01-14T04:33:35Z',
+            'type': 'User',
+            'total_private_repos': 100,
+            'owned_private_repos': 100,
+            'private_gists': 81,
+            'disk_usage': 10000,
+            'collaborators': 8,
+            'plan': {
+                'name': 'Medium',
+                'space': 400,
+                'collaborators': 10,
+                'private_repos': 20,
+            },
         }
-    })
+    )
 
     def test_multiple_social_accounts(self):
         self.do_login()
@@ -81,6 +83,7 @@ class AlreadyAssociatedErrorTest(BaseActionTest):
         self.user = self.user1
         self.do_login()
         self.user = User(username='foobar2', email='foo2@bar2.com')
-        with self.assertRaisesRegex(AuthAlreadyAssociated,
-                                    'This account is already in use.'):
+        with self.assertRaisesRegex(
+            AuthAlreadyAssociated, 'This account is already in use.'
+        ):
             self.do_login()

@@ -7,10 +7,7 @@ class UniverseAuth2Test(OAuth2Test):
     backend_path = 'social_core.backends.universe.UniverseOAuth2'
     user_data_url = 'https://www.universe.com/api/v2/current_user'
     expected_username = 'scott+awesome@universe.com'
-    access_token_body = json.dumps({
-        'access_token': 'foobar',
-        'token_type': 'bearer'
-    })
+    access_token_body = json.dumps({'access_token': 'foobar', 'token_type': 'bearer'})
     user_data_body = json.dumps(
         {
             'current_user': {

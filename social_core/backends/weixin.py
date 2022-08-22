@@ -12,6 +12,7 @@ from .oauth import BaseOAuth2
 
 class WeixinOAuth2(BaseOAuth2):
     """Weixin OAuth authentication backend"""
+
     name = 'weixin'
     ID_KEY = 'openid'
     AUTHORIZATION_URL = 'https://open.weixin.qq.com/connect/qrconnect'
@@ -34,28 +35,26 @@ class WeixinOAuth2(BaseOAuth2):
             username = response.get('nickname', '')
         return {
             'username': username,
-            'profile_image_url': response.get('headimgurl', '')
+            'profile_image_url': response.get('headimgurl', ''),
         }
 
     def user_data(self, access_token, *args, **kwargs):
-        data = self.get_json('https://api.weixin.qq.com/sns/userinfo', params={
-            'access_token': access_token,
-            'openid': kwargs['response']['openid']
-        })
+        data = self.get_json(
+            'https://api.weixin.qq.com/sns/userinfo',
+            params={
+                'access_token': access_token,
+                'openid': kwargs['response']['openid'],
+            },
+        )
         nickname = data.get('nickname')
         if nickname:
             # weixin api has some encode bug, here need handle
-            data['nickname'] = nickname.encode(
-                'raw_unicode_escape'
-            ).decode('utf-8')
+            data['nickname'] = nickname.encode('raw_unicode_escape').decode('utf-8')
         return data
 
     def auth_params(self, state=None):
         appid, secret = self.get_key_and_secret()
-        params = {
-            'appid': appid,
-            'redirect_uri': self.get_redirect_uri(state)
-        }
+        params = {'appid': appid, 'redirect_uri': self.get_redirect_uri(state)}
         if self.STATE_PARAMETER and state:
             params['state'] = state
         if self.RESPONSE_TYPE:
@@ -69,7 +68,7 @@ class WeixinOAuth2(BaseOAuth2):
             'code': self.data.get('code', ''),  # server response code
             'appid': appid,
             'secret': secret,
-            'redirect_uri': self.get_redirect_uri(state)
+            'redirect_uri': self.get_redirect_uri(state),
         }
 
     def refresh_token_params(self, token, *args, **kwargs):
@@ -78,7 +77,7 @@ class WeixinOAuth2(BaseOAuth2):
             'refresh_token': token,
             'grant_type': 'refresh_token',
             'appid': appid,
-            'secret': secret
+            'secret': secret,
         }
 
     def auth_complete(self, *args, **kwargs):
@@ -89,7 +88,7 @@ class WeixinOAuth2(BaseOAuth2):
                 self.ACCESS_TOKEN_URL,
                 data=self.auth_complete_params(self.validate_state()),
                 headers=self.auth_headers(),
-                method=self.ACCESS_TOKEN_METHOD
+                method=self.ACCESS_TOKEN_METHOD,
             )
         except HTTPError as err:
             if err.response.status_code == 400:
@@ -101,8 +100,9 @@ class WeixinOAuth2(BaseOAuth2):
         if 'errcode' in response:
             raise AuthCanceled(self)
         self.process_error(response)
-        return self.do_auth(response['access_token'], response=response,
-                            *args, **kwargs)
+        return self.do_auth(
+            response['access_token'], response=response, *args, **kwargs
+        )
 
 
 class WeixinOAuth2APP(WeixinOAuth2):
@@ -111,6 +111,7 @@ class WeixinOAuth2APP(WeixinOAuth2):
 
     Can't use in web, only in weixin app
     """
+
     name = 'weixinapp'
     ID_KEY = 'openid'
     AUTHORIZATION_URL = 'https://open.weixin.qq.com/connect/oauth2/authorize'
@@ -137,9 +138,7 @@ class WeixinOAuth2APP(WeixinOAuth2):
         params.update(self.get_scope_argument())
         params.update(self.auth_extra_arguments())
         params = urlencode(sorted(params.items()))
-        return '{}#wechat_redirect'.format(
-            self.AUTHORIZATION_URL + '?' + params
-        )
+        return '{}#wechat_redirect'.format(self.AUTHORIZATION_URL + '?' + params)
 
     def auth_complete_params(self, state=None):
         appid, secret = self.get_key_and_secret()
@@ -161,7 +160,7 @@ class WeixinOAuth2APP(WeixinOAuth2):
                 self.ACCESS_TOKEN_URL,
                 data=self.auth_complete_params(self.validate_state()),
                 headers=self.auth_headers(),
-                method=self.ACCESS_TOKEN_METHOD
+                method=self.ACCESS_TOKEN_METHOD,
             )
         except HTTPError as err:
             if err.response.status_code == 400:
@@ -174,5 +173,6 @@ class WeixinOAuth2APP(WeixinOAuth2):
         if 'errcode' in response:
             raise AuthCanceled(self)
         self.process_error(response)
-        return self.do_auth(response['access_token'], response=response,
-                            *args, **kwargs)
+        return self.do_auth(
+            response['access_token'], response=response, *args, **kwargs
+        )

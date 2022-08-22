@@ -7,9 +7,7 @@ from .oauth import BaseOAuth1, BaseOAuth2
 
 class MendeleyMixin:
     SCOPE_SEPARATOR = '+'
-    EXTRA_DATA = [('profile_id', 'profile_id'),
-                  ('name', 'name'),
-                  ('bio', 'bio')]
+    EXTRA_DATA = [('profile_id', 'profile_id'), ('name', 'name'), ('bio', 'bio')]
 
     def get_user_id(self, details, response):
         return response['id']
@@ -19,9 +17,7 @@ class MendeleyMixin:
         profile_id = response['id']
         name = response['display_name']
         bio = response['link']
-        return {'profile_id': profile_id,
-                'name': name,
-                'bio': bio}
+        return {'profile_id': profile_id, 'name': name, 'bio': bio}
 
     def user_data(self, access_token, *args, **kwargs):
         """Return user data provided"""
@@ -42,7 +38,7 @@ class MendeleyOAuth(MendeleyMixin, BaseOAuth1):
     def get_user_data(self, access_token):
         return self.get_json(
             'http://api.mendeley.com/oapi/profiles/info/me/',
-            auth=self.oauth_auth(access_token)
+            auth=self.oauth_auth(access_token),
         )
 
 
@@ -63,5 +59,5 @@ class MendeleyOAuth2(MendeleyMixin, BaseOAuth2):
         """Loads user data from service"""
         return self.get_json(
             'https://api.mendeley.com/profiles/me/',
-            headers={'Authorization': f'Bearer {access_token}'}
+            headers={'Authorization': f'Bearer {access_token}'},
         )

@@ -17,7 +17,7 @@ class BungieOAuth2(BaseOAuth2):
         ('access_token', 'access_token', True),
         ('expires_in', 'expires'),
         ('membership_id', 'membership_id'),
-        ('refresh_expires_in', 'refresh_expires_in')
+        ('refresh_expires_in', 'refresh_expires_in'),
     ]
 
     def auth_html(self):
@@ -30,7 +30,7 @@ class BungieOAuth2(BaseOAuth2):
             'X-API-KEY': self.setting('API_KEY'),
             'Content-Type': 'application/x-www-form-urlencoded',
             'Origin': self.setting('ORIGIN'),
-            'Accept': 'application/json'
+            'Accept': 'application/json',
         }
 
     def make_bungie_request(self, url, access_token, kwargs):
@@ -48,12 +48,12 @@ class BungieOAuth2(BaseOAuth2):
             data=self.auth_complete_params(state),
             headers=self.auth_headers(),
             auth=self.auth_complete_credentials(),
-            method=self.ACCESS_TOKEN_METHOD
+            method=self.ACCESS_TOKEN_METHOD,
         )
         self.process_error(response)
-        return self.do_auth(response['access_token'],
-                            response=response,
-                            *args, **kwargs)
+        return self.do_auth(
+            response['access_token'], response=response, *args, **kwargs
+        )
 
     def do_auth(self, access_token, *args, **kwargs):
         """Finish the auth process once the access_token was retrieved"""
@@ -71,8 +71,7 @@ class BungieOAuth2(BaseOAuth2):
         url = 'https://www.bungie.net/Platform/User/GetBungieNetUser/'
         response = self.make_bungie_request(url, access_token, kwargs)
         username = response['Response']['user']['displayName']
-        return {'username': username,
-                'uid': membership_id}
+        return {'username': username, 'uid': membership_id}
 
     def get_user_details(self, response, *args, **kwargs):
         """Return user details from Bungie account"""

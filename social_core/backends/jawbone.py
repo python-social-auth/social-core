@@ -21,8 +21,7 @@ class JawboneOAuth2(BaseOAuth2):
         """Return user details from Jawbone account"""
         data = response['data']
         fullname, first_name, last_name = self.get_user_names(
-            first_name=data.get('first', ''),
-            last_name=data.get('last', '')
+            first_name=data.get('first', ''), last_name=data.get('last', '')
         )
         return {
             'username': first_name + ' ' + last_name,
@@ -32,7 +31,7 @@ class JawboneOAuth2(BaseOAuth2):
             'dob': data.get('dob', ''),
             'gender': data.get('gender', ''),
             'height': data.get('height', ''),
-            'weight': data.get('weight', '')
+            'weight': data.get('weight', ''),
         }
 
     def user_data(self, access_token, *args, **kwargs):
@@ -48,9 +47,7 @@ class JawboneOAuth2(BaseOAuth2):
             if error == 'access_denied':
                 raise AuthCanceled(self)
             else:
-                raise AuthUnknownError(self, 'Jawbone error was {}'.format(
-                    error
-                ))
+                raise AuthUnknownError(self, f'Jawbone error was {error}')
         return super().process_error(data)
 
     def auth_complete_params(self, state=None):
@@ -70,8 +67,9 @@ class JawboneOAuth2(BaseOAuth2):
             self.ACCESS_TOKEN_URL,
             params=self.auth_complete_params(self.validate_state()),
             headers=self.auth_headers(),
-            method=self.ACCESS_TOKEN_METHOD
+            method=self.ACCESS_TOKEN_METHOD,
         )
         self.process_error(response)
-        return self.do_auth(response['access_token'], response=response,
-                            *args, **kwargs)
+        return self.do_auth(
+            response['access_token'], response=response, *args, **kwargs
+        )

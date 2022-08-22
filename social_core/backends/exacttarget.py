@@ -16,9 +16,7 @@ class ExactTargetOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Use the email address of the user, suffixed by _et"""
-        user = response.get('token', {})\
-                       .get('request', {})\
-                       .get('user', {})
+        user = response.get('token', {}).get('request', {}).get('user', {})
         if 'email' in user:
             user['username'] = user['email']
         return user

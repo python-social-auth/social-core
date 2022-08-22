@@ -1,8 +1,7 @@
 import random
 import unittest
 
-from ..storage import (AssociationMixin, BaseStorage, CodeMixin, NonceMixin,
-                       UserMixin)
+from ..storage import AssociationMixin, BaseStorage, CodeMixin, NonceMixin, UserMixin
 from ..strategy import BaseStrategy
 from .models import User
 
@@ -39,7 +38,6 @@ class BrokenStorage(BaseStorage):
 
 
 class BrokenUserTests(unittest.TestCase):
-
     def setUp(self):
         self.user = BrokenUser
 
@@ -175,8 +173,7 @@ class BrokenStrategyTests(unittest.TestCase):
             self.strategy.render_html(html='<p>foobar</p>', context={})
 
     def test_render_html_with_none(self):
-        with self.assertRaisesRegex(ValueError,
-                                    'Missing template or html parameters'):
+        with self.assertRaisesRegex(ValueError, 'Missing template or html parameters'):
             self.strategy.render_html()
 
     def test_is_integrity_error(self):

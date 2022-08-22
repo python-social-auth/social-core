@@ -5,7 +5,7 @@ Gitea OAuth2 backend, docs at:
 from .oauth import BaseOAuth2
 
 
-class GiteaOAuth2   (BaseOAuth2):
+class GiteaOAuth2(BaseOAuth2):
     """Gitea OAuth authentication backend"""
 
     name = 'gitea'
@@ -19,7 +19,7 @@ class GiteaOAuth2   (BaseOAuth2):
     EXTRA_DATA = [
         ('id', 'id'),
         ('expires_in', 'expires'),
-        ('refresh_token', 'refresh_token')
+        ('refresh_token', 'refresh_token'),
     ]
 
     def api_url(self, path):
@@ -34,18 +34,17 @@ class GiteaOAuth2   (BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Gitea account"""
-        fullname, first_name, last_name = self.get_user_names(
-            response.get('fullname')
-        )
-        return {'username': response.get('login'),
-                'email': response.get('email') or '',
-                'fullname': fullname,
-                'first_name': first_name,
-                'last_name': last_name}
+        fullname, first_name, last_name = self.get_user_names(response.get('fullname'))
+        return {
+            'username': response.get('login'),
+            'email': response.get('email') or '',
+            'fullname': fullname,
+            'first_name': first_name,
+            'last_name': last_name,
+        }
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        return self.get_json(self.api_url('/api/v1/user'), params={
-            'access_token': access_token
-        })
-
+        return self.get_json(
+            self.api_url('/api/v1/user'), params={'access_token': access_token}
+        )

@@ -5,8 +5,14 @@ from httpretty import HTTPretty
 
 from ...backends.utils import load_backends, user_backends_data
 from ...utils import PARTIAL_TOKEN_SESSION_NAME, module_member, parse_qs
-from ..models import (TestAssociation, TestCode, TestNonce, TestStorage,
-                      TestUserSocialAuth, User)
+from ..models import (
+    TestAssociation,
+    TestCode,
+    TestNonce,
+    TestStorage,
+    TestUserSocialAuth,
+    User,
+)
 from ..strategy import TestStrategy
 
 
@@ -26,11 +32,11 @@ class BaseBackendTest(unittest.TestCase):
         self.complete_url = self.strategy.build_absolute_uri(
             self.raw_complete_url.format(self.backend.name)
         )
-        backends = (self.backend_path,
-                    'social_core.tests.backends.test_broken.BrokenBackendAuth')
-        self.strategy.set_settings({
-            'SOCIAL_AUTH_AUTHENTICATION_BACKENDS': backends
-        })
+        backends = (
+            self.backend_path,
+            'social_core.tests.backends.test_broken.BrokenBackendAuth',
+        )
+        self.strategy.set_settings({'SOCIAL_AUTH_AUTHENTICATION_BACKENDS': backends})
         self.strategy.set_settings(self.extra_settings())
         # Force backends loading to trash PSA cache
         load_backends(backends, force_load=True)
@@ -69,7 +75,7 @@ class BaseBackendTest(unittest.TestCase):
         user_backends = user_backends_data(
             user,
             self.strategy.get_setting('SOCIAL_AUTH_AUTHENTICATION_BACKENDS'),
-            self.strategy.storage
+            self.strategy.storage,
         )
         self.assertEqual(len(list(user_backends.keys())), 3)
         self.assertEqual('associated' in user_backends, True)
@@ -81,24 +87,26 @@ class BaseBackendTest(unittest.TestCase):
         return user
 
     def pipeline_settings(self):
-        self.strategy.set_settings({
-            'SOCIAL_AUTH_PIPELINE': (
-                'social_core.pipeline.social_auth.social_details',
-                'social_core.pipeline.social_auth.social_uid',
-                'social_core.pipeline.social_auth.auth_allowed',
-                'social_core.tests.pipeline.ask_for_password',
-                'social_core.tests.pipeline.ask_for_slug',
-                'social_core.pipeline.social_auth.social_user',
-                'social_core.pipeline.user.get_username',
-                'social_core.pipeline.social_auth.associate_by_email',
-                'social_core.pipeline.user.create_user',
-                'social_core.pipeline.social_auth.associate_user',
-                'social_core.pipeline.social_auth.load_extra_data',
-                'social_core.tests.pipeline.set_password',
-                'social_core.tests.pipeline.set_slug',
-                'social_core.pipeline.user.user_details'
-            )
-        })
+        self.strategy.set_settings(
+            {
+                'SOCIAL_AUTH_PIPELINE': (
+                    'social_core.pipeline.social_auth.social_details',
+                    'social_core.pipeline.social_auth.social_uid',
+                    'social_core.pipeline.social_auth.auth_allowed',
+                    'social_core.tests.pipeline.ask_for_password',
+                    'social_core.tests.pipeline.ask_for_slug',
+                    'social_core.pipeline.social_auth.social_user',
+                    'social_core.pipeline.user.get_username',
+                    'social_core.pipeline.social_auth.associate_by_email',
+                    'social_core.pipeline.user.create_user',
+                    'social_core.pipeline.social_auth.associate_user',
+                    'social_core.pipeline.social_auth.load_extra_data',
+                    'social_core.tests.pipeline.set_password',
+                    'social_core.tests.pipeline.set_slug',
+                    'social_core.pipeline.user.user_details',
+                )
+            }
+        )
 
     def pipeline_handlers(self, url):
         HTTPretty.register_uri(HTTPretty.GET, url, status=200, body='foobar')

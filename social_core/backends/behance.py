@@ -7,6 +7,7 @@ from .oauth import BaseOAuth2
 
 class BehanceOAuth2(BaseOAuth2):
     """Behance OAuth authentication backend"""
+
     name = 'behance'
     AUTHORIZATION_URL = 'https://www.behance.net/v2/oauth/authenticate'
     ACCESS_TOKEN_URL = 'https://www.behance.net/v2/oauth/token'
@@ -24,11 +25,13 @@ class BehanceOAuth2(BaseOAuth2):
         fullname, first_name, last_name = self.get_user_names(
             user['display_name'], user['first_name'], user['last_name']
         )
-        return {'username': user['username'],
-                'fullname': fullname,
-                'first_name': first_name,
-                'last_name': last_name,
-                'email': ''}
+        return {
+            'username': user['username'],
+            'fullname': fullname,
+            'first_name': first_name,
+            'last_name': last_name,
+            'email': '',
+        }
 
     def extra_data(self, user, uid, response, details=None, *args, **kwargs):
         # Pull up the embedded user attributes so they can be found as extra

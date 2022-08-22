@@ -7,6 +7,7 @@ from .oauth import BaseOAuth2
 
 class ORCIDOAuth2(BaseOAuth2):
     """ORCID OAuth2 authentication backend"""
+
     name = 'orcid'
     ID_KEY = 'orcid'
     AUTHORIZATION_URL = 'https://orcid.org/oauth/authorize'
@@ -18,7 +19,7 @@ class ORCIDOAuth2(BaseOAuth2):
     EXTRA_DATA = [
         ('orcid', 'id'),
         ('expires_in', 'expires'),
-        ('refresh_token', 'refresh_token')
+        ('refresh_token', 'refresh_token'),
     ]
 
     def auth_params(self, state=None):
@@ -95,7 +96,7 @@ class ORCIDOAuth2(BaseOAuth2):
             'email': email,
             'fullname': fullname,
             'first_name': first_name,
-            'last_name': last_name
+            'last_name': last_name,
         }
 
     def user_data(self, access_token, *args, **kwargs):
@@ -117,7 +118,7 @@ class ORCIDOAuth2(BaseOAuth2):
                 self.USER_ID_URL,
                 headers={
                     'Content-Type': 'application/json',
-                    'Authorization': f'Bearer {str(access_token)}'
+                    'Authorization': f'Bearer {str(access_token)}',
                 },
             )
 
@@ -129,18 +130,17 @@ class ORCIDOAuth2(BaseOAuth2):
         # We can now attempt to access the ORCID public API with the Orcid:
         try:
             return self.get_json(
-                    self.USER_DATA_URL.format(orcid),
-                    headers={
-                        'Content-Type': 'application/json'
-                    },
-                    params=params
-                )
+                self.USER_DATA_URL.format(orcid),
+                headers={'Content-Type': 'application/json'},
+                params=params,
+            )
         except Exception as ex:
             return None
 
 
 class ORCIDOAuth2Sandbox(ORCIDOAuth2):
     """ORCID OAuth2 Sandbox authentication backend"""
+
     name = 'orcid-sandbox'
     AUTHORIZATION_URL = 'https://sandbox.orcid.org/oauth/authorize'
     ACCESS_TOKEN_URL = 'https://sandbox.orcid.org/oauth/token'
@@ -150,11 +150,13 @@ class ORCIDOAuth2Sandbox(ORCIDOAuth2):
 
 class ORCIDMemberOAuth2(ORCIDOAuth2):
     """ORCID OAuth2 authentication backend that uses ORCID Member API"""
+
     USER_DATA_URL = 'https://api.orcid.org/v2.0/{}'
     DEFAULT_SCOPE = ['/authenticate', '/read-limited']
 
 
 class ORCIDMemberOAuth2Sandbox(ORCIDOAuth2Sandbox):
     """ORCID OAuth2 Sandbox authentication backend that uses ORCID Member Sandbox API"""
+
     USER_DATA_URL = 'https://api.sandbox.orcid.org/v2.0/{}'
     DEFAULT_SCOPE = ['/authenticate', '/read-limited']

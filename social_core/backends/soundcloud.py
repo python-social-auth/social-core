@@ -9,6 +9,7 @@ from .oauth import BaseOAuth2
 
 class SoundcloudOAuth2(BaseOAuth2):
     """Soundcloud OAuth authentication backend"""
+
     name = 'soundcloud'
     AUTHORIZATION_URL = 'https://soundcloud.com/connect'
     ACCESS_TOKEN_URL = 'https://api.soundcloud.com/oauth2/token'
@@ -18,24 +19,25 @@ class SoundcloudOAuth2(BaseOAuth2):
     EXTRA_DATA = [
         ('id', 'id'),
         ('refresh_token', 'refresh_token'),
-        ('expires', 'expires')
+        ('expires', 'expires'),
     ]
 
     def get_user_details(self, response):
         """Return user details from Soundcloud account"""
-        fullname, first_name, last_name = self.get_user_names(
-            response.get('full_name')
-        )
-        return {'username': response.get('username'),
-                'email': response.get('email') or '',
-                'fullname': fullname,
-                'first_name': first_name,
-                'last_name': last_name}
+        fullname, first_name, last_name = self.get_user_names(response.get('full_name'))
+        return {
+            'username': response.get('username'),
+            'email': response.get('email') or '',
+            'fullname': fullname,
+            'first_name': first_name,
+            'last_name': last_name,
+        }
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        return self.get_json('https://api.soundcloud.com/me.json',
-                             params={'oauth_token': access_token})
+        return self.get_json(
+            'https://api.soundcloud.com/me.json', params={'oauth_token': access_token}
+        )
 
     def auth_url(self):
         """Return redirect url"""

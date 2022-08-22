@@ -3,18 +3,17 @@ from .oauth import BaseOAuth2
 
 class MineIDOAuth2(BaseOAuth2):
     """MineID OAuth2 authentication backend"""
+
     name = 'mineid'
     _AUTHORIZATION_URL = '%(scheme)s://%(host)s/oauth/authorize'
     _ACCESS_TOKEN_URL = '%(scheme)s://%(host)s/oauth/access_token'
     ACCESS_TOKEN_METHOD = 'POST'
     SCOPE_SEPARATOR = ','
-    EXTRA_DATA = [
-    ]
+    EXTRA_DATA = []
 
     def get_user_details(self, response):
         """Return user details"""
-        return {'email': response.get('email'),
-                'username': response.get('email')}
+        return {'email': response.get('email'), 'username': response.get('email')}
 
     def user_data(self, access_token, *args, **kwargs):
         return self._user_data(access_token)

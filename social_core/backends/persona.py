@@ -9,6 +9,7 @@ from .base import BaseAuth
 
 class PersonaAuth(BaseAuth):
     """BrowserID authentication backend"""
+
     name = 'persona'
 
     def get_user_id(self, details, response):
@@ -23,16 +24,17 @@ class PersonaAuth(BaseAuth):
         #  'email': 'name@server.com',
         #  'issuer': 'browserid.org'}
         email = response['email']
-        return {'username': email.split('@', 1)[0],
-                'email': email,
-                'fullname': '',
-                'first_name': '',
-                'last_name': ''}
+        return {
+            'username': email.split('@', 1)[0],
+            'email': email,
+            'fullname': '',
+            'first_name': '',
+            'last_name': '',
+        }
 
     def extra_data(self, user, uid, response, details=None, *args, **kwargs):
         """Return users extra data"""
-        return {'audience': response['audience'],
-                'issuer': response['issuer']}
+        return {'audience': response['audience'], 'issuer': response['issuer']}
 
     @handle_http_errors
     def auth_complete(self, *args, **kwargs):
@@ -40,10 +42,14 @@ class PersonaAuth(BaseAuth):
         if 'assertion' not in self.data:
             raise AuthMissingParameter(self, 'assertion')
 
-        response = self.get_json('https://browserid.org/verify', data={
-            'assertion': self.data['assertion'],
-            'audience': self.strategy.request_host()
-        }, method='POST')
+        response = self.get_json(
+            'https://browserid.org/verify',
+            data={
+                'assertion': self.data['assertion'],
+                'audience': self.strategy.request_host(),
+            },
+            method='POST',
+        )
         if response.get('status') == 'failure':
             raise AuthFailed(self)
         kwargs.update({'response': response, 'backend': self})

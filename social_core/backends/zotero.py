@@ -8,6 +8,7 @@ from .oauth import BaseOAuth1
 class ZoteroOAuth(BaseOAuth1):
 
     """Zotero OAuth authorization mechanism"""
+
     name = 'zotero'
     AUTHORIZATION_URL = 'https://www.zotero.org/oauth/authorize'
     REQUEST_TOKEN_URL = 'https://www.zotero.org/oauth/request'
@@ -25,5 +26,5 @@ class ZoteroOAuth(BaseOAuth1):
         access_token = response.get('access_token', {})
         return {
             'username': access_token.get('username', ''),
-            'userID': access_token.get('userID', '')
+            'userID': access_token.get('userID', ''),
         }

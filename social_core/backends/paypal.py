@@ -60,8 +60,7 @@ class PayPalOAuth2(BaseOAuth2):
     def get_email(emails):
         if not emails:
             return ''
-        primary_emails = (email for email in emails
-                          if email.get('primary', False))
+        primary_emails = (email for email in emails if email.get('primary', False))
         primary_or_first = next(primary_emails, emails[0])
         return primary_or_first.get('value')
 

@@ -46,8 +46,7 @@ for verifying JWT tokens.
 
 class AzureADTenantOAuth2(AzureADOAuth2):
     name = 'azuread-tenant-oauth2'
-    OPENID_CONFIGURATION_URL = \
-        '{base_url}/.well-known/openid-configuration'
+    OPENID_CONFIGURATION_URL = '{base_url}/.well-known/openid-configuration'
     JWKS_URL = '{base_url}/discovery/keys'
 
     @property
@@ -73,8 +72,7 @@ class AzureADTenantOAuth2(AzureADOAuth2):
         else:
             raise DecodeError(f'Cannot find kid={kid}')
 
-        return load_der_x509_certificate(base64.b64decode(x5c),
-                                         default_backend())
+        return load_der_x509_certificate(base64.b64decode(x5c), default_backend())
 
     def get_user_id(self, details, response):
         """Use subject (sub) claim as unique id."""
@@ -95,7 +93,7 @@ class AzureADTenantOAuth2(AzureADOAuth2):
                 id_token,
                 key=certificate.public_key(),
                 algorithms=['RS256'],
-                audience=self.setting('KEY')
+                audience=self.setting('KEY'),
             )
         except (DecodeError, ExpiredSignatureError) as error:
             raise AuthTokenError(self, error)
@@ -118,10 +116,12 @@ class AzureADV2TenantOAuth2(AzureADTenantOAuth2):
         fullname, first_name, last_name = (
             response.get('name', ''),
             response.get('given_name', ''),
-            response.get('family_name', '')
+            response.get('family_name', ''),
         )
-        return {'username': fullname,
-                'email': response.get('preferred_username'),
-                'fullname': fullname,
-                'first_name': first_name,
-                'last_name': last_name}
+        return {
+            'username': fullname,
+            'email': response.get('preferred_username'),
+            'fullname': fullname,
+            'first_name': first_name,
+            'last_name': last_name,
+        }

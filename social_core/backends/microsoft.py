@@ -9,10 +9,8 @@ from .oauth import BaseOAuth2
 class MicrosoftOAuth2(BaseOAuth2):
     name = 'microsoft-graph'
     SCOPE_SEPARATOR = ' '
-    AUTHORIZATION_URL = \
-        'https://login.microsoftonline.com/common/oauth2/v2.0/authorize'
-    ACCESS_TOKEN_URL = \
-        'https://login.microsoftonline.com/common/oauth2/v2.0/token'
+    AUTHORIZATION_URL = 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize'
+    ACCESS_TOKEN_URL = 'https://login.microsoftonline.com/common/oauth2/v2.0/token'
 
     ACCESS_TOKEN_METHOD = 'POST'
     REDIRECT_STATE = False
@@ -28,12 +26,13 @@ class MicrosoftOAuth2(BaseOAuth2):
             data=self.auth_complete_params(state),
             headers=self.auth_headers(),
             auth=self.auth_complete_credentials(),
-            method=self.ACCESS_TOKEN_METHOD
+            method=self.ACCESS_TOKEN_METHOD,
         )
 
         self.process_error(response)
-        return self.do_auth(response['access_token'], response=response,
-                            *args, **kwargs)
+        return self.do_auth(
+            response['access_token'], response=response, *args, **kwargs
+        )
 
     def get_user_id(self, details, response):
         """Use user account id as unique id"""
@@ -49,11 +48,13 @@ class MicrosoftOAuth2(BaseOAuth2):
                 email = username
             username = username.split('@', 1)[0]
 
-        return {'username': username,
-                'email': email,
-                'fullname': response.get('displayName', ''),
-                'first_name': response.get('givenName', ''),
-                'last_name': response.get('surname', '')}
+        return {
+            'username': username,
+            'email': email,
+            'fullname': response.get('displayName', ''),
+            'first_name': response.get('givenName', ''),
+            'last_name': response.get('surname', ''),
+        }
 
     def user_data(self, access_token, *args, **kwargs):
         """Return user data by querying Microsoft service"""
@@ -62,9 +63,9 @@ class MicrosoftOAuth2(BaseOAuth2):
             headers={
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'Accept': 'application/json',
-                'Authorization': 'Bearer ' + access_token
+                'Authorization': 'Bearer ' + access_token,
             },
-            method='GET'
+            method='GET',
         )
 
     def refresh_token_params(self, token, *args, **kwargs):

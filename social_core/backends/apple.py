@@ -89,8 +89,7 @@ class AppleIdAuth(BaseOAuth2):
             'sub': client_id,
         }
 
-        return jwt.encode(payload, key=private_key, algorithm='ES256',
-                          headers=headers)
+        return jwt.encode(payload, key=private_key, algorithm='ES256', headers=headers)
 
     def get_key_and_secret(self):
         client_id = self.setting('CLIENT')
@@ -138,7 +137,7 @@ class AppleIdAuth(BaseOAuth2):
         fullname, first_name, last_name = self.get_user_names(
             fullname='',
             first_name=name.get('firstName', ''),
-            last_name=name.get('lastName', '')
+            last_name=name.get('lastName', ''),
         )
 
         email = response.get('email', '')

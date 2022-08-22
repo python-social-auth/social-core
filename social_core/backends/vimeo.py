@@ -3,6 +3,7 @@ from .oauth import BaseOAuth1, BaseOAuth2
 
 class VimeoOAuth1(BaseOAuth1):
     """Vimeo OAuth authentication backend"""
+
     name = 'vimeo'
     AUTHORIZATION_URL = 'https://vimeo.com/oauth/authorize'
     REQUEST_TOKEN_URL = 'https://vimeo.com/oauth/request_token'
@@ -17,23 +18,26 @@ class VimeoOAuth1(BaseOAuth1):
         fullname, first_name, last_name = self.get_user_names(
             person.get('display_name', '')
         )
-        return {'username': person.get('username', ''),
-                'email': '',
-                'fullname': fullname,
-                'first_name': first_name,
-                'last_name': last_name}
+        return {
+            'username': person.get('username', ''),
+            'email': '',
+            'fullname': fullname,
+            'first_name': first_name,
+            'last_name': last_name,
+        }
 
     def user_data(self, access_token, *args, **kwargs):
         """Return user data provided"""
         return self.get_json(
             'https://vimeo.com/api/rest/v2',
             params={'format': 'json', 'method': 'vimeo.people.getInfo'},
-            auth=self.oauth_auth(access_token)
+            auth=self.oauth_auth(access_token),
         )
 
 
 class VimeoOAuth2(BaseOAuth2):
     """Vimeo OAuth2 authentication backend"""
+
     name = 'vimeo-oauth2'
     AUTHORIZATION_URL = 'https://api.vimeo.com/oauth/authorize'
     ACCESS_TOKEN_URL = 'https://api.vimeo.com/oauth/access_token'
@@ -62,13 +66,13 @@ class VimeoOAuth2(BaseOAuth2):
     def get_user_details(self, response):
         """Return user details from account"""
         user = response.get('user', {})
-        fullname, first_name, last_name = self.get_user_names(
-            user.get('name', '')
-        )
-        return {'username': fullname,
-                'fullname': fullname,
-                'first_name': first_name,
-                'last_name': last_name}
+        fullname, first_name, last_name = self.get_user_names(user.get('name', ''))
+        return {
+            'username': fullname,
+            'fullname': fullname,
+            'first_name': first_name,
+            'last_name': last_name,
+        }
 
     def user_data(self, access_token, *args, **kwargs):
         """Return user data provided"""

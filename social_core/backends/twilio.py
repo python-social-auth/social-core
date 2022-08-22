@@ -16,11 +16,13 @@ class TwilioAuth(BaseAuth):
         """Return twilio details, Twilio only provides AccountSID as
         parameters."""
         # /complete/twilio/?AccountSid=ACc65ea16c9ebd4d4684edf814995b27e
-        return {'username': response['AccountSid'],
-                'email': '',
-                'fullname': '',
-                'first_name': '',
-                'last_name': ''}
+        return {
+            'username': response['AccountSid'],
+            'email': '',
+            'fullname': '',
+            'first_name': '',
+            'last_name': '',
+        }
 
     def auth_url(self):
         """Return authorization redirect url."""

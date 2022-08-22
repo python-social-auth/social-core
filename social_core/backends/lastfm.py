@@ -13,11 +13,10 @@ class LastFmAuth(BaseAuth):
     Don't forget to set the Last.fm callback to something sensible like
         http://your.site/lastfm/complete
     """
+
     name = 'lastfm'
     AUTH_URL = 'http://www.last.fm/api/auth/?api_key={api_key}'
-    EXTRA_DATA = [
-        ('key', 'session_key')
-    ]
+    EXTRA_DATA = [('key', 'session_key')]
 
     def auth_url(self):
         return self.AUTH_URL.format(api_key=self.setting('KEY'))
@@ -28,17 +27,23 @@ class LastFmAuth(BaseAuth):
         key, secret = self.get_key_and_secret()
         token = self.data['token']
 
-        signature = hashlib.md5(''.join(
-            ('api_key', key, 'methodauth.getSession', 'token', token, secret)
-        ).encode()).hexdigest()
+        signature = hashlib.md5(
+            ''.join(
+                ('api_key', key, 'methodauth.getSession', 'token', token, secret)
+            ).encode()
+        ).hexdigest()
 
-        response = self.get_json('http://ws.audioscrobbler.com/2.0/', data={
-            'method': 'auth.getSession',
-            'api_key': key,
-            'token': token,
-            'api_sig': signature,
-            'format': 'json'
-        }, method='POST')
+        response = self.get_json(
+            'http://ws.audioscrobbler.com/2.0/',
+            data={
+                'method': 'auth.getSession',
+                'api_key': key,
+                'token': token,
+                'api_sig': signature,
+                'format': 'json',
+            },
+            method='POST',
+        )
 
         kwargs.update({'response': response['session'], 'backend': self})
         return self.strategy.authenticate(*args, **kwargs)
@@ -55,5 +60,5 @@ class LastFmAuth(BaseAuth):
             'email': '',
             'fullname': fullname,
             'first_name': first_name,
-            'last_name': last_name
+            'last_name': last_name,
         }

@@ -30,9 +30,9 @@ class BaseTemplateStrategy:
 
 
 class BaseStrategy:
-    ALLOWED_CHARS = 'abcdefghijklmnopqrstuvwxyz' \
-                    'ABCDEFGHIJKLMNOPQRSTUVWXYZ' \
-                    '0123456789'
+    ALLOWED_CHARS = (
+        'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' '0123456789'
+    )
     DEFAULT_TEMPLATE_STRATEGY = BaseTemplateStrategy
 
     def __init__(self, storage=None, tpl=None):
@@ -104,11 +104,7 @@ class BaseStrategy:
         return self.setting('PIPELINE', DEFAULT_AUTH_PIPELINE, backend)
 
     def get_disconnect_pipeline(self, backend=None):
-        return self.setting(
-            'DISCONNECT_PIPELINE',
-            DEFAULT_DISCONNECT_PIPELINE,
-            backend
-        )
+        return self.setting('DISCONNECT_PIPELINE', DEFAULT_DISCONNECT_PIPELINE, backend)
 
     def random_string(self, length=12, chars=ALLOWED_CHARS):
         # Implementation borrowed from django 1.4

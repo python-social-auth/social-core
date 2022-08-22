@@ -12,7 +12,7 @@ class VendOAuth2(BaseOAuth2):
     REDIRECT_STATE = False
     EXTRA_DATA = [
         ('refresh_token', 'refresh_token'),
-        ('domain_prefix', 'domain_prefix')
+        ('domain_prefix', 'domain_prefix'),
     ]
 
     def access_token_url(self):
@@ -26,14 +26,12 @@ class VendOAuth2(BaseOAuth2):
             'email': email,
             'fullname': '',
             'first_name': '',
-            'last_name': ''
+            'last_name': '',
         }
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
         prefix = kwargs['response']['domain_prefix']
         url = f'https://{prefix}.vendhq.com/api/users'
-        data = self.get_json(url, headers={
-            'Authorization': f'Bearer {access_token}'
-        })
+        data = self.get_json(url, headers={'Authorization': f'Bearer {access_token}'})
         return data['users'][0] if data.get('users') else {}

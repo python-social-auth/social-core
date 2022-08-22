@@ -14,13 +14,16 @@ class MixcloudOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         fullname, first_name, last_name = self.get_user_names(response['name'])
-        return {'username': response['username'],
-                'email': None,
-                'fullname': fullname,
-                'first_name': first_name,
-                'last_name': last_name}
+        return {
+            'username': response['username'],
+            'email': None,
+            'fullname': fullname,
+            'first_name': first_name,
+            'last_name': last_name,
+        }
 
     def user_data(self, access_token, *args, **kwargs):
-        return self.get_json('https://api.mixcloud.com/me/',
-                             params={'access_token': access_token,
-                                     'alt': 'json'})
+        return self.get_json(
+            'https://api.mixcloud.com/me/',
+            params={'access_token': access_token, 'alt': 'json'},
+        )

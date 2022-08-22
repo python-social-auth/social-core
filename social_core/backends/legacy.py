@@ -4,8 +4,7 @@ from .base import BaseAuth
 
 class LegacyAuth(BaseAuth):
     def get_user_id(self, details, response):
-        return details.get(self.ID_KEY) or \
-               response.get(self.ID_KEY)
+        return details.get(self.ID_KEY) or response.get(self.ID_KEY)
 
     def auth_url(self):
         return self.setting('FORM_URL')
@@ -14,8 +13,7 @@ class LegacyAuth(BaseAuth):
         return self.strategy.render_html(tpl=self.setting('FORM_HTML'))
 
     def uses_redirect(self):
-        return self.setting('FORM_URL') and not \
-               self.setting('FORM_HTML')
+        return self.setting('FORM_URL') and not self.setting('FORM_HTML')
 
     def auth_complete(self, *args, **kwargs):
         """Completes login process, must return user instance"""
@@ -31,7 +29,7 @@ class LegacyAuth(BaseAuth):
         fullname, first_name, last_name = self.get_user_names(
             response.get('fullname', ''),
             response.get('first_name', ''),
-            response.get('last_name', '')
+            response.get('last_name', ''),
         )
         if email and not username:
             username = email.split('@', 1)[0]
@@ -40,5 +38,5 @@ class LegacyAuth(BaseAuth):
             'email': email,
             'fullname': fullname,
             'first_name': first_name,
-            'last_name': last_name
+            'last_name': last_name,
         }

@@ -3,6 +3,7 @@ from .oauth import BaseOAuth2
 
 class EventbriteOAuth2(BaseOAuth2):
     """Eventbrite OAuth2 authentication backend"""
+
     name = 'eventbrite'
     AUTHORIZATION_URL = 'https://www.eventbrite.com/oauth/authorize'
     ACCESS_TOKEN_URL = 'https://www.eventbrite.com/oauth/token'
@@ -19,11 +20,11 @@ class EventbriteOAuth2(BaseOAuth2):
             'username': email,
             'email': email,
             'first_name': response['first_name'],
-            'last_name': response['last_name']
+            'last_name': response['last_name'],
         }
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data and datacenter information from service"""
-        return self.get_json(self.METADATA_URL, headers={
-          'Authorization': 'Bearer ' + access_token
-        })
+        return self.get_json(
+            self.METADATA_URL, headers={'Authorization': 'Bearer ' + access_token}
+        )

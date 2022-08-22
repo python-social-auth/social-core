@@ -12,7 +12,7 @@ from social_core.utils import cache
 
 
 class OpenIdConnectAssociation:
-    """ Use Association model to save the nonce by force."""
+    """Use Association model to save the nonce by force."""
 
     def __init__(self, handle, secret='', issued=0, lifetime=0, assoc_type=''):
         self.handle = handle  # as nonce
@@ -34,6 +34,7 @@ class OpenIdConnectAuth(BaseOAuth2):
     SOCIAL_AUTH_OIDC_KEY = '<client_id>'
     SOCIAL_AUTH_OIDC_SECRET = '<client_secret>'
     """
+
     name = 'oidc'
     # Override OIDC_ENDPOINT in your subclass to enable autoconfig of OIDC
     OIDC_ENDPOINT = None
@@ -61,31 +62,39 @@ class OpenIdConnectAuth(BaseOAuth2):
         super().__init__(*args, **kwargs)
 
     def authorization_url(self):
-        return self.setting('AUTHORIZATION_URL', self.AUTHORIZATION_URL) or \
-            self.oidc_config().get('authorization_endpoint')
+        return self.setting(
+            'AUTHORIZATION_URL', self.AUTHORIZATION_URL
+        ) or self.oidc_config().get('authorization_endpoint')
 
     def access_token_url(self):
-        return self.setting('ACCESS_TOKEN_URL', self.ACCESS_TOKEN_URL) or \
-            self.oidc_config().get('token_endpoint')
+        return self.setting(
+            'ACCESS_TOKEN_URL', self.ACCESS_TOKEN_URL
+        ) or self.oidc_config().get('token_endpoint')
 
     def revoke_token_url(self, token, uid):
-        return self.setting('REVOKE_TOKEN_URL', self.REVOKE_TOKEN_URL) or \
-            self.oidc_config().get('revocation_endpoint')
+        return self.setting(
+            'REVOKE_TOKEN_URL', self.REVOKE_TOKEN_URL
+        ) or self.oidc_config().get('revocation_endpoint')
 
     def id_token_issuer(self):
-        return self.setting('ID_TOKEN_ISSUER', self.ID_TOKEN_ISSUER) or \
-            self.oidc_config().get('issuer')
+        return self.setting(
+            'ID_TOKEN_ISSUER', self.ID_TOKEN_ISSUER
+        ) or self.oidc_config().get('issuer')
 
     def userinfo_url(self):
-        return self.setting('USERINFO_URL', self.USERINFO_URL) or \
-            self.oidc_config().get('userinfo_endpoint')
+        return self.setting(
+            'USERINFO_URL', self.USERINFO_URL
+        ) or self.oidc_config().get('userinfo_endpoint')
 
     def jwks_uri(self):
-        return self.setting('JWKS_URI', self.JWKS_URI) or \
-            self.oidc_config().get('jwks_uri')
+        return self.setting('JWKS_URI', self.JWKS_URI) or self.oidc_config().get(
+            'jwks_uri'
+        )
 
     def use_basic_auth(self):
-        method = self.setting('TOKEN_ENDPOINT_AUTH_METHOD', self.TOKEN_ENDPOINT_AUTH_METHOD)
+        method = self.setting(
+            'TOKEN_ENDPOINT_AUTH_METHOD', self.TOKEN_ENDPOINT_AUTH_METHOD
+        )
         if method:
             return method == 'client_secret_basic'
         methods = self.oidc_config().get('token_endpoint_auth_methods_supported', [])
@@ -96,8 +105,7 @@ class OpenIdConnectAuth(BaseOAuth2):
 
     @cache(ttl=86400)
     def oidc_config(self):
-        return self.get_json(self.oidc_endpoint() +
-                             '/.well-known/openid-configuration')
+        return self.get_json(self.oidc_endpoint() + '/.well-known/openid-configuration')
 
     @cache(ttl=86400)
     def get_jwks_keys(self):
@@ -115,9 +123,7 @@ class OpenIdConnectAuth(BaseOAuth2):
     def auth_params(self, state=None):
         """Return extra arguments needed on auth process."""
         params = super().auth_params(state)
-        params['nonce'] = self.get_and_store_nonce(
-            self.authorization_url(), state
-        )
+        params['nonce'] = self.get_and_store_nonce(self.authorization_url(), state)
         return params
 
     def get_and_store_nonce(self, url, state):
@@ -131,8 +137,7 @@ class OpenIdConnectAuth(BaseOAuth2):
     def get_nonce(self, nonce):
         try:
             return self.strategy.storage.association.get(
-                server_url=self.authorization_url(),
-                handle=nonce
+                server_url=self.authorization_url(), handle=nonce
             )[0]
         except IndexError:
             pass
@@ -230,15 +235,14 @@ class OpenIdConnectAuth(BaseOAuth2):
         """
         response = self.get_json(*args, **kwargs)
         self.id_token = self.validate_and_return_id_token(
-            response['id_token'],
-            response['access_token']
+            response['id_token'], response['access_token']
         )
         return response
 
     def user_data(self, access_token, *args, **kwargs):
-        return self.get_json(self.userinfo_url(), headers={
-            'Authorization': f'Bearer {access_token}'
-        })
+        return self.get_json(
+            self.userinfo_url(), headers={'Authorization': f'Bearer {access_token}'}
+        )
 
     def get_user_details(self, response):
         username_key = self.setting('USERNAME_KEY', self.USERNAME_KEY)

@@ -25,10 +25,11 @@ social_logger = logging.getLogger('social')
 
 
 class SSLHttpAdapter(HTTPAdapter):
-    """"
+    """ "
     Transport adapter that allows to use any SSL protocol. Based on:
     http://requests.rtfd.org/latest/user/advanced/#example-specific-ssl-version
     """
+
     def __init__(self, ssl_protocol):
         self.ssl_protocol = ssl_protocol
         super().__init__()
@@ -38,7 +39,7 @@ class SSLHttpAdapter(HTTPAdapter):
             num_pools=connections,
             maxsize=maxsize,
             block=block,
-            ssl_version=self.ssl_protocol
+            ssl_version=self.ssl_protocol,
         )
 
     @classmethod
@@ -91,8 +92,11 @@ def sanitize_redirect(hosts, redirect_to):
     on django.contrib.auth.views.
     """
     # Avoid redirect on evil URLs like ///evil.com
-    if not redirect_to or not hasattr(redirect_to, 'startswith') or \
-       redirect_to.startswith('///'):
+    if (
+        not redirect_to
+        or not hasattr(redirect_to, 'startswith')
+        or redirect_to.startswith('///')
+    ):
         return None
 
     try:
@@ -136,9 +140,11 @@ def slugify(value):
     """Converts to lowercase, removes non-word characters (alphanumerics
     and underscores) and converts spaces to hyphens. Also strips leading
     and trailing whitespace."""
-    value = unicodedata.normalize('NFKD', str(value)) \
-                       .encode('ascii', 'ignore') \
-                       .decode('ascii')
+    value = (
+        unicodedata.normalize('NFKD', str(value))
+        .encode('ascii', 'ignore')
+        .decode('ascii')
+    )
     value = re.sub(r'[^\w\s-]', '', value).strip().lower()
     return re.sub(r'[-\s]+', '-', value)
 
@@ -167,15 +173,17 @@ def drop_lists(value):
     return out
 
 
-def partial_pipeline_data(backend, user=None, partial_token=None,
-                          *args, **kwargs):
+def partial_pipeline_data(backend, user=None, partial_token=None, *args, **kwargs):
     request_data = backend.strategy.request_data()
 
-    partial_argument_name = backend.setting('PARTIAL_PIPELINE_TOKEN_NAME',
-                                            'partial_token')
-    partial_token = partial_token or \
-        request_data.get(partial_argument_name) or \
-        backend.strategy.session_get(PARTIAL_TOKEN_SESSION_NAME, None)
+    partial_argument_name = backend.setting(
+        'PARTIAL_PIPELINE_TOKEN_NAME', 'partial_token'
+    )
+    partial_token = (
+        partial_token
+        or request_data.get(partial_argument_name)
+        or backend.strategy.session_get(PARTIAL_TOKEN_SESSION_NAME, None)
+    )
 
     if partial_token:
         partial = backend.strategy.partial_load(partial_token)
@@ -224,10 +232,11 @@ def constant_time_compare(val1, val2):
 
 
 def is_url(value):
-    return value and \
-           (value.startswith('http://') or
-            value.startswith('https://') or
-            value.startswith('/'))
+    return value and (
+        value.startswith('http://')
+        or value.startswith('https://')
+        or value.startswith('/')
+    )
 
 
 def setting_url(backend, *names):
@@ -254,6 +263,7 @@ def handle_http_errors(func):
                 raise AuthUnreachableProvider(args[0])
             else:
                 raise
+
     return wrapper
 
 
@@ -284,6 +294,7 @@ class cache:
 
     Does not work for methods with arguments.
     """
+
     def __init__(self, ttl):
         self.ttl = ttl
         self.cache = {}

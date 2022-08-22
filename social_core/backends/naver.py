@@ -3,6 +3,7 @@ from .oauth import BaseOAuth2
 
 class NaverOAuth2(BaseOAuth2):
     """Naver OAuth authentication backend"""
+
     name = 'naver'
     AUTHORIZATION_URL = 'https://nid.naver.com/oauth2.0/authorize'
     ACCESS_TOKEN_URL = 'https://nid.naver.com/oauth2.0/token'
@@ -28,8 +29,8 @@ class NaverOAuth2(BaseOAuth2):
             'https://openapi.naver.com/v1/nid/me',
             headers={
                 'Authorization': f'Bearer {access_token}',
-                'Content_Type': 'text/json'
-            }
+                'Content_Type': 'text/json',
+            },
         )
 
         data = response.json()
@@ -42,7 +43,7 @@ class NaverOAuth2(BaseOAuth2):
             'gender': self._fetch(data, 'gender'),
             'age': self._fetch(data, 'age'),
             'birthday': self._fetch(data, 'birthday'),
-            'profile_image': self._fetch(data, 'profile_image')
+            'profile_image': self._fetch(data, 'profile_image'),
         }
 
     def auth_headers(self):

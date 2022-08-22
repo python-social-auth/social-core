@@ -7,26 +7,23 @@ from .oauth import BaseOAuth1
 
 class FlickrOAuth(BaseOAuth1):
     """Flickr OAuth authentication backend"""
+
     name = 'flickr'
     AUTHORIZATION_URL = 'https://www.flickr.com/services/oauth/authorize'
     REQUEST_TOKEN_URL = 'https://www.flickr.com/services/oauth/request_token'
     ACCESS_TOKEN_URL = 'https://www.flickr.com/services/oauth/access_token'
-    EXTRA_DATA = [
-        ('id', 'id'),
-        ('username', 'username'),
-        ('expires', 'expires')
-    ]
+    EXTRA_DATA = [('id', 'id'), ('username', 'username'), ('expires', 'expires')]
 
     def get_user_details(self, response):
         """Return user details from Flickr account"""
-        fullname, first_name, last_name = self.get_user_names(
-            response.get('fullname')
-        )
-        return {'username': response.get('username') or response.get('id'),
-                'email': '',
-                'fullname': fullname,
-                'first_name': first_name,
-                'last_name': last_name}
+        fullname, first_name, last_name = self.get_user_names(response.get('fullname'))
+        return {
+            'username': response.get('username') or response.get('id'),
+            'email': '',
+            'fullname': fullname,
+            'first_name': first_name,
+            'last_name': last_name,
+        }
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""

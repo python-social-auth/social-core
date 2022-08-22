@@ -10,13 +10,16 @@ from .open_id import OpenIdAuth
 
 class LiveJournalOpenId(OpenIdAuth):
     """LiveJournal OpenID authentication backend"""
+
     name = 'livejournal'
 
     def get_user_details(self, response):
         """Generate username from identity url"""
         values = super().get_user_details(response)
-        values['username'] = values.get('username') or \
-            urlsplit(response.identity_url).netloc.split('.', 1)[0]
+        values['username'] = (
+            values.get('username')
+            or urlsplit(response.identity_url).netloc.split('.', 1)[0]
+        )
         return values
 
     def openid_url(self):

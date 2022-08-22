@@ -15,6 +15,7 @@ from .oauth import BaseOAuth1
 
 class OpenStreetMapOAuth(BaseOAuth1):
     """OpenStreetMap OAuth authentication backend"""
+
     name = 'openstreetmap'
     AUTHORIZATION_URL = 'https://www.openstreetmap.org/oauth/authorize'
     REQUEST_TOKEN_URL = 'https://www.openstreetmap.org/oauth/request_token'
@@ -22,7 +23,7 @@ class OpenStreetMapOAuth(BaseOAuth1):
     EXTRA_DATA = [
         ('id', 'id'),
         ('avatar', 'avatar'),
-        ('account_created', 'account_created')
+        ('account_created', 'account_created'),
     ]
 
     def get_user_details(self, response):
@@ -32,7 +33,7 @@ class OpenStreetMapOAuth(BaseOAuth1):
             'email': '',
             'fullname': '',
             'first_name': '',
-            'last_name': ''
+            'last_name': '',
         }
 
     def user_data(self, access_token, *args, **kwargs):
@@ -53,5 +54,5 @@ class OpenStreetMapOAuth(BaseOAuth1):
             'id': user.getAttribute('id'),
             'username': user.getAttribute('display_name'),
             'account_created': user.getAttribute('account_created'),
-            'avatar': avatar
+            'avatar': avatar,
         }

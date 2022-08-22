@@ -28,10 +28,12 @@ class DiscourseTest(BaseBackendTest):
         #              'CieDRYgSqMYi4W',
         #     'return_sso_url': 'http://myapp.com'
         # }))
-        sso = 'dXNlcm5hbWU9YmVlcGJvb3Ambm9uY2U9NllSamU3eGxYaHB5ZUo2cXR2QmV' + \
-              'UVWpIa1hvMVVDVFFtQ3J6TjhHWGZqYTNBb0FGazJDaWVEUllnU3FNWWk0Vy' + \
-              'ZlbWFpbD11c2VyJTQwZXhhbXBsZS5jb20mcmV0dXJuX3Nzb191cmw9aHR0c' + \
-              'CUzQSUyRiUyRm15YXBwLmNvbQ=='
+        sso = (
+            'dXNlcm5hbWU9YmVlcGJvb3Ambm9uY2U9NllSamU3eGxYaHB5ZUo2cXR2QmV'
+            + 'UVWpIa1hvMVVDVFFtQ3J6TjhHWGZqYTNBb0FGazJDaWVEUllnU3FNWWk0Vy'
+            + 'ZlbWFpbD11c2VyJTQwZXhhbXBsZS5jb20mcmV0dXJuX3Nzb191cmw9aHR0c'
+            + 'CUzQSUyRiUyRm15YXBwLmNvbQ=='
+        )
         # NOTE: the signature was verified using the 'foo' key, like so:
         # hmac.new('foo', sso, sha256).hexdigest()
         sig = '04063f17c99a97b1a765c1e0d7bbb61afb8471d79a39ddcd6af5ba3c93eb10e1'

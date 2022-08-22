@@ -28,11 +28,13 @@ class CognitoOAuth2(BaseOAuth2):
             first_name=first_name,
             last_name=last_name,
         )
-        return {'username': response.get('username') or response.get('email'),
-                'email': response.get('email'),
-                'fullname': fullname,
-                'first_name': first_name,
-                'last_name': last_name}
+        return {
+            'username': response.get('username') or response.get('email'),
+            'email': response.get('email'),
+            'fullname': fullname,
+            'first_name': first_name,
+            'last_name': last_name,
+        }
 
     def user_data(self, access_token, *args, **kwargs):
         """Grab user profile information from cognito."""

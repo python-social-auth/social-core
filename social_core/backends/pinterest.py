@@ -19,8 +19,9 @@ class PinterestOAuth2(BaseOAuth2):
     SSL_PROTOCOL = ssl.PROTOCOL_TLSv1
 
     def user_data(self, access_token, *args, **kwargs):
-        response = self.get_json('https://api.pinterest.com/v1/me/',
-                                 params={'access_token': access_token})
+        response = self.get_json(
+            'https://api.pinterest.com/v1/me/', params={'access_token': access_token}
+        )
 
         if 'data' in response:
             username = response['data']['url'].strip('/').split('/')[-1]
@@ -34,11 +35,13 @@ class PinterestOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         fullname, first_name, last_name = self.get_user_names(
-            first_name=response['first_name'],
-            last_name=response['last_name'])
+            first_name=response['first_name'], last_name=response['last_name']
+        )
 
-        return {'username': response.get('username'),
-                'email': None,
-                'fullname': fullname,
-                'first_name': first_name,
-                'last_name': last_name}
+        return {
+            'username': response.get('username'),
+            'email': None,
+            'fullname': fullname,
+            'first_name': first_name,
+            'last_name': last_name,
+        }

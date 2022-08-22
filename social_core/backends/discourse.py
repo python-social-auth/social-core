@@ -21,23 +21,15 @@ class DiscourseAuth(BaseAuth):
         nonce = self.strategy.random_string(64)
         self.add_nonce(nonce)
 
-        payload = urlencode({
-            'nonce': nonce,
-            'return_sso_url': return_url
-        })
-        base_64_payload = urlsafe_b64encode(
-            payload.encode('utf8')
-        ).decode('ascii')
+        payload = urlencode({'nonce': nonce, 'return_sso_url': return_url})
+        base_64_payload = urlsafe_b64encode(payload.encode('utf8')).decode('ascii')
 
         payload_signature = hmac.new(
             self.setting('SECRET').encode('utf8'),
             base_64_payload.encode('utf8'),
             sha256,
         ).hexdigest()
-        encoded_params = urlencode({
-            'sso': base_64_payload,
-            'sig': payload_signature
-        })
+        encoded_params = urlencode({'sso': base_64_payload, 'sig': payload_signature})
         return f'{self.get_idp_url()}?{encoded_params}'
 
     def get_idp_url(self):
@@ -52,24 +44,17 @@ class DiscourseAuth(BaseAuth):
             'email': response.get('email'),
             'name': response.get('name'),
             'groups': response.get('groups', '').split(','),
-            'is_staff': response.get('admin') == 'true' or
-                        response.get('moderator') == 'true',
+            'is_staff': response.get('admin') == 'true'
+            or response.get('moderator') == 'true',
             'is_superuser': response.get('admin') == 'true',
         }
         return results
 
     def add_nonce(self, nonce):
-        self.strategy.storage.nonce.use(
-            self.setting('SERVER_URL'),
-            time.time(),
-            nonce
-        )
+        self.strategy.storage.nonce.use(self.setting('SERVER_URL'), time.time(), nonce)
 
     def get_nonce(self, nonce):
-        return self.strategy.storage.nonce.get(
-            self.setting('SERVER_URL'),
-            nonce
-        )
+        return self.strategy.storage.nonce.get(self.setting('SERVER_URL'), nonce)
 
     def delete_nonce(self, nonce):
         self.strategy.storage.nonce.delete(nonce)
@@ -85,17 +70,13 @@ class DiscourseAuth(BaseAuth):
         sso_signature = request_data.get('sig')
 
         param_signature = hmac.new(
-            self.setting('SECRET').encode('utf8'),
-            sso_params.encode('utf8'),
-            sha256
+            self.setting('SECRET').encode('utf8'), sso_params.encode('utf8'), sha256
         ).hexdigest()
 
         if not hmac.compare_digest(str(sso_signature), str(param_signature)):
             raise AuthException('Could not verify discourse login')
 
-        decoded_params = urlsafe_b64decode(
-            sso_params.encode('utf8')
-        ).decode('ascii')
+        decoded_params = urlsafe_b64decode(sso_params.encode('utf8')).decode('ascii')
 
         # Validate the nonce to ensure the request was not modified
         response = parse_qs(decoded_params)
@@ -105,10 +86,5 @@ class DiscourseAuth(BaseAuth):
         else:
             raise AuthTokenError(self, 'Incorrect id_token: nonce')
 
-        kwargs.update({
-            'sso': '',
-            'sig': '',
-            'backend': self,
-            'response': response
-        })
+        kwargs.update({'sso': '', 'sig': '', 'backend': self, 'response': response})
         return self.strategy.authenticate(*args, **kwargs)

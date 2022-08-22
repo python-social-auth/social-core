@@ -22,10 +22,12 @@ def social_user(backend, uid, user=None, *args, **kwargs):
             raise AuthAlreadyAssociated(backend)
         elif not user:
             user = social.user
-    return {'social': social,
-            'user': user,
-            'is_new': user is None,
-            'new_association': social is None}
+    return {
+        'social': social,
+        'user': user,
+        'is_new': user is None,
+        'new_association': social is None,
+    }
 
 
 def associate_user(backend, uid, user=None, social=None, *args, **kwargs):
@@ -48,9 +50,7 @@ def associate_user(backend, uid, user=None, social=None, *args, **kwargs):
                 raise
             return result
         else:
-            return {'social': social,
-                    'user': social.user,
-                    'new_association': True}
+            return {'social': social, 'user': social.user, 'new_association': True}
 
 
 def associate_by_email(backend, details, user=None, *args, **kwargs):
@@ -76,18 +76,16 @@ def associate_by_email(backend, details, user=None, *args, **kwargs):
             return None
         elif len(users) > 1:
             raise AuthException(
-                backend,
-                'The given email address is associated with another account'
+                backend, 'The given email address is associated with another account'
             )
         else:
-            return {'user': users[0],
-                    'is_new': False}
+            return {'user': users[0], 'is_new': False}
 
 
 def load_extra_data(backend, details, response, uid, user, *args, **kwargs):
-    social = kwargs.get('social') or \
-             backend.strategy.storage.user.get_social_auth(backend.name, uid)
+    social = kwargs.get('social') or backend.strategy.storage.user.get_social_auth(
+        backend.name, uid
+    )
     if social:
-        extra_data = backend.extra_data(user, uid, response, details,
-                                        *args, **kwargs)
+        extra_data = backend.extra_data(user, uid, response, details, *args, **kwargs)
         social.set_extra_data(extra_data)

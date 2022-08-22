@@ -7,6 +7,7 @@ from .oauth import BaseOAuth2
 
 class HubSpotOAuth2(BaseOAuth2):
     """HubSpot OAuth2 authentication backend"""
+
     name = 'hubspot'
     AUTHORIZATION_URL = 'https://app.hubspot.com/oauth/authorize'
     ACCESS_TOKEN_URL = 'https://api.hubapi.com/oauth/v1/token'
@@ -19,7 +20,7 @@ class HubSpotOAuth2(BaseOAuth2):
         ('app_id', 'app_id'),
         ('user_id', 'user_id'),
         ('refresh_token', 'refresh_token'),
-        ('expires_in', 'expires')
+        ('expires_in', 'expires'),
     ]
 
     def get_user_details(self, response):
@@ -29,6 +30,7 @@ class HubSpotOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data information from service"""
-        return self.get_json(self.USER_DATA_URL + access_token, headers={
-          'Authorization': 'Bearer ' + access_token
-        })
+        return self.get_json(
+            self.USER_DATA_URL + access_token,
+            headers={'Authorization': 'Bearer ' + access_token},
+        )

@@ -25,14 +25,14 @@ class AppsfuelOAuth2(BaseOAuth2):
             'fullname': fullname,
             'first_name': first_name,
             'last_name': last_name,
-            'email': email
+            'email': email,
         }
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        return self.get_json(self.USER_DETAILS_URL, params={
-            'access_token': access_token
-        })
+        return self.get_json(
+            self.USER_DETAILS_URL, params={'access_token': access_token}
+        )
 
 
 class AppsfuelOAuth2Sandbox(AppsfuelOAuth2):

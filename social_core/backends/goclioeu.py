@@ -10,5 +10,5 @@ class GoClioEuOAuth2(GoClioOAuth2):
         """Loads user data from service"""
         return self.get_json(
             'https://app.goclio.eu/api/v2/users/who_am_i',
-            params={'access_token': access_token}
+            params={'access_token': access_token},
         )

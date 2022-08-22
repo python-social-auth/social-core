@@ -50,23 +50,23 @@ class TestStrategy(BaseStrategy):
         return TEST_HOST
 
     def request_is_secure(self):
-        """ Is the request using HTTPS? """
+        """Is the request using HTTPS?"""
         return False
 
     def request_path(self):
-        """ path of the current request """
+        """path of the current request"""
         return ''
 
     def request_port(self):
-        """ Port in use for this request """
+        """Port in use for this request"""
         return 80
 
     def request_get(self):
-        """ Request GET data """
+        """Request GET data"""
         return self._request_data.copy()
 
     def request_post(self):
-        """ Request POST data """
+        """Request POST data"""
         return self._request_data.copy()
 
     def session_get(self, name, default=None):
@@ -117,7 +117,7 @@ class TestStrategy(BaseStrategy):
                 'social_core.pipeline.user.create_user',
                 'social_core.pipeline.social_auth.associate_user',
                 'social_core.pipeline.social_auth.load_extra_data',
-                'social_core.pipeline.user.user_details'
+                'social_core.pipeline.user.user_details',
             ),
-            backend
+            backend,
         )

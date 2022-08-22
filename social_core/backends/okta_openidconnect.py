@@ -8,6 +8,7 @@ from .open_id_connect import OpenIdConnectAuth
 
 class OktaOpenIdConnect(OktaOAuth2, OpenIdConnectAuth):
     """Okta OpenID-Connect authentication backend"""
+
     name = 'okta-openidconnect'
     REDIRECT_STATE = False
     ACCESS_TOKEN_METHOD = 'POST'

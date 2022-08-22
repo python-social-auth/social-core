@@ -7,6 +7,7 @@ from .oauth import BaseOAuth1, BaseOAuth2
 
 class DoubanOAuth(BaseOAuth1):
     """Douban OAuth authentication backend"""
+
     name = 'douban'
     EXTRA_DATA = [('id', 'id')]
     AUTHORIZATION_URL = 'http://www.douban.com/service/auth/authorize'
@@ -18,17 +19,19 @@ class DoubanOAuth(BaseOAuth1):
 
     def get_user_details(self, response):
         """Return user details from Douban"""
-        return {'username': response['db:uid']['$t'],
-                'email': ''}
+        return {'username': response['db:uid']['$t'], 'email': ''}
 
     def user_data(self, access_token, *args, **kwargs):
         """Return user data provided"""
-        return self.get_json('http://api.douban.com/people/%40me?&alt=json',
-                             auth=self.oauth_auth(access_token))
+        return self.get_json(
+            'http://api.douban.com/people/%40me?&alt=json',
+            auth=self.oauth_auth(access_token),
+        )
 
 
 class DoubanOAuth2(BaseOAuth2):
     """Douban OAuth authentication backend"""
+
     name = 'douban-oauth2'
     AUTHORIZATION_URL = 'https://www.douban.com/service/auth2/auth'
     ACCESS_TOKEN_URL = 'https://www.douban.com/service/auth2/token'
@@ -42,18 +45,18 @@ class DoubanOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Douban"""
-        fullname, first_name, last_name = self.get_user_names(
-            response.get('name', '')
-        )
-        return {'username': response.get('uid', ''),
-                'fullname': fullname,
-                'first_name': first_name,
-                'last_name': last_name,
-                'email': ''}
+        fullname, first_name, last_name = self.get_user_names(response.get('name', ''))
+        return {
+            'username': response.get('uid', ''),
+            'fullname': fullname,
+            'first_name': first_name,
+            'last_name': last_name,
+            'email': '',
+        }
 
     def user_data(self, access_token, *args, **kwargs):
         """Return user data provided"""
         return self.get_json(
             'https://api.douban.com/v2/user/~me',
-            headers={'Authorization': f'Bearer {access_token}'}
+            headers={'Authorization': f'Bearer {access_token}'},
         )

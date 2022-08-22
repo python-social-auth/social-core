@@ -14,21 +14,25 @@ class GoClioOAuth2(BaseOAuth2):
         user = response.get('user', {})
         username = user.get('id', None)
         email = user.get('email', None)
-        first_name, last_name = (user.get('first_name', None),
-                                 user.get('last_name', None))
+        first_name, last_name = (
+            user.get('first_name', None),
+            user.get('last_name', None),
+        )
         fullname = f'{first_name} {last_name}'
 
-        return {'username': username,
-                'fullname': fullname,
-                'first_name': first_name,
-                'last_name': last_name,
-                'email': email}
+        return {
+            'username': username,
+            'fullname': fullname,
+            'first_name': first_name,
+            'last_name': last_name,
+            'email': email,
+        }
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
         return self.get_json(
             'https://app.goclio.com/api/v2/users/who_am_i',
-            params={'access_token': access_token}
+            params={'access_token': access_token},
         )
 
     def get_user_id(self, details, response):

@@ -11,6 +11,7 @@ from .oauth import BaseOAuth2
 
 class ClefOAuth2(BaseOAuth2):
     """Clef OAuth authentication backend"""
+
     name = 'clef'
     AUTHORIZATION_URL = 'https://clef.io/iframes/qr'
     ACCESS_TOKEN_URL = 'https://clef.io/api/v1/authorize'
@@ -30,8 +31,7 @@ class ClefOAuth2(BaseOAuth2):
         """Return user details from Github account"""
         info = response.get('info')
         fullname, first_name, last_name = self.get_user_names(
-            first_name=info.get('first_name'),
-            last_name=info.get('last_name')
+            first_name=info.get('first_name'), last_name=info.get('last_name')
         )
 
         email = info.get('email', '')
@@ -46,9 +46,10 @@ class ClefOAuth2(BaseOAuth2):
             'fullname': fullname,
             'first_name': first_name,
             'last_name': last_name,
-            'phone_number': info.get('phone_number', '')
+            'phone_number': info.get('phone_number', ''),
         }
 
     def user_data(self, access_token, *args, **kwargs):
-        return self.get_json('https://clef.io/api/v1/info',
-                             params={'access_token': access_token})
+        return self.get_json(
+            'https://clef.io/api/v1/info', params={'access_token': access_token}
+        )

@@ -34,11 +34,13 @@ class BaseGoogleAuth:
         fullname, first_name, last_name = self.get_user_names(
             name, given_name, family_name
         )
-        return {'username': email.split('@', 1)[0],
-                'email': email,
-                'fullname': fullname,
-                'first_name': first_name,
-                'last_name': last_name}
+        return {
+            'username': email.split('@', 1)[0],
+            'email': email,
+            'fullname': fullname,
+            'first_name': first_name,
+            'last_name': last_name,
+        }
 
 
 class BaseGoogleOAuth2API(BaseGoogleAuth):
@@ -60,6 +62,7 @@ class BaseGoogleOAuth2API(BaseGoogleAuth):
 
 class GoogleOAuth2(BaseGoogleOAuth2API, BaseOAuth2):
     """Google OAuth2 authentication backend"""
+
     name = 'google-oauth2'
     REDIRECT_STATE = False
     AUTHORIZATION_URL = 'https://accounts.google.com/o/oauth2/auth'
@@ -72,7 +75,7 @@ class GoogleOAuth2(BaseGoogleOAuth2API, BaseOAuth2):
     EXTRA_DATA = [
         ('refresh_token', 'refresh_token', True),
         ('expires_in', 'expires'),
-        ('token_type', 'token_type', True)
+        ('token_type', 'token_type', True),
     ]
 
 
@@ -94,7 +97,7 @@ class GooglePlusAuth(BaseGoogleOAuth2API, BaseOAuth2):
         ('refresh_token', 'refresh_token', True),
         ('expires_in', 'expires'),
         ('access_type', 'access_type', True),
-        ('code', 'code')
+        ('code', 'code'),
     ]
 
     def auth_complete_params(self, state=None):
@@ -110,7 +113,7 @@ class GooglePlusAuth(BaseGoogleOAuth2API, BaseOAuth2):
             token = self.data.get('access_token')
             response = self.get_json(
                 'https://www.googleapis.com/oauth2/v3/tokeninfo',
-                params={'access_token': token}
+                params={'access_token': token},
             )
             self.process_error(response)
             return self.do_auth(token, response=response, *args, **kwargs)
@@ -119,12 +122,12 @@ class GooglePlusAuth(BaseGoogleOAuth2API, BaseOAuth2):
                 self.ACCESS_TOKEN_URL,
                 data=self.auth_complete_params(),
                 headers=self.auth_headers(),
-                method=self.ACCESS_TOKEN_METHOD
+                method=self.ACCESS_TOKEN_METHOD,
             )
             self.process_error(response)
-            return self.do_auth(response['access_token'],
-                                response=response,
-                                *args, **kwargs)
+            return self.do_auth(
+                response['access_token'], response=response, *args, **kwargs
+            )
         elif 'id_token' in self.data:  # Client-side workflow
             token = self.data.get('id_token')
             return self.do_auth(token, *args, **kwargs)
@@ -136,7 +139,7 @@ class GooglePlusAuth(BaseGoogleOAuth2API, BaseOAuth2):
             return super().user_data(access_token, *args, **kwargs)
         response = self.get_json(
             'https://www.googleapis.com/oauth2/v3/tokeninfo',
-            params={'id_token': access_token}
+            params={'id_token': access_token},
         )
         self.process_error(response)
         return response
@@ -144,6 +147,7 @@ class GooglePlusAuth(BaseGoogleOAuth2API, BaseOAuth2):
 
 class GoogleOAuth(BaseGoogleAuth, BaseOAuth1):
     """Google OAuth authorization mechanism"""
+
     name = 'google-oauth'
     AUTHORIZATION_URL = 'https://www.google.com/accounts/OAuthAuthorizeToken'
     REQUEST_TOKEN_URL = 'https://www.google.com/accounts/OAuthGetRequestToken'
@@ -154,7 +158,7 @@ class GoogleOAuth(BaseGoogleAuth, BaseOAuth1):
         """Return user data from Google API"""
         return self.get_querystring(
             'https://www.googleapis.com/userinfo/email',
-            auth=self.oauth_auth(access_token)
+            auth=self.oauth_auth(access_token),
         )
 
     def get_key_and_secret(self):

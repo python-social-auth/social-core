@@ -8,6 +8,7 @@ class ZoomOAuth2(BaseOAuth2):
     Zoom OAuth2 authentication backend
     Doc Reference: https://marketplace.zoom.us/docs/guides/auth/oauth
     """
+
     name = 'zoom-oauth2'
     AUTHORIZATION_URL = 'https://zoom.us/oauth/authorize'
     ACCESS_TOKEN_URL = 'https://zoom.us/oauth/token'
@@ -16,17 +17,16 @@ class ZoomOAuth2(BaseOAuth2):
     ACCESS_TOKEN_METHOD = 'POST'
     REFRESH_TOKEN_METHOD = 'POST'
     REDIRECT_STATE = False
-    EXTRA_DATA = [
-        ('expires_in', 'expires')
-    ]
+    EXTRA_DATA = [('expires_in', 'expires')]
 
     def user_data(self, access_token, *args, **kwargs):
         response = self.get_json(
-            self.USER_DETAILS_URL, headers={
+            self.USER_DETAILS_URL,
+            headers={
                 'Authorization': 'Bearer {access_token}'.format(
                     access_token=access_token
                 )
-            }
+            },
         )
         return response
 
@@ -53,7 +53,8 @@ class ZoomOAuth2(BaseOAuth2):
 
     def auth_headers(self):
         return {
-            'Authorization': b'Basic ' + base64.urlsafe_b64encode(
+            'Authorization': b'Basic '
+            + base64.urlsafe_b64encode(
                 '{}:{}'.format(*self.get_key_and_secret()).encode()
             )
         }

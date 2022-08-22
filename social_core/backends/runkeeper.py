@@ -7,6 +7,7 @@ from .oauth import BaseOAuth2
 
 class RunKeeperOAuth2(BaseOAuth2):
     """RunKeeper OAuth authentication backend"""
+
     name = 'runkeeper'
     AUTHORIZATION_URL = 'https://runkeeper.com/apps/authorize'
     ACCESS_TOKEN_URL = 'https://runkeeper.com/apps/token'
@@ -29,11 +30,13 @@ class RunKeeperOAuth2(BaseOAuth2):
         fullname, first_name, last_name = self.get_user_names(
             fullname=response.get('name')
         )
-        return {'username': username,
-                'email': response.get('email') or '',
-                'fullname': fullname,
-                'first_name': first_name,
-                'last_name': last_name}
+        return {
+            'username': username,
+            'email': response.get('email') or '',
+            'fullname': fullname,
+            'first_name': first_name,
+            'last_name': last_name,
+        }
 
     def user_data(self, access_token, *args, **kwargs):
         # We need to use the /user endpoint to get the user id, the /profile

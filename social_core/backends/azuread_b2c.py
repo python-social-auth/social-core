@@ -41,8 +41,8 @@ except ImportError:
         # Python 3.3 is not supported because of compatibility in
         # Cryptography package in Python3.3 You are welcome to patch
         # and open a pull request.
-        'Cryptography library is required for this backend ' \
-        '(AzureADB2COAuth2) to work. Note that this backend is only ' \
+        'Cryptography library is required for this backend '
+        '(AzureADB2COAuth2) to work. Note that this backend is only '
         'supported on Python 2 and Python 3.4+.'
     )
 
@@ -54,7 +54,9 @@ class AzureADB2COAuth2(AzureADOAuth2):
     name = 'azuread-b2c-oauth2'
 
     AUTHORIZATION_URL = '{base_url}/oauth2/v2.0/authorize'
-    OPENID_CONFIGURATION_URL = '{base_url}/v2.0/.well-known/openid-configuration?p={policy}'
+    OPENID_CONFIGURATION_URL = (
+        '{base_url}/v2.0/.well-known/openid-configuration?p={policy}'
+    )
     ACCESS_TOKEN_URL = '{base_url}/oauth2/v2.0/token?p={policy}'
     JWKS_URL = '{base_url}/discovery/v2.0/keys?p={policy}'
     DEFAULT_SCOPE = ['openid', 'email']
@@ -68,7 +70,7 @@ class AzureADB2COAuth2(AzureADOAuth2):
         ('given_name', 'first_name'),
         ('family_name', 'last_name'),
         ('tfp', 'policy'),
-        ('token_type', 'token_type')
+        ('token_type', 'token_type'),
     ]
 
     @property
@@ -79,25 +81,26 @@ class AzureADB2COAuth2(AzureADOAuth2):
     def policy(self):
         policy = self.setting('POLICY')
         if not policy or not policy.lower().startswith('b2c_'):
-            raise AuthException('SOCIAL_AUTH_AZUREAD_B2C_OAUTH2_POLICY is '
-                                'required and should start with `b2c_`')
+            raise AuthException(
+                'SOCIAL_AUTH_AZUREAD_B2C_OAUTH2_POLICY is '
+                'required and should start with `b2c_`'
+            )
         return policy
 
     def openid_configuration_url(self):
-        return self.OPENID_CONFIGURATION_URL.format(base_url=self.base_url,
-                                                    policy=self.policy)
+        return self.OPENID_CONFIGURATION_URL.format(
+            base_url=self.base_url, policy=self.policy
+        )
 
     def authorization_url(self):
         # Policy is required, but added later by `auth_extra_arguments()`
         return self.AUTHORIZATION_URL.format(base_url=self.base_url)
 
     def access_token_url(self):
-        return self.ACCESS_TOKEN_URL.format(base_url=self.base_url,
-                                            policy=self.policy)
+        return self.ACCESS_TOKEN_URL.format(base_url=self.base_url, policy=self.policy)
 
     def jwks_url(self):
-        return self.JWKS_URL.format(base_url=self.base_url,
-                                    policy=self.policy)
+        return self.JWKS_URL.format(base_url=self.base_url, policy=self.policy)
 
     def request_access_token(self, *args, **kwargs):
         """
@@ -106,10 +109,7 @@ class AzureADB2COAuth2(AzureADOAuth2):
 
         However, B2C backends provides `id_token`.
         """
-        response = super().request_access_token(
-            *args,
-            **kwargs
-        )
+        response = super().request_access_token(*args, **kwargs)
         if 'access_token' not in response:
             response['access_token'] = response['id_token']
         return response
@@ -131,7 +131,7 @@ class AzureADB2COAuth2(AzureADOAuth2):
         pub_key = RSAAlgorithm.from_jwk(json.dumps(key_json_dict))
         return pub_key.public_bytes(
             encoding=serialization.Encoding.PEM,
-            format=serialization.PublicFormat.SubjectPublicKeyInfo
+            format=serialization.PublicFormat.SubjectPublicKeyInfo,
         )
 
     def get_user_id(self, details, response):

@@ -7,6 +7,7 @@ from .oauth import BaseOAuth2
 
 class UntappdOAuth2(BaseOAuth2):
     """Untappd OAuth2 authentication backend"""
+
     name = 'untappd'
     AUTHORIZATION_URL = 'https://untappd.com/oauth/authenticate/'
     ACCESS_TOKEN_URL = 'https://untappd.com/oauth/authorize/'
@@ -24,7 +25,7 @@ class UntappdOAuth2(BaseOAuth2):
         ('url', 'url'),
         ('user_avatar', 'user_avatar'),
         ('user_avatar_hd', 'user_avatar_hd'),
-        ('user_cover_photo', 'user_cover_photo')
+        ('user_cover_photo', 'user_cover_photo'),
     ]
 
     def auth_params(self, state=None):
@@ -32,7 +33,7 @@ class UntappdOAuth2(BaseOAuth2):
         params = {
             'client_id': client_id,
             'redirect_url': self.get_redirect_uri(),
-            'response_type': self.RESPONSE_TYPE
+            'response_type': self.RESPONSE_TYPE,
         }
         return params
 
@@ -63,8 +64,8 @@ class UntappdOAuth2(BaseOAuth2):
                 'code': code,
                 'client_id': client_id,
                 'client_secret': client_secret,
-                'redirect_url': self.get_redirect_uri()
-            }
+                'redirect_url': self.get_redirect_uri(),
+            },
         )
 
         self.process_error(response)
@@ -74,7 +75,8 @@ class UntappdOAuth2(BaseOAuth2):
         return self.do_auth(
             response['response']['access_token'],
             response=response['response'],
-            *args, **kwargs
+            *args,
+            **kwargs
         )
 
     def get_user_details(self, response):
@@ -83,14 +85,17 @@ class UntappdOAuth2(BaseOAuth2):
         user_data = response['user']
 
         # Make a few updates to match expected key names
-        user_data.update({
-            'username': user_data.get('user_name'),
-            'email': user_data.get('settings', {}).get('email_address', ''),
-            'first_name': user_data.get('first_name'),
-            'last_name': user_data.get('last_name'),
-            'fullname': ' '.join([user_data.get('first_name'),
-                                  user_data.get('last_name')])
-        })
+        user_data.update(
+            {
+                'username': user_data.get('user_name'),
+                'email': user_data.get('settings', {}).get('email_address', ''),
+                'first_name': user_data.get('first_name'),
+                'last_name': user_data.get('last_name'),
+                'fullname': ' '.join(
+                    [user_data.get('first_name'), user_data.get('last_name')]
+                ),
+            }
+        )
         return user_data
 
     def get_user_id(self, details, response):
@@ -102,10 +107,9 @@ class UntappdOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        response = self.get_json(self.USER_INFO_URL, params={
-            'access_token': access_token,
-            'compact': 'true'
-        })
+        response = self.get_json(
+            self.USER_INFO_URL, params={'access_token': access_token, 'compact': 'true'}
+        )
         self.process_error(response)
 
         # The response data is buried in the 'response' key

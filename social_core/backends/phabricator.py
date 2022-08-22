@@ -7,6 +7,7 @@ from .oauth import BaseOAuth2
 
 class PhabricatorOAuth2(BaseOAuth2):
     """Phabricator OAuth authentication backend"""
+
     name = 'phabricator'
     API_URL = 'https://secure.phabricator.com'
     AUTHORIZATION_URL = 'https://secure.phabricator.com/oauthserver/auth/'
@@ -26,9 +27,7 @@ class PhabricatorOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Phabricator"""
-        fullname, first_name, last_name = self.get_user_names(
-            response.get('realName')
-        )
+        fullname, first_name, last_name = self.get_user_names(response.get('realName'))
 
         return {
             'id': response.get('phid'),
@@ -41,6 +40,9 @@ class PhabricatorOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from API"""
-        return self.get_json(self.api_url('/api/user.whoami'), params={
-            'access_token': access_token,
-        })
+        return self.get_json(
+            self.api_url('/api/user.whoami'),
+            params={
+                'access_token': access_token,
+            },
+        )

@@ -8,16 +8,11 @@ class DribbbleOAuth2Test(OAuth2Test):
     user_data_url = 'https://api.dribbble.com/v1/user'
     expected_username = 'foobar'
 
-    access_token_body = json.dumps({
-        'access_token': 'foobar',
-        'token_type': 'bearer'
-    })
+    access_token_body = json.dumps({'access_token': 'foobar', 'token_type': 'bearer'})
 
-    user_data_body = json.dumps({
-        'id': 'foobar',
-        'username': 'foobar',
-        'name': 'Foo Bar'
-    })
+    user_data_body = json.dumps(
+        {'id': 'foobar', 'username': 'foobar', 'name': 'Foo Bar'}
+    )
 
     def test_login(self):
         self.do_login()

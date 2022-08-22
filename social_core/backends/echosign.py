@@ -21,4 +21,5 @@ class EchosignOAuth2(BaseOAuth2):
     def user_data(self, access_token, *args, **kwargs):
         return self.get_json(
             'https://api.echosign.com/api/rest/v3/users',
-            headers={'Access-Token': access_token})
+            headers={'Access-Token': access_token},
+        )

@@ -10,6 +10,7 @@ from .oauth import BaseOAuth2
 
 class MovesOAuth2(BaseOAuth2):
     """Moves OAuth authentication backend"""
+
     name = 'moves'
     ID_KEY = 'user_id'
     AUTHORIZATION_URL = 'https://api.moves-app.com/oauth/v1/authorize'
@@ -26,5 +27,7 @@ class MovesOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        return self.get_json('https://api.moves-app.com/api/1.1/user/profile',
-                             params={'access_token': access_token})
+        return self.get_json(
+            'https://api.moves-app.com/api/1.1/user/profile',
+            params={'access_token': access_token},
+        )

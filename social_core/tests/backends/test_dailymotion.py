@@ -7,14 +7,8 @@ class DailymotionOAuth2Test(OAuth2Test):
     backend_path = 'social_core.backends.dailymotion.DailymotionOAuth2'
     user_data_url = 'https://api.dailymotion.com/auth/'
     expected_username = 'foobar'
-    access_token_body = json.dumps({
-        'access_token': 'foobar',
-        'token_type': 'bearer'
-    })
-    user_data_body = json.dumps({
-        'id': 'foobar',
-        'screenname': 'foobar'
-    })
+    access_token_body = json.dumps({'access_token': 'foobar', 'token_type': 'bearer'})
+    user_data_body = json.dumps({'id': 'foobar', 'screenname': 'foobar'})
 
     def test_login(self):
         self.do_login()

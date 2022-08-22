@@ -7,6 +7,7 @@ from .oauth import BaseOAuth2
 
 class EVEOnlineOAuth2(BaseOAuth2):
     """EVE Online OAuth authentication backend"""
+
     name = 'eveonline'
     BASE_URL = 'https://login.eveonline.com/oauth'
     AUTHORIZATION_URL = BASE_URL + '/authorize'
@@ -31,12 +32,12 @@ class EVEOnlineOAuth2(BaseOAuth2):
             'username': fullname,
             'fullname': fullname,
             'first_name': first_name,
-            'last_name': last_name
+            'last_name': last_name,
         }
 
     def user_data(self, access_token, *args, **kwargs):
         """Get Character data from EVE server"""
         return self.get_json(
             'https://login.eveonline.com/oauth/verify',
-            headers={'Authorization': f'Bearer {access_token}'}
+            headers={'Authorization': f'Bearer {access_token}'},
         )

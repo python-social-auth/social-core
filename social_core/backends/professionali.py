@@ -16,10 +16,7 @@ class ProfessionaliOAuth2(BaseOAuth2):
     AUTHORIZATION_URL = 'https://api.professionali.ru/oauth/authorize.html'
     ACCESS_TOKEN_URL = 'https://api.professionali.ru/oauth/getToken.json'
     ACCESS_TOKEN_METHOD = 'POST'
-    EXTRA_DATA = [
-        ('avatar_big', 'avatar_big'),
-        ('link', 'link')
-    ]
+    EXTRA_DATA = [('avatar_big', 'avatar_big'), ('link', 'link')]
 
     def get_user_details(self, response):
         first_name, last_name = map(response.get, ('firstname', 'lastname'))
@@ -30,17 +27,21 @@ class ProfessionaliOAuth2(BaseOAuth2):
             'username': f'{last_name}_{first_name}',
             'first_name': first_name,
             'last_name': last_name,
-            'email': email
+            'email': email,
         }
 
     def user_data(self, access_token, response, *args, **kwargs):
         url = 'https://api.professionali.ru/v6/users/get.json'
-        fields = list(set(['firstname', 'lastname', 'avatar_big', 'link'] +
-                          self.setting('EXTRA_DATA', [])))
+        fields = list(
+            set(
+                ['firstname', 'lastname', 'avatar_big', 'link']
+                + self.setting('EXTRA_DATA', [])
+            )
+        )
         params = {
             'fields': ','.join(fields),
             'access_token': access_token,
-            'ids[]': response['user_id']
+            'ids[]': response['user_id'],
         }
         try:
             return self.get_json(url, params)[0]

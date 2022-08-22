@@ -12,8 +12,9 @@ class DisconnectActionTest(BaseActionTest):
     def test_not_allowed_to_disconnect(self):
         self.do_login()
         user = User.get(self.expected_username)
-        with self.assertRaisesRegex(NotAllowedToDisconnect,
-                                    'This account is not allowed to be disconnected.'):
+        with self.assertRaisesRegex(
+            NotAllowedToDisconnect, 'This account is not allowed to be disconnected.'
+        ):
             do_disconnect(self.backend, user)
 
     def test_disconnect(self):
@@ -35,24 +36,25 @@ class DisconnectActionTest(BaseActionTest):
         self.assertEqual(user.social[0], second_usa)
 
     def test_disconnect_with_partial_pipeline(self):
-        self.strategy.set_settings({
-            'SOCIAL_AUTH_DISCONNECT_PIPELINE': (
-                'social_core.tests.pipeline.ask_for_password',
-                'social_core.tests.pipeline.set_password',
-                'social_core.pipeline.disconnect.allowed_to_disconnect',
-                'social_core.pipeline.disconnect.get_entries',
-                'social_core.pipeline.disconnect.revoke_tokens',
-                'social_core.pipeline.disconnect.disconnect'
-            )
-        })
+        self.strategy.set_settings(
+            {
+                'SOCIAL_AUTH_DISCONNECT_PIPELINE': (
+                    'social_core.tests.pipeline.ask_for_password',
+                    'social_core.tests.pipeline.set_password',
+                    'social_core.pipeline.disconnect.allowed_to_disconnect',
+                    'social_core.pipeline.disconnect.get_entries',
+                    'social_core.pipeline.disconnect.revoke_tokens',
+                    'social_core.pipeline.disconnect.disconnect',
+                )
+            }
+        )
         self.do_login()
         user = User.get(self.expected_username)
         redirect = do_disconnect(self.backend, user)
 
         url = self.strategy.build_absolute_uri('/password')
         self.assertEqual(redirect.url, url)
-        HTTPretty.register_uri(HTTPretty.GET, redirect.url, status=200,
-                               body='foobar')
+        HTTPretty.register_uri(HTTPretty.GET, redirect.url, status=200, body='foobar')
         HTTPretty.register_uri(HTTPretty.POST, redirect.url, status=200)
 
         password = 'foobar'

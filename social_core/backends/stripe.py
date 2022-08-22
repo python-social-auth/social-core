@@ -7,6 +7,7 @@ from .oauth import BaseOAuth2
 
 class StripeOAuth2(BaseOAuth2):
     """Stripe OAuth2 authentication backend"""
+
     name = 'stripe'
     ID_KEY = 'stripe_user_id'
     AUTHORIZATION_URL = 'https://connect.stripe.com/oauth/authorize'
@@ -24,8 +25,7 @@ class StripeOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Stripe account"""
-        return {'username': response.get('stripe_user_id'),
-                'email': ''}
+        return {'username': response.get('stripe_user_id'), 'email': ''}
 
     def auth_complete_params(self, state=None):
         client_id, client_secret = self.get_key_and_secret()
@@ -33,14 +33,15 @@ class StripeOAuth2(BaseOAuth2):
             'grant_type': 'authorization_code',
             'client_id': client_id,
             'scope': self.SCOPE_SEPARATOR.join(self.get_scope()),
-            'code': self.data['code']
+            'code': self.data['code'],
         }
 
     def auth_headers(self):
         client_id, client_secret = self.get_key_and_secret()
-        return {'Accept': 'application/json',
-                'Authorization': f'Bearer {client_secret}'}
+        return {
+            'Accept': 'application/json',
+            'Authorization': f'Bearer {client_secret}',
+        }
 
     def refresh_token_params(self, refresh_token, *args, **kwargs):
-        return {'refresh_token': refresh_token,
-                'grant_type': 'refresh_token'}
+        return {'refresh_token': refresh_token, 'grant_type': 'refresh_token'}

@@ -25,8 +25,10 @@ class ElixirOpenIdConnect(OpenIdConnectAuth):
         username_key = self.setting('USERNAME_KEY', default=self.USERNAME_KEY)
         name = response.get('name') or ''
         fullname, first_name, last_name = self.get_user_names(name)
-        return {'username': response.get(username_key),
-                'email': response.get('email'),
-                'fullname': fullname,
-                'first_name': first_name,
-                'last_name': last_name}
+        return {
+            'username': response.get(username_key),
+            'email': response.get('email'),
+            'fullname': fullname,
+            'first_name': first_name,
+            'last_name': last_name,
+        }

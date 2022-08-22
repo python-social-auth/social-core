@@ -27,5 +27,6 @@ class TumblrOAuth(BaseOAuth1):
         return data
 
     def user_data(self, access_token):
-        return self.get_json('http://api.tumblr.com/v2/user/info',
-                             auth=self.oauth_auth(access_token))
+        return self.get_json(
+            'http://api.tumblr.com/v2/user/info', auth=self.oauth_auth(access_token)
+        )

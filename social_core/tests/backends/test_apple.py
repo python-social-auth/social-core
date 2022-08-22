@@ -24,7 +24,9 @@ class AppleIdTest(OAuth2Test):
     backend_path = 'social_core.backends.apple.AppleIdAuth'
     user_data_url = 'https://appleid.apple.com/auth/authorize/'
     id_token = 'a-id-token'
-    access_token_body = json.dumps({'id_token': id_token, 'access_token': 'a-test-token'})
+    access_token_body = json.dumps(
+        {'id_token': id_token, 'access_token': 'a-test-token'}
+    )
     expected_username = token_data['sub']
 
     def extra_settings(self):
@@ -37,15 +39,19 @@ class AppleIdTest(OAuth2Test):
         }
 
     def test_login(self):
-        with patch('{}.{}'.format(self.backend_path, 'decode_id_token'),
-                   return_value=token_data) as decode_mock:
+        with patch(
+            '{}.{}'.format(self.backend_path, 'decode_id_token'),
+            return_value=token_data,
+        ) as decode_mock:
             self.do_login()
         assert decode_mock.called
         assert decode_mock.call_args[0] == (self.id_token,)
 
     def test_partial_pipeline(self):
-        with patch('{}.{}'.format(self.backend_path, 'decode_id_token'),
-                   return_value=token_data) as decode_mock:
+        with patch(
+            '{}.{}'.format(self.backend_path, 'decode_id_token'),
+            return_value=token_data,
+        ) as decode_mock:
             self.do_partial_pipeline()
         assert decode_mock.called
         assert decode_mock.call_args[0] == (self.id_token,)

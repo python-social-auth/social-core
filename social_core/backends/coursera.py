@@ -7,6 +7,7 @@ from .oauth import BaseOAuth2
 
 class CourseraOAuth2(BaseOAuth2):
     """Coursera OAuth2 authentication backend"""
+
     name = 'coursera'
     ID_KEY = 'username'
     AUTHORIZATION_URL = 'https://accounts.coursera.org/oauth2/v1/auth'
@@ -36,7 +37,7 @@ class CourseraOAuth2(BaseOAuth2):
         """Load user data from the service"""
         return self.get_json(
             'https://api.coursera.org/api/externalBasicProfiles.v1?q=me',
-            headers=self.get_auth_header(access_token)
+            headers=self.get_auth_header(access_token),
         )
 
     def get_auth_header(self, access_token):

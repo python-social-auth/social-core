@@ -8,11 +8,14 @@ from .open_id_connect import OpenIdConnectAuth
 
 class TwitchOpenIdConnect(OpenIdConnectAuth):
     """Twitch OpenID Connect authentication backend"""
+
     name = 'twitch'
     USERNAME_KEY = 'preferred_username'
     OIDC_ENDPOINT = 'https://id.twitch.tv/oauth2'
     DEFAULT_SCOPE = ['openid', 'user:read:email']
-    TWITCH_CLAIMS = '{"id_token":{"email": null,"email_verified":null,"preferred_username":null}}'
+    TWITCH_CLAIMS = (
+        '{"id_token":{"email": null,"email_verified":null,"preferred_username":null}}'
+    )
 
     def auth_params(self, state=None):
         params = super().auth_params(state)
@@ -33,6 +36,7 @@ class TwitchOpenIdConnect(OpenIdConnectAuth):
 
 class TwitchOAuth2(BaseOAuth2):
     """Twitch OAuth authentication backend"""
+
     name = 'twitch'
     ID_KEY = '_id'
     AUTHORIZATION_URL = 'https://id.twitch.tv/oauth2/authorize'
@@ -52,14 +56,14 @@ class TwitchOAuth2(BaseOAuth2):
             'username': response.get('login'),
             'email': response.get('email'),
             'first_name': '',
-            'last_name': ''
+            'last_name': '',
         }
 
     def user_data(self, access_token, *args, **kwargs):
         client_id, _ = self.get_key_and_secret()
         auth_headers = {
             'Authorization': 'Bearer %s' % access_token,
-            'Client-Id': client_id
+            'Client-Id': client_id,
         }
         url = 'https://api.twitch.tv/helix/users'
 

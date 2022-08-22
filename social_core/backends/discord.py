@@ -16,14 +16,13 @@ class DiscordOAuth2(BaseOAuth2):
     DEFAULT_SCOPE = ['identify']
     SCOPE_SEPARATOR = '+'
     REDIRECT_STATE = False
-    EXTRA_DATA = [
-        ('expires_in', 'expires'),
-        ('refresh_token', 'refresh_token')
-    ]
+    EXTRA_DATA = [('expires_in', 'expires'), ('refresh_token', 'refresh_token')]
 
     def get_user_details(self, response):
-        return {'username': response.get('username'),
-                'email': response.get('email') or ''}
+        return {
+            'username': response.get('username'),
+            'email': response.get('email') or '',
+        }
 
     def user_data(self, access_token, *args, **kwargs):
         url = 'https://%s/api/users/@me' % self.HOSTNAME

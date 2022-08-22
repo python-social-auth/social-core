@@ -34,7 +34,7 @@ class DockerOAuth2(BaseOAuth2):
             'fullname': fullname,
             'first_name': first_name,
             'last_name': last_name,
-            'email': response.get('email', '')
+            'email': response.get('email', ''),
         }
 
     def user_data(self, access_token, *args, **kwargs):
@@ -42,5 +42,5 @@ class DockerOAuth2(BaseOAuth2):
         username = kwargs['response']['username']
         return self.get_json(
             'https://hub.docker.com/api/v1.1/users/%s/' % username,
-            headers={'Authorization': 'Bearer %s' % access_token}
+            headers={'Authorization': 'Bearer %s' % access_token},
         )

@@ -8,8 +8,12 @@ import hmac
 import json
 import time
 
-from ..exceptions import (AuthCanceled, AuthException, AuthMissingParameter,
-                          AuthUnknownError)
+from ..exceptions import (
+    AuthCanceled,
+    AuthException,
+    AuthMissingParameter,
+    AuthUnknownError,
+)
 from ..utils import constant_time_compare, handle_http_errors, parse_qs
 from .oauth import BaseOAuth2
 
@@ -18,22 +22,21 @@ API_VERSION = 12.0
 
 class FacebookOAuth2(BaseOAuth2):
     """Facebook OAuth2 authentication backend"""
+
     name = 'facebook'
     REDIRECT_STATE = False
     RESPONSE_TYPE = None
     SCOPE_SEPARATOR = ','
     AUTHORIZATION_URL = 'https://www.facebook.com/v{version}/dialog/oauth'
-    ACCESS_TOKEN_URL = \
-        'https://graph.facebook.com/v{version}/oauth/access_token'
-    REVOKE_TOKEN_URL = \
-        'https://graph.facebook.com/v{version}/{uid}/permissions'
+    ACCESS_TOKEN_URL = 'https://graph.facebook.com/v{version}/oauth/access_token'
+    REVOKE_TOKEN_URL = 'https://graph.facebook.com/v{version}/{uid}/permissions'
     REVOKE_TOKEN_METHOD = 'DELETE'
     USER_DATA_URL = 'https://graph.facebook.com/v{version}/me'
     EXTRA_DATA = [
         ('id', 'id'),
         ('expires', 'expires'),
         ('granted_scopes', 'granted_scopes'),
-        ('denied_scopes', 'denied_scopes')
+        ('denied_scopes', 'denied_scopes'),
     ]
 
     def auth_params(self, state=None):
@@ -54,13 +57,15 @@ class FacebookOAuth2(BaseOAuth2):
         fullname, first_name, last_name = self.get_user_names(
             response.get('name', ''),
             response.get('first_name', ''),
-            response.get('last_name', '')
+            response.get('last_name', ''),
         )
-        return {'username': response.get('username', response.get('name')),
-                'email': response.get('email', ''),
-                'fullname': fullname,
-                'first_name': first_name,
-                'last_name': last_name}
+        return {
+            'username': response.get('username', response.get('name')),
+            'email': response.get('email', ''),
+            'fullname': fullname,
+            'first_name': first_name,
+            'last_name': last_name,
+        }
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
@@ -72,18 +77,18 @@ class FacebookOAuth2(BaseOAuth2):
             params['appsecret_proof'] = hmac.new(
                 secret.encode('utf8'),
                 msg=access_token.encode('utf8'),
-                digestmod=hashlib.sha256
+                digestmod=hashlib.sha256,
             ).hexdigest()
 
         version = self.setting('API_VERSION', API_VERSION)
-        return self.get_json(self.USER_DATA_URL.format(version=version),
-                             params=params)
+        return self.get_json(self.USER_DATA_URL.format(version=version), params=params)
 
     def process_error(self, data):
         super().process_error(data)
         if data.get('error_code'):
-            raise AuthCanceled(self, data.get('error_message') or
-                               data.get('error_code'))
+            raise AuthCanceled(
+                self, data.get('error_message') or data.get('error_code')
+            )
 
     @handle_http_errors
     def auth_complete(self, *args, **kwargs):
@@ -93,12 +98,15 @@ class FacebookOAuth2(BaseOAuth2):
             raise AuthMissingParameter(self, 'code')
         state = self.validate_state()
         key, secret = self.get_key_and_secret()
-        response = self.request(self.access_token_url(), params={
-            'client_id': key,
-            'redirect_uri': self.get_redirect_uri(state),
-            'client_secret': secret,
-            'code': self.data['code']
-        })
+        response = self.request(
+            self.access_token_url(),
+            params={
+                'client_id': key,
+                'redirect_uri': self.get_redirect_uri(state),
+                'client_secret': secret,
+                'code': self.data['code'],
+            },
+        )
         # API v2.3 returns a JSON, according to the documents linked at issue
         # #592, but it seems that this needs to be enabled(?), otherwise the
         # usual querystring type response is returned.
@@ -121,7 +129,7 @@ class FacebookOAuth2(BaseOAuth2):
             'fb_exchange_token': token,
             'grant_type': 'fb_exchange_token',
             'client_id': client_id,
-            'client_secret': client_secret
+            'client_secret': client_secret,
         }
 
     @handle_http_errors
@@ -136,8 +144,9 @@ class FacebookOAuth2(BaseOAuth2):
             # data is needed (it contains the user ID used to identify the
             # account on further logins), this app cannot allow it to
             # continue with the auth process.
-            raise AuthUnknownError(self, 'An error occurred while retrieving '
-                                         'users Facebook data')
+            raise AuthUnknownError(
+                self, 'An error occurred while retrieving ' 'users Facebook data'
+            )
 
         data['access_token'] = access_token
         if 'expires_in' in response:
@@ -160,13 +169,15 @@ class FacebookOAuth2(BaseOAuth2):
         return {'access_token': token}
 
     def process_revoke_token_response(self, response):
-        return super().process_revoke_token_response(
-            response
-        ) and response.content == 'true'
+        return (
+            super().process_revoke_token_response(response)
+            and response.content == 'true'
+        )
 
 
 class FacebookAppOAuth2(FacebookOAuth2):
     """Facebook Application Authentication support"""
+
     name = 'facebook-app'
 
     def uses_redirect(self):
@@ -183,9 +194,11 @@ class FacebookAppOAuth2(FacebookOAuth2):
                 raise AuthException(self)
 
             if response is not None:
-                access_token = response.get('access_token') or \
-                               response.get('oauth_token') or \
-                               self.data.get('access_token')
+                access_token = (
+                    response.get('access_token')
+                    or response.get('oauth_token')
+                    or self.data.get('access_token')
+                )
 
         if access_token is None:
             if self.data.get('error') == 'access_denied':
@@ -224,10 +237,13 @@ class FacebookAppOAuth2(FacebookOAuth2):
             sig = base64_url_decode(sig)
             payload_json_bytes = base64_url_decode(payload)
             data = json.loads(payload_json_bytes.decode('utf-8', 'replace'))
-            expected_sig = hmac.new(secret.encode('ascii'),
-                                    msg=payload.encode('ascii'),
-                                    digestmod=hashlib.sha256).digest()
+            expected_sig = hmac.new(
+                secret.encode('ascii'),
+                msg=payload.encode('ascii'),
+                digestmod=hashlib.sha256,
+            ).digest()
             # allow the signed_request to function for upto 1 day
-            if constant_time_compare(sig, expected_sig) and \
-               data['issued_at'] > (time.time() - 86400):
+            if constant_time_compare(sig, expected_sig) and data['issued_at'] > (
+                time.time() - 86400
+            ):
                 return data

@@ -20,17 +20,19 @@ class FoursquareOAuth2(BaseOAuth2):
         info = response['response']['user']
         email = info['contact']['email']
         fullname, first_name, last_name = self.get_user_names(
-            first_name=info.get('firstName', ''),
-            last_name=info.get('lastName', '')
+            first_name=info.get('firstName', ''), last_name=info.get('lastName', '')
         )
-        return {'username': first_name + ' ' + last_name,
-                'fullname': fullname,
-                'first_name': first_name,
-                'last_name': last_name,
-                'email': email}
+        return {
+            'username': first_name + ' ' + last_name,
+            'fullname': fullname,
+            'first_name': first_name,
+            'last_name': last_name,
+            'email': email,
+        }
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        return self.get_json('https://api.foursquare.com/v2/users/self',
-                             params={'oauth_token': access_token,
-                                     'v': self.API_VERSION})
+        return self.get_json(
+            'https://api.foursquare.com/v2/users/self',
+            params={'oauth_token': access_token, 'v': self.API_VERSION},
+        )

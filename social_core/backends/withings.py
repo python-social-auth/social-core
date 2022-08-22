@@ -10,5 +10,4 @@ class WithingsOAuth(BaseOAuth1):
 
     def get_user_details(self, response):
         """Return user details from Withings account"""
-        return {'userid': response['access_token']['userid'],
-                'email': ''}
+        return {'userid': response['access_token']['userid'], 'email': ''}

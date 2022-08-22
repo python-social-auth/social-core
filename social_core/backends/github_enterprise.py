@@ -24,18 +24,22 @@ class GithubEnterpriseMixin:
 
 class GithubEnterpriseOAuth2(GithubEnterpriseMixin, GithubOAuth2):
     """Github Enterprise OAuth authentication backend"""
+
     name = 'github-enterprise'
 
 
-class GithubEnterpriseOrganizationOAuth2(GithubEnterpriseMixin,
-                                         GithubOrganizationOAuth2):
+class GithubEnterpriseOrganizationOAuth2(
+    GithubEnterpriseMixin, GithubOrganizationOAuth2
+):
     """Github Enterprise OAuth2 authentication backend for
     organizations"""
+
     name = 'github-enterprise-org'
     DEFAULT_SCOPE = ['read:org']
 
 
 class GithubEnterpriseTeamOAuth2(GithubEnterpriseMixin, GithubTeamOAuth2):
     """Github Enterprise OAuth2 authentication backend for teams"""
+
     name = 'github-enterprise-team'
     DEFAULT_SCOPE = ['read:org']

@@ -7,6 +7,7 @@ from .oauth import BaseOAuth2
 
 class DailymotionOAuth2(BaseOAuth2):
     """Dailymotion OAuth authentication backend"""
+
     name = 'dailymotion'
     EXTRA_DATA = [('id', 'id')]
     ID_KEY = 'username'
@@ -20,5 +21,6 @@ class DailymotionOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Return user data provided"""
-        return self.get_json('https://api.dailymotion.com/auth/',
-                             params={'access_token': access_token})
+        return self.get_json(
+            'https://api.dailymotion.com/auth/', params={'access_token': access_token}
+        )

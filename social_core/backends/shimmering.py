@@ -6,6 +6,7 @@ from .oauth import BaseOAuth2
 
 class ShimmeringOAuth2(BaseOAuth2):
     """Shimmering Verify OAuth2 authentication backend"""
+
     name = 'shimmering'
     ID_KEY = 'id'
     AUTHORIZATION_URL = 'http://developers.shimmeringverify.com/o/authorize/'
@@ -31,6 +32,5 @@ class ShimmeringOAuth2(BaseOAuth2):
         """Loads user data from service"""
         headers = {'Authorization': 'Bearer %s' % access_token}
         return self.get_json(
-            'http://developers.shimmeringverify.com/user_info/',
-            headers=headers
+            'http://developers.shimmeringverify.com/user_info/', headers=headers
         )

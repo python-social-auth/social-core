@@ -25,13 +25,15 @@ OID_USERID = 'urn:oid:0.9.2342.19200300.100.1.1'
 
 class SAMLIdentityProvider:
     """Wrapper around configuration for a SAML Identity provider"""
+
     def __init__(self, name, **kwargs):
         """Load and parse configuration"""
         self.name = name
         # name should be a slug and must not contain a colon, which
         # could conflict with uid prefixing:
-        assert ':' not in self.name and ' ' not in self.name, \
-            'IdP "name" should be a slug (short, no spaces)'
+        assert (
+            ':' not in self.name and ' ' not in self.name
+        ), 'IdP "name" should be a slug (short, no spaces)'
         self.conf = kwargs
 
     def get_user_permanent_id(self, attributes):
@@ -54,16 +56,11 @@ class SAMLIdentityProvider:
         the user data like name.
         """
         return {
-            'fullname': self.get_attr(attributes, 'attr_full_name',
-                                      OID_COMMON_NAME),
-            'first_name': self.get_attr(attributes, 'attr_first_name',
-                                        OID_GIVEN_NAME),
-            'last_name': self.get_attr(attributes, 'attr_last_name',
-                                       OID_SURNAME),
-            'username': self.get_attr(attributes, 'attr_username',
-                                      OID_USERID),
-            'email': self.get_attr(attributes, 'attr_email',
-                                   OID_MAIL),
+            'fullname': self.get_attr(attributes, 'attr_full_name', OID_COMMON_NAME),
+            'first_name': self.get_attr(attributes, 'attr_first_name', OID_GIVEN_NAME),
+            'last_name': self.get_attr(attributes, 'attr_last_name', OID_SURNAME),
+            'username': self.get_attr(attributes, 'attr_username', OID_USERID),
+            'email': self.get_attr(attributes, 'attr_email', OID_MAIL),
         }
 
     def get_attr(self, attributes, conf_key, default_attribute):
@@ -109,14 +106,14 @@ class SAMLIdentityProvider:
             'singleSignOnService': {
                 'url': self.sso_url,
                 # python-saml only supports Redirect
-                'binding': 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect'
+                'binding': 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
             },
         }
 
         if self.slo_url:
             result['singleLogoutService'] = {
                 'url': self.slo_url,
-                'binding': 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect'
+                'binding': 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
             }
 
         cert = self.conf.get('x509cert', None)
@@ -138,12 +135,13 @@ class DummySAMLIdentityProvider(SAMLIdentityProvider):
     If OneLogin_Saml2_Auth is modified to not always require IdP
     config, this can be removed.
     """
+
     def __init__(self):
         super().__init__(
             'dummy',
             entity_id='https://dummy.none/saml2',
             url='https://dummy.none/SSO',
-            x509cert=''
+            x509cert='',
         )
 
 
@@ -190,6 +188,7 @@ class SAMLAuth(BaseAuth):
     SOCIAL_AUTH_SAML_SP_EXTRA = {}
     SOCIAL_AUTH_SAML_SECURITY_CONFIG = {}
     """
+
     name = 'saml'
     EXTRA_DATA = []
 
@@ -208,7 +207,7 @@ class SAMLAuth(BaseAuth):
         config = {
             'contactPerson': {
                 'technical': self.setting('TECHNICAL_CONTACT'),
-                'support': self.setting('SUPPORT_CONTACT')
+                'support': self.setting('SUPPORT_CONTACT'),
             },
             'debug': True,
             'idp': idp.saml_config_dict if idp else {},
@@ -221,7 +220,7 @@ class SAMLAuth(BaseAuth):
                 'assertionConsumerService': {
                     'url': abs_completion_url,
                     # python-saml only supports HTTP-POST
-                    'binding': 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST'
+                    'binding': 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST',
                 },
                 'entityId': self.setting('SP_ENTITY_ID'),
                 'x509cert': self.setting('SP_PUBLIC_CERT'),
@@ -254,10 +253,7 @@ class SAMLAuth(BaseAuth):
                 return HttpResponseServerError(content=', '.join(errors))
         """
         config = self.generate_saml_config()
-        saml_settings = OneLogin_Saml2_Settings(
-            config,
-            sp_validation_only=True
-        )
+        saml_settings = OneLogin_Saml2_Settings(config, sp_validation_only=True)
         metadata = saml_settings.get_sp_metadata()
         errors = saml_settings.validate_metadata(metadata)
         return metadata, errors
@@ -316,9 +312,7 @@ class SAMLAuth(BaseAuth):
         errors = auth.get_errors()
         if errors or not auth.is_authenticated():
             reason = auth.get_last_error_reason()
-            raise AuthFailed(
-                self, f'SAML login failed: {errors} ({reason})'
-            )
+            raise AuthFailed(self, f'SAML login failed: {errors} ({reason})')
 
         attributes = auth.get_attributes()
         attributes['name_id'] = auth.get_nameid()
@@ -344,7 +338,9 @@ class SAMLAuth(BaseAuth):
         auth = self._create_saml_auth(idp)
         name_id = social_auth.extra_data['name_id']
         session_index = social_auth.extra_data['session_index']
-        return auth.logout(name_id=name_id, session_index=session_index, return_to=return_to)
+        return auth.logout(
+            name_id=name_id, session_index=session_index, return_to=return_to
+        )
 
     def process_logout(self, idp_name, delete_session_cb):
         idp = self.get_idp(idp_name)

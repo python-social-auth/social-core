@@ -9,6 +9,7 @@ from .oauth import BaseOAuth2
 
 class SlackOAuth2(BaseOAuth2):
     """Slack OAuth authentication backend"""
+
     name = 'slack'
     AUTHORIZATION_URL = 'https://slack.com/oauth/authorize'
     ACCESS_TOKEN_URL = 'https://slack.com/api/oauth.access'
@@ -16,11 +17,7 @@ class SlackOAuth2(BaseOAuth2):
     DEFAULT_SCOPE = ['identity.basic', 'identity.email']
     SCOPE_SEPARATOR = ','
     REDIRECT_STATE = False
-    EXTRA_DATA = [
-        ('id', 'id'),
-        ('name', 'name'),
-        ('real_name', 'real_name')
-    ]
+    EXTRA_DATA = [('id', 'id'), ('name', 'name'), ('real_name', 'real_name')]
 
     def auth_extra_arguments(self):
         params = super().auth_extra_arguments() or {}
@@ -39,8 +36,7 @@ class SlackOAuth2(BaseOAuth2):
         username = email and email.split('@', 1)[0] or name
         fullname, first_name, last_name = self.get_user_names(name)
 
-        if self.setting('USERNAME_WITH_TEAM', True) and team and \
-           'name' in team:
+        if self.setting('USERNAME_WITH_TEAM', True) and team and 'name' in team:
             username = '{}@{}'.format(username, response['team']['name'])
 
         return {
@@ -48,13 +44,15 @@ class SlackOAuth2(BaseOAuth2):
             'email': email,
             'fullname': fullname,
             'first_name': first_name,
-            'last_name': last_name
+            'last_name': last_name,
         }
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        response = self.get_json('https://slack.com/api/users.identity',
-                                 headers={'Authorization': 'Bearer %s' % access_token})
+        response = self.get_json(
+            'https://slack.com/api/users.identity',
+            headers={'Authorization': 'Bearer %s' % access_token},
+        )
         if not response.get('id', None):
             response['id'] = response['user']['id']
         return response

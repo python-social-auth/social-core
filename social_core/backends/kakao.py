@@ -7,6 +7,7 @@ from .oauth import BaseOAuth2
 
 class KakaoOAuth2(BaseOAuth2):
     """Kakao OAuth authentication backend"""
+
     name = 'kakao'
     AUTHORIZATION_URL = 'https://kauth.kakao.com/oauth/authorize'
     ACCESS_TOKEN_URL = 'https://kauth.kakao.com/oauth/token'
@@ -22,7 +23,7 @@ class KakaoOAuth2(BaseOAuth2):
     def get_user_details(self, response):
         """Return user details from Kakao account"""
 
-        kaccount_email =  ''
+        kaccount_email = ''
         kakao_account = response.get('kakao_account', '')
         if kakao_account:
             kaccount_email = kakao_account.get('email', '')
@@ -44,7 +45,7 @@ class KakaoOAuth2(BaseOAuth2):
                 'Authorization': f'Bearer {access_token}',
                 'Content_Type': 'application/x-www-form-urlencoded;charset=utf-8',
             },
-            params={'access_token': access_token}
+            params={'access_token': access_token},
         )
 
     def auth_complete_params(self, state=None):

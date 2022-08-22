@@ -10,6 +10,7 @@ from .oauth import BaseOAuth2
 
 class DeezerOAuth2(BaseOAuth2):
     """Deezer OAuth2 authentication backend"""
+
     name = 'deezer'
     ID_KEY = 'name'
     AUTHORIZATION_URL = 'https://connect.deezer.com/oauth/auth.php'
@@ -23,7 +24,7 @@ class DeezerOAuth2(BaseOAuth2):
         return {
             'app_id': client_id,
             'secret': client_secret,
-            'code': self.data.get('code')
+            'code': self.data.get('code'),
         }
 
     def request_access_token(self, *args, **kwargs):
@@ -33,17 +34,18 @@ class DeezerOAuth2(BaseOAuth2):
     def get_user_details(self, response):
         """Return user details from Deezer account"""
         fullname, first_name, last_name = self.get_user_names(
-            first_name=response.get('firstname'),
-            last_name=response.get('lastname')
+            first_name=response.get('firstname'), last_name=response.get('lastname')
         )
-        return {'username': response.get('name'),
-                'email': response.get('email'),
-                'fullname': fullname,
-                'first_name': first_name,
-                'last_name': last_name}
+        return {
+            'username': response.get('name'),
+            'email': response.get('email'),
+            'fullname': fullname,
+            'first_name': first_name,
+            'last_name': last_name,
+        }
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        return self.get_json('http://api.deezer.com/user/me', params={
-            'access_token': access_token
-        })
+        return self.get_json(
+            'http://api.deezer.com/user/me', params={'access_token': access_token}
+        )

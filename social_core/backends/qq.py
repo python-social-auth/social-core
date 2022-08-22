@@ -21,7 +21,7 @@ class QQOAuth2(BaseOAuth2):
     EXTRA_DATA = [
         ('nickname', 'username'),
         ('figureurl_qq_1', 'profile_image_url'),
-        ('gender', 'gender')
+        ('gender', 'gender'),
     ]
 
     def get_user_details(self, response):
@@ -43,13 +43,11 @@ class QQOAuth2(BaseOAuth2):
             'username': username,
             'fullname': fullname,
             'first_name': first_name,
-            'last_name': last_name
+            'last_name': last_name,
         }
 
     def get_openid(self, access_token):
-        response = self.request(self.OPENID_URL, params={
-            'access_token': access_token
-        })
+        response = self.request(self.OPENID_URL, params={'access_token': access_token})
         content = response.content.decode()
         data = json.loads(content[10:-3])
         return data['openid']
@@ -57,11 +55,12 @@ class QQOAuth2(BaseOAuth2):
     def user_data(self, access_token, *args, **kwargs):
         openid = self.get_openid(access_token)
         response = self.get_json(
-            'https://graph.qq.com/user/get_user_info', params={
+            'https://graph.qq.com/user/get_user_info',
+            params={
                 'access_token': access_token,
                 'oauth_consumer_key': self.setting('KEY'),
-                'openid': openid
-            }
+                'openid': openid,
+            },
         )
         response['openid'] = openid
         return response

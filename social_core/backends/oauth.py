@@ -3,11 +3,21 @@ from urllib.parse import unquote, urlencode
 from oauthlib.oauth1 import SIGNATURE_TYPE_AUTH_HEADER
 from requests_oauthlib import OAuth1
 
-from ..exceptions import (AuthCanceled, AuthFailed, AuthMissingParameter,
-                          AuthStateForbidden, AuthStateMissing, AuthTokenError,
-                          AuthUnknownError)
-from ..utils import (constant_time_compare, handle_http_errors, parse_qs,
-                     url_add_parameters)
+from ..exceptions import (
+    AuthCanceled,
+    AuthFailed,
+    AuthMissingParameter,
+    AuthStateForbidden,
+    AuthStateMissing,
+    AuthTokenError,
+    AuthUnknownError,
+)
+from ..utils import (
+    constant_time_compare,
+    handle_http_errors,
+    parse_qs,
+    url_add_parameters,
+)
 from .base import BaseAuth
 
 
@@ -24,6 +34,7 @@ class OAuthAuth(BaseAuth):
         AUTHORIZATION_URL       Authorization service url
         ACCESS_TOKEN_URL        Access token URL
     """
+
     AUTHORIZATION_URL = ''
     ACCESS_TOKEN_URL = ''
     ACCESS_TOKEN_METHOD = 'GET'
@@ -40,8 +51,9 @@ class OAuthAuth(BaseAuth):
         """Return access_token and extra defined names to store in
         extra_data field"""
         data = super().extra_data(user, uid, response, details, *args, **kwargs)
-        data['access_token'] = response.get('access_token', '') or \
-            kwargs.get('access_token')
+        data['access_token'] = response.get('access_token', '') or kwargs.get(
+            'access_token'
+        )
         return data
 
     def state_token(self):
@@ -68,8 +80,7 @@ class OAuthAuth(BaseAuth):
         return self.strategy.session_get(self.name + '_state')
 
     def get_request_state(self):
-        request_state = self.data.get('state') or \
-                        self.data.get('redirect_state')
+        request_state = self.data.get('state') or self.data.get('redirect_state')
         if request_state and isinstance(request_state, list):
             request_state = request_state[0]
         return request_state
@@ -138,10 +149,14 @@ class OAuthAuth(BaseAuth):
             url = self.revoke_token_url(token, uid)
             params = self.revoke_token_params(token, uid)
             headers = self.revoke_token_headers(token, uid)
-            data = urlencode(params) if self.REVOKE_TOKEN_METHOD != 'GET' \
-                else None
-            response = self.request(url, params=params, headers=headers,
-                                    data=data, method=self.REVOKE_TOKEN_METHOD)
+            data = urlencode(params) if self.REVOKE_TOKEN_METHOD != 'GET' else None
+            response = self.request(
+                url,
+                params=params,
+                headers=headers,
+                data=data,
+                method=self.REVOKE_TOKEN_METHOD,
+            )
             return self.process_revoke_token_response(response)
 
 
@@ -153,6 +168,7 @@ class BaseOAuth1(OAuthAuth):
         REQUEST_TOKEN_URL       Request token URL
 
     """
+
     REQUEST_TOKEN_URL = ''
     REQUEST_TOKEN_METHOD = 'GET'
     OAUTH_TOKEN_PARAMETER_NAME = 'oauth_token'
@@ -208,8 +224,9 @@ class BaseOAuth1(OAuthAuth):
             if not isinstance(utoken, dict):
                 utoken = parse_qs(utoken)
             if utoken.get(self.OAUTH_TOKEN_PARAMETER_NAME) == data_token:
-                self.strategy.session_set(name, list(set(unauthed_tokens) -
-                                                     {orig_utoken}))
+                self.strategy.session_set(
+                    name, list(set(unauthed_tokens) - {orig_utoken})
+                )
                 token = utoken
                 break
         else:
@@ -237,12 +254,11 @@ class BaseOAuth1(OAuthAuth):
             self.REQUEST_TOKEN_URL,
             params=params,
             auth=OAuth1(key, secret, callback_uri=self.get_redirect_uri(state)),
-            method=self.REQUEST_TOKEN_METHOD
+            method=self.REQUEST_TOKEN_METHOD,
         )
         content = response.content
         if response.encoding or response.apparent_encoding:
-            content = content.decode(response.encoding or
-                                     response.apparent_encoding)
+            content = content.decode(response.encoding or response.apparent_encoding)
         else:
             content = response.content.decode()
         return content
@@ -260,8 +276,9 @@ class BaseOAuth1(OAuthAuth):
         params[self.REDIRECT_URI_PARAMETER_NAME] = self.get_redirect_uri(state)
         return f'{self.authorization_url()}?{urlencode(params)}'
 
-    def oauth_auth(self, token=None, oauth_verifier=None,
-                   signature_type=SIGNATURE_TYPE_AUTH_HEADER):
+    def oauth_auth(
+        self, token=None, oauth_verifier=None, signature_type=SIGNATURE_TYPE_AUTH_HEADER
+    ):
         key, secret = self.get_key_and_secret()
         oauth_verifier = oauth_verifier or self.data.get('oauth_verifier')
         if token:
@@ -275,23 +292,29 @@ class BaseOAuth1(OAuthAuth):
             resource_owner_key = None
             resource_owner_secret = None
         state = self.get_or_create_state()
-        return OAuth1(key, secret,
-                      resource_owner_key=resource_owner_key,
-                      resource_owner_secret=resource_owner_secret,
-                      callback_uri=self.get_redirect_uri(state),
-                      verifier=oauth_verifier,
-                      signature_type=signature_type)
+        return OAuth1(
+            key,
+            secret,
+            resource_owner_key=resource_owner_key,
+            resource_owner_secret=resource_owner_secret,
+            callback_uri=self.get_redirect_uri(state),
+            verifier=oauth_verifier,
+            signature_type=signature_type,
+        )
 
     def oauth_request(self, token, url, params=None, method='GET'):
         """Generate OAuth request, setups callback url"""
-        return self.request(url, method=method, params=params,
-                            auth=self.oauth_auth(token))
+        return self.request(
+            url, method=method, params=params, auth=self.oauth_auth(token)
+        )
 
     def access_token(self, token):
         """Return request for access token value"""
-        return self.get_querystring(self.access_token_url(),
-                                    auth=self.oauth_auth(token),
-                                    method=self.ACCESS_TOKEN_METHOD)
+        return self.get_querystring(
+            self.access_token_url(),
+            auth=self.oauth_auth(token),
+            method=self.ACCESS_TOKEN_METHOD,
+        )
 
 
 class BaseOAuth2(OAuthAuth):
@@ -300,6 +323,7 @@ class BaseOAuth2(OAuthAuth):
     OAuth2 details at:
         https://datatracker.ietf.org/doc/html/rfc6749
     """
+
     REFRESH_TOKEN_URL = None
     REFRESH_TOKEN_METHOD = 'POST'
     RESPONSE_TYPE = 'code'
@@ -312,10 +336,7 @@ class BaseOAuth2(OAuthAuth):
 
     def auth_params(self, state=None):
         client_id, client_secret = self.get_key_and_secret()
-        params = {
-            'client_id': client_id,
-            'redirect_uri': self.get_redirect_uri(state)
-        }
+        params = {'client_id': client_id, 'redirect_uri': self.get_redirect_uri(state)}
         if self.STATE_PARAMETER and state:
             params['state'] = state
         if self.RESPONSE_TYPE:
@@ -339,14 +360,16 @@ class BaseOAuth2(OAuthAuth):
         params = {
             'grant_type': 'authorization_code',  # request auth code
             'code': self.data.get('code', ''),  # server response code
-            'redirect_uri': self.get_redirect_uri(state)
+            'redirect_uri': self.get_redirect_uri(state),
         }
         if not self.use_basic_auth():
             client_id, client_secret = self.get_key_and_secret()
-            params.update({
-                'client_id': client_id,
-                'client_secret': client_secret,
-            })
+            params.update(
+                {
+                    'client_id': client_id,
+                    'client_secret': client_secret,
+                }
+            )
         return params
 
     def auth_complete_credentials(self):
@@ -355,15 +378,16 @@ class BaseOAuth2(OAuthAuth):
         return None
 
     def auth_headers(self):
-        return {'Content-Type': 'application/x-www-form-urlencoded',
-                'Accept': 'application/json'}
+        return {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'application/json',
+        }
 
     def extra_data(self, user, uid, response, details=None, *args, **kwargs):
         """Return access_token, token_type, and extra defined names to store in
-            extra_data field"""
+        extra_data field"""
         data = super().extra_data(user, uid, response, details=details, *args, **kwargs)
-        data['token_type'] = response.get('token_type') or \
-            kwargs.get('token_type')
+        data['token_type'] = response.get('token_type') or kwargs.get('token_type')
         return data
 
     def request_access_token(self, *args, **kwargs):
@@ -373,8 +397,7 @@ class BaseOAuth2(OAuthAuth):
         if data.get('error'):
             if 'denied' in data['error'] or 'cancelled' in data['error']:
                 raise AuthCanceled(self, data.get('error_description', ''))
-            raise AuthFailed(self, data.get('error_description') or
-                             data['error'])
+            raise AuthFailed(self, data.get('error_description') or data['error'])
         elif 'denied' in data:
             raise AuthCanceled(self, data['denied'])
 
@@ -395,11 +418,12 @@ class BaseOAuth2(OAuthAuth):
             params=params,
             headers=self.auth_headers(),
             auth=self.auth_complete_credentials(),
-            method=self.ACCESS_TOKEN_METHOD
+            method=self.ACCESS_TOKEN_METHOD,
         )
         self.process_error(response)
-        return self.do_auth(response['access_token'], response=response,
-                            *args, **kwargs)
+        return self.do_auth(
+            response['access_token'], response=response, *args, **kwargs
+        )
 
     @handle_http_errors
     def do_auth(self, access_token, *args, **kwargs):
@@ -418,7 +442,7 @@ class BaseOAuth2(OAuthAuth):
             'refresh_token': token,
             'grant_type': 'refresh_token',
             'client_id': client_id,
-            'client_secret': client_secret
+            'client_secret': client_secret,
         }
 
     def process_refresh_token_response(self, response, *args, **kwargs):
@@ -429,9 +453,7 @@ class BaseOAuth2(OAuthAuth):
         url = self.refresh_token_url()
         method = self.REFRESH_TOKEN_METHOD
         key = 'params' if method == 'GET' else 'data'
-        request_args = {'headers': self.auth_headers(),
-                        'method': method,
-                        key: params}
+        request_args = {'headers': self.auth_headers(), 'method': method, key: params}
         request = self.request(url, **request_args)
         return self.process_refresh_token_response(request, *args, **kwargs)
 

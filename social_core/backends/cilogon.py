@@ -24,18 +24,17 @@ class CILogonOAuth2(BaseOAuth2):
             return self.get_json(url, method='POST', data=data)
         except ValueError:
             return None
-    
+
     def get_user_id(self, details, response):
         """Return user unique id provided by service
-           In this case it is a combination of the `sub`
-           and `iss` respective values."""
+        In this case it is a combination of the `sub`
+        and `iss` respective values."""
         return response.get('sub', '') + ' ' + response.get('iss', '')
 
     def get_user_details(self, response):
         """Return user details from CI Logon service"""
         fullname, first_name, last_name = self.get_user_names(
-            first_name=response.get('given_name'),
-            last_name=response.get('family_name')
+            first_name=response.get('given_name'), last_name=response.get('family_name')
         )
         return {
             'username': response.get('email'),

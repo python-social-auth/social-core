@@ -14,10 +14,7 @@ class SketchfabOAuth2(BaseOAuth2):
     ACCESS_TOKEN_METHOD = 'POST'
     REDIRECT_STATE = False
     REQUIRES_EMAIL_VALIDATION = False
-    EXTRA_DATA = [
-        ('username', 'username'),
-        ('apiToken', 'apiToken')
-    ]
+    EXTRA_DATA = [('username', 'username'), ('apiToken', 'apiToken')]
 
     def get_user_details(self, response):
         """Return user details from Sketchfab account"""
@@ -26,14 +23,17 @@ class SketchfabOAuth2(BaseOAuth2):
         username = user_data['username']
         name = user_data.get('displayName', '')
         fullname, first_name, last_name = self.get_user_names(name)
-        return {'username': username,
-                'fullname': fullname,
-                'first_name': first_name,
-                'last_name': last_name,
-                'email': email}
+        return {
+            'username': username,
+            'fullname': fullname,
+            'first_name': first_name,
+            'last_name': last_name,
+            'email': email,
+        }
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        return self.get_json('https://sketchfab.com/v2/users/me', headers={
-            'Authorization': f'Bearer {access_token}'
-        })
+        return self.get_json(
+            'https://sketchfab.com/v2/users/me',
+            headers={'Authorization': f'Bearer {access_token}'},
+        )

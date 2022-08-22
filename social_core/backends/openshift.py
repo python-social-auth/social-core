@@ -26,8 +26,7 @@ class OpenshiftOAuth2(BaseOAuth2):
         """Return user details from openshift account"""
         username = response['metadata']['name']
         email = response['metadata']['name']
-        return {'username': username,
-                'email': email}
+        return {'username': username, 'email': email}
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
@@ -35,5 +34,5 @@ class OpenshiftOAuth2(BaseOAuth2):
 
         return requests.get(
             urljoin(append_slash(self.setting('URL')), 'oapi/v1/users/~'),
-            headers=headers
+            headers=headers,
         ).json()

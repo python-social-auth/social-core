@@ -3,8 +3,9 @@ from .oauth import BaseOAuth2
 
 class ChangeTipOAuth2(BaseOAuth2):
     """ChangeTip OAuth authentication backend
-       https://www.changetip.com/api
+    https://www.changetip.com/api
     """
+
     name = 'changetip'
     AUTHORIZATION_URL = 'https://www.changetip.com/o/authorize/'
     ACCESS_TOKEN_URL = 'https://www.changetip.com/o/token/'
@@ -22,6 +23,6 @@ class ChangeTipOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        return self.get_json('https://api.changetip.com/v2/me/', params={
-            'access_token': access_token
-        })
+        return self.get_json(
+            'https://api.changetip.com/v2/me/', params={'access_token': access_token}
+        )

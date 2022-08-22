@@ -7,7 +7,8 @@ from .oauth import BaseOAuth2
 
 
 class BattleNetOAuth2(BaseOAuth2):
-    """ battle.net Oauth2 backend"""
+    """battle.net Oauth2 backend"""
+
     name = 'battlenet-oauth2'
     ID_KEY = 'accountId'
     REDIRECT_STATE = False
@@ -19,7 +20,7 @@ class BattleNetOAuth2(BaseOAuth2):
     EXTRA_DATA = [
         ('refresh_token', 'refresh_token', True),
         ('expires_in', 'expires'),
-        ('token_type', 'token_type', True)
+        ('token_type', 'token_type', True),
     ]
 
     def get_characters(self, access_token):
@@ -32,18 +33,17 @@ class BattleNetOAuth2(BaseOAuth2):
             params['locale'] = self.setting('API_LOCALE')
 
         response = self.get_json(
-            'https://eu.api.battle.net/wow/user/characters',
-            params=params
+            'https://eu.api.battle.net/wow/user/characters', params=params
         )
         return response.get('characters') or []
 
     def get_user_details(self, response):
-        """ Return user details from Battle.net account """
+        """Return user details from Battle.net account"""
         return {'battletag': response.get('battletag')}
 
     def user_data(self, access_token, *args, **kwargs):
-        """ Loads user data from service """
+        """Loads user data from service"""
         return self.get_json(
             'https://eu.api.battle.net/account/user',
-            params={'access_token': access_token}
+            params={'access_token': access_token},
         )

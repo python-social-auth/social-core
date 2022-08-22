@@ -62,8 +62,12 @@ _PUBLIC_KEY = """
 _KEY = 'example'
 _SECRET = '1234abcd-1234-abcd-1234-abcd1234adcd'
 
-_AUTHORIZATION_URL = 'https://sso.example.com/auth/realms/example/protocol/openid-connect/auth'
-_ACCESS_TOKEN_URL = 'https://sso.example.com/auth/realms/example/protocol/openid-connect/token'
+_AUTHORIZATION_URL = (
+    'https://sso.example.com/auth/realms/example/protocol/openid-connect/auth'
+)
+_ACCESS_TOKEN_URL = (
+    'https://sso.example.com/auth/realms/example/protocol/openid-connect/token'
+)
 
 _ALGORITHM = 'RS256'
 _AUTH_TIME = int(time.time())
@@ -73,7 +77,6 @@ _PAYLOAD = {
     'name': 'John Doe',
     'given_name': 'John',
     'family_name': 'Doe',
-
     'iss': 'https://sso.example.com',
     'sub': 'john.doe',
     'aud': _KEY,
@@ -93,11 +96,13 @@ def _decode(token, key=_PUBLIC_KEY, algorithms=[_ALGORITHM], audience=_KEY):
 class KeycloakOAuth2Test(OAuth2Test):
     backend_path = 'social_core.backends.keycloak.KeycloakOAuth2'
     expected_username = 'john.doe'
-    access_token_body = json.dumps({
-        'token_type': 'Bearer',
-        'id_token': _encode(_PAYLOAD),
-        'access_token': _encode(_PAYLOAD),
-    })
+    access_token_body = json.dumps(
+        {
+            'token_type': 'Bearer',
+            'id_token': _encode(_PAYLOAD),
+            'access_token': _encode(_PAYLOAD),
+        }
+    )
 
     def extra_settings(self):
         return {

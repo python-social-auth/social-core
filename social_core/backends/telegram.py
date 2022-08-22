@@ -14,8 +14,7 @@ class TelegramAuth(BaseAuth):
     def verify_data(self, response):
         bot_token = self.setting('BOT_TOKEN')
         if bot_token is None:
-            raise AuthMissingParameter('telegram',
-                                       'SOCIAL_AUTH_TELEGRAM_BOT_TOKEN')
+            raise AuthMissingParameter('telegram', 'SOCIAL_AUTH_TELEGRAM_BOT_TOKEN')
 
         received_hash_string = response.get('hash')
         auth_date = response.get('auth_date')
@@ -23,13 +22,12 @@ class TelegramAuth(BaseAuth):
         if received_hash_string is None or auth_date is None:
             raise AuthMissingParameter('telegram', 'hash or auth_date')
 
-        data_check_string = [f'{k}={v}'
-                             for k, v in response.items() if k != 'hash']
+        data_check_string = [f'{k}={v}' for k, v in response.items() if k != 'hash']
         data_check_string = '\n'.join(sorted(data_check_string))
         secret_key = hashlib.sha256(bot_token.encode()).digest()
-        built_hash = hmac.new(secret_key,
-                              msg=data_check_string.encode(),
-                              digestmod=hashlib.sha256).hexdigest()
+        built_hash = hmac.new(
+            secret_key, msg=data_check_string.encode(), digestmod=hashlib.sha256
+        ).hexdigest()
         current_timestamp = int(time.time())
         auth_timestamp = int(auth_date)
         if current_timestamp - auth_timestamp > 86400:
@@ -48,7 +46,7 @@ class TelegramAuth(BaseAuth):
             'username': response.get('username') or response[self.ID_KEY],
             'first_name': first_name,
             'last_name': last_name,
-            'fullname': fullname
+            'fullname': fullname,
         }
 
     @handle_http_errors

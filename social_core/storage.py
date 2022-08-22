@@ -43,15 +43,13 @@ class UserMixin:
         return self.access_token
 
     def refresh_token(self, strategy, *args, **kwargs):
-        token = self.extra_data.get('refresh_token') or \
-                self.extra_data.get('access_token')
+        token = self.extra_data.get('refresh_token') or self.extra_data.get(
+            'access_token'
+        )
         backend = self.get_backend_instance(strategy)
         if token and backend and hasattr(backend, 'refresh_token'):
             response = backend.refresh_token(token, *args, **kwargs)
-            extra_data = backend.extra_data(self,
-                                            self.uid,
-                                            response,
-                                            self.extra_data)
+            extra_data = backend.extra_data(self, self.uid, response, self.extra_data)
             if self.set_extra_data(extra_data):
                 self.save()
 
@@ -93,8 +91,10 @@ class UserMixin:
     def access_token_expired(self):
         """Return true / false if access token is already expired"""
         expiration = self.expiration_timedelta()
-        return expiration and \
-            expiration.total_seconds() <= self.ACCESS_TOKEN_EXPIRED_THRESHOLD
+        return (
+            expiration
+            and expiration.total_seconds() <= self.ACCESS_TOKEN_EXPIRED_THRESHOLD
+        )
 
     def get_access_token(self, strategy):
         """Returns a valid access token."""
@@ -189,6 +189,7 @@ class UserMixin:
 
 class NonceMixin:
     """One use numbers"""
+
     server_url = ''
     timestamp = 0
     salt = ''
@@ -211,6 +212,7 @@ class NonceMixin:
 
 class AssociationMixin:
     """OpenId account association"""
+
     server_url = ''
     handle = ''
     secret = ''
@@ -223,19 +225,24 @@ class AssociationMixin:
         kwargs = {'server_url': server_url}
         if handle is not None:
             kwargs['handle'] = handle
-        return sorted((
-            (assoc.id, cls.openid_association(assoc))
-            for assoc in cls.get(**kwargs)
-        ), key=lambda x: x[1].issued, reverse=True)
+        return sorted(
+            ((assoc.id, cls.openid_association(assoc)) for assoc in cls.get(**kwargs)),
+            key=lambda x: x[1].issued,
+            reverse=True,
+        )
 
     @classmethod
     def openid_association(cls, assoc):
         secret = assoc.secret
         if not isinstance(secret, bytes):
             secret = secret.encode()
-        return OpenIdAssociation(assoc.handle, base64.decodebytes(secret),
-                                 assoc.issued, assoc.lifetime,
-                                 assoc.assoc_type)
+        return OpenIdAssociation(
+            assoc.handle,
+            base64.decodebytes(secret),
+            assoc.issued,
+            assoc.lifetime,
+            assoc.assoc_type,
+        )
 
     @classmethod
     def store(cls, server_url, association):

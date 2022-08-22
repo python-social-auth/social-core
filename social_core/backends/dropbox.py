@@ -17,16 +17,18 @@ class DropboxOAuth2V2(BaseOAuth2):
     def get_user_details(self, response):
         """Return user details from Dropbox account"""
         name = response.get('name')
-        return {'username': str(response.get('account_id')),
-                'email': response.get('email'),
-                'fullname': name.get('display_name'),
-                'first_name': name.get('given_name'),
-                'last_name': name.get('surname')}
+        return {
+            'username': str(response.get('account_id')),
+            'email': response.get('email'),
+            'fullname': name.get('display_name'),
+            'first_name': name.get('given_name'),
+            'last_name': name.get('surname'),
+        }
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
         return self.get_json(
             'https://api.dropboxapi.com/2/users/get_current_account',
             headers={'Authorization': f'Bearer {access_token}'},
-            method='POST'
+            method='POST',
         )

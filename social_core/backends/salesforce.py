@@ -5,9 +5,9 @@ from .oauth import BaseOAuth2
 
 class SalesforceOAuth2(BaseOAuth2):
     """Salesforce OAuth2 authentication backend"""
+
     name = 'salesforce-oauth2'
-    AUTHORIZATION_URL = \
-        'https://login.salesforce.com/services/oauth2/authorize'
+    AUTHORIZATION_URL = 'https://login.salesforce.com/services/oauth2/authorize'
     ACCESS_TOKEN_URL = 'https://login.salesforce.com/services/oauth2/token'
     REVOKE_TOKEN_URL = 'https://login.salesforce.com/services/oauth2/revoke'
     ACCESS_TOKEN_METHOD = 'POST'
@@ -28,7 +28,7 @@ class SalesforceOAuth2(BaseOAuth2):
             'email': response.get('email') or '',
             'first_name': response.get('first_name'),
             'last_name': response.get('last_name'),
-            'fullname': response.get('display_name')
+            'fullname': response.get('display_name'),
         }
 
     def user_data(self, access_token, *args, **kwargs):
@@ -43,6 +43,7 @@ class SalesforceOAuth2(BaseOAuth2):
 
 class SalesforceOAuth2Sandbox(SalesforceOAuth2):
     """Salesforce OAuth2 authentication testing backend"""
+
     name = 'salesforce-oauth2-sandbox'
     AUTHORIZATION_URL = 'https://test.salesforce.com/services/oauth2/authorize'
     ACCESS_TOKEN_URL = 'https://test.salesforce.com/services/oauth2/token'

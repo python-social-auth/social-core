@@ -20,14 +20,14 @@ class InstagramOAuth2(BaseOAuth2):
         user = response.get('user') or {}
         username = user['username']
         email = user.get('email', '')
-        fullname, first_name, last_name = self.get_user_names(
-            user.get('full_name', '')
-        )
-        return {'username': username,
-                'fullname': fullname,
-                'first_name': first_name,
-                'last_name': last_name,
-                'email': email}
+        fullname, first_name, last_name = self.get_user_names(user.get('full_name', ''))
+        return {
+            'username': username,
+            'fullname': fullname,
+            'first_name': first_name,
+            'last_name': last_name,
+            'email': email,
+        }
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
@@ -36,8 +36,7 @@ class InstagramOAuth2(BaseOAuth2):
         # In fact there are not very many of them.
         fields = 'id,username'
         params = {'access_token': access_token, 'fields': fields}
-        response = self.get_json('https://graph.instagram.com/me',
-                             params=params)
+        response = self.get_json('https://graph.instagram.com/me', params=params)
         return {'user': response}
 
     def auth_html(self):

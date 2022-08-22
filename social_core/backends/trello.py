@@ -8,6 +8,7 @@ from .oauth import BaseOAuth1
 class TrelloOAuth(BaseOAuth1):
 
     """Trello OAuth authentication backend"""
+
     name = 'trello'
     ID_KEY = 'username'
     AUTHORIZATION_URL = 'https://trello.com/1/OAuthAuthorizeToken'
@@ -17,19 +18,19 @@ class TrelloOAuth(BaseOAuth1):
     EXTRA_DATA = [
         ('username', 'username'),
         ('email', 'email'),
-        ('fullName', 'fullName')
+        ('fullName', 'fullName'),
     ]
 
     def get_user_details(self, response):
         """Return user details from Trello account"""
-        fullname, first_name, last_name = self.get_user_names(
-            response.get('fullName')
-        )
-        return {'username': response.get('username'),
-                'email': response.get('email'),
-                'fullname': fullname,
-                'first_name': first_name,
-                'last_name': last_name}
+        fullname, first_name, last_name = self.get_user_names(response.get('fullName'))
+        return {
+            'username': response.get('username'),
+            'email': response.get('email'),
+            'fullname': fullname,
+            'first_name': first_name,
+            'last_name': last_name,
+        }
 
     def user_data(self, access_token):
         """Return user data provided"""
@@ -43,5 +44,5 @@ class TrelloOAuth(BaseOAuth1):
         return {
             'name': self.setting('APP_NAME', ''),
             # trello default expiration is '30days'
-            'expiration': self.setting('EXPIRATION', 'never')
+            'expiration': self.setting('EXPIRATION', 'never'),
         }

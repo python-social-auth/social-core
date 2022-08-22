@@ -32,15 +32,19 @@ class StravaOAuth(BaseOAuth2):
             first_name=response['athlete'].get('firstname', ''),
             last_name=response['athlete'].get('lastname', ''),
         )
-        return {'username': username,
-                'fullname': fullname,
-                'first_name': first_name,
-                'last_name': last_name}
+        return {
+            'username': username,
+            'fullname': fullname,
+            'first_name': first_name,
+            'last_name': last_name,
+        }
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        return self.get_json('https://www.strava.com/api/v3/athlete',
-                             params={'access_token': access_token})
+        return self.get_json(
+            'https://www.strava.com/api/v3/athlete',
+            params={'access_token': access_token},
+        )
 
     def revoke_token_params(self, token, uid):
         params = super().revoke_token_params(token, uid)

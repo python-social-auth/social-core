@@ -15,11 +15,14 @@ class DripOAuth(BaseOAuth2):
         return details['email']
 
     def get_user_details(self, response):
-        return {'email': response['users'][0]['email'],
-                'fullname': response['users'][0]['name'],
-                'username': response['users'][0]['email']}
+        return {
+            'email': response['users'][0]['email'],
+            'fullname': response['users'][0]['name'],
+            'username': response['users'][0]['email'],
+        }
 
     def user_data(self, access_token, *args, **kwargs):
-        return self.get_json('https://api.getdrip.com/v2/user', headers={
-            'Authorization': 'Bearer %s' % access_token
-        })
+        return self.get_json(
+            'https://api.getdrip.com/v2/user',
+            headers={'Authorization': 'Bearer %s' % access_token},
+        )

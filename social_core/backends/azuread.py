@@ -55,7 +55,7 @@ class AzureADOAuth2(BaseOAuth2):
         ('not_before', 'not_before'),
         ('given_name', 'first_name'),
         ('family_name', 'last_name'),
-        ('token_type', 'token_type')
+        ('token_type', 'token_type'),
     ]
 
     @property
@@ -68,7 +68,9 @@ class AzureADOAuth2(BaseOAuth2):
 
     @property
     def base_url(self):
-        return self.BASE_URL.format(authority_host=self.authority_host, tenant_id=self.tenant_id)
+        return self.BASE_URL.format(
+            authority_host=self.authority_host, tenant_id=self.tenant_id
+        )
 
     def authorization_url(self):
         return self.AUTHORIZATION_URL.format(base_url=self.base_url)
@@ -85,13 +87,15 @@ class AzureADOAuth2(BaseOAuth2):
         fullname, first_name, last_name = (
             response.get('name', ''),
             response.get('given_name', ''),
-            response.get('family_name', '')
+            response.get('family_name', ''),
         )
-        return {'username': fullname,
-                'email': response.get('email', response.get('upn')),
-                'fullname': fullname,
-                'first_name': first_name,
-                'last_name': last_name}
+        return {
+            'username': fullname,
+            'email': response.get('email', response.get('upn')),
+            'fullname': fullname,
+            'first_name': first_name,
+            'last_name': last_name,
+        }
 
     def user_data(self, access_token, *args, **kwargs):
         response = kwargs.get('response')
@@ -101,9 +105,7 @@ class AzureADOAuth2(BaseOAuth2):
             id_token = access_token
 
         try:
-            decoded_id_token = jwt.decode(id_token, options={
-                'verify_signature': False
-            })
+            decoded_id_token = jwt.decode(id_token, options={'verify_signature': False})
         except (jwt.DecodeError, jwt.ExpiredSignatureError) as de:
             raise AuthTokenError(self, de)
         return decoded_id_token
@@ -130,7 +132,7 @@ class AzureADOAuth2(BaseOAuth2):
             'client_secret': self.setting('SECRET'),
             'refresh_token': token,
             'grant_type': 'refresh_token',
-            'resource': self.setting('RESOURCE')
+            'resource': self.setting('RESOURCE'),
         }
 
     def get_auth_token(self, user_id):

@@ -9,6 +9,7 @@ from .oauth import BaseOAuth2
 
 class RedditOAuth2(BaseOAuth2):
     """Reddit OAuth2 authentication backend"""
+
     name = 'reddit'
     AUTHORIZATION_URL = 'https://ssl.reddit.com/api/v1/authorize'
     ACCESS_TOKEN_URL = 'https://ssl.reddit.com/api/v1/access_token'
@@ -24,25 +25,30 @@ class RedditOAuth2(BaseOAuth2):
         ('link_karma', 'link_karma'),
         ('comment_karma', 'comment_karma'),
         ('refresh_token', 'refresh_token'),
-        ('expires_in', 'expires')
+        ('expires_in', 'expires'),
     ]
 
     def get_user_details(self, response):
         """Return user details from Reddit account"""
-        return {'username': response.get('name'),
-                'email': '', 'fullname': '',
-                'first_name': '', 'last_name': ''}
+        return {
+            'username': response.get('name'),
+            'email': '',
+            'fullname': '',
+            'first_name': '',
+            'last_name': '',
+        }
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
         return self.get_json(
             'https://oauth.reddit.com/api/v1/me.json',
-            headers={'Authorization': 'bearer ' + access_token}
+            headers={'Authorization': 'bearer ' + access_token},
         )
 
     def auth_headers(self):
         return {
-            'Authorization': b'Basic ' + base64.urlsafe_b64encode(
+            'Authorization': b'Basic '
+            + base64.urlsafe_b64encode(
                 '{}:{}'.format(*self.get_key_and_secret()).encode()
             )
         }

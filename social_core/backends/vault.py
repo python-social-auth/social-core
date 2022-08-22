@@ -14,4 +14,5 @@ class VaultOpenIdConnect(OpenIdConnectAuth):
 
     This is an alias for the generic OIDC backend
     """
+
     name = 'vault'

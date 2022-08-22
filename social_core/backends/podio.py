@@ -7,6 +7,7 @@ from .oauth import BaseOAuth2
 
 class PodioOAuth2(BaseOAuth2):
     """Podio OAuth authentication backend"""
+
     name = 'podio'
     AUTHORIZATION_URL = 'https://podio.com/oauth/authorize'
     ACCESS_TOKEN_URL = 'https://podio.com/oauth/token'
@@ -34,6 +35,7 @@ class PodioOAuth2(BaseOAuth2):
         }
 
     def user_data(self, access_token, *args, **kwargs):
-        return self.get_json('https://api.podio.com/user/status', headers={
-            'Authorization': 'OAuth2 ' + access_token
-        })
+        return self.get_json(
+            'https://api.podio.com/user/status',
+            headers={'Authorization': 'OAuth2 ' + access_token},
+        )
