@@ -16,13 +16,13 @@ jobs:
         with:
           python-version: 3.8
 
-      - name: Install flake
+      - name: Install pre-commit
         run: |
           python -m pip install --upgrade pip wheel
-          pip install flake8 flake8-quotes
+          pip install -r requirements-dev.txt
 
       - name: Run flake8
         run: |
           echo "::add-matcher::.github/matchers/flake8.json"
-          flake8
+          pre-commit run flake8 --all-files
           echo "::remove-matcher owner=flake8::"
