@@ -1,4 +1,4 @@
-version: "3.7"
+version: '3.7'
 
 services:
   social-release:
@@ -7,11 +7,11 @@ services:
       context: .
       dockerfile: ./files/release/Dockerfile
     environment:
-        - PROJECT_NAME=social-auth-core
+    - PROJECT_NAME=social-auth-core
     env_file:
-      - ./files/local.env
+    - ./files/local.env
     volumes:
-      - .:/code
+    - .:/code
 
   social-tests:
     image: omab/social-core-tests
@@ -19,8 +19,8 @@ services:
       context: .
       dockerfile: ./files/tests/Dockerfile
       args:
-        - PYTHON_VERSIONS=3.6.12 3.7.9 3.8.7 3.9.1
+      - PYTHON_VERSIONS=3.6.12 3.7.9 3.8.7 3.9.1
     environment:
-        - PYTHON_VERSIONS=3.6.12 3.7.9 3.8.7 3.9.1
+    - PYTHON_VERSIONS=3.6.12 3.7.9 3.8.7 3.9.1
     volumes:
-      - .:/code
+    - .:/code

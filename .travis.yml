@@ -2,17 +2,17 @@ language: python
 sudo: false
 matrix:
   include:
-    - python: 3.6
-    - python: 3.7
-    - python: 3.8
-    - python: 3.9
+  - python: 3.6
+  - python: 3.7
+  - python: 3.8
+  - python: 3.9
   fast_finish: true
 addons:
   apt:
     packages:
-      - libxmlsec1-dev
-      - swig
+    - libxmlsec1-dev
+    - swig
 install:
-  - pip install tox tox-travis -U pip
+- pip install tox tox-travis -U pip
 script:
-  - tox
+- tox
