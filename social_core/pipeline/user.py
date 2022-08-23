@@ -45,16 +45,18 @@ def get_username(strategy, details, backend, user=None, *args, **kwargs):
         else:
             username = uuid4().hex
 
-        short_username = (
-            username[: max_length - uuid_length] if max_length is not None else username
-        )
+        short_username = (username[:max_length - uuid_length]
+                          if max_length is not None
+                          else username)
         final_username = slug_func(clean_func(username[:max_length]))
 
         # Generate a unique username for current user using username
         # as base but adding a unique hash at the end. Original
         # username is cut to avoid any field max_length.
         # The final_username may be empty and will skip the loop.
-        while not final_username or storage.user.user_exists(username=final_username):
+        while not final_username or storage.user.user_exists(
+                username=final_username
+        ):
             username = short_username + uuid4().hex[:uuid_length]
             final_username = slug_func(clean_func(username[:max_length]))
     else:
@@ -66,14 +68,15 @@ def create_user(strategy, details, backend, user=None, *args, **kwargs):
     if user:
         return {'is_new': False}
 
-    fields = {
-        name: kwargs.get(name, details.get(name))
-        for name in backend.setting('USER_FIELDS', USER_FIELDS)
-    }
+    fields = {name: kwargs.get(name, details.get(name))
+                  for name in backend.setting('USER_FIELDS', USER_FIELDS)}
     if not fields:
         return
 
-    return {'is_new': True, 'user': strategy.create_user(**fields)}
+    return {
+        'is_new': True,
+        'user': strategy.create_user(**fields)
+    }
 
 
 def user_details(strategy, details, backend, user=None, *args, **kwargs):
@@ -88,16 +91,8 @@ def user_details(strategy, details, backend, user=None, *args, **kwargs):
     if strategy.setting('NO_DEFAULT_PROTECTED_USER_FIELDS') is True:
         protected = ()
     else:
-        protected = (
-            'username',
-            'id',
-            'pk',
-            'email',
-            'password',
-            'is_active',
-            'is_staff',
-            'is_superuser',
-        )
+        protected = ('username', 'id', 'pk', 'email', 'password',
+                     'is_active', 'is_staff', 'is_superuser',)
 
     protected = protected + tuple(strategy.setting('PROTECTED_USER_FIELDS', []))
 

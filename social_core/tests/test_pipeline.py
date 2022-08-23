@@ -75,44 +75,44 @@ class EmailAsUsernameTest(BaseActionTest):
     expected_username = 'foo@bar.com'
 
     def test_email_as_username(self):
-        self.strategy.set_settings({'SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL': True})
+        self.strategy.set_settings({
+            'SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL': True
+        })
         self.do_login()
 
 
 class RandomUsernameTest(BaseActionTest):
-    user_data_body = json.dumps(
-        {
-            'id': 1,
-            'avatar_url': 'https://github.com/images/error/foobar_happy.gif',
-            'gravatar_id': 'somehexcode',
-            'url': 'https://api.github.com/users/foobar',
-            'name': 'monalisa foobar',
-            'company': 'GitHub',
-            'blog': 'https://github.com/blog',
-            'location': 'San Francisco',
-            'email': 'foo@bar.com',
-            'hireable': False,
-            'bio': 'There once was...',
-            'public_repos': 2,
-            'public_gists': 1,
-            'followers': 20,
-            'following': 0,
-            'html_url': 'https://github.com/foobar',
-            'created_at': '2008-01-14T04:33:35Z',
-            'type': 'User',
-            'total_private_repos': 100,
-            'owned_private_repos': 100,
-            'private_gists': 81,
-            'disk_usage': 10000,
-            'collaborators': 8,
-            'plan': {
-                'name': 'Medium',
-                'space': 400,
-                'collaborators': 10,
-                'private_repos': 20,
-            },
+    user_data_body = json.dumps({
+        'id': 1,
+        'avatar_url': 'https://github.com/images/error/foobar_happy.gif',
+        'gravatar_id': 'somehexcode',
+        'url': 'https://api.github.com/users/foobar',
+        'name': 'monalisa foobar',
+        'company': 'GitHub',
+        'blog': 'https://github.com/blog',
+        'location': 'San Francisco',
+        'email': 'foo@bar.com',
+        'hireable': False,
+        'bio': 'There once was...',
+        'public_repos': 2,
+        'public_gists': 1,
+        'followers': 20,
+        'following': 0,
+        'html_url': 'https://github.com/foobar',
+        'created_at': '2008-01-14T04:33:35Z',
+        'type': 'User',
+        'total_private_repos': 100,
+        'owned_private_repos': 100,
+        'private_gists': 81,
+        'disk_usage': 10000,
+        'collaborators': 8,
+        'plan': {
+            'name': 'Medium',
+            'space': 400,
+            'collaborators': 10,
+            'private_repos': 20
         }
-    )
+    })
 
     def test_random_username(self):
         self.do_login(after_complete_checks=False)
@@ -120,48 +120,44 @@ class RandomUsernameTest(BaseActionTest):
 
 class SluggedUsernameTest(BaseActionTest):
     expected_username = 'foo-bar'
-    user_data_body = json.dumps(
-        {
-            'login': 'Foo Bar',
-            'id': 1,
-            'avatar_url': 'https://github.com/images/error/foobar_happy.gif',
-            'gravatar_id': 'somehexcode',
-            'url': 'https://api.github.com/users/foobar',
-            'name': 'monalisa foobar',
-            'company': 'GitHub',
-            'blog': 'https://github.com/blog',
-            'location': 'San Francisco',
-            'email': 'foo@bar.com',
-            'hireable': False,
-            'bio': 'There once was...',
-            'public_repos': 2,
-            'public_gists': 1,
-            'followers': 20,
-            'following': 0,
-            'html_url': 'https://github.com/foobar',
-            'created_at': '2008-01-14T04:33:35Z',
-            'type': 'User',
-            'total_private_repos': 100,
-            'owned_private_repos': 100,
-            'private_gists': 81,
-            'disk_usage': 10000,
-            'collaborators': 8,
-            'plan': {
-                'name': 'Medium',
-                'space': 400,
-                'collaborators': 10,
-                'private_repos': 20,
-            },
+    user_data_body = json.dumps({
+        'login': 'Foo Bar',
+        'id': 1,
+        'avatar_url': 'https://github.com/images/error/foobar_happy.gif',
+        'gravatar_id': 'somehexcode',
+        'url': 'https://api.github.com/users/foobar',
+        'name': 'monalisa foobar',
+        'company': 'GitHub',
+        'blog': 'https://github.com/blog',
+        'location': 'San Francisco',
+        'email': 'foo@bar.com',
+        'hireable': False,
+        'bio': 'There once was...',
+        'public_repos': 2,
+        'public_gists': 1,
+        'followers': 20,
+        'following': 0,
+        'html_url': 'https://github.com/foobar',
+        'created_at': '2008-01-14T04:33:35Z',
+        'type': 'User',
+        'total_private_repos': 100,
+        'owned_private_repos': 100,
+        'private_gists': 81,
+        'disk_usage': 10000,
+        'collaborators': 8,
+        'plan': {
+            'name': 'Medium',
+            'space': 400,
+            'collaborators': 10,
+            'private_repos': 20
         }
-    )
+    })
 
     def test_random_username(self):
-        self.strategy.set_settings(
-            {
-                'SOCIAL_AUTH_CLEAN_USERNAMES': False,
-                'SOCIAL_AUTH_SLUGIFY_USERNAMES': True,
-            }
-        )
+        self.strategy.set_settings({
+            'SOCIAL_AUTH_CLEAN_USERNAMES': False,
+            'SOCIAL_AUTH_SLUGIFY_USERNAMES': True
+        })
         self.do_login()
 
 
@@ -169,7 +165,8 @@ class RepeatedUsernameTest(BaseActionTest):
     def test_random_username(self):
         User(username='foobar')
         self.do_login(after_complete_checks=False)
-        self.assertTrue(self.strategy.session_get('username').startswith('foobar'))
+        self.assertTrue(self.strategy.session_get('username')
+                                     .startswith('foobar'))
 
 
 class AssociateByEmailTest(BaseActionTest):
@@ -177,7 +174,8 @@ class AssociateByEmailTest(BaseActionTest):
         user = User(username='foobar1')
         user.email = 'foo@bar.com'
         self.do_login(after_complete_checks=False)
-        self.assertTrue(self.strategy.session_get('username').startswith('foobar'))
+        self.assertTrue(self.strategy.session_get('username')
+                                     .startswith('foobar'))
 
 
 class MultipleAccountsWithSameEmailTest(BaseActionTest):
@@ -195,16 +193,14 @@ class UserPersistsInPartialPipeline(BaseActionTest):
         user = User(username='foobar1')
         user.email = 'foo@bar.com'
 
-        self.strategy.set_settings(
-            {
-                'SOCIAL_AUTH_PIPELINE': (
-                    'social_core.pipeline.social_auth.social_details',
-                    'social_core.pipeline.social_auth.social_uid',
-                    'social_core.pipeline.social_auth.associate_by_email',
-                    'social_core.tests.pipeline.set_user_from_kwargs',
-                )
-            }
-        )
+        self.strategy.set_settings({
+            'SOCIAL_AUTH_PIPELINE': (
+                'social_core.pipeline.social_auth.social_details',
+                'social_core.pipeline.social_auth.social_uid',
+                'social_core.pipeline.social_auth.associate_by_email',
+                'social_core.tests.pipeline.set_user_from_kwargs'
+            )
+        })
 
         self.do_login(after_complete_checks=False)
 
@@ -218,16 +214,14 @@ class UserPersistsInPartialPipeline(BaseActionTest):
         user = User(username='foobar1')
         user.email = 'foo@bar.com'
 
-        self.strategy.set_settings(
-            {
-                'SOCIAL_AUTH_PIPELINE': (
-                    'social_core.pipeline.social_auth.social_details',
-                    'social_core.pipeline.social_auth.social_uid',
-                    'social_core.pipeline.social_auth.associate_by_email',
-                    'social_core.tests.pipeline.set_user_from_args',
-                )
-            }
-        )
+        self.strategy.set_settings({
+            'SOCIAL_AUTH_PIPELINE': (
+                'social_core.pipeline.social_auth.social_details',
+                'social_core.pipeline.social_auth.social_uid',
+                'social_core.pipeline.social_auth.associate_by_email',
+                'social_core.tests.pipeline.set_user_from_args'
+            )
+        })
 
         self.do_login(after_complete_checks=False)
 
@@ -238,7 +232,9 @@ class UserPersistsInPartialPipeline(BaseActionTest):
         self.backend.continue_pipeline(partial)
 
 
+
 class TestUserDetails(BaseActionTest):
+
     def test_user_details(self):
         self.strategy.set_settings({})
         details = {'first_name': 'Test'}
@@ -253,9 +249,9 @@ class TestUserDetails(BaseActionTest):
         self.assertEqual(user.first_name, 'Test2')
 
     def test_user_details_(self):
-        self.strategy.set_settings(
-            {'SOCIAL_AUTH_IMMUTABLE_USER_FIELDS': ('first_name',)}
-        )
+        self.strategy.set_settings({
+            'SOCIAL_AUTH_IMMUTABLE_USER_FIELDS': ('first_name',)
+        })
         details = {'first_name': 'Test'}
         user = User(username='foobar')
         backend = None
