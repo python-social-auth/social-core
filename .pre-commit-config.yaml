@@ -18,6 +18,12 @@ repos:
     hooks:
       - id: pyupgrade
         args: [--py36-plus]
+  - repo: https://github.com/PyCQA/flake8
+    rev: 4.0.1
+    hooks:
+    - id: flake8
+      additional_dependencies:
+      - flake8-quotes
   - repo: meta
     hooks:
       - id: check-hooks-apply
