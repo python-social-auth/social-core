@@ -8,7 +8,6 @@ from social_core.backends.open_id_connect import OpenIdConnectAuth
 from social_core.utils import cache
 
 
-
 class VaultOpenIdConnect(OpenIdConnectAuth):
     """
     Vault OIDC authentication backend

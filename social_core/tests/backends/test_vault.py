@@ -5,6 +5,7 @@ from httpretty import HTTPretty
 from .oauth import OAuth2Test
 from .test_open_id_connect import OpenIdConnectTestMixin
 
+
 class VaultOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
     backend_path = \
         'social_core.backends.vault.VaultOpenIdConnect'
