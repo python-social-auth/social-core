@@ -28,7 +28,8 @@ class QiitaOAuth2Test(OAuth2Test):
         'location': 'Tokyo, Japan',
         'organization': 'Qiita Inc.',
         'permanent_id': 12345,
-        'profile_image_url': 'https://s3-ap-northeast-1.amazonaws.com/qiita-image-store/0/88/ccf90b557a406157dbb9d2d7e543dae384dbb561/large.png?1575443439',
+        'profile_image_url': 'https://s3-ap-northeast-1.amazonaws.com/qiita-image-store/0/88'
+                             '/ccf90b557a406157dbb9d2d7e543dae384dbb561/large.png?1575443439',
         'team_only': False,
         'twitter_screen_name': 'qiita',
         'website_url': 'https://qiita.com',
@@ -77,6 +78,7 @@ class QiitaOAuth2TestIdentifiedByPermanentId(QiitaOAuth2Test):
         social = user.social[0]
         self.assertEqual(social.uid, '12345')
         self.assertEqual(social.extra_data['permanent_id'], 12345)
+
 
 class QiitaOAuth2TestIdentifiedByPermanentIdAuthException(QiitaOAuth2Test):
     user_data_body = json.dumps({
