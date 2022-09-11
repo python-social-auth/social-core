@@ -132,8 +132,6 @@ class GooglePlusAuth(BaseGoogleOAuth2API, BaseOAuth2):
             raise AuthMissingParameter(self, 'access_token, id_token, or code')
 
     def user_data(self, access_token, *args, **kwargs):
-        if 'id_token' not in self.data:
-            return super().user_data(access_token, *args, **kwargs)
         response = self.get_json(
             'https://www.googleapis.com/oauth2/v3/tokeninfo',
             params={'id_token': access_token}
