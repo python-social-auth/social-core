@@ -15,7 +15,7 @@ class AmazonOAuth2(BaseOAuth2):
     DEFAULT_SCOPE = ['profile']
     REDIRECT_STATE = False
     ACCESS_TOKEN_METHOD = 'POST'
-    SSL_PROTOCOL = ssl.PROTOCOL_TLSv1
+    SSL_PROTOCOL = ssl.PROTOCOL_TLS
     EXTRA_DATA = [
         ('refresh_token', 'refresh_token', True),
         ('user_id', 'user_id'),
