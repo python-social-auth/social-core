@@ -2,7 +2,6 @@
 Amazon OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/amazon.html
 """
-import ssl
 
 from .oauth import BaseOAuth2
 
@@ -15,7 +14,6 @@ class AmazonOAuth2(BaseOAuth2):
     DEFAULT_SCOPE = ['profile']
     REDIRECT_STATE = False
     ACCESS_TOKEN_METHOD = 'POST'
-    SSL_PROTOCOL = ssl.PROTOCOL_TLSv1
     EXTRA_DATA = [
         ('refresh_token', 'refresh_token', True),
         ('user_id', 'user_id'),
