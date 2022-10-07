@@ -2,9 +2,7 @@
 Khan Academy OAuth backend, docs at:
     https://github.com/Khan/khan-api/wiki/Khan-Academy-API-Authentication
 """
-import six
-
-from six.moves.urllib_parse import urlencode
+from urllib.parse import urlencode
 
 from oauthlib.oauth1 import SIGNATURE_HMAC, SIGNATURE_TYPE_QUERY
 from requests_oauthlib import OAuth1
@@ -37,17 +35,14 @@ class BrowserBasedOAuth1(BaseOAuth1):
         params = self.request_token_extra_arguments()
         params.update(self.get_scope_argument())
         key, secret = self.get_key_and_secret()
-        # decoding='utf-8' produces errors with python-requests on Python3
-        # since the final URL will be of type bytes
-        decoding = None if six.PY3 else 'utf-8'
         state = self.get_or_create_state()
         auth = OAuth1(
             key,
             secret,
             callback_uri=self.get_redirect_uri(state),
-            decoding=decoding,
             signature_method=SIGNATURE_HMAC,
-            signature_type=SIGNATURE_TYPE_QUERY
+            signature_type=SIGNATURE_TYPE_QUERY,
+            decoding=None
         )
         url = self.REQUEST_TOKEN_URL + '?' + urlencode(params)
         url, _, _ = auth.client.sign(url)
@@ -57,9 +52,6 @@ class BrowserBasedOAuth1(BaseOAuth1):
         key, secret = self.get_key_and_secret()
         oauth_verifier = oauth_verifier or self.data.get('oauth_verifier')
         token = token or {}
-        # decoding='utf-8' produces errors with python-requests on Python3
-        # since the final URL will be of type bytes
-        decoding = None if six.PY3 else 'utf-8'
         state = self.get_or_create_state()
         return OAuth1(key, secret,
                       resource_owner_key=token.get('oauth_token'),
@@ -68,7 +60,7 @@ class BrowserBasedOAuth1(BaseOAuth1):
                       verifier=oauth_verifier,
                       signature_method=SIGNATURE_HMAC,
                       signature_type=SIGNATURE_TYPE_QUERY,
-                      decoding=decoding)
+                      decoding=None)
 
 
 class KhanAcademyOAuth1(BrowserBasedOAuth1):

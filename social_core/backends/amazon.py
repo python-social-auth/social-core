@@ -2,7 +2,6 @@
 Amazon OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/amazon.html
 """
-import ssl
 
 from .oauth import BaseOAuth2
 
@@ -15,7 +14,6 @@ class AmazonOAuth2(BaseOAuth2):
     DEFAULT_SCOPE = ['profile']
     REDIRECT_STATE = False
     ACCESS_TOKEN_METHOD = 'POST'
-    SSL_PROTOCOL = ssl.PROTOCOL_TLSv1
     EXTRA_DATA = [
         ('refresh_token', 'refresh_token', True),
         ('user_id', 'user_id'),
@@ -34,7 +32,7 @@ class AmazonOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Grab user profile information from amazon."""
-        response = self.get_json('https://www.amazon.com/ap/user/profile',
+        response = self.get_json('https://api.amazon.com/user/profile',
                                  params={'access_token': access_token})
         if 'Profile' in response:
             response = {

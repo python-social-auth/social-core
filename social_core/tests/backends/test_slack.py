@@ -15,12 +15,12 @@ class SlackOAuth2Test(OAuth2Test):
         'user': {
             'email': 'foobar@example.com',
             'name': 'Foo Bar',
-            'id': u'123456'
+            'id': '123456'
         },
         'team': {
-            'id': u'456789'
+            'id': '456789'
         },
-        'scope': u'identity.basic,identity.email'
+        'scope': 'identity.basic,identity.email'
     })
     expected_username = 'foobar'
 
@@ -28,4 +28,49 @@ class SlackOAuth2Test(OAuth2Test):
         self.do_login()
 
     def test_partial_pipeline(self):
+        self.do_partial_pipeline()
+
+
+class SlackOAuth2TestTeamName(SlackOAuth2Test):
+    expected_username = 'foobar@Square'
+    user_data_body = json.dumps({
+        'ok': True,
+        'user': {
+            'email': 'foobar@example.com',
+            'name': 'Foo Bar',
+            'id': '123456'
+        },
+        'team': {
+            'id': '456789',
+            'name': 'Square',
+        },
+        'scope': 'identity.basic,identity.email,identity.team'
+    })
+
+
+class SlackOAuth2TestUnicodeTeamName(SlackOAuth2Test):
+    user_data_body = json.dumps({
+        'ok': True,
+        'user': {
+            'email': 'foobar@example.com',
+            'name': 'Foo Bar',
+            'id': '123456'
+        },
+        'team': {
+            'id': '456789',
+            'name': 'Square \u221a team',
+        },
+        'scope': 'identity.basic,identity.email,identity.team'
+    })
+
+    def test_login(self):
+        self.strategy.set_settings({
+            'SOCIAL_AUTH_SLACK_USERNAME_WITH_TEAM': False
+        })
+        self.do_login()
+
+    def test_partial_pipeline(self):
+        self.strategy.set_settings({
+            'SOCIAL_AUTH_SLACK_USERNAME_WITH_TEAM': False
+        })
         self.do_partial_pipeline()

@@ -36,9 +36,8 @@ class LyftOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        response = kwargs.pop('response')
         return self.get_json(self.USER_DATA_URL, headers={
-          'Authorization': 'Bearer {0}'.format(access_token)
+          'Authorization': f'Bearer {access_token}'
         })
 
     def auth_complete_params(self, state=None):

@@ -3,12 +3,11 @@ Odnoklassniki OAuth2 and Iframe Application backends, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/odnoklassnikiru.html
 """
 from hashlib import md5
+from urllib.parse import unquote
 
-from six.moves.urllib_parse import unquote
-
+from ..exceptions import AuthFailed
 from .base import BaseAuth
 from .oauth import BaseOAuth2
-from ..exceptions import AuthFailed
 
 
 class OdnoklassnikiOAuth2(BaseOAuth2):
@@ -52,8 +51,10 @@ class OdnoklassnikiApp(BaseAuth):
     ID_KEY = 'uid'
 
     def extra_data(self, user, uid, response, details=None, *args, **kwargs):
-        return dict([(key, value) for key, value in response.items()
-                            if key in response['extra_data_list']])
+        return {
+            key: value for key, value in response.items()
+            if key in response['extra_data_list']
+        }
 
     def get_user_details(self, response):
         fullname, first_name, last_name = self.get_user_names(
@@ -73,10 +74,10 @@ class OdnoklassnikiApp(BaseAuth):
         self.verify_auth_sig()
         response = self.get_response()
         fields = ('uid', 'first_name', 'last_name', 'name') + \
-                 self.setting('EXTRA_USER_DATA_LIST', ())
+            self.setting('EXTRA_USER_DATA_LIST', ())
         data = {
             'method': 'users.getInfo',
-            'uids': '{0}'.format(response['logged_user_id']),
+            'uids': '{}'.format(response['logged_user_id']),
             'fields': ','.join(fields),
         }
         client_key, client_secret = self.get_key_and_secret()
@@ -101,17 +102,20 @@ class OdnoklassnikiApp(BaseAuth):
 
     def get_auth_sig(self):
         secret_key = self.setting('SECRET')
-        hash_source = '{0:s}{1:s}{2:s}'.format(self.data['logged_user_id'],
-                                               self.data['session_key'],
-                                               secret_key)
+        hash_source = '{:s}{:s}{:s}'.format(
+            self.data['logged_user_id'],
+            self.data['session_key'],
+            secret_key
+        )
         return md5(hash_source.encode('utf-8')).hexdigest()
 
     def get_response(self):
         fields = ('logged_user_id', 'api_server', 'application_key',
                   'session_key', 'session_secret_key', 'authorized',
                   'apiconnection')
-        return dict((name, self.data[name]) for name in fields
-                        if name in self.data)
+        return {
+            name: self.data[name] for name in fields
+            if name in self.data}
 
     def verify_auth_sig(self):
         correct_key = self.get_auth_sig()
@@ -128,12 +132,14 @@ def odnoklassniki_oauth_sig(data, client_secret):
     search for "little bit different way"
     """
     suffix = md5(
-        '{0:s}{1:s}'.format(data['access_token'],
-                            client_secret).encode('utf-8')
+        '{:s}{:s}'.format(
+            data['access_token'],
+            client_secret).encode('utf-8')
     ).hexdigest()
-    check_list = sorted(['{0:s}={1:s}'.format(key, value)
-                            for key, value in data.items()
-                                if key != 'access_token'])
+    check_list = sorted(
+        f'{key:s}={value:s}'
+        for key, value in data.items()
+        if key != 'access_token')
     return md5((''.join(check_list) + suffix).encode('utf-8')).hexdigest()
 
 
@@ -144,8 +150,9 @@ def odnoklassniki_iframe_sig(data, client_secret_or_session_secret):
     If API method requires session context, request is signed with session
     secret key. Otherwise it is signed with application secret key
     """
-    param_list = sorted(['{0:s}={1:s}'.format(key, value)
-                            for key, value in data.items()])
+    param_list = sorted(
+        f'{key:s}={value:s}'
+        for key, value in data.items())
     return md5(
         (''.join(param_list) + client_secret_or_session_secret).encode('utf-8')
     ).hexdigest()

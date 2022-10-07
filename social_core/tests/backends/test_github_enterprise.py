@@ -3,7 +3,6 @@ import json
 from httpretty import HTTPretty
 
 from ...exceptions import AuthFailed
-
 from .oauth import OAuth2Test
 
 
@@ -124,6 +123,11 @@ class GithubEnterpriseOAuth2NoEmailTest(GithubEnterpriseOAuth2Test):
             'SOCIAL_AUTH_GITHUB_ENTERPRISE_URL': 'https://www.example.com'})
         self.strategy.set_settings({
             'SOCIAL_AUTH_GITHUB_ENTERPRISE_API_URL': 'https://www.example.com/api/v3'})
+        HTTPretty.register_uri(HTTPretty.GET,
+                               'https://www.example.com/api/v3/user/emails',
+                               status=200,
+                               body=json.dumps([{'email': 'foo@bar.com'}]),
+                               content_type='application/json')
         self.do_partial_pipeline()
 
 
@@ -133,9 +137,7 @@ class GithubEnterpriseOrganizationOAuth2Test(GithubEnterpriseOAuth2Test):
     def auth_handlers(self, start_url):
         url = 'https://www.example.com/api/v3/orgs/foobar/members/foobar'
         HTTPretty.register_uri(HTTPretty.GET, url, status=204, body='')
-        return super(GithubEnterpriseOrganizationOAuth2Test, self).auth_handlers(
-            start_url
-        )
+        return super().auth_handlers(start_url)
 
     def test_login(self):
         self.strategy.set_settings({
@@ -162,9 +164,7 @@ class GithubEnterpriseOrganizationOAuth2FailTest(GithubEnterpriseOAuth2Test):
         HTTPretty.register_uri(HTTPretty.GET, url, status=404,
                                body='{"message": "Not Found"}',
                                content_type='application/json')
-        return super(GithubEnterpriseOrganizationOAuth2FailTest, self).auth_handlers(
-            start_url
-        )
+        return super().auth_handlers(start_url)
 
     def test_login(self):
         self.strategy.set_settings({
@@ -191,9 +191,7 @@ class GithubEnterpriseTeamOAuth2Test(GithubEnterpriseOAuth2Test):
     def auth_handlers(self, start_url):
         url = 'https://www.example.com/api/v3/teams/123/members/foobar'
         HTTPretty.register_uri(HTTPretty.GET, url, status=204, body='')
-        return super(GithubEnterpriseTeamOAuth2Test, self).auth_handlers(
-            start_url
-        )
+        return super().auth_handlers(start_url)
 
     def test_login(self):
         self.strategy.set_settings({
@@ -220,9 +218,7 @@ class GithubEnterpriseTeamOAuth2FailTest(GithubEnterpriseOAuth2Test):
         HTTPretty.register_uri(HTTPretty.GET, url, status=404,
                                body='{"message": "Not Found"}',
                                content_type='application/json')
-        return super(GithubEnterpriseTeamOAuth2FailTest, self).auth_handlers(
-            start_url
-        )
+        return super().auth_handlers(start_url)
 
     def test_login(self):
         self.strategy.set_settings({

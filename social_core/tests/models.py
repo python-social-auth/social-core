@@ -1,10 +1,10 @@
 import base64
 
-from ..storage import UserMixin, NonceMixin, AssociationMixin, \
-                      CodeMixin, PartialMixin, BaseStorage
+from ..storage import (AssociationMixin, BaseStorage, CodeMixin, NonceMixin,
+                       PartialMixin, UserMixin)
 
 
-class BaseModel(object):
+class BaseModel:
     @classmethod
     def next_id(cls):
         cls.NEXT_ID += 1
@@ -28,6 +28,7 @@ class User(BaseModel):
         self.id = User.next_id()
         self.username = username
         self.email = email
+        self.first_name = None
         self.password = None
         self.slug = None
         self.social = []
@@ -147,6 +148,15 @@ class TestNonce(NonceMixin, BaseModel):
         TestNonce.cache[server_url] = nonce
         return nonce
 
+    @classmethod
+    def get(cls, server_url, salt):
+        return TestNonce.cache[server_url]
+
+    @classmethod
+    def delete(cls, nonce):
+        server_url = nonce.server_url
+        del TestNonce.cache[server_url]
+
 
 class TestAssociation(AssociationMixin, BaseModel):
     NEXT_ID = 1
@@ -166,7 +176,7 @@ class TestAssociation(AssociationMixin, BaseModel):
         if assoc is None:
             assoc = TestAssociation(server_url=server_url,
                                     handle=association.handle)
-        assoc.secret = base64.encodestring(association.secret)
+        assoc.secret = base64.encodebytes(association.secret)
         assoc.issued = association.issued
         assoc.lifetime = association.lifetime
         assoc.assoc_type = association.assoc_type

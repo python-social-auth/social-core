@@ -1,13 +1,9 @@
-import time
-
-from jwt import DecodeError, ExpiredSignature
-
-from ..exceptions import AuthTokenError
-from .oauth import BaseOAuth2
-
 """
 OAuth2 Backend to work with microsoft graph.
 """
+import time
+
+from .oauth import BaseOAuth2
 
 
 class MicrosoftOAuth2(BaseOAuth2):
@@ -47,10 +43,11 @@ class MicrosoftOAuth2(BaseOAuth2):
         """Return user details from Microsoft online account"""
         email = response.get('mail')
         username = response.get('userPrincipalName')
-        if not email and '@' in response.get('userPrincipalName'):
-            email = response.get('userPrincipalName')
+
         if '@' in username:
-            username = username.split('@')[0]
+            if not email:
+                email = username
+            username = username.split('@', 1)[0]
 
         return {'username': username,
                 'email': email,
@@ -60,18 +57,23 @@ class MicrosoftOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Return user data by querying Microsoft service"""
-        try:
-            return self.get_json(
-                'https://graph.microsoft.com/v1.0/me',
-                headers={
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'Accept': 'application/json',
-                    'Authorization': 'Bearer ' + access_token
-                },
-                method='GET'
-            )
-        except (DecodeError, ExpiredSignature) as error:
-            raise AuthTokenError(self, error)
+        return self.get_json(
+            'https://graph.microsoft.com/v1.0/me',
+            headers={
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Accept': 'application/json',
+                'Authorization': 'Bearer ' + access_token
+            },
+            method='GET'
+        )
+
+    def refresh_token_params(self, token, *args, **kwargs):
+        return {
+            'client_id': self.setting('KEY'),
+            'client_secret': self.setting('SECRET'),
+            'refresh_token': token,
+            'grant_type': 'refresh_token',
+        }
 
     def get_auth_token(self, user_id):
         """Return the access token for the given user, after ensuring that it

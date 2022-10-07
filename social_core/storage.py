@@ -1,40 +1,36 @@
 """Models mixins for Social Auth"""
+import base64
 import re
 import time
-import base64
 import uuid
 import warnings
-
 from datetime import datetime, timedelta
-
-import six
 
 from openid.association import Association as OpenIdAssociation
 
 from .exceptions import MissingBackend
-from .backends.utils import get_backend
-
 
 NO_ASCII_REGEX = re.compile(r'[^\x00-\x7F]+')
 NO_SPECIAL_REGEX = re.compile(r'[^\w.@+_-]+', re.UNICODE)
 
 
-class UserMixin(object):
+class UserMixin:
+    # Consider tokens that expire in 5 seconds as already expired
+    ACCESS_TOKEN_EXPIRED_THRESHOLD = 5
+
     user = ''
     provider = ''
     uid = None
     extra_data = None
 
     def get_backend(self, strategy):
-        return get_backend(strategy.get_backends(), self.provider)
+        return strategy.get_backend_class(self.provider)
 
     def get_backend_instance(self, strategy):
         try:
-            backend_class = self.get_backend(strategy)
+            return strategy.get_backend(self.provider)
         except MissingBackend:
             return None
-        else:
-            return backend_class(strategy=strategy)
 
     @property
     def access_token(self):
@@ -49,9 +45,8 @@ class UserMixin(object):
     def refresh_token(self, strategy, *args, **kwargs):
         token = self.extra_data.get('refresh_token') or \
                 self.extra_data.get('access_token')
-        backend = self.get_backend(strategy)
+        backend = self.get_backend_instance(strategy)
         if token and backend and hasattr(backend, 'refresh_token'):
-            backend = backend(strategy=strategy)
             response = backend.refresh_token(token, *args, **kwargs)
             extra_data = backend.extra_data(self,
                                             self.uid,
@@ -96,8 +91,10 @@ class UserMixin(object):
         return self.expiration_timedelta()
 
     def access_token_expired(self):
+        """Return true / false if access token is already expired"""
         expiration = self.expiration_timedelta()
-        return expiration and expiration.total_seconds() <= 0
+        return expiration and \
+            expiration.total_seconds() <= self.ACCESS_TOKEN_EXPIRED_THRESHOLD
 
     def get_access_token(self, strategy):
         """Returns a valid access token."""
@@ -107,8 +104,7 @@ class UserMixin(object):
 
     def set_extra_data(self, extra_data=None):
         if extra_data and self.extra_data != extra_data:
-            if self.extra_data and not isinstance(
-                    self.extra_data, six.string_types):
+            if self.extra_data and not isinstance(self.extra_data, str):
                 self.extra_data.update(extra_data)
             else:
                 self.extra_data = extra_data
@@ -191,7 +187,7 @@ class UserMixin(object):
         raise NotImplementedError('Implement in subclass')
 
 
-class NonceMixin(object):
+class NonceMixin:
     """One use numbers"""
     server_url = ''
     timestamp = 0
@@ -202,8 +198,18 @@ class NonceMixin(object):
         """Create a Nonce instance"""
         raise NotImplementedError('Implement in subclass')
 
+    @classmethod
+    def get(cls, server_url, salt):
+        """Retrieve a Nonce instance"""
+        raise NotImplementedError('Implement in subclass')
 
-class AssociationMixin(object):
+    @classmethod
+    def delete(cls, nonce):
+        """Delete a Nonce instance"""
+        raise NotImplementedError('Implement in subclass')
+
+
+class AssociationMixin:
     """OpenId account association"""
     server_url = ''
     handle = ''
@@ -217,17 +223,17 @@ class AssociationMixin(object):
         kwargs = {'server_url': server_url}
         if handle is not None:
             kwargs['handle'] = handle
-        return sorted([
+        return sorted((
             (assoc.id, cls.openid_association(assoc))
             for assoc in cls.get(**kwargs)
-        ], key=lambda x: x[1].issued, reverse=True)
+        ), key=lambda x: x[1].issued, reverse=True)
 
     @classmethod
     def openid_association(cls, assoc):
         secret = assoc.secret
-        if not isinstance(secret, six.binary_type):
+        if not isinstance(secret, bytes):
             secret = secret.encode()
-        return OpenIdAssociation(assoc.handle, base64.decodestring(secret),
+        return OpenIdAssociation(assoc.handle, base64.decodebytes(secret),
                                  assoc.issued, assoc.lifetime,
                                  assoc.assoc_type)
 
@@ -247,7 +253,7 @@ class AssociationMixin(object):
         raise NotImplementedError('Implement in subclass')
 
 
-class CodeMixin(object):
+class CodeMixin:
     email = ''
     code = ''
     verified = False
@@ -274,7 +280,7 @@ class CodeMixin(object):
         raise NotImplementedError('Implement in subclass')
 
 
-class PartialMixin(object):
+class PartialMixin:
     token = ''
     data = ''
     next_step = ''
@@ -326,7 +332,7 @@ class PartialMixin(object):
         return partial
 
 
-class BaseStorage(object):
+class BaseStorage:
     user = UserMixin
     nonce = NonceMixin
     association = AssociationMixin

@@ -1,3 +1,4 @@
+from ...utils import PARTIAL_TOKEN_SESSION_NAME
 from ..models import User
 from .actions import BaseActionTest
 
@@ -18,6 +19,19 @@ class LoginActionTest(BaseActionTest):
         self.assertEqual(self.strategy.session_get('foo'), '1')
         self.assertEqual(self.strategy.session_get('bar'), '2')
 
+        self._logout(self.backend)
+        # The _logout helper function doesn't clear the session.
+        self.assertEqual(self.strategy.session_get('foo'), '1')
+        self.assertEqual(self.strategy.session_get('bar'), '2')
+
+        # Login again - without the 'bar' request param and make
+        # sure its value didn't persist in the session.
+        self.strategy.remove_from_request_data('bar')
+        self.strategy.set_request_data({'foo': '3'}, self.backend)
+        self.do_login()
+        self.assertEqual(self.strategy.session_get('foo'), '3')
+        self.assertEqual(self.strategy.session_get('bar'), None)
+
     def test_redirect_value(self):
         self.strategy.set_request_data({'next': '/after-login'}, self.backend)
         redirect = self.do_login(after_complete_checks=False)
@@ -25,7 +39,9 @@ class LoginActionTest(BaseActionTest):
 
     def test_login_with_invalid_partial_pipeline(self):
         def before_complete():
-            partial_token = self.strategy.session_get('partial_pipeline_token')
+            partial_token = self.strategy.session_get(
+                PARTIAL_TOKEN_SESSION_NAME
+            )
             partial = self.strategy.storage.partial.load(partial_token)
             partial.data['backend'] = 'foobar'
         self.do_login_with_partial_pipeline(before_complete)

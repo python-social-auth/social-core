@@ -13,7 +13,7 @@ class EventbriteOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from an Eventbrite metadata response"""
-        email = next(filter(lambda x: x['primary'], response['emails']))['email']
+        email = next(iter(filter(lambda x: x['primary'], response['emails'])))['email']
 
         return {
             'username': email,

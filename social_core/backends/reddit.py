@@ -43,12 +43,12 @@ class RedditOAuth2(BaseOAuth2):
     def auth_headers(self):
         return {
             'Authorization': b'Basic ' + base64.urlsafe_b64encode(
-                '{0}:{1}'.format(*self.get_key_and_secret()).encode()
+                '{}:{}'.format(*self.get_key_and_secret()).encode()
             )
         }
 
     def refresh_token_params(self, token, redirect_uri=None, *args, **kwargs):
-        params = super(RedditOAuth2, self).refresh_token_params(token)
+        params = super().refresh_token_params(token)
         params['redirect_uri'] = self.redirect_uri or redirect_uri
         return params
 

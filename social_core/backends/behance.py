@@ -36,5 +36,4 @@ class BehanceOAuth2(BaseOAuth2):
         # http://www.behance.net/dev/authentication#step-by-step
         data = response.copy()
         data.update(response['user'])
-        return super(BehanceOAuth2, self).extra_data(user, uid, data, details,
-                                                     *args, **kwargs)
+        return super().extra_data(user, uid, data, details, *args, **kwargs)

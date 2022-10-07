@@ -2,9 +2,9 @@
 Mozilla Persona authentication backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/persona.html
 """
+from ..exceptions import AuthFailed, AuthMissingParameter
 from ..utils import handle_http_errors
 from .base import BaseAuth
-from ..exceptions import AuthFailed, AuthMissingParameter
 
 
 class PersonaAuth(BaseAuth):
@@ -36,7 +36,7 @@ class PersonaAuth(BaseAuth):
 
     @handle_http_errors
     def auth_complete(self, *args, **kwargs):
-        """Completes loging process, must return user instance"""
+        """Completes login process, must return user instance"""
         if 'assertion' not in self.data:
             raise AuthMissingParameter(self, 'assertion')
 

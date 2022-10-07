@@ -67,5 +67,5 @@ class QQOAuth2(BaseOAuth2):
         return response
 
     def request_access_token(self, url, data, *args, **kwargs):
-        response = self.request(url, params=data, *args, **kwargs)
+        response = self.request(url, *args, **kwargs)
         return parse_qs(response.content)

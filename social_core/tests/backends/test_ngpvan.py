@@ -1,12 +1,10 @@
 """Tests for NGP VAN ActionID Backend"""
 import datetime
+from urllib.parse import urlencode
 
 from httpretty import HTTPretty
 
-from six.moves.urllib_parse import urlencode
-
 from .open_id import OpenIdTest
-
 
 JANRAIN_NONCE = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
 
@@ -84,11 +82,11 @@ class NGPVANActionIDOpenIDTest(OpenIdTest):
 
     def setUp(self):
         """Setup the test"""
-        super(NGPVANActionIDOpenIDTest, self).setUp()
+        super().setUp()
 
         # Mock out the NGP VAN endpoints
         HTTPretty.register_uri(
-            HTTPretty.POST,
+            HTTPretty.GET,
             'https://accounts.ngpvan.com/Home/Xrds',
             status=200,
             body=self.discovery_body
@@ -171,12 +169,12 @@ class NGPVANActionIDOpenIDTest(OpenIdTest):
             ]
         })
         user = self.do_start()
-        self.assertEqual(user.username, u'testuser@user.local')
-        self.assertEqual(user.email, u'testuser@user.local')
-        self.assertEqual(user.extra_user_fields['phone'], u'+12015555555')
-        self.assertEqual(user.extra_user_fields['first_name'], u'John')
-        self.assertEqual(user.extra_user_fields['last_name'], u'Smith')
-        self.assertEqual(user.extra_user_fields['fullname'], u'John Smith')
+        self.assertEqual(user.username, 'testuser@user.local')
+        self.assertEqual(user.email, 'testuser@user.local')
+        self.assertEqual(user.extra_user_fields['phone'], '+12015555555')
+        self.assertEqual(user.extra_user_fields['first_name'], 'John')
+        self.assertEqual(user.extra_user_fields['last_name'], 'Smith')
+        self.assertEqual(user.extra_user_fields['fullname'], 'John Smith')
 
     def test_extra_data_phone(self):
         """Confirm that you can get a phone number via the relevant setting"""
@@ -186,7 +184,7 @@ class NGPVANActionIDOpenIDTest(OpenIdTest):
             ]
         })
         user = self.do_start()
-        self.assertEqual(user.social_user.extra_data['phone'], u'+12015555555')
+        self.assertEqual(user.social_user.extra_data['phone'], '+12015555555')
 
     def test_association_uid(self):
         """Test that the correct association uid is stored in the database"""

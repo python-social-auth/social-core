@@ -1,5 +1,5 @@
-from .base import BaseAuth
 from ..exceptions import AuthMissingParameter
+from .base import BaseAuth
 
 
 class LegacyAuth(BaseAuth):
@@ -18,7 +18,7 @@ class LegacyAuth(BaseAuth):
                self.setting('FORM_HTML')
 
     def auth_complete(self, *args, **kwargs):
-        """Completes loging process, must return user instance"""
+        """Completes login process, must return user instance"""
         if self.ID_KEY not in self.data:
             raise AuthMissingParameter(self, self.ID_KEY)
         kwargs.update({'response': self.data, 'backend': self})

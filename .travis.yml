@@ -2,25 +2,17 @@ language: python
 sudo: false
 matrix:
   include:
-    - python: 2.7
-      env: TOXENV=py27
-    - python: 3.3
-      env: TOXENV=py33
-    - python: 3.4
-      env: TOXENV=py34
-    - python: 3.5
-      env: TOXENV=py35
-    - python: pypy
-      env: TOXENV=pypy
-    - python: 3.6
-      env: TOXENV=py36
+  - python: 3.6
+  - python: 3.7
+  - python: 3.8
+  - python: 3.9
   fast_finish: true
 addons:
   apt:
     packages:
-      - libxmlsec1-dev
-      - swig
+    - libxmlsec1-dev
+    - swig
 install:
-  - pip install tox -U pip
+- pip install tox tox-travis -U pip
 script:
-  - tox -e $TOXENV
+- tox

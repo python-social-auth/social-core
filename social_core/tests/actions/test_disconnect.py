@@ -1,12 +1,10 @@
 import requests
-
 from httpretty import HTTPretty
 
 from ...actions import do_disconnect
 from ...exceptions import NotAllowedToDisconnect
 from ...utils import parse_qs
-
-from ..models import User, TestUserSocialAuth
+from ..models import TestUserSocialAuth, User
 from .actions import BaseActionTest
 
 
@@ -14,7 +12,8 @@ class DisconnectActionTest(BaseActionTest):
     def test_not_allowed_to_disconnect(self):
         self.do_login()
         user = User.get(self.expected_username)
-        with self.assertRaises(NotAllowedToDisconnect):
+        with self.assertRaisesRegex(NotAllowedToDisconnect,
+                                    'This account is not allowed to be disconnected.'):
             do_disconnect(self.backend, user)
 
     def test_disconnect(self):
@@ -29,7 +28,7 @@ class DisconnectActionTest(BaseActionTest):
         user = User.get(self.expected_username)
         user.password = 'password'
         association_id = user.social[0].id
-        second_usa = TestUserSocialAuth(user, user.social[0].provider, "uid2")
+        second_usa = TestUserSocialAuth(user, user.social[0].provider, 'uid2')
         self.assertEqual(len(user.social), 2)
         do_disconnect(self.backend, user, association_id)
         self.assertEqual(len(user.social), 1)

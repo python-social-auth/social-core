@@ -28,13 +28,11 @@ class AsanaOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         return self.get_json(self.USER_DATA_URL, headers={
-            'Authorization': 'Bearer {}'.format(access_token)
+            'Authorization': f'Bearer {access_token}'
         })
 
     def extra_data(self, user, uid, response, details=None, *args, **kwargs):
-        data = super(AsanaOAuth2, self).extra_data(
-            user, uid, response, details
-        )
+        data = super().extra_data(user, uid, response, details)
         if self.setting('ESTIMATE_EXPIRES_ON'):
             expires_on = datetime.datetime.utcnow() + \
                          datetime.timedelta(seconds=data['expires'])

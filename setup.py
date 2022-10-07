@@ -1,12 +1,7 @@
-# -*- coding: utf-8 -*-
-import sys
 import re
-import os
-
-from os.path import join, dirname
+from os.path import dirname, join
 
 from setuptools import setup
-
 
 VERSION_RE = re.compile(r'__version__ = \'([\d\.]+)\'')
 
@@ -23,7 +18,7 @@ and ORMs.
 def long_description():
     try:
         return open(join(dirname(__file__), 'README.md')).read()
-    except IOError:
+    except OSError:
         return None
 
 
@@ -35,25 +30,20 @@ def read_version():
 
 
 def read_requirements(filename):
-    with open(filename, 'r') as file:
+    with open(filename) as file:
         return [line for line in file.readlines() if not line.startswith('-')]
 
 
 def read_tests_requirements(filename):
-    return read_requirements('social_core/tests/{0}'.format(filename))
+    return read_requirements(f'social_core/tests/{filename}')
 
 
-PY = os.environ.get("BUILD_VERSION") or sys.version_info[0]
-requirements_base = read_requirements('requirements-base.txt')
-requirements = requirements_base + \
-    read_requirements('requirements-python%s.txt' % PY)
+requirements = read_requirements('requirements-base.txt')
 requirements_openidconnect = read_requirements('requirements-openidconnect.txt')
-requirements_saml = read_requirements('requirements-saml-python%s.txt' % PY)
+requirements_saml = read_requirements('requirements-saml.txt')
 requirements_azuread = read_requirements('requirements-azuread.txt')
 
-tests_requirements_base = read_tests_requirements('requirements-base.txt')
-tests_requirements = tests_requirements_base + \
-    read_tests_requirements('requirements-python%s.txt' % PY)
+tests_requirements = read_tests_requirements('requirements.txt')
 
 requirements_all = requirements_openidconnect + \
                    requirements_saml + \
@@ -80,12 +70,16 @@ setup(
         'social_core.tests.backends.data'
     ],
     long_description=long_description() or LONG_DESCRIPTION,
+    long_description_content_type='text/markdown',
     install_requires=requirements,
+    python_requires='>=3.6',
     extras_require={
         'openidconnect': [requirements_openidconnect],
         'saml': [requirements_saml],
         'azuread': [requirements_azuread],
-        'all': [requirements_all]
+        'all': [requirements_all],
+        # Kept for compatibility
+        'allpy3': [requirements_all],
     },
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -94,8 +88,11 @@ setup(
         'Intended Audience :: Developers',
         'Environment :: Web Environment',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3'
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
     ],
     package_data={
         'social_core/tests': [

@@ -9,8 +9,8 @@ class CoinbaseOAuth2(BaseOAuth2):
     name = 'coinbase'
     SCOPE_SEPARATOR = '+'
     DEFAULT_SCOPE = ['user', 'balance']
-    AUTHORIZATION_URL = 'https://coinbase.com/oauth/authorize'
-    ACCESS_TOKEN_URL = 'https://coinbase.com/oauth/token'
+    AUTHORIZATION_URL = 'https://www.coinbase.com/oauth/authorize'
+    ACCESS_TOKEN_URL = 'https://api.coinbase.com/oauth/token'
     REVOKE_TOKEN_URL = 'https://api.coinbase.com/oauth/revoke'
     ACCESS_TOKEN_METHOD = 'POST'
     REDIRECT_STATE = False
@@ -33,5 +33,6 @@ class CoinbaseOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        return self.get_json('https://api.coinbase.com/v2/user',
-                headers={'Authorization': 'Bearer ' + access_token})
+        return self.get_json('https://api.coinbase.com/v2/user', headers={
+            'Authorization': 'Bearer ' + access_token
+        })

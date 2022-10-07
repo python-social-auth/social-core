@@ -3,6 +3,7 @@ Slack OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/slack.html
     https://api.slack.com/docs/oauth
 """
+
 from .oauth import BaseOAuth2
 
 
@@ -22,7 +23,7 @@ class SlackOAuth2(BaseOAuth2):
     ]
 
     def auth_extra_arguments(self):
-        params = super(SlackOAuth2, self).auth_extra_arguments() or {}
+        params = super().auth_extra_arguments() or {}
         if self.setting('TEAM'):
             params['team'] = self.setting('TEAM')
         return params
@@ -40,7 +41,7 @@ class SlackOAuth2(BaseOAuth2):
 
         if self.setting('USERNAME_WITH_TEAM', True) and team and \
            'name' in team:
-            name = '{0}@{1}'.format(name, response['team']['name'])
+            username = '{}@{}'.format(username, response['team']['name'])
 
         return {
             'username': username,
@@ -53,7 +54,7 @@ class SlackOAuth2(BaseOAuth2):
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
         response = self.get_json('https://slack.com/api/users.identity',
-                                 params={'token': access_token})
+                                 headers={'Authorization': 'Bearer %s' % access_token})
         if not response.get('id', None):
             response['id'] = response['user']['id']
         return response

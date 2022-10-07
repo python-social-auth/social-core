@@ -1,14 +1,11 @@
-import json
 import datetime
+import json
+from urllib.parse import urlencode
 
 from httpretty import HTTPretty
 
-from six.moves.urllib_parse import urlencode
-
 from ...exceptions import AuthFailed
-
 from .open_id import OpenIdTest
-
 
 INFO_URL = 'http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?'
 JANRAIN_NONCE = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
@@ -18,26 +15,26 @@ class SteamOpenIdTest(OpenIdTest):
     backend_path = 'social_core.backends.steam.SteamOpenId'
     expected_username = 'foobar'
     discovery_body = ''.join([
-      '<?xml version="1.0" encoding="UTF-8"?>',
-      '<xrds:XRDS xmlns:xrds="xri://$xrds" xmlns="xri://$xrd*($v*2.0)">',
-      '<XRD>',
-      '<Service priority="0">',
-      '<Type>http://specs.openid.net/auth/2.0/server</Type>',
-      '<URI>https://steamcommunity.com/openid/login</URI>',
-      '</Service>',
-      '</XRD>',
-      '</xrds:XRDS>'
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<xrds:XRDS xmlns:xrds="xri://$xrds" xmlns="xri://$xrd*($v*2.0)">',
+        '<XRD>',
+        '<Service priority="0">',
+        '<Type>http://specs.openid.net/auth/2.0/server</Type>',
+        '<URI>https://steamcommunity.com/openid/login</URI>',
+        '</Service>',
+        '</XRD>',
+        '</xrds:XRDS>'
     ])
     user_discovery_body = ''.join([
-      '<?xml version="1.0" encoding="UTF-8"?>',
-      '<xrds:XRDS xmlns:xrds="xri://$xrds" xmlns="xri://$xrd*($v*2.0)">',
-      '<XRD>',
-      '<Service priority="0">',
-      '<Type>http://specs.openid.net/auth/2.0/signon</Type>		',
-      '<URI>https://steamcommunity.com/openid/login</URI>',
-      '</Service>',
-      '</XRD>',
-      '</xrds:XRDS>'
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<xrds:XRDS xmlns:xrds="xri://$xrds" xmlns="xri://$xrd*($v*2.0)">',
+        '<XRD>',
+        '<Service priority="0">',
+        '<Type>http://specs.openid.net/auth/2.0/signon</Type>		',
+        '<URI>https://steamcommunity.com/openid/login</URI>',
+        '</Service>',
+        '</XRD>',
+        '</xrds:XRDS>'
     ])
     server_response = urlencode({
         'janrain_nonce': JANRAIN_NONCE,

@@ -2,9 +2,9 @@
 Jawbone OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/jawbone.html
 """
+from ..exceptions import AuthCanceled, AuthUnknownError
 from ..utils import handle_http_errors
 from .oauth import BaseOAuth2
-from ..exceptions import AuthCanceled, AuthUnknownError
 
 
 class JawboneOAuth2(BaseOAuth2):
@@ -48,10 +48,10 @@ class JawboneOAuth2(BaseOAuth2):
             if error == 'access_denied':
                 raise AuthCanceled(self)
             else:
-                raise AuthUnknownError(self, 'Jawbone error was {0}'.format(
+                raise AuthUnknownError(self, 'Jawbone error was {}'.format(
                     error
                 ))
-        return super(JawboneOAuth2, self).process_error(data)
+        return super().process_error(data)
 
     def auth_complete_params(self, state=None):
         client_id, client_secret = self.get_key_and_secret()
@@ -64,7 +64,7 @@ class JawboneOAuth2(BaseOAuth2):
 
     @handle_http_errors
     def auth_complete(self, *args, **kwargs):
-        """Completes loging process, must return user instance"""
+        """Completes login process, must return user instance"""
         self.process_error(self.data)
         response = self.request_access_token(
             self.ACCESS_TOKEN_URL,

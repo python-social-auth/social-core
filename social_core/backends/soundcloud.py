@@ -2,7 +2,7 @@
 Soundcloud OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/soundcloud.html
 """
-from six.moves.urllib_parse import urlencode
+from urllib.parse import urlencode
 
 from .oauth import BaseOAuth2
 

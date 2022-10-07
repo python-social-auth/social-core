@@ -23,14 +23,14 @@ class BeatsOAuth2(BaseOAuth2):
 
     def auth_headers(self):
         return {
-            'Authorization': 'Basic {0}'.format(base64.urlsafe_b64encode(
-                ('{0}:{1}'.format(*self.get_key_and_secret()).encode())
+            'Authorization': 'Basic {}'.format(base64.urlsafe_b64encode(
+                '{}:{}'.format(*self.get_key_and_secret()).encode()
             ))
         }
 
     @handle_http_errors
     def auth_complete(self, *args, **kwargs):
-        """Completes loging process, must return user instance"""
+        """Completes login process, must return user instance"""
         self.process_error(self.data)
         response = self.request_access_token(
             self.ACCESS_TOKEN_URL,
@@ -61,5 +61,5 @@ class BeatsOAuth2(BaseOAuth2):
         """Loads user data from service"""
         return self.get_json(
             'https://partner.api.beatsmusic.com/v1/api/me',
-            headers={'Authorization': 'Bearer {0}'.format(access_token)}
+            headers={'Authorization': f'Bearer {access_token}'}
         )

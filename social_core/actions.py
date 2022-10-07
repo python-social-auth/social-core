@@ -1,7 +1,7 @@
-from six.moves.urllib_parse import quote
+from urllib.parse import quote
 
-from .utils import sanitize_redirect, user_is_authenticated, \
-                   user_is_active, partial_pipeline_data, setting_url
+from .utils import (partial_pipeline_data, sanitize_redirect, setting_url,
+                    user_is_active, user_is_authenticated)
 
 
 def do_auth(backend, redirect_name='next'):
@@ -12,6 +12,8 @@ def do_auth(backend, redirect_name='next'):
     for field_name in backend.setting('FIELDS_STORED_IN_SESSION', []):
         if field_name in data:
             backend.strategy.session_set(field_name, data[field_name])
+        else:
+            backend.strategy.session_set(field_name, None)
 
     if redirect_name in data:
         # Check and sanitize a user-defined GET/POST next field value
@@ -37,13 +39,15 @@ def do_complete(backend, login, user=None, redirect_name='next',
     partial = partial_pipeline_data(backend, user, *args, **kwargs)
     if partial:
         user = backend.continue_pipeline(partial)
+        # clean partial data after usage
+        backend.strategy.clean_partial_pipeline(partial.token)
     else:
         user = backend.complete(user=user, *args, **kwargs)
 
     # pop redirect value before the session is trashed on login(), but after
     # the pipeline so that the pipeline can change the redirect if needed
     redirect_value = backend.strategy.session_get(redirect_name, '') or \
-                     data.get(redirect_name, '')
+        data.get(redirect_name, '')
 
     # check if the output value is something else than a user and just
     # return it to the client
@@ -88,13 +92,13 @@ def do_complete(backend, login, user=None, redirect_name='next',
     if redirect_value and redirect_value != url:
         redirect_value = quote(redirect_value)
         url += ('&' if '?' in url else '?') + \
-               '{0}={1}'.format(redirect_name, redirect_value)
+            f'{redirect_name}={redirect_value}'
 
     if backend.setting('SANITIZE_REDIRECTS', True):
         allowed_hosts = backend.setting('ALLOWED_REDIRECT_HOSTS', []) + \
                         [backend.strategy.request_host()]
         url = sanitize_redirect(allowed_hosts, url) or \
-              backend.setting('LOGIN_REDIRECT_URL')
+            backend.setting('LOGIN_REDIRECT_URL')
     return backend.strategy.redirect(url)
 
 
@@ -107,6 +111,8 @@ def do_disconnect(backend, user, association_id=None, redirect_name='next',
                 'association_id': association_id
             })
         response = backend.disconnect(*partial.args, **partial.kwargs)
+        # clean partial data after usage
+        backend.strategy.clean_partial_pipeline(partial.token)
     else:
         response = backend.disconnect(user=user, association_id=association_id,
                                       *args, **kwargs)

@@ -1,13 +1,13 @@
-# -*- coding: utf-8 -*-
 # author:duoduo3369@gmail.com  https://github.com/duoduo369
 """
 Weixin OAuth2 backend
 """
-import urllib
+from urllib.parse import urlencode
+
 from requests import HTTPError
 
-from .oauth import BaseOAuth2
 from ..exceptions import AuthCanceled, AuthUnknownError
+from .oauth import BaseOAuth2
 
 
 class WeixinOAuth2(BaseOAuth2):
@@ -82,7 +82,7 @@ class WeixinOAuth2(BaseOAuth2):
         }
 
     def auth_complete(self, *args, **kwargs):
-        """Completes loging process, must return user instance"""
+        """Completes login process, must return user instance"""
         self.process_error(self.data)
         try:
             response = self.request_access_token(
@@ -136,7 +136,7 @@ class WeixinOAuth2APP(WeixinOAuth2):
         params = self.auth_params(state)
         params.update(self.get_scope_argument())
         params.update(self.auth_extra_arguments())
-        params = urllib.urlencode(sorted(params.items()))
+        params = urlencode(sorted(params.items()))
         return '{}#wechat_redirect'.format(
             self.AUTHORIZATION_URL + '?' + params
         )
@@ -154,7 +154,7 @@ class WeixinOAuth2APP(WeixinOAuth2):
         return None
 
     def auth_complete(self, *args, **kwargs):
-        """Completes loging process, must return user instance"""
+        """Completes login process, must return user instance"""
         self.process_error(self.data)
         try:
             response = self.request_access_token(

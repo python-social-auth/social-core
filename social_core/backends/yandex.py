@@ -6,10 +6,10 @@ openid.yandex.ru/user. Username is retrieved from the identity url.
 
 If username is not specified, OpenID 2.0 url used for authentication.
 """
-from six.moves.urllib_parse import urlsplit
+from urllib.parse import urlsplit
 
-from .open_id import OpenIdAuth
 from .oauth import BaseOAuth2
+from .open_id import OpenIdAuth
 
 
 class YandexOpenId(OpenIdAuth):
@@ -22,10 +22,9 @@ class YandexOpenId(OpenIdAuth):
 
     def get_user_details(self, response):
         """Generate username from identity url"""
-        values = super(YandexOpenId, self).get_user_details(response)
+        values = super().get_user_details(response)
         values['username'] = values.get('username') or\
-                             urlsplit(response.identity_url)\
-                                    .path.strip('/')
+            urlsplit(response.identity_url).path.strip('/')
         values['email'] = values.get('email', '')
         return values
 
@@ -42,9 +41,12 @@ class YandexOAuth2(BaseOAuth2):
         fullname, first_name, last_name = self.get_user_names(
             response.get('real_name') or response.get('display_name') or ''
         )
+        email = response.get('default_email')
+        if not email:
+            emails = response.get('emails')
+            email = emails[0] if emails else ''
         return {'username': response.get('display_name'),
-                'email': response.get('default_email') or
-                         response.get('emails', [''])[0],
+                'email': email,
                 'fullname': fullname,
                 'first_name': first_name,
                 'last_name': last_name}
@@ -66,9 +68,12 @@ class YaruOAuth2(BaseOAuth2):
         fullname, first_name, last_name = self.get_user_names(
             response.get('real_name') or response.get('display_name') or ''
         )
+        email = response.get('default_email')
+        if not email:
+            emails = response.get('emails')
+            email = emails[0] if emails else ''
         return {'username': response.get('display_name'),
-                'email': response.get('default_email') or
-                         response.get('emails', [''])[0],
+                'email': email,
                 'fullname': fullname,
                 'first_name': first_name,
                 'last_name': last_name}

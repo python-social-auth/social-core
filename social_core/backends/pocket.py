@@ -2,8 +2,8 @@
 Pocket OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/pocket.html
 """
-from .base import BaseAuth
 from ..utils import handle_http_errors
+from .base import BaseAuth
 
 
 class PocketAuth(BaseAuth):
@@ -16,7 +16,7 @@ class PocketAuth(BaseAuth):
     def get_json(self, url, *args, **kwargs):
         headers = {'X-Accept': 'application/json'}
         kwargs.update({'method': 'POST', 'headers': headers})
-        return super(PocketAuth, self).get_json(url, *args, **kwargs)
+        return super().get_json(url, *args, **kwargs)
 
     def get_user_details(self, response):
         return {'username': response['username']}

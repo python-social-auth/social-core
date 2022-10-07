@@ -16,7 +16,7 @@ class GoClioOAuth2(BaseOAuth2):
         email = user.get('email', None)
         first_name, last_name = (user.get('first_name', None),
                                  user.get('last_name', None))
-        fullname = '%s %s' % (first_name, last_name)
+        fullname = f'{first_name} {last_name}'
 
         return {'username': username,
                 'fullname': fullname,

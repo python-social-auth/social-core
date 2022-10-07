@@ -1,7 +1,6 @@
 import json
 
 from ...exceptions import AuthAlreadyAssociated
-
 from ..models import User
 from .actions import BaseActionTest
 
@@ -10,7 +9,7 @@ class AssociateActionTest(BaseActionTest):
     expected_username = 'foobar'
 
     def setUp(self):
-        super(AssociateActionTest, self).setUp()
+        super().setUp()
         self.user = User(username='foobar', email='foo@bar.com')
         self.backend.strategy.session_set('username', self.user.username)
 
@@ -69,12 +68,12 @@ class MultipleAccountsTest(AssociateActionTest):
 
 class AlreadyAssociatedErrorTest(BaseActionTest):
     def setUp(self):
-        super(AlreadyAssociatedErrorTest, self).setUp()
+        super().setUp()
         self.user1 = User(username='foobar', email='foo@bar.com')
         self.user = None
 
     def tearDown(self):
-        super(AlreadyAssociatedErrorTest, self).tearDown()
+        super().tearDown()
         self.user1 = None
         self.user = None
 
@@ -82,6 +81,6 @@ class AlreadyAssociatedErrorTest(BaseActionTest):
         self.user = self.user1
         self.do_login()
         self.user = User(username='foobar2', email='foo2@bar2.com')
-        with self.assertRaisesRegexp(AuthAlreadyAssociated,
-                                     'This github account is already in use.'):
+        with self.assertRaisesRegex(AuthAlreadyAssociated,
+                                    'This account is already in use.'):
             self.do_login()

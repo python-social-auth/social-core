@@ -1,6 +1,6 @@
 import time
 
-from jwt import DecodeError, ExpiredSignature, decode as jwt_decode
+import jwt
 
 from ..exceptions import AuthTokenError
 from .oauth import BaseOAuth2
@@ -40,12 +40,12 @@ Azure AD OAuth2 backend, docs at:
 class AzureADOAuth2(BaseOAuth2):
     name = 'azuread-oauth2'
     SCOPE_SEPARATOR = ' '
-    AUTHORIZATION_URL = \
-        'https://login.microsoftonline.com/common/oauth2/authorize'
-    ACCESS_TOKEN_URL = 'https://login.microsoftonline.com/common/oauth2/token'
+    BASE_URL = 'https://{authority_host}/{tenant_id}'
+    AUTHORIZATION_URL = '{base_url}/oauth2/authorize'
+    ACCESS_TOKEN_URL = '{base_url}/oauth2/token'
     ACCESS_TOKEN_METHOD = 'POST'
     REDIRECT_STATE = False
-    DEFAULT_SCOPE = ['openid', 'profile', 'user_impersonation']
+    DEFAULT_SCOPE = ['openid', 'profile', 'user_impersonation', 'email']
     EXTRA_DATA = [
         ('access_token', 'access_token'),
         ('id_token', 'id_token'),
@@ -57,6 +57,24 @@ class AzureADOAuth2(BaseOAuth2):
         ('family_name', 'last_name'),
         ('token_type', 'token_type')
     ]
+
+    @property
+    def authority_host(self):
+        return self.setting('AUTHORITY_HOST', 'login.microsoftonline.com')
+
+    @property
+    def tenant_id(self):
+        return 'common'
+
+    @property
+    def base_url(self):
+        return self.BASE_URL.format(authority_host=self.authority_host, tenant_id=self.tenant_id)
+
+    def authorization_url(self):
+        return self.AUTHORIZATION_URL.format(base_url=self.base_url)
+
+    def access_token_url(self):
+        return self.ACCESS_TOKEN_URL.format(base_url=self.base_url)
 
     def get_user_id(self, details, response):
         """Use upn as unique id"""
@@ -70,24 +88,30 @@ class AzureADOAuth2(BaseOAuth2):
             response.get('family_name', '')
         )
         return {'username': fullname,
-                'email': response.get('upn'),
+                'email': response.get('email', response.get('upn')),
                 'fullname': fullname,
                 'first_name': first_name,
                 'last_name': last_name}
 
     def user_data(self, access_token, *args, **kwargs):
         response = kwargs.get('response')
-        id_token = response.get('id_token')
+        if response and response.get('id_token'):
+            id_token = response.get('id_token')
+        else:
+            id_token = access_token
+
         try:
-            decoded_id_token = jwt_decode(id_token, verify=False)
-        except (DecodeError, ExpiredSignature) as de:
+            decoded_id_token = jwt.decode(id_token, options={
+                'verify_signature': False
+            })
+        except (jwt.DecodeError, jwt.ExpiredSignatureError) as de:
             raise AuthTokenError(self, de)
         return decoded_id_token
 
     def auth_extra_arguments(self):
         """Return extra arguments needed on auth process. The defaults can be
-        overriden by GET parameters."""
-        extra_arguments = super(AzureADOAuth2, self).auth_extra_arguments()
+        overridden by GET parameters."""
+        extra_arguments = super().auth_extra_arguments()
         resource = self.setting('RESOURCE')
         if resource:
             extra_arguments.update({'resource': resource})
@@ -96,8 +120,7 @@ class AzureADOAuth2(BaseOAuth2):
     def extra_data(self, user, uid, response, details=None, *args, **kwargs):
         """Return access_token and extra defined names to store in
         extra_data field"""
-        data = super(AzureADOAuth2, self).extra_data(user, uid, response,
-            details, *args, **kwargs)
+        data = super().extra_data(user, uid, response, details, *args, **kwargs)
         data['resource'] = self.setting('RESOURCE')
         return data
 

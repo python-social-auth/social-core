@@ -2,17 +2,19 @@
 Google OpenId, OAuth2, OAuth1, Google+ Sign-in backends, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/google.html
 """
-from ..utils import handle_http_errors
-from .open_id import OpenIdAuth
-from .oauth import BaseOAuth2, BaseOAuth1
 from ..exceptions import AuthMissingParameter
+from ..utils import handle_http_errors
+from .oauth import BaseOAuth1, BaseOAuth2
 
 
-class BaseGoogleAuth(object):
+class BaseGoogleAuth:
     def get_user_id(self, details, response):
         """Use google email as unique id"""
         if self.setting('USE_UNIQUE_USER_ID', False):
-            return response['id']
+            if 'sub' in response:
+                return response['sub']
+            else:
+                return response['id']
         else:
             return details['email']
 
@@ -20,24 +22,14 @@ class BaseGoogleAuth(object):
         """Return user details from Google API account"""
         if 'email' in response:
             email = response['email']
-        elif 'emails' in response:
-            email = response['emails'][0]['value']
         else:
             email = ''
 
-        if isinstance(response.get('name'), dict):
-            names = response.get('name') or {}
-            name, given_name, family_name = (
-                response.get('displayName', ''),
-                names.get('givenName', ''),
-                names.get('familyName', '')
-            )
-        else:
-            name, given_name, family_name = (
-                response.get('name', ''),
-                response.get('given_name', ''),
-                response.get('family_name', '')
-            )
+        name, given_name, family_name = (
+            response.get('name', ''),
+            response.get('given_name', ''),
+            response.get('family_name', ''),
+        )
 
         fullname, first_name, last_name = self.get_user_names(
             name, given_name, family_name
@@ -53,11 +45,10 @@ class BaseGoogleOAuth2API(BaseGoogleAuth):
     def user_data(self, access_token, *args, **kwargs):
         """Return user data from Google API"""
         return self.get_json(
-            'https://www.googleapis.com/plus/v1/people/me',
-            params={
-                'access_token': access_token,
-                'alt': 'json'
-            }
+            'https://www.googleapis.com/oauth2/v3/userinfo',
+            headers={
+                'Authorization': 'Bearer %s' % access_token,
+            },
         )
 
     def revoke_token_params(self, token, uid):
@@ -107,7 +98,7 @@ class GooglePlusAuth(BaseGoogleOAuth2API, BaseOAuth2):
     ]
 
     def auth_complete_params(self, state=None):
-        params = super(GooglePlusAuth, self).auth_complete_params(state)
+        params = super().auth_complete_params(state)
         if self.data.get('access_token'):
             # Don't add postmessage if this is plain server-side workflow
             params['redirect_uri'] = 'postmessage'
@@ -136,14 +127,19 @@ class GooglePlusAuth(BaseGoogleOAuth2API, BaseOAuth2):
                                 *args, **kwargs)
         elif 'id_token' in self.data:  # Client-side workflow
             token = self.data.get('id_token')
-            response = self.get_json(
-                'https://www.googleapis.com/oauth2/v3/tokeninfo',
-                params={'id_token': token}
-            )
-            self.process_error(response)
-            return self.do_auth(token, response=response, *args, **kwargs)
+            return self.do_auth(token, *args, **kwargs)
         else:
             raise AuthMissingParameter(self, 'access_token, id_token, or code')
+
+    def user_data(self, access_token, *args, **kwargs):
+        if 'id_token' not in self.data:
+            return super().user_data(access_token, *args, **kwargs)
+        response = self.get_json(
+            'https://www.googleapis.com/oauth2/v3/tokeninfo',
+            params={'id_token': access_token}
+        )
+        self.process_error(response)
+        return response
 
 
 class GoogleOAuth(BaseGoogleAuth, BaseOAuth1):
@@ -167,20 +163,7 @@ class GoogleOAuth(BaseGoogleAuth, BaseOAuth1):
         registered and a security badge is displayed on authorization page.
         http://code.google.com/apis/accounts/docs/OAuth_ref.html#SigningOAuth
         """
-        key_secret = super(GoogleOAuth, self).get_key_and_secret()
+        key_secret = super().get_key_and_secret()
         if key_secret == (None, None):
             key_secret = ('anonymous', 'anonymous')
         return key_secret
-
-
-class GoogleOpenId(OpenIdAuth):
-    name = 'google'
-    URL = 'https://www.google.com/accounts/o8/id'
-
-    def get_user_id(self, details, response):
-        """
-        Return user unique id provided by service. For google user email
-        is unique enought to flag a single user. Email comes from schema:
-        http://axschema.org/contact/email
-        """
-        return details['email']

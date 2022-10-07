@@ -1,8 +1,8 @@
 import requests
 
-from .oauth import BaseOAuth2
 from ..exceptions import AuthFailed
 from ..utils import handle_http_errors
+from .oauth import BaseOAuth2
 
 
 class UntappdOAuth2(BaseOAuth2):
@@ -15,6 +15,7 @@ class UntappdOAuth2(BaseOAuth2):
     ACCESS_TOKEN_METHOD = 'GET'
     STATE_PARAMETER = False
     REDIRECT_STATE = False
+    SEND_USER_AGENT = True
     EXTRA_DATA = [
         ('id', 'id'),
         ('bio', 'bio'),
@@ -87,8 +88,8 @@ class UntappdOAuth2(BaseOAuth2):
             'email': user_data.get('settings', {}).get('email_address', ''),
             'first_name': user_data.get('first_name'),
             'last_name': user_data.get('last_name'),
-            'fullname': user_data.get('first_name') + ' ' +
-                        user_data.get('last_name')
+            'fullname': ' '.join([user_data.get('first_name'),
+                                  user_data.get('last_name')])
         })
         return user_data
 

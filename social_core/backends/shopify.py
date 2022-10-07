@@ -3,11 +3,10 @@ Shopify OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/shopify.html
 """
 import imp
-import six
 
+from ..exceptions import AuthCanceled, AuthFailed
 from ..utils import handle_http_errors
 from .oauth import BaseOAuth2
-from ..exceptions import AuthFailed, AuthCanceled
 
 
 class ShopifyOAuth2(BaseOAuth2):
@@ -22,7 +21,11 @@ class ShopifyOAuth2(BaseOAuth2):
     REDIRECT_STATE = False
 
     @property
-    def shopifyAPI(self):
+    def shopify_api_version(self):
+        return self.setting('API_VERSION', '2020-10')
+
+    @property
+    def shopify_api(self):
         if not hasattr(self, '_shopify_api'):
             fp, pathname, description = imp.find_module('shopify')
             self._shopify_api = imp.load_module('shopify', fp, pathname,
@@ -32,7 +35,7 @@ class ShopifyOAuth2(BaseOAuth2):
     def get_user_details(self, response):
         """Use the shopify store name as the username"""
         return {
-            'username': six.text_type(response.get('shop', '')).replace(
+            'username': str(response.get('shop', '')).replace(
                 '.myshopify.com', ''
             )
         }
@@ -40,9 +43,9 @@ class ShopifyOAuth2(BaseOAuth2):
     def extra_data(self, user, uid, response, details=None, *args, **kwargs):
         """Return access_token and extra defined names to store in
         extra_data field"""
-        data = super(ShopifyOAuth2, self).extra_data(user, uid, response,
-                                                     details, *args, **kwargs)
-        session = self.shopifyAPI.Session(self.data.get('shop').strip())
+        data = super().extra_data(user, uid, response, details, *args, **kwargs)
+        session = self.shopify_api.Session(self.data.get('shop').strip(),
+                                           version=self.shopify_api_version)
         # Get, and store the permanent token
         token = session.request_token(data['access_token'])
         data['access_token'] = token
@@ -50,12 +53,13 @@ class ShopifyOAuth2(BaseOAuth2):
 
     def auth_url(self):
         key, secret = self.get_key_and_secret()
-        self.shopifyAPI.Session.setup(api_key=key, secret=secret)
+        self.shopify_api.Session.setup(api_key=key, secret=secret)
         scope = self.get_scope()
         state = self.state_token()
         self.strategy.session_set(self.name + '_state', state)
         redirect_uri = self.get_redirect_uri(state)
-        session = self.shopifyAPI.Session(self.data.get('shop').strip())
+        session = self.shopify_api.Session(self.data.get('shop').strip(),
+                                           version=self.shopify_api_version)
         return session.create_permission_url(
             scope=scope,
             redirect_uri=redirect_uri
@@ -69,10 +73,12 @@ class ShopifyOAuth2(BaseOAuth2):
         key, secret = self.get_key_and_secret()
         try:
             shop_url = self.data.get('shop')
-            self.shopifyAPI.Session.setup(api_key=key, secret=secret)
-            shopify_session = self.shopifyAPI.Session(shop_url, self.data)
+            self.shopify_api.Session.setup(api_key=key, secret=secret)
+            shopify_session = self.shopify_api.Session(
+                shop_url, version=self.shopify_api_version, token=self.data
+            )
             access_token = shopify_session.token
-        except self.shopifyAPI.ValidationException:
+        except self.shopify_api.ValidationException:
             raise AuthCanceled(self)
         else:
             if not access_token:
@@ -85,7 +91,7 @@ class ShopifyOAuth2(BaseOAuth2):
             'backend': self,
             'response': {
                 'shop': shop_url,
-                'website': 'http://{0}'.format(website),
+                'website': f'http://{website}',
                 'access_token': access_token
             }
         })

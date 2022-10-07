@@ -1,25 +1,25 @@
+import functools
+import hmac
+import logging
 import re
 import sys
 import time
 import unicodedata
-import collections
-import functools
-import logging
+from urllib.parse import parse_qs as battery_parse_qs
+from urllib.parse import urlencode, urlparse, urlunparse
 
-import six
 import requests
-import social_core
-
-from six.moves.urllib_parse import urlparse, urlunparse, urlencode, \
-                                   parse_qs as battery_parse_qs
-
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.poolmanager import PoolManager
 
+import social_core
+
 from .exceptions import AuthCanceled, AuthForbidden, AuthUnreachableProvider
 
-
 SETTING_PREFIX = 'SOCIAL_AUTH'
+
+PARTIAL_TOKEN_SESSION_NAME = 'partial_pipeline_token'
+
 
 social_logger = logging.getLogger('social')
 
@@ -31,7 +31,7 @@ class SSLHttpAdapter(HTTPAdapter):
     """
     def __init__(self, ssl_protocol):
         self.ssl_protocol = ssl_protocol
-        super(SSLHttpAdapter, self).__init__()
+        super().__init__()
 
     def init_poolmanager(self, connections, maxsize, block=False):
         self.poolmanager = PoolManager(
@@ -90,20 +90,24 @@ def sanitize_redirect(hosts, redirect_to):
     and returns it, else returns None, similar as how's it done
     on django.contrib.auth.views.
     """
-    if redirect_to:
-        try:
-            # Don't redirect to a host that's not in the list
-            netloc = urlparse(redirect_to)[1] or hosts[0]
-        except (TypeError, AttributeError):
-            pass
-        else:
-            if netloc in hosts:
-                return redirect_to
+    # Avoid redirect on evil URLs like ///evil.com
+    if not redirect_to or not hasattr(redirect_to, 'startswith') or \
+       redirect_to.startswith('///'):
+        return None
+
+    try:
+        # Don't redirect to a host that's not in the list
+        netloc = urlparse(redirect_to)[1] or hosts[0]
+    except (TypeError, AttributeError):
+        pass
+    else:
+        if netloc in hosts:
+            return redirect_to
 
 
 def user_is_authenticated(user):
     if user and hasattr(user, 'is_authenticated'):
-        if isinstance(user.is_authenticated, collections.Callable):
+        if callable(user.is_authenticated):
             authenticated = user.is_authenticated()
         else:
             authenticated = user.is_authenticated
@@ -116,7 +120,7 @@ def user_is_authenticated(user):
 
 def user_is_active(user):
     if user and hasattr(user, 'is_active'):
-        if isinstance(user.is_active, collections.Callable):
+        if callable(user.is_active):
             is_active = user.is_active()
         else:
             is_active = user.is_active
@@ -132,11 +136,11 @@ def slugify(value):
     """Converts to lowercase, removes non-word characters (alphanumerics
     and underscores) and converts spaces to hyphens. Also strips leading
     and trailing whitespace."""
-    value = unicodedata.normalize('NFKD', six.text_type(value)) \
+    value = unicodedata.normalize('NFKD', str(value)) \
                        .encode('ascii', 'ignore') \
                        .decode('ascii')
-    value = re.sub('[^\w\s-]', '', value).strip().lower()
-    return re.sub('[-\s]+', '-', value)
+    value = re.sub(r'[^\w\s-]', '', value).strip().lower()
+    return re.sub(r'[-\s]+', '-', value)
 
 
 def first(func, items):
@@ -155,10 +159,10 @@ def drop_lists(value):
     out = {}
     for key, val in value.items():
         val = val[0]
-        if isinstance(key, six.binary_type):
-            key = six.text_type(key, 'utf-8')
-        if isinstance(val, six.binary_type):
-            val = six.text_type(val, 'utf-8')
+        if isinstance(key, bytes):
+            key = str(key, 'utf-8')
+        if isinstance(val, bytes):
+            val = str(val, 'utf-8')
         out[key] = val
     return out
 
@@ -171,7 +175,7 @@ def partial_pipeline_data(backend, user=None, partial_token=None,
                                             'partial_token')
     partial_token = partial_token or \
         request_data.get(partial_argument_name) or \
-        backend.strategy.session_get('partial_pipeline_token', None)
+        backend.strategy.session_get(PARTIAL_TOKEN_SESSION_NAME, None)
 
     if partial_token:
         partial = backend.strategy.partial_load(partial_token)
@@ -211,21 +215,12 @@ def build_absolute_uri(host_url, path=None):
 
 
 def constant_time_compare(val1, val2):
-    """
-    Returns True if the two strings are equal, False otherwise.
-    The time taken is independent of the number of characters that match.
-    This code was borrowed from Django 1.5.4-final
-    """
-    if len(val1) != len(val2):
-        return False
-    result = 0
-    if six.PY3 and isinstance(val1, bytes) and isinstance(val2, bytes):
-        for x, y in zip(val1, val2):
-            result |= x ^ y
-    else:
-        for x, y in zip(val1, val2):
-            result |= ord(x) ^ ord(y)
-    return result == 0
+    """Compare two values and prevent timing attacks for cryptographic use."""
+    if isinstance(val1, str):
+        val1 = val1.encode('utf-8')
+    if isinstance(val2, str):
+        val2 = val2.encode('utf-8')
+    return hmac.compare_digest(val1, val2)
 
 
 def is_url(value):
@@ -269,7 +264,7 @@ def append_slash(url):
     'http://www.example.com/api/user/1/'
     """
     if url and not url.endswith('/'):
-        url = '{0}/'.format(url)
+        url = f'{url}/'
     return url
 
 
@@ -279,7 +274,7 @@ def get_strategy(strategy, storage, *args, **kwargs):
     return Strategy(Storage, *args, **kwargs)
 
 
-class cache(object):
+class cache:
     """
     Cache decorator that caches the return value of a method for a
     specified time.
@@ -304,9 +299,14 @@ class cache(object):
                 try:
                     cached_value = fn(this)
                     self.cache[this.__class__] = (now, cached_value)
-                except:
+                except Exception:
                     # Use previously cached value when call fails, if available
                     if not cached_value:
                         raise
             return cached_value
+
+        wrapped.invalidate = self._invalidate
         return wrapped
+
+    def _invalidate(self):
+        self.cache.clear()

@@ -2,8 +2,8 @@
 Twitter OAuth1 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/twitter.html
 """
-from .oauth import BaseOAuth1
 from ..exceptions import AuthCanceled
+from .oauth import BaseOAuth1
 
 
 class TwitterOAuth(BaseOAuth1):
@@ -21,7 +21,7 @@ class TwitterOAuth(BaseOAuth1):
         if 'denied' in data:
             raise AuthCanceled(self)
         else:
-            super(TwitterOAuth, self).process_error(data)
+            super().process_error(data)
 
     def get_user_details(self, response):
         """Return user details from Twitter account"""
