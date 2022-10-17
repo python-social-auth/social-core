@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+### Changed
+- Updated `user_data` method in `StripeOAuth2` to return `email` in `get_user_details`
+
+
 ## [4.3.0](https://github.com/python-social-auth/social-core/releases/tag/4.3.0) - 2022-06-13
 
 ### Added
