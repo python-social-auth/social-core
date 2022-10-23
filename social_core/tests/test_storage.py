@@ -1,12 +1,11 @@
 import random
 import unittest
 
-from ..storage import (AssociationMixin, BaseStorage, CodeMixin, NonceMixin,
-                       UserMixin)
+from ..storage import AssociationMixin, BaseStorage, CodeMixin, NonceMixin, UserMixin
 from ..strategy import BaseStrategy
 from .models import User
 
-NOT_IMPLEMENTED_MSG = 'Implement in subclass'
+NOT_IMPLEMENTED_MSG = "Implement in subclass"
 
 
 class BrokenUser(UserMixin):
@@ -39,7 +38,6 @@ class BrokenStorage(BaseStorage):
 
 
 class BrokenUserTests(unittest.TestCase):
-
     def setUp(self):
         self.user = BrokenUser
 
@@ -48,7 +46,7 @@ class BrokenUserTests(unittest.TestCase):
 
     def test_get_username(self):
         with self.assertRaisesRegex(NotImplementedError, NOT_IMPLEMENTED_MSG):
-            self.user.get_username(User('foobar'))
+            self.user.get_username(User("foobar"))
 
     def test_user_model(self):
         with self.assertRaisesRegex(NotImplementedError, NOT_IMPLEMENTED_MSG):
@@ -64,15 +62,15 @@ class BrokenUserTests(unittest.TestCase):
 
     def test_get_social_auth(self):
         with self.assertRaisesRegex(NotImplementedError, NOT_IMPLEMENTED_MSG):
-            self.user.get_social_auth('foo', 1)
+            self.user.get_social_auth("foo", 1)
 
     def test_get_social_auth_for_user(self):
         with self.assertRaisesRegex(NotImplementedError, NOT_IMPLEMENTED_MSG):
-            self.user.get_social_auth_for_user(User('foobar'))
+            self.user.get_social_auth_for_user(User("foobar"))
 
     def test_create_social_auth(self):
         with self.assertRaisesRegex(NotImplementedError, NOT_IMPLEMENTED_MSG):
-            self.user.create_social_auth(User('foobar'), 1, 'foo')
+            self.user.create_social_auth(User("foobar"), 1, "foo")
 
     def test_disconnect(self):
         with self.assertRaisesRegex(NotImplementedError, NOT_IMPLEMENTED_MSG):
@@ -88,7 +86,7 @@ class BrokenAssociationTests(unittest.TestCase):
 
     def test_store(self):
         with self.assertRaisesRegex(NotImplementedError, NOT_IMPLEMENTED_MSG):
-            self.association.store('http://foobar.com', BrokenAssociation())
+            self.association.store("http://foobar.com", BrokenAssociation())
 
     def test_get(self):
         with self.assertRaisesRegex(NotImplementedError, NOT_IMPLEMENTED_MSG):
@@ -108,7 +106,7 @@ class BrokenNonceTests(unittest.TestCase):
 
     def test_use(self):
         with self.assertRaisesRegex(NotImplementedError, NOT_IMPLEMENTED_MSG):
-            self.nonce.use('http://foobar.com', 1364951922, 'foobar123')
+            self.nonce.use("http://foobar.com", 1364951922, "foobar123")
 
 
 class BrokenCodeTest(unittest.TestCase):
@@ -120,7 +118,7 @@ class BrokenCodeTest(unittest.TestCase):
 
     def test_get_code(self):
         with self.assertRaisesRegex(NotImplementedError, NOT_IMPLEMENTED_MSG):
-            self.code.get_code('foobar')
+            self.code.get_code("foobar")
 
 
 class BrokenStrategyTests(unittest.TestCase):
@@ -132,15 +130,15 @@ class BrokenStrategyTests(unittest.TestCase):
 
     def test_redirect(self):
         with self.assertRaisesRegex(NotImplementedError, NOT_IMPLEMENTED_MSG):
-            self.strategy.redirect('http://foobar.com')
+            self.strategy.redirect("http://foobar.com")
 
     def test_get_setting(self):
         with self.assertRaisesRegex(NotImplementedError, NOT_IMPLEMENTED_MSG):
-            self.strategy.get_setting('foobar')
+            self.strategy.get_setting("foobar")
 
     def test_html(self):
         with self.assertRaisesRegex(NotImplementedError, NOT_IMPLEMENTED_MSG):
-            self.strategy.html('<p>foobar</p>')
+            self.strategy.html("<p>foobar</p>")
 
     def test_request_data(self):
         with self.assertRaisesRegex(NotImplementedError, NOT_IMPLEMENTED_MSG):
@@ -152,31 +150,30 @@ class BrokenStrategyTests(unittest.TestCase):
 
     def test_session_get(self):
         with self.assertRaisesRegex(NotImplementedError, NOT_IMPLEMENTED_MSG):
-            self.strategy.session_get('foobar')
+            self.strategy.session_get("foobar")
 
     def test_session_set(self):
         with self.assertRaisesRegex(NotImplementedError, NOT_IMPLEMENTED_MSG):
-            self.strategy.session_set('foobar', 123)
+            self.strategy.session_set("foobar", 123)
 
     def test_session_pop(self):
         with self.assertRaisesRegex(NotImplementedError, NOT_IMPLEMENTED_MSG):
-            self.strategy.session_pop('foobar')
+            self.strategy.session_pop("foobar")
 
     def test_build_absolute_uri(self):
         with self.assertRaisesRegex(NotImplementedError, NOT_IMPLEMENTED_MSG):
-            self.strategy.build_absolute_uri('/foobar')
+            self.strategy.build_absolute_uri("/foobar")
 
     def test_render_html_with_tpl(self):
         with self.assertRaisesRegex(NotImplementedError, NOT_IMPLEMENTED_MSG):
-            self.strategy.render_html('foobar.html', context={})
+            self.strategy.render_html("foobar.html", context={})
 
     def test_render_html_with_html(self):
         with self.assertRaisesRegex(NotImplementedError, NOT_IMPLEMENTED_MSG):
-            self.strategy.render_html(html='<p>foobar</p>', context={})
+            self.strategy.render_html(html="<p>foobar</p>", context={})
 
     def test_render_html_with_none(self):
-        with self.assertRaisesRegex(ValueError,
-                                    'Missing template or html parameters'):
+        with self.assertRaisesRegex(ValueError, "Missing template or html parameters"):
             self.strategy.render_html()
 
     def test_is_integrity_error(self):
@@ -190,7 +187,7 @@ class BrokenStrategyTests(unittest.TestCase):
         def SystemRandom():
             raise NotImplementedError()
 
-        orig_random = getattr(random, 'SystemRandom', None)
+        orig_random = getattr(random, "SystemRandom", None)
         random.SystemRandom = SystemRandom
 
         strategy = BrokenStrategyWithSettings(storage=BrokenStorage)

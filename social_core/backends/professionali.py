@@ -11,36 +11,37 @@ from .oauth import BaseOAuth2
 
 
 class ProfessionaliOAuth2(BaseOAuth2):
-    name = 'professionali'
-    ID_KEY = 'user_id'
-    AUTHORIZATION_URL = 'https://api.professionali.ru/oauth/authorize.html'
-    ACCESS_TOKEN_URL = 'https://api.professionali.ru/oauth/getToken.json'
-    ACCESS_TOKEN_METHOD = 'POST'
-    EXTRA_DATA = [
-        ('avatar_big', 'avatar_big'),
-        ('link', 'link')
-    ]
+    name = "professionali"
+    ID_KEY = "user_id"
+    AUTHORIZATION_URL = "https://api.professionali.ru/oauth/authorize.html"
+    ACCESS_TOKEN_URL = "https://api.professionali.ru/oauth/getToken.json"
+    ACCESS_TOKEN_METHOD = "POST"
+    EXTRA_DATA = [("avatar_big", "avatar_big"), ("link", "link")]
 
     def get_user_details(self, response):
-        first_name, last_name = map(response.get, ('firstname', 'lastname'))
-        email = ''
-        if self.setting('FAKE_EMAIL'):
-            email = f'{time()}@professionali.ru'
+        first_name, last_name = map(response.get, ("firstname", "lastname"))
+        email = ""
+        if self.setting("FAKE_EMAIL"):
+            email = f"{time()}@professionali.ru"
         return {
-            'username': f'{last_name}_{first_name}',
-            'first_name': first_name,
-            'last_name': last_name,
-            'email': email
+            "username": f"{last_name}_{first_name}",
+            "first_name": first_name,
+            "last_name": last_name,
+            "email": email,
         }
 
     def user_data(self, access_token, response, *args, **kwargs):
-        url = 'https://api.professionali.ru/v6/users/get.json'
-        fields = list(set(['firstname', 'lastname', 'avatar_big', 'link'] +
-                          self.setting('EXTRA_DATA', [])))
+        url = "https://api.professionali.ru/v6/users/get.json"
+        fields = list(
+            set(
+                ["firstname", "lastname", "avatar_big", "link"]
+                + self.setting("EXTRA_DATA", [])
+            )
+        )
         params = {
-            'fields': ','.join(fields),
-            'access_token': access_token,
-            'ids[]': response['user_id']
+            "fields": ",".join(fields),
+            "access_token": access_token,
+            "ids[]": response["user_id"],
         }
         try:
             return self.get_json(url, params)[0]

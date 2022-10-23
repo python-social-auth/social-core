@@ -45,14 +45,13 @@ for verifying JWT tokens.
 
 
 class AzureADTenantOAuth2(AzureADOAuth2):
-    name = 'azuread-tenant-oauth2'
-    OPENID_CONFIGURATION_URL = \
-        '{base_url}/.well-known/openid-configuration'
-    JWKS_URL = '{base_url}/discovery/keys'
+    name = "azuread-tenant-oauth2"
+    OPENID_CONFIGURATION_URL = "{base_url}/.well-known/openid-configuration"
+    JWKS_URL = "{base_url}/discovery/keys"
 
     @property
     def tenant_id(self):
-        return self.setting('TENANT_ID', 'common')
+        return self.setting("TENANT_ID", "common")
 
     def openid_configuration_url(self):
         return self.OPENID_CONFIGURATION_URL.format(base_url=self.base_url)
@@ -62,30 +61,29 @@ class AzureADTenantOAuth2(AzureADOAuth2):
 
     def get_certificate(self, kid):
         # retrieve keys from jwks_url
-        resp = self.request(self.jwks_url(), method='GET')
+        resp = self.request(self.jwks_url(), method="GET")
         resp.raise_for_status()
 
         # find the proper key for the kid
-        for key in resp.json()['keys']:
-            if key['kid'] == kid:
-                x5c = key['x5c'][0]
+        for key in resp.json()["keys"]:
+            if key["kid"] == kid:
+                x5c = key["x5c"][0]
                 break
         else:
-            raise DecodeError(f'Cannot find kid={kid}')
+            raise DecodeError(f"Cannot find kid={kid}")
 
-        return load_der_x509_certificate(base64.b64decode(x5c),
-                                         default_backend())
+        return load_der_x509_certificate(base64.b64decode(x5c), default_backend())
 
     def get_user_id(self, details, response):
         """Use subject (sub) claim as unique id."""
-        return response.get('sub')
+        return response.get("sub")
 
     def user_data(self, access_token, *args, **kwargs):
-        response = kwargs.get('response')
-        id_token = response.get('id_token')
+        response = kwargs.get("response")
+        id_token = response.get("id_token")
 
         # get key id and algorithm
-        key_id = get_unverified_header(id_token)['kid']
+        key_id = get_unverified_header(id_token)["kid"]
 
         try:
             # retrieve certificate for key_id
@@ -94,34 +92,36 @@ class AzureADTenantOAuth2(AzureADOAuth2):
             return jwt_decode(
                 id_token,
                 key=certificate.public_key(),
-                algorithms=['RS256'],
-                audience=self.setting('KEY')
+                algorithms=["RS256"],
+                audience=self.setting("KEY"),
             )
         except (DecodeError, ExpiredSignatureError) as error:
             raise AuthTokenError(self, error)
 
 
 class AzureADV2TenantOAuth2(AzureADTenantOAuth2):
-    name = 'azuread-v2-tenant-oauth2'
-    OPENID_CONFIGURATION_URL = '{base_url}/v2.0/.well-known/openid-configuration'
-    AUTHORIZATION_URL = '{base_url}/oauth2/v2.0/authorize'
-    ACCESS_TOKEN_URL = '{base_url}/oauth2/v2.0/token'
-    JWKS_URL = '{base_url}/discovery/v2.0/keys'
-    DEFAULT_SCOPE = ['openid', 'profile', 'offline_access']
+    name = "azuread-v2-tenant-oauth2"
+    OPENID_CONFIGURATION_URL = "{base_url}/v2.0/.well-known/openid-configuration"
+    AUTHORIZATION_URL = "{base_url}/oauth2/v2.0/authorize"
+    ACCESS_TOKEN_URL = "{base_url}/oauth2/v2.0/token"
+    JWKS_URL = "{base_url}/discovery/v2.0/keys"
+    DEFAULT_SCOPE = ["openid", "profile", "offline_access"]
 
     def get_user_id(self, details, response):
         """Use upn as unique id"""
-        return response.get('preferred_username')
+        return response.get("preferred_username")
 
     def get_user_details(self, response):
         """Return user details from Azure AD account"""
         fullname, first_name, last_name = (
-            response.get('name', ''),
-            response.get('given_name', ''),
-            response.get('family_name', '')
+            response.get("name", ""),
+            response.get("given_name", ""),
+            response.get("family_name", ""),
         )
-        return {'username': fullname,
-                'email': response.get('preferred_username'),
-                'fullname': fullname,
-                'first_name': first_name,
-                'last_name': last_name}
+        return {
+            "username": fullname,
+            "email": response.get("preferred_username"),
+            "fullname": fullname,
+            "first_name": first_name,
+            "last_name": last_name,
+        }
