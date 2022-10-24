@@ -132,6 +132,9 @@ class KeycloakOAuth2(BaseOAuth2):  # pylint: disable=abstract-method
             'fullname': response.get('name'),
             'first_name': response.get('given_name'),
             'last_name': response.get('family_name'),
+            'is_staff': response.get('is_staff'),
+            'is_active': response.get('is_active'),
+            'is_superuser': response.get('is_superuser')
         }
 
     def get_user_id(self, details, response):
