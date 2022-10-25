@@ -3,7 +3,7 @@ from os.path import dirname, join
 
 from setuptools import setup
 
-VERSION_RE = re.compile(r"__version__ = \'([\d\.]+)\'")
+VERSION_RE = re.compile(r"__version__ = \"([\d\.]+)\"")
 
 LONG_DESCRIPTION = """
 Python Social Auth is an easy to setup social authentication/registration
