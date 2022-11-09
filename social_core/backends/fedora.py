@@ -6,6 +6,6 @@ from .open_id import OpenIdAuth
 
 
 class FedoraOpenId(OpenIdAuth):
-    name = 'fedora'
-    URL = 'https://id.fedoraproject.org'
-    USERNAME_KEY = 'nickname'
+    name = "fedora"
+    URL = "https://id.fedoraproject.org"
+    USERNAME_KEY = "nickname"

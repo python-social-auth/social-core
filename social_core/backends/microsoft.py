@@ -7,16 +7,14 @@ from .oauth import BaseOAuth2
 
 
 class MicrosoftOAuth2(BaseOAuth2):
-    name = 'microsoft-graph'
-    SCOPE_SEPARATOR = ' '
-    AUTHORIZATION_URL = \
-        'https://login.microsoftonline.com/common/oauth2/v2.0/authorize'
-    ACCESS_TOKEN_URL = \
-        'https://login.microsoftonline.com/common/oauth2/v2.0/token'
+    name = "microsoft-graph"
+    SCOPE_SEPARATOR = " "
+    AUTHORIZATION_URL = "https://login.microsoftonline.com/common/oauth2/v2.0/authorize"
+    ACCESS_TOKEN_URL = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
 
-    ACCESS_TOKEN_METHOD = 'POST'
+    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
-    DEFAULT_SCOPE = ['User.Read']
+    DEFAULT_SCOPE = ["User.Read"]
 
     def auth_complete(self, *args, **kwargs):
         """Completes login process, must return user instance"""
@@ -28,51 +26,54 @@ class MicrosoftOAuth2(BaseOAuth2):
             data=self.auth_complete_params(state),
             headers=self.auth_headers(),
             auth=self.auth_complete_credentials(),
-            method=self.ACCESS_TOKEN_METHOD
+            method=self.ACCESS_TOKEN_METHOD,
         )
 
         self.process_error(response)
-        return self.do_auth(response['access_token'], response=response,
-                            *args, **kwargs)
+        return self.do_auth(
+            response["access_token"], response=response, *args, **kwargs
+        )
 
     def get_user_id(self, details, response):
         """Use user account id as unique id"""
-        return response.get('id')
+        return response.get("id")
 
     def get_user_details(self, response):
         """Return user details from Microsoft online account"""
-        email = response.get('mail')
-        username = response.get('userPrincipalName')
+        email = response.get("mail")
+        username = response.get("userPrincipalName")
 
-        if '@' in username:
+        if "@" in username:
             if not email:
                 email = username
-            username = username.split('@', 1)[0]
+            username = username.split("@", 1)[0]
 
-        return {'username': username,
-                'email': email,
-                'fullname': response.get('displayName', ''),
-                'first_name': response.get('givenName', ''),
-                'last_name': response.get('surname', '')}
+        return {
+            "username": username,
+            "email": email,
+            "fullname": response.get("displayName", ""),
+            "first_name": response.get("givenName", ""),
+            "last_name": response.get("surname", ""),
+        }
 
     def user_data(self, access_token, *args, **kwargs):
         """Return user data by querying Microsoft service"""
         return self.get_json(
-            'https://graph.microsoft.com/v1.0/me',
+            "https://graph.microsoft.com/v1.0/me",
             headers={
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Accept': 'application/json',
-                'Authorization': 'Bearer ' + access_token
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Accept": "application/json",
+                "Authorization": "Bearer " + access_token,
             },
-            method='GET'
+            method="GET",
         )
 
     def refresh_token_params(self, token, *args, **kwargs):
         return {
-            'client_id': self.setting('KEY'),
-            'client_secret': self.setting('SECRET'),
-            'refresh_token': token,
-            'grant_type': 'refresh_token',
+            "client_id": self.setting("KEY"),
+            "client_secret": self.setting("SECRET"),
+            "refresh_token": token,
+            "grant_type": "refresh_token",
         }
 
     def get_auth_token(self, user_id):
@@ -80,8 +81,8 @@ class MicrosoftOAuth2(BaseOAuth2):
         has not expired, or refreshing it if so."""
         user = self.get_user(user_id=user_id)
         access_token = user.social_user.access_token
-        expires_on = user.social_user.extra_data['expires_on']
+        expires_on = user.social_user.extra_data["expires_on"]
         if expires_on <= int(time.time()):
             new_token_response = self.refresh_token(token=access_token)
-            access_token = new_token_response['access_token']
+            access_token = new_token_response["access_token"]
         return access_token

@@ -6,6 +6,6 @@ from .legacy import LegacyAuth
 
 
 class UsernameAuth(LegacyAuth):
-    name = 'username'
-    ID_KEY = 'username'
-    EXTRA_DATA = ['username']
+    name = "username"
+    ID_KEY = "username"
+    EXTRA_DATA = ["username"]
