@@ -106,29 +106,24 @@ def sanitize_redirect(hosts, redirect_to):
 
 
 def user_is_authenticated(user):
-    if user and hasattr(user, 'is_authenticated'):
-        if callable(user.is_authenticated):
-            authenticated = user.is_authenticated()
+    if user:
+        if hasattr(user, 'is_authenticated'):
+            return (
+                user.is_authenticated()
+                if callable(user.is_authenticated)
+                else user.is_authenticated
+            )
+
         else:
-            authenticated = user.is_authenticated
-    elif user:
-        authenticated = True
-    else:
-        authenticated = False
-    return authenticated
+            return True
 
 
 def user_is_active(user):
-    if user and hasattr(user, 'is_active'):
-        if callable(user.is_active):
-            is_active = user.is_active()
+    if user:
+        if hasattr(user, 'is_active'):
+            return user.is_active() if callable(user.is_active) else user.is_active
         else:
-            is_active = user.is_active
-    elif user:
-        is_active = True
-    else:
-        is_active = False
-    return is_active
+            return True
 
 
 # This slugify version was borrowed from django revision a61dbd6
@@ -234,10 +229,10 @@ def setting_url(backend, *names):
     for name in names:
         if is_url(name):
             return name
-        else:
-            value = backend.setting(name)
-            if is_url(value):
-                return value
+        value = backend.setting(name)
+        if is_url(value):
+            return value
+    return None
 
 
 def handle_http_errors(func):
