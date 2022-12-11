@@ -1,9 +1,13 @@
-from ...backends.casdoor import CasdoorSDK, User
 from unittest import TestCase
-from django_user import settings
+
 from django.contrib.auth import authenticate, login
+
 # from django.contrib.auth.models import User
 from django.shortcuts import redirect
+from django_user import settings
+
+from ...backends.casdoor import CasdoorSDK, User
+
 
 class TestCasdoorAuth(TestCase):
     """
@@ -18,12 +22,11 @@ class TestCasdoorAuth(TestCase):
     # server returned authorization code
     code = "f97ae47cf361047eb7a8"
 
-
     @staticmethod
     def get_sdk():
         conf = settings.CASDOOR_CONFIG
 
-        certificate = '''-----BEGIN CERTIFICATE-----
+        certificate = """-----BEGIN CERTIFICATE-----
         MIIE+TCCAuGgAwIBAgIDAeJAMA0GCSqGSIb3DQEBCwUAMDYxHTAbBgNVBAoTFENh
         c2Rvb3IgT3JnYW5pemF0aW9uMRUwEwYDVQQDEwxDYXNkb29yIENlcnQwHhcNMjEx
         MDE1MDgxMTUyWhcNNDExMDE1MDgxMTUyWjA2MR0wGwYDVQQKExRDYXNkb29yIE9y
@@ -52,7 +55,7 @@ class TestCasdoorAuth(TestCase):
         nCCJHBcAyFnm1hdvdwEdH33jDBjNB6ciotJZrf/3VYaIWSalADosHAgMWfXuWP+h
         8XKXmzlxuHbTMQYtZPDgspS5aK+S4Q9wb8RRAYo=
         -----END CERTIFICATE-----
-        '''
+        """
 
         sdk = CasdoorSDK(
             endpoint="http://localhost:8000",
@@ -60,7 +63,7 @@ class TestCasdoorAuth(TestCase):
             client_secret="ab45c886ca7863c7cdccc7ace2d05a9ec08f1819",
             certificate=certificate,
             org_name="built-in",
-            application_name= "app-built-in"
+            application_name="app-built-in",
         )
 
         return sdk

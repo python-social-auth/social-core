@@ -1,8 +1,10 @@
-import requests
-import jwt
 import json
+
 # from .user import User
 from typing import List
+
+import jwt
+import requests
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from django.apps import AppConfig
@@ -48,6 +50,7 @@ class User:
     def to_dict(self) -> dict:
         return self.__dict__
 
+
 class CasdoorSDK:
     name = "casdoor"
 
@@ -59,7 +62,7 @@ class CasdoorSDK:
         certificate: str,
         org_name: str,
         application_name: str,
-        front_endpoint: str = None
+        front_endpoint: str = None,
     ):
         self.endpoint = endpoint
         if front_endpoint:
@@ -78,10 +81,12 @@ class CasdoorSDK:
     @property
     def certification(self) -> bytes:
         if type(self.certificate) is not str:
-            raise TypeError('certificate field must be str type')
-        return self.certificate.encode('utf-8')
+            raise TypeError("certificate field must be str type")
+        return self.certificate.encode("utf-8")
 
-    def get_auth_link(self, redirect_uri: str, response_type: str = "code", scope: str = "read"):
+    def get_auth_link(
+        self, redirect_uri: str, response_type: str = "code", scope: str = "read"
+    ):
         url = self.front_endpoint + "/login/oauth/authorize"
         params = {
             "client_id": self.client_id,
@@ -117,7 +122,9 @@ class CasdoorSDK:
         :param token: access_token
         :return: the data in dict format
         """
-        certificate = x509.load_pem_x509_certificate(self.certification, default_backend())
+        certificate = x509.load_pem_x509_certificate(
+            self.certification, default_backend()
+        )
 
         return_json = jwt.decode(
             token,
@@ -182,6 +189,7 @@ class CasdoorSDK:
     def delete_user(self, user: User) -> dict:
         response = self.modify_user("delete-user", user)
         return response
+
 
 # class CasdoorAuth(AppConfig):
 #     default_auto_field = "django.db.models.BigAutoField"
