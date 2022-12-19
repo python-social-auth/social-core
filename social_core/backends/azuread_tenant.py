@@ -63,7 +63,7 @@ class AzureADTenantOAuth2(AzureADOAuth2):
 
     def _appid(self):
         return (
-            f"?appid={self.setting('KEY')}" if self.setting('KEY') is not None else ""
+            f"?appid={self.setting('KEY')}" if self.setting("KEY") is not None else ""
         )
 
     def get_certificate(self, kid):
