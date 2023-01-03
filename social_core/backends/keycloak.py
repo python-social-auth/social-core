@@ -85,30 +85,35 @@ class KeycloakOAuth2(BaseOAuth2):  # pylint: disable=abstract-method
     account association.
     """
 
-    name = 'keycloak'
-    ID_KEY = 'username'
-    ACCESS_TOKEN_METHOD = 'POST'
+    name = "keycloak"
+    ID_KEY = "username"
+    ACCESS_TOKEN_METHOD = "POST"
+    REDIRECT_STATE = False
 
     def authorization_url(self):
-        return self.setting('AUTHORIZATION_URL')
+        return self.setting("AUTHORIZATION_URL")
 
     def access_token_url(self):
-        return self.setting('ACCESS_TOKEN_URL')
+        return self.setting("ACCESS_TOKEN_URL")
 
     def audience(self):
-        return self.setting('KEY')
+        return self.setting("KEY")
 
     def algorithm(self):
-        return self.setting('ALGORITHM', default='RS256')
+        return self.setting("ALGORITHM", default="RS256")
 
     def public_key(self):
-        return '\n'.join([
-            '-----BEGIN PUBLIC KEY-----',
-            self.setting('PUBLIC_KEY'),
-            '-----END PUBLIC KEY-----',
-        ])
+        return "\n".join(
+            [
+                "-----BEGIN PUBLIC KEY-----",
+                self.setting("PUBLIC_KEY"),
+                "-----END PUBLIC KEY-----",
+            ]
+        )
 
-    def user_data(self, access_token, *args, **kwargs):  # pylint: disable=unused-argument
+    def user_data(
+        self, access_token, *args, **kwargs
+    ):  # pylint: disable=unused-argument
         """Decode user data from the access_token
 
         You can specialize this method to e.g. get information
@@ -126,11 +131,11 @@ class KeycloakOAuth2(BaseOAuth2):  # pylint: disable=abstract-method
     def get_user_details(self, response):
         """Map fields in user_data into Django User fields"""
         return {
-            'username': response.get('preferred_username'),
-            'email': response.get('email'),
-            'fullname': response.get('name'),
-            'first_name': response.get('given_name'),
-            'last_name': response.get('family_name'),
+            "username": response.get("preferred_username"),
+            "email": response.get("email"),
+            "fullname": response.get("name"),
+            "first_name": response.get("given_name"),
+            "last_name": response.get("family_name"),
         }
 
     def get_user_id(self, details, response):

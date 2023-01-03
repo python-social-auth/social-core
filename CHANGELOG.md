@@ -5,17 +5,46 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased](https://github.com/python-social-auth/social-core/)
+## [Unreleased]
+
+### Changed
+- Updated `user_data` method in `StripeOAuth2` to return `email` in `get_user_details`
+
+
+## [4.3.0](https://github.com/python-social-auth/social-core/releases/tag/4.3.0) - 2022-06-13
+
+### Added
+- Add backend for Hashicorp Vault OIDC backend
+- Add generic OpenID Connect backend
+- Add Grafana OAuth2 backend
+- Add MusicBrainz OAuth2 backend
+
+### Changed
+- Fixed redirect state for Keycloak backend
+- Add fallback to RSA256 in OpenID Connect when alg is not set
+- Fixed Azure backend so it can be used with all Azure authority hosts
+
+
+## [4.2.0](https://github.com/python-social-auth/social-core/releases/tag/4.2.0) - 2022-01-17
 
 ### Added
 - Add fields that populate on create but not update `SOCIAL_AUTH_IMMUTABLE_USER_FIELDS`
 - Add Gitea oauth2 backend
 - Add Twitch OpenId backend
+- Add CI Logon backend
+- Add support for Python 3.10
 
 ### Changed
 - Fixed Slack user identity API call with Bearer headers
 - Fixed microsoft-graph login error
 - Fixed Twitch OAuth2 backend
+- Fixed Facebook API version
+- Fixed Okta authentication URLs
+- Fixed Globus JWT signature algorithm
+- Fixed kid key rotation for OpenID Connect
+- Fixed e-mail fetching from Azure
+- Fixed vkontakte API version
+- Restricted lxml to 4.6.x to avoid problems in SAML
 
 
 ## [4.1.0](https://github.com/python-social-auth/social-core/releases/tag/4.1.0) - 2021-03-01
@@ -145,7 +174,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Send User-Agent header on GitHub backend
 - Remove profile scope and verification at hash on Elixir backend
 - Mark description as Markdown for PyPI
-- Use `hmac.compare_digest` for constant time comparision
+- Use `hmac.compare_digest` for constant time comparison
 - Replace deprecated Google+ API usage in GoogleOpenIdConnect
 - Defined scope separator for Strava backend
 - Ensure `saml_config.json` is included by addint it to `MANIFEST.in`
