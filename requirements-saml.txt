@@ -1,2 +1,1 @@
-python3-saml>=1.2.1
-lxml<4.7
+python3-saml>=1.5.0
