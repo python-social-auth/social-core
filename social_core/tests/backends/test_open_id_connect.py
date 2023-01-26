@@ -204,7 +204,9 @@ class OpenIdConnectTestMixin:
         )
 
     def test_invalid_issue_time(self):
-        expiration_datetime = datetime.datetime.utcnow() - datetime.timedelta(hours=1)
+        expiration_datetime = datetime.datetime.utcnow() - datetime.timedelta(
+            seconds=self.backend.ID_TOKEN_MAX_AGE * 2
+        )
         self.authtoken_raised(
             "Token error: Incorrect id_token: iat", issue_datetime=expiration_datetime
         )
