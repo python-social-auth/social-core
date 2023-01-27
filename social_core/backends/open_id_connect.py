@@ -246,8 +246,8 @@ class OpenIdConnectAuth(BaseOAuth2):
 
         # Some OIDC server implementation with return user data in
         # attributes.
-        if 'attributes' in data:
-            return data.get('attributes')
+        if "attributes" in data:
+            return data.get("attributes")
         return data
 
     def get_user_details(self, response):
@@ -261,7 +261,7 @@ class OpenIdConnectAuth(BaseOAuth2):
         else:
             # Load user data and get the required user information from
             # there.
-            attrs = self.user_data(response.get('access_token'))
+            attrs = self.user_data(response.get("access_token"))
 
         return {
             "username": attrs.get(username_key),
