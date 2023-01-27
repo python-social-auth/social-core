@@ -240,16 +240,33 @@ class OpenIdConnectAuth(BaseOAuth2):
         return response
 
     def user_data(self, access_token, *args, **kwargs):
-        return self.get_json(
+        data = self.get_json(
             self.userinfo_url(), headers={"Authorization": f"Bearer {access_token}"}
         )
 
+        # Some OIDC server implementation with return user data in
+        # attributes.
+        if 'attributes' in data:
+            return data.get('attributes')
+        return data
+
     def get_user_details(self, response):
         username_key = self.setting("USERNAME_KEY", self.USERNAME_KEY)
+
+        # For backwards compatibility, check that username_key
+        # isn't in the response, it only should be for legacy
+        # OIDC.
+        if username_key in response:
+            attrs = response
+        else:
+            # Load user data and get the required user information from
+            # there.
+            attrs = self.user_data(response.get('access_token'))
+
         return {
-            "username": response.get(username_key),
-            "email": response.get("email"),
-            "fullname": response.get("name"),
-            "first_name": response.get("given_name"),
-            "last_name": response.get("family_name"),
+            "username": attrs.get(username_key),
+            "email": attrs.get("email"),
+            "fullname": attrs.get("name"),
+            "first_name": attrs.get("given_name"),
+            "last_name": attrs.get("family_name"),
         }
