@@ -9,8 +9,6 @@ implementation and the standard OIDC implementation in Python Social Auth.
 
 import logging
 
-from social_core.utils import cache
-
 from .open_id_connect import OpenIdConnectAuth
 
 logger = logging.getLogger("social")
