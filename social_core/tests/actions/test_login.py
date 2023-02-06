@@ -56,6 +56,12 @@ class LoginActionTest(BaseActionTest):
         redirect = self.do_login(after_complete_checks=False)
         self.assertEqual(redirect.url, "/inactive")
 
+    def test_inactive_user_allowed(self):
+        self.strategy.set_settings({"SOCIAL_AUTH_ALLOW_INACTIVE_USERS_LOGIN": True})
+        User.set_active(False)
+        redirect = self.do_login(after_complete_checks=False)
+        self.assertEqual(redirect.url, "/success")
+
     def test_invalid_user(self):
         self.strategy.set_settings(
             {
