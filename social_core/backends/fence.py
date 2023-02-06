@@ -7,7 +7,6 @@ from .open_id_connect import OpenIdConnectAuth
 
 
 class Fence(OpenIdConnectAuth):
-
     name = "fence"
     OIDC_ENDPOINT = "https://nci-crdc.datacommons.io"
     ID_KEY = "username"
