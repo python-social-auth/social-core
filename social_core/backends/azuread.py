@@ -80,7 +80,7 @@ class AzureADOAuth2(BaseOAuth2):
 
     def get_user_id(self, details, response):
         """Use subject (sub) claim as unique id."""
-        return response.get('sub')
+        return response.get("sub")
 
     def get_user_details(self, response):
         """Return user details from Azure AD account"""
