@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Updated `user_data` method in `StripeOAuth2` to return `email` in `get_user_details`
 - Removes fixed version of `lxml`
-
+- Updated Azure to fix IntegrityError at /social-auth/complete/azuread-oauth2/
 
 ## [4.3.0](https://github.com/python-social-auth/social-core/releases/tag/4.3.0) - 2022-06-13
 
