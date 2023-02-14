@@ -47,7 +47,6 @@ class MailruOAuth2(BaseOAuth2):
 
 
 class MRGOAuth2(BaseOAuth2):
-
     name = "mailru"
     ID_KEY = "email"
     AUTHORIZATION_URL = "https://oauth.mail.ru/login"
