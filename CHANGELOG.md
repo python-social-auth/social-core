@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Backend for OpenInfra OpenID
 - Facebook Limited Login backend
 
 ### Changed
