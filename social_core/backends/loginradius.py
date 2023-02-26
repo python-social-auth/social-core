@@ -36,7 +36,7 @@ class LoginRadiusAuth(BaseOAuth2):
         return self.get_json(
             params={"token": self.data.get("token"), "secret": self.setting("SECRET")},
             *args,
-            **kwargs
+            **kwargs,
         )
 
     def user_data(self, access_token, *args, **kwargs):
