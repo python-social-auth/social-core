@@ -1,4 +1,4 @@
-import unittest as unittest
+import unittest
 
 from ...backends.github import GithubOAuth2
 from ...backends.utils import get_backend, load_backends

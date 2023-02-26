@@ -1,4 +1,4 @@
-name: Flake8
+name: flake8
 
 on:
   push:
@@ -23,8 +23,5 @@ jobs:
         python -m pip install --upgrade pip wheel
         pip install -r requirements-dev.txt
 
-    - name: Run flake8
-      run: |
-        echo "::add-matcher::.github/matchers/flake8.json"
-        pre-commit run flake8 --all-files
-        echo "::remove-matcher owner=flake8::"
+    - name: Run ruff
+      run: pre-commit run ruff --all-files
