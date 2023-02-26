@@ -20,10 +20,7 @@ class BaseGoogleAuth:
 
     def get_user_details(self, response):
         """Return user details from Google API account"""
-        if "email" in response:
-            email = response["email"]
-        else:
-            email = ""
+        email = response["email"] if "email" in response else ""
 
         name, given_name, family_name = (
             response.get("name", ""),

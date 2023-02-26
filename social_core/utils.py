@@ -124,10 +124,7 @@ def user_is_authenticated(user):
 
 def user_is_active(user):
     if user and hasattr(user, "is_active"):
-        if callable(user.is_active):
-            is_active = user.is_active()
-        else:
-            is_active = user.is_active
+        is_active = user.is_active() if callable(user.is_active) else user.is_active
     elif user:
         is_active = True
     else:

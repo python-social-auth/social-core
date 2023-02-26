@@ -31,10 +31,7 @@ def get_username(strategy, details, backend, user=None, *args, **kwargs):
 
         if do_slugify:
             override_slug = strategy.setting("SLUGIFY_FUNCTION")
-            if override_slug:
-                slug_func = module_member(override_slug)
-            else:
-                slug_func = slugify
+            slug_func = module_member(override_slug) if override_slug else slugify
         else:
             slug_func = identity_func
 
