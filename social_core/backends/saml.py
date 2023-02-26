@@ -73,7 +73,7 @@ class SAMLIdentityProvider:
         key = self.conf.get(conf_key, default_attribute)
         value = attributes[key] if key in attributes else None
         if isinstance(value, list):
-            value = value[0] if len(value) else None
+            value = value[0] if value else None
         return value
 
     @property
