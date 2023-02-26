@@ -39,7 +39,7 @@ jobs:
         pip install coverage tox
 
     - name: Test with tox
-      run: tox -e py
+      run: tox -e "py${PYTHON_VERSION/\./}"
 
     - uses: codecov/codecov-action@v1
       with:
