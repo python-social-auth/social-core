@@ -35,10 +35,7 @@ class ClefOAuth2(BaseOAuth2):
         )
 
         email = info.get("email", "")
-        if email:
-            username = email.split("@", 1)[0]
-        else:
-            username = info.get("id")
+        username = email.split("@", 1)[0] if email else info.get("id")
 
         return {
             "username": username,
