@@ -36,7 +36,9 @@ class CASOpenIdConnectAuth(OpenIdConnectAuth):
         return endpoint
 
     def get_user_id(self, details, response):
-        logger.debug(f"backend: CAS, method: get_user_id, details: {details}, {response}")
+        logger.debug(
+            f"backend: CAS, method: get_user_id, details: {details}, {response}"
+        )
         return details.get("username")
 
     def user_data(self, access_token, *args, **kwargs):
