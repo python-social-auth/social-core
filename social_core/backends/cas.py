@@ -28,7 +28,7 @@ class CASOpenIdConnectAuth(OpenIdConnectAuth):
     """
 
     name = "cas"
-    STATE_PARAMETER = False
+    STATE_PARAMETER = True
 
     def oidc_endpoint(self):
         endpoint = self.setting("OIDC_ENDPOINT", self.OIDC_ENDPOINT)
