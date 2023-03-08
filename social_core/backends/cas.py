@@ -28,13 +28,16 @@ class CASOpenIdConnectAuth(OpenIdConnectAuth):
     """
 
     name = "cas"
-    REDIRECT_STATE = False
     STATE_PARAMETER = False
 
     def oidc_endpoint(self):
         endpoint = self.setting("OIDC_ENDPOINT", self.OIDC_ENDPOINT)
         logger.debug(f"backend: CAS, endpoint: {endpoint}")
         return endpoint
+
+    def get_user_id(self, details, response):
+        logger.debug(f"backend: CAS, method: get_user_id, details: {details}, {response}")
+        return details.get("username")
 
     def user_data(self, access_token, *args, **kwargs):
         data = self.get_json(
