@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - Facebook Limited Login backend
+- Setting `ALLOW_INACTIVE_USERS_LOGIN` to allow inactive users to login
 
 ### Changed
 - Removed OpenStackDevOpenId backend
