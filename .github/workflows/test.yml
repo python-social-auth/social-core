@@ -5,26 +5,21 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-20.04
-    strategy:
-      matrix:
-        python-version:
-        - '3.6'
-        - '3.7'
-        - '3.8'
-        - '3.9'
-        - '3.10'
-        - '3.11'
     env:
-      PYTHON_VERSION: ${{ matrix.python-version }}
       PYTHONUNBUFFERED: 1
 
     steps:
     - uses: actions/checkout@v3
 
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up multiple Python versions
       uses: actions/setup-python@v4
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: |
+          3.7
+          3.8
+          3.9
+          3.10
+          3.11
         cache: pip
         cache-dependency-path: requirements*.txt
 
@@ -39,9 +34,9 @@ jobs:
         pip install coverage tox
 
     - name: Test with tox
-      run: tox -e "py${PYTHON_VERSION/\./}"
+      run: tox -e ALL
 
     - uses: codecov/codecov-action@v3
       with:
         flags: unittests
-        name: Python ${{ matrix.python-version }}
+        name: Python ALL
