@@ -124,15 +124,15 @@ class AzureADB2COAuth2(AzureADOAuth2):
             response["access_token"] = response["id_token"]
         return response
 
-    def auth_extra_arguments(self):
-        """
-        Return extra arguments needed on auth process.
+    # def auth_extra_arguments(self):
+    #     """
+    #     Return extra arguments needed on auth process.
 
-        The defaults can be overridden by GET parameters.
-        """
-        extra_arguments = super().auth_extra_arguments()
-        extra_arguments["p"] = self.policy or self.data.get("p")
-        return extra_arguments
+    #     The defaults can be overridden by GET parameters.
+    #     """
+    #     extra_arguments = super().auth_extra_arguments()
+    #     extra_arguments["p"] = self.policy or self.data.get("p")
+    #     return extra_arguments
 
     def jwt_key_to_pem(self, key_json_dict):
         """
