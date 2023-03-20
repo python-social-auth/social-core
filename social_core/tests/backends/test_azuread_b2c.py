@@ -120,7 +120,7 @@ class AzureADOAuth2Test(OAuth2Test):
                     "family_name": "Bar",
                     "given_name": "Foo",
                     "iat": AUTH_TIME,
-                    "iss": "https://login.microsoftonline.com/9a9a9a9a-1111-5555-0000-bc24adfdae00/v2.0/",
+                    "iss": "https://foobar.b2clogin.com/9a9a9a9a-1111-5555-0000-bc24adfdae00/v2.0/",
                     "name": "FooBar",
                     "nbf": AUTH_TIME,
                     "oid": "11223344-5566-7788-9999-aabbccddeeff",
@@ -142,7 +142,7 @@ class AzureADOAuth2Test(OAuth2Test):
             {
                 "SOCIAL_AUTH_" + self.name + "_POLICY": "b2c_1_signin",
                 "SOCIAL_AUTH_" + self.name + "_KEY": self.AUTH_KEY,
-                "SOCIAL_AUTH_" + self.name + "_TENANT_ID": "footenant.onmicrosoft.com",
+                "SOCIAL_AUTH_" + self.name + "_TENANT_NAME": "footenant",
             }
         )
         return settings
@@ -150,7 +150,7 @@ class AzureADOAuth2Test(OAuth2Test):
     def setUp(self):
         super().setUp()
 
-        keys_url = "https://login.microsoftonline.com/footenant.onmicrosoft.com/discovery/v2.0/keys?p=b2c_1_signin"
+        keys_url = "https://footenant.b2clogin.com/footenant.onmicrosoft.com/discovery/v2.0/keys?p=b2c_1_signin"
         keys_body = json.dumps(
             {
                 "keys": [
