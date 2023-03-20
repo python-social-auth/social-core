@@ -92,14 +92,19 @@ class AzureADB2COAuth2(AzureADOAuth2):
             )
         return policy
 
+    @property
+    def base_url(self):
+        return self.BASE_URL.format(
+            tenant_name=self.tenant_name, authority_host=self.authority_host
+        )
+
     def openid_configuration_url(self):
         return self.OPENID_CONFIGURATION_URL.format(
             base_url=self.base_url, policy=self.policy
         )
 
     def authorization_url(self):
-        # Policy is required, but added later by `auth_extra_arguments()`
-        return self.AUTHORIZATION_URL.format(base_url=self.base_url)
+        return self.AUTHORIZATION_URL.format(base_url=self.base_url, policy=self.policy)
 
     def access_token_url(self):
         return self.ACCESS_TOKEN_URL.format(base_url=self.base_url, policy=self.policy)

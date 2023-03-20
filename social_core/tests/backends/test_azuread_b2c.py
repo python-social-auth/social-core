@@ -83,7 +83,7 @@ RSA_PRIVATE_JWT_KEY = {
 }
 
 
-class AzureADOAuth2Test(OAuth2Test):
+class AzureADB2COAuth2Test(OAuth2Test):
     AUTH_KEY = "abcdef12-1234-9876-0000-abcdef098765"
     EXPIRES_IN = 3600
     AUTH_TIME = int(time())
