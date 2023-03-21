@@ -54,7 +54,7 @@ class AzureADB2COAuth2(AzureADOAuth2):
     name = "azuread-b2c-oauth2"
 
     BASE_URL = "https://{tenant_name}.{authority_host}/{tenant_name}.onmicrosoft.com"
-    AUTHORIZATION_URL = "{base_url}/oauth2/v2.0/authorize?p={policy}"
+    AUTHORIZATION_URL = "{base_url}/oauth2/v2.0/authorize"
     OPENID_CONFIGURATION_URL = (
         "{base_url}/v2.0/.well-known/openid-configuration?p={policy}"
     )
@@ -104,7 +104,8 @@ class AzureADB2COAuth2(AzureADOAuth2):
         )
 
     def authorization_url(self):
-        return self.AUTHORIZATION_URL.format(base_url=self.base_url, policy=self.policy)
+        # Policy is required, but added later by `auth_extra_arguments()`
+        return self.AUTHORIZATION_URL.format(base_url=self.base_url)
 
     def access_token_url(self):
         return self.ACCESS_TOKEN_URL.format(base_url=self.base_url, policy=self.policy)
@@ -124,15 +125,15 @@ class AzureADB2COAuth2(AzureADOAuth2):
             response["access_token"] = response["id_token"]
         return response
 
-    # def auth_extra_arguments(self):
-    #     """
-    #     Return extra arguments needed on auth process.
+    def auth_extra_arguments(self):
+        """
+        Return extra arguments needed on auth process.
 
-    #     The defaults can be overridden by GET parameters.
-    #     """
-    #     extra_arguments = super().auth_extra_arguments()
-    #     extra_arguments["p"] = self.policy or self.data.get("p")
-    #     return extra_arguments
+        The defaults can be overridden by GET parameters.
+        """
+        extra_arguments = super().auth_extra_arguments()
+        extra_arguments["p"] = self.policy or self.data.get("p")
+        return extra_arguments
 
     def jwt_key_to_pem(self, key_json_dict):
         """
