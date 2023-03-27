@@ -71,7 +71,7 @@ class FacebookOAuth2AuthCancelTest(FacebookOAuth2Test):
 
 
 class FacebookLimitedLoginTest(OpenIdConnectTestMixin, OAuth2Test):
-    backend_path = "social_core.backends.facebook.FacebookLimitedLogin"
+    backend_path = "social_core.backends.facebook_limited.FacebookLimitedLogin"
     issuer = "https://facebook.com"
     openid_config_body = """
     {
