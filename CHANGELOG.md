@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.4.1](https://github.com/python-social-auth/social-core/releases/tag/4.4.1) - 2023-03-30
+
+### Changed
+- Moved Facebook Limited Login to a separate module to avoid extra dependency
+- Update Azure AD B2C base URL to match updated endpoints
+
 ## [4.4.0](https://github.com/python-social-auth/social-core/releases/tag/4.4.0) - 2023-03-15
 
 
