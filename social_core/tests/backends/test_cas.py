@@ -28,17 +28,17 @@ class CASOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
 
     user_data_body = json.dumps(
         {
-            'sub': 'Cartman',
-	        'service': 'https://cas.example.net/complete/cas/',
-	        'auth_time': 1677057708,
-	        'attributes': {
-		        'name': 'Eric',
-		        'groups': ['users', 'admins'],
-		        'preferred_username': 'cartman',
-		        'email': 'cartman@example.net'
-	        },
-            'id': 'Cartman',
-            'client_id': 'dev'
+            "sub": "Cartman",
+            "service": "https://cas.example.net/complete/cas/",
+            "auth_time": 1677057708,
+            "attributes": {
+                "name": "Eric",
+                "groups": ["users", "admins"],
+                "preferred_username": "cartman",
+                "email": "cartman@example.net",
+            },
+            "id": "Cartman",
+            "client_id": "dev",
         }
     )
 
