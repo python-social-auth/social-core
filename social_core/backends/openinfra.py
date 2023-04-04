@@ -1,5 +1,5 @@
 """
-OpenStack OpenId backend
+OpenInfra OpenId backend
 """
 from urllib.parse import urlsplit
 
@@ -8,9 +8,9 @@ from openid.extensions import ax
 from .open_id import OpenIdAuth
 
 
-class OpenStackDevOpenId(OpenIdAuth):
-    name = "openstackdev"
-    URL = "openstackid-dev.openstack.org"
+class OpenInfraOpenId(OpenIdAuth):
+    name = "openinfra"
+    URL = "id.openinfra.dev"
 
     def get_user_details(self, response):
         """Generate username from identity url"""

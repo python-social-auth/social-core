@@ -32,11 +32,8 @@ class BaseOAuthTest(BaseBackendTest):
         start_query = parse_qs(urlparse(start_url).query)
         redirect_uri = start_query.get("redirect_uri")
 
-        if getattr(self.backend, "STATE_PARAMETER", False):
-            if start_query.get("state"):
-                target_url = url_add_parameters(
-                    target_url, {"state": start_query["state"]}
-                )
+        if getattr(self.backend, "STATE_PARAMETER", False) and start_query.get("state"):
+            target_url = url_add_parameters(target_url, {"state": start_query["state"]})
 
         if redirect_uri and getattr(self.backend, "REDIRECT_STATE", False):
             redirect_query = parse_qs(urlparse(redirect_uri).query)
