@@ -47,7 +47,7 @@ for verifying JWT tokens.
 class AzureADTenantOAuth2(AzureADOAuth2):
     name = "azuread-tenant-oauth2"
     OPENID_CONFIGURATION_URL = "{base_url}/.well-known/openid-configuration{appid}"
-    JWKS_URL = "{base_url}/discovery/keys{appid}}"
+    JWKS_URL = "{base_url}/discovery/keys{appid}"
 
     @property
     def tenant_id(self):
