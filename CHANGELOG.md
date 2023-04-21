@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.4.2](https://github.com/python-social-auth/social-core/releases/tag/4.4.2) - 2023-43-22
+
+### Changed
+- Fixed Azure AD Tenant authentication with custom signing keys
+- Added CAS OIDC backend
+
 ## [4.4.1](https://github.com/python-social-auth/social-core/releases/tag/4.4.1) - 2023-03-30
 
 ### Changed
