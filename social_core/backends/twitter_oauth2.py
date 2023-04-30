@@ -1,4 +1,3 @@
-
 """
 Twitter OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/twitter-oauth2.html

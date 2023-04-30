@@ -6,20 +6,24 @@ from .oauth import OAuth2Test
 class TwitterOAuth2Test(OAuth2Test):
     backend_path = "social_core.backends.twitter_oauth2.TwitterOAuth2"
     user_data_url = "https://api.twitter.com/2/users/me"
-    access_token_body = json.dumps({
-        "token_type": "bearer",
-        "expires_in": 7200,
-        "access_token": "foobar",
-        "scope": "users.read",
-    })
-    user_data_body = json.dumps({
-        "data": {
-            "id": "1234567890123456789",
-            "username": "twitter_username",
-            "name": "first last",
-            "created_at": "2023-03-06T06:18:59.000Z",
+    access_token_body = json.dumps(
+        {
+            "token_type": "bearer",
+            "expires_in": 7200,
+            "access_token": "foobar",
+            "scope": "users.read",
         }
-    })
+    )
+    user_data_body = json.dumps(
+        {
+            "data": {
+                "id": "1234567890123456789",
+                "username": "twitter_username",
+                "name": "first last",
+                "created_at": "2023-03-06T06:18:59.000Z",
+            }
+        }
+    )
 
     expected_username = "twitter_username"
 
