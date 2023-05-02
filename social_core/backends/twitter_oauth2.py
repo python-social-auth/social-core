@@ -30,6 +30,14 @@ class TwitterOAuth2(BaseOAuth2):
         ("first_name", "first_name"),
         ("last_name", "last_name"),
         ("created_at", "created_at"),
+        ("verified", "verified"),
+        ("verified_type", "verified_type"),
+        ("proteted", "protected"),
+        ("description", "description"),
+        ("url", "url"),
+        ("profile_image_url", "profile_image_url"),
+        ("pinned_tweet_id", "pinned_tweet_id"),
+        ("public_metrics", "public_metrics"),
     ]
     PKCE_DEFAULT_CODE_CHALLENGE_METHOD = "s256"
     USE_PKCE = True
@@ -40,7 +48,16 @@ class TwitterOAuth2(BaseOAuth2):
         user_id = user["id"]
         name = user["name"]
         username = user["username"]
-        created_at = user["created_at"]
+
+        created_at = user.get("created_at")
+        verified = user.get("verified")
+        verified_type = user.get("verified_type")
+        protected = user.get("protected")
+        description = user.get("description")
+        url = user.get("url")
+        profile_image_url = user.get("profile_image_url")
+        pinned_tweet_id = user.get("pinned_tweet_id")
+        public_metrics = user.get("public_metrics")
 
         fullname, first_name, last_name = self.get_user_names(name)
 
@@ -51,10 +68,19 @@ class TwitterOAuth2(BaseOAuth2):
             "first_name": first_name,
             "last_name": last_name,
             "created_at": created_at,
+            "verified": verified,
+            "verified_type": verified_type,
+            "protected": protected,
+            "description": description,
+            "url": url,
+            "pinned_tweet_id": pinned_tweet_id,
+            "profile_image_url": profile_image_url,
+            "public_metrics": public_metrics,
         }
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
+        # https://developer.twitter.com/en/docs/twitter-api/users/lookup/api-reference/get-users-me
         fields = [
             "created_at",
             "description",
