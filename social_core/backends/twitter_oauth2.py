@@ -1,10 +1,12 @@
-
 """
 Twitter OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/twitter-oauth2.html
     https://developer.twitter.com/en/docs/authentication/oauth-2-0/authorization-code
 """
+import base64
+import hashlib
 
+from ..exceptions import AuthException
 from .oauth import BaseOAuth2
 
 
@@ -29,6 +31,8 @@ class TwitterOAuth2(BaseOAuth2):
         ("last_name", "last_name"),
         ("created_at", "created_at"),
     ]
+    PKCE_DEFAULT_CODE_CHALLENGE_METHOD = "s256"
+    USE_PKCE = True
 
     def get_user_details(self, response):
         """Return user details from Twitter account"""
@@ -74,3 +78,50 @@ class TwitterOAuth2(BaseOAuth2):
             headers={"Authorization": "Bearer %s" % access_token},
         )
         return response["data"]
+
+    def create_code_verifier(self):
+        name = self.name + "_code_verifier"
+        code_verifier = self.strategy.random_string(32)
+        self.strategy.session_set(name, code_verifier)
+        return code_verifier
+
+    def get_code_verifier(self):
+        name = self.name + "_code_verifier"
+        code_verifier = self.strategy.session_get(name)
+        return code_verifier
+
+    def generate_code_challenge(self, code_verifier, challenge_method):
+        method = challenge_method.lower()
+        if method == "s256":
+            hashed = hashlib.sha256(code_verifier.encode()).digest()
+            encoded = base64.urlsafe_b64encode(hashed)
+            code_challenge = encoded.decode().replace("=", "")  # remove padding
+            return code_challenge
+        elif method == "plain":
+            return code_verifier
+        else:
+            raise AuthException("Unsupported code challenge method.")
+
+    def auth_params(self, state=None):
+        params = super().auth_params(state=state)
+
+        if self.USE_PKCE:
+            code_challenge_method = self.setting("PKCE_CODE_CHALLENGE_METHOD")
+            if not code_challenge_method:
+                code_challenge_method = self.PKCE_DEFAULT_CODE_CHALLENGE_METHOD
+            code_verifier = self.create_code_verifier()
+            code_challenge = self.generate_code_challenge(
+                code_verifier, code_challenge_method
+            )
+            params["code_challenge_method"] = code_challenge_method
+            params["code_challenge"] = code_challenge
+        return params
+
+    def auth_complete_params(self, state=None):
+        params = super().auth_complete_params(state=state)
+
+        if self.USE_PKCE:
+            code_verifier = self.get_code_verifier()
+            params["code_verifier"] = code_verifier
+
+        return params
