@@ -15,7 +15,7 @@ class BaseTemplateStrategy:
 
     def render(self, tpl=None, html=None, context=None):
         if not tpl and not html:
-            raise ValueError('Missing template or html parameters')
+            raise ValueError("Missing template or html parameters")
         context = context or {}
         if tpl:
             return self.render_template(tpl, context)
@@ -23,16 +23,16 @@ class BaseTemplateStrategy:
             return self.render_string(html, context)
 
     def render_template(self, tpl, context):
-        raise NotImplementedError('Implement in subclass')
+        raise NotImplementedError("Implement in subclass")
 
     def render_string(self, html, context):
-        raise NotImplementedError('Implement in subclass')
+        raise NotImplementedError("Implement in subclass")
 
 
 class BaseStrategy:
-    ALLOWED_CHARS = 'abcdefghijklmnopqrstuvwxyz' \
-                    'ABCDEFGHIJKLMNOPQRSTUVWXYZ' \
-                    '0123456789'
+    ALLOWED_CHARS = (
+        "abcdefghijklmnopqrstuvwxyz" "ABCDEFGHIJKLMNOPQRSTUVWXYZ" "0123456789"
+    )
     DEFAULT_TEMPLATE_STRATEGY = BaseTemplateStrategy
 
     def __init__(self, storage=None, tpl=None):
@@ -101,37 +101,33 @@ class BaseStrategy:
         return OpenIdStore(self)
 
     def get_pipeline(self, backend=None):
-        return self.setting('PIPELINE', DEFAULT_AUTH_PIPELINE, backend)
+        return self.setting("PIPELINE", DEFAULT_AUTH_PIPELINE, backend)
 
     def get_disconnect_pipeline(self, backend=None):
-        return self.setting(
-            'DISCONNECT_PIPELINE',
-            DEFAULT_DISCONNECT_PIPELINE,
-            backend
-        )
+        return self.setting("DISCONNECT_PIPELINE", DEFAULT_DISCONNECT_PIPELINE, backend)
 
     def random_string(self, length=12, chars=ALLOWED_CHARS):
         # Implementation borrowed from django 1.4
         try:
             random.SystemRandom()
         except NotImplementedError:
-            key = self.setting('SECRET_KEY', '')
-            seed = f'{random.getstate()}{time.time()}{key}'
+            key = self.setting("SECRET_KEY", "")
+            seed = f"{random.getstate()}{time.time()}{key}"
             random.seed(hashlib.sha256(seed.encode()).digest())
-        return ''.join([random.choice(chars) for i in range(length)])
+        return "".join([random.choice(chars) for i in range(length)])
 
     def absolute_uri(self, path=None):
         uri = self.build_absolute_uri(path)
-        if uri and self.setting('REDIRECT_IS_HTTPS'):
-            uri = uri.replace('http://', 'https://')
+        if uri and self.setting("REDIRECT_IS_HTTPS"):
+            uri = uri.replace("http://", "https://")
         return uri
 
     def get_language(self):
         """Return current language"""
-        return ''
+        return ""
 
     def send_email_validation(self, backend, email, partial_token=None):
-        email_validation = self.setting('EMAIL_VALIDATION_FUNCTION')
+        email_validation = self.setting("EMAIL_VALIDATION_FUNCTION")
         send_email = module_member(email_validation)
         code = self.storage.code.make_code(email)
         send_email(self, backend, code, partial_token)
@@ -156,9 +152,9 @@ class BaseStrategy:
     def authenticate(self, backend, *args, **kwargs):
         """Trigger the authentication mechanism tied to the current
         framework"""
-        kwargs['strategy'] = self
-        kwargs['storage'] = self.storage
-        kwargs['backend'] = backend
+        kwargs["strategy"] = self
+        kwargs["storage"] = self.storage
+        kwargs["backend"] = backend
         args, kwargs = self.clean_authenticate_args(*args, **kwargs)
         return backend.authenticate(*args, **kwargs)
 
@@ -169,7 +165,7 @@ class BaseStrategy:
 
     def get_backends(self):
         """Return configured backends"""
-        return self.setting('AUTHENTICATION_BACKENDS', [])
+        return self.setting("AUTHENTICATION_BACKENDS", [])
 
     def get_backend_class(self, name):
         """Return a configured backend class"""
@@ -184,56 +180,56 @@ class BaseStrategy:
 
     def redirect(self, url):
         """Return a response redirect to the given URL"""
-        raise NotImplementedError('Implement in subclass')
+        raise NotImplementedError("Implement in subclass")
 
     def get_setting(self, name):
         """Return value for given setting name"""
-        raise NotImplementedError('Implement in subclass')
+        raise NotImplementedError("Implement in subclass")
 
     def html(self, content):
         """Return HTTP response with given content"""
-        raise NotImplementedError('Implement in subclass')
+        raise NotImplementedError("Implement in subclass")
 
     def request_data(self, merge=True):
         """Return current request data (POST or GET)"""
-        raise NotImplementedError('Implement in subclass')
+        raise NotImplementedError("Implement in subclass")
 
     def request_host(self):
         """Return current host value"""
-        raise NotImplementedError('Implement in subclass')
+        raise NotImplementedError("Implement in subclass")
 
     def session_get(self, name, default=None):
         """Return session value for given key"""
-        raise NotImplementedError('Implement in subclass')
+        raise NotImplementedError("Implement in subclass")
 
     def session_set(self, name, value):
         """Set session value for given key"""
-        raise NotImplementedError('Implement in subclass')
+        raise NotImplementedError("Implement in subclass")
 
     def session_pop(self, name):
         """Pop session value for given key"""
-        raise NotImplementedError('Implement in subclass')
+        raise NotImplementedError("Implement in subclass")
 
     def build_absolute_uri(self, path=None):
         """Build absolute URI with given (optional) path"""
-        raise NotImplementedError('Implement in subclass')
+        raise NotImplementedError("Implement in subclass")
 
     def request_is_secure(self):
         """Is the request using HTTPS?"""
-        raise NotImplementedError('Implement in subclass')
+        raise NotImplementedError("Implement in subclass")
 
     def request_path(self):
         """path of the current request"""
-        raise NotImplementedError('Implement in subclass')
+        raise NotImplementedError("Implement in subclass")
 
     def request_port(self):
         """Port in use for this request"""
-        raise NotImplementedError('Implement in subclass')
+        raise NotImplementedError("Implement in subclass")
 
     def request_get(self):
         """Request GET data"""
-        raise NotImplementedError('Implement in subclass')
+        raise NotImplementedError("Implement in subclass")
 
     def request_post(self):
         """Request POST data"""
-        raise NotImplementedError('Implement in subclass')
+        raise NotImplementedError("Implement in subclass")

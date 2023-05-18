@@ -16,19 +16,20 @@ import social_core
 
 from .exceptions import AuthCanceled, AuthForbidden, AuthUnreachableProvider
 
-SETTING_PREFIX = 'SOCIAL_AUTH'
+SETTING_PREFIX = "SOCIAL_AUTH"
 
-PARTIAL_TOKEN_SESSION_NAME = 'partial_pipeline_token'
+PARTIAL_TOKEN_SESSION_NAME = "partial_pipeline_token"
 
 
-social_logger = logging.getLogger('social')
+social_logger = logging.getLogger("social")
 
 
 class SSLHttpAdapter(HTTPAdapter):
-    """"
+    """ "
     Transport adapter that allows to use any SSL protocol. Based on:
     http://requests.rtfd.org/latest/user/advanced/#example-specific-ssl-version
     """
+
     def __init__(self, ssl_protocol):
         self.ssl_protocol = ssl_protocol
         super().__init__()
@@ -38,13 +39,13 @@ class SSLHttpAdapter(HTTPAdapter):
             num_pools=connections,
             maxsize=maxsize,
             block=block,
-            ssl_version=self.ssl_protocol
+            ssl_version=self.ssl_protocol,
         )
 
     @classmethod
     def ssl_adapter_session(cls, ssl_protocol):
         session = requests.Session()
-        session.mount('https://', SSLHttpAdapter(ssl_protocol))
+        session.mount("https://", SSLHttpAdapter(ssl_protocol))
         return session
 
 
@@ -54,14 +55,14 @@ def import_module(name):
 
 
 def module_member(name):
-    mod, member = name.rsplit('.', 1)
+    mod, member = name.rsplit(".", 1)
     module = import_module(mod)
     return getattr(module, member)
 
 
 def user_agent():
     """Builds a simple User-Agent string to send in requests"""
-    return 'social-auth-' + social_core.__version__
+    return "social-auth-" + social_core.__version__
 
 
 def url_add_parameters(url, params):
@@ -76,7 +77,7 @@ def url_add_parameters(url, params):
 
 
 def to_setting_name(*names):
-    return '_'.join([name.upper().replace('-', '_') for name in names if name])
+    return "_".join([name.upper().replace("-", "_") for name in names if name])
 
 
 def setting_name(*names):
@@ -91,8 +92,11 @@ def sanitize_redirect(hosts, redirect_to):
     on django.contrib.auth.views.
     """
     # Avoid redirect on evil URLs like ///evil.com
-    if not redirect_to or not hasattr(redirect_to, 'startswith') or \
-       redirect_to.startswith('///'):
+    if (
+        not redirect_to
+        or not hasattr(redirect_to, "startswith")
+        or redirect_to.startswith("///")
+    ):
         return None
 
     try:
@@ -106,7 +110,7 @@ def sanitize_redirect(hosts, redirect_to):
 
 
 def user_is_authenticated(user):
-    if user and hasattr(user, 'is_authenticated'):
+    if user and hasattr(user, "is_authenticated"):
         if callable(user.is_authenticated):
             authenticated = user.is_authenticated()
         else:
@@ -119,11 +123,8 @@ def user_is_authenticated(user):
 
 
 def user_is_active(user):
-    if user and hasattr(user, 'is_active'):
-        if callable(user.is_active):
-            is_active = user.is_active()
-        else:
-            is_active = user.is_active
+    if user and hasattr(user, "is_active"):
+        is_active = user.is_active() if callable(user.is_active) else user.is_active
     elif user:
         is_active = True
     else:
@@ -136,11 +137,13 @@ def slugify(value):
     """Converts to lowercase, removes non-word characters (alphanumerics
     and underscores) and converts spaces to hyphens. Also strips leading
     and trailing whitespace."""
-    value = unicodedata.normalize('NFKD', str(value)) \
-                       .encode('ascii', 'ignore') \
-                       .decode('ascii')
-    value = re.sub(r'[^\w\s-]', '', value).strip().lower()
-    return re.sub(r'[-\s]+', '-', value)
+    value = (
+        unicodedata.normalize("NFKD", str(value))
+        .encode("ascii", "ignore")
+        .decode("ascii")
+    )
+    value = re.sub(r"[^\w\s-]", "", value).strip().lower()
+    return re.sub(r"[-\s]+", "-", value)
 
 
 def first(func, items):
@@ -160,22 +163,24 @@ def drop_lists(value):
     for key, val in value.items():
         val = val[0]
         if isinstance(key, bytes):
-            key = str(key, 'utf-8')
+            key = str(key, "utf-8")
         if isinstance(val, bytes):
-            val = str(val, 'utf-8')
+            val = str(val, "utf-8")
         out[key] = val
     return out
 
 
-def partial_pipeline_data(backend, user=None, partial_token=None,
-                          *args, **kwargs):
+def partial_pipeline_data(backend, user=None, partial_token=None, *args, **kwargs):
     request_data = backend.strategy.request_data()
 
-    partial_argument_name = backend.setting('PARTIAL_PIPELINE_TOKEN_NAME',
-                                            'partial_token')
-    partial_token = partial_token or \
-        request_data.get(partial_argument_name) or \
-        backend.strategy.session_get(PARTIAL_TOKEN_SESSION_NAME, None)
+    partial_argument_name = backend.setting(
+        "PARTIAL_PIPELINE_TOKEN_NAME", "partial_token"
+    )
+    partial_token = (
+        partial_token
+        or request_data.get(partial_argument_name)
+        or backend.strategy.session_get(PARTIAL_TOKEN_SESSION_NAME, None)
+    )
 
     if partial_token:
         partial = backend.strategy.partial_load(partial_token)
@@ -188,7 +193,7 @@ def partial_pipeline_data(backend, user=None, partial_token=None,
             # only need to check for a uid match if new data was provided (i.e.
             # if current request specifies the ID_KEY).
             if backend.ID_KEY in request_data:
-                id_from_partial = partial.kwargs.get('uid')
+                id_from_partial = partial.kwargs.get("uid")
                 id_from_request = request_data.get(backend.ID_KEY)
 
                 if id_from_partial != id_from_request:
@@ -196,8 +201,8 @@ def partial_pipeline_data(backend, user=None, partial_token=None,
 
         if partial_matches_request:
             if user:  # don't update user if it's None
-                kwargs.setdefault('user', user)
-            kwargs.setdefault('request', request_data)
+                kwargs.setdefault("user", user)
+            kwargs.setdefault("request", request_data)
             partial.extend_kwargs(kwargs)
             return partial
         else:
@@ -206,10 +211,10 @@ def partial_pipeline_data(backend, user=None, partial_token=None,
 
 def build_absolute_uri(host_url, path=None):
     """Build absolute URI with given (optional) path"""
-    path = path or ''
-    if path.startswith('http://') or path.startswith('https://'):
+    path = path or ""
+    if path.startswith("http://") or path.startswith("https://"):
         return path
-    if host_url.endswith('/') and path.startswith('/'):
+    if host_url.endswith("/") and path.startswith("/"):
         path = path[1:]
     return host_url + path
 
@@ -217,17 +222,18 @@ def build_absolute_uri(host_url, path=None):
 def constant_time_compare(val1, val2):
     """Compare two values and prevent timing attacks for cryptographic use."""
     if isinstance(val1, str):
-        val1 = val1.encode('utf-8')
+        val1 = val1.encode("utf-8")
     if isinstance(val2, str):
-        val2 = val2.encode('utf-8')
+        val2 = val2.encode("utf-8")
     return hmac.compare_digest(val1, val2)
 
 
 def is_url(value):
-    return value and \
-           (value.startswith('http://') or
-            value.startswith('https://') or
-            value.startswith('/'))
+    return value and (
+        value.startswith("http://")
+        or value.startswith("https://")
+        or value.startswith("/")
+    )
 
 
 def setting_url(backend, *names):
@@ -254,6 +260,7 @@ def handle_http_errors(func):
                 raise AuthUnreachableProvider(args[0])
             else:
                 raise
+
     return wrapper
 
 
@@ -263,8 +270,8 @@ def append_slash(url):
     >>> urlparse.urljoin('http://www.example.com/api/v3', 'user/1/')
     'http://www.example.com/api/user/1/'
     """
-    if url and not url.endswith('/'):
-        url = f'{url}/'
+    if url and not url.endswith("/"):
+        url = f"{url}/"
     return url
 
 
@@ -284,6 +291,7 @@ class cache:
 
     Does not work for methods with arguments.
     """
+
     def __init__(self, ttl):
         self.ttl = ttl
         self.cache = {}

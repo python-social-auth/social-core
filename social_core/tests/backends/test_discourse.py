@@ -8,9 +8,9 @@ from .base import BaseBackendTest
 
 
 class DiscourseTest(BaseBackendTest):
-    backend_path = 'social_core.backends.discourse.DiscourseAuth'
-    expected_username = 'beepboop'
-    raw_complete_url = '/complete/{0}/'
+    backend_path = "social_core.backends.discourse.DiscourseAuth"
+    expected_username = "beepboop"
+    raw_complete_url = "/complete/{0}/"
 
     def post_start(self):
         pass
@@ -28,16 +28,18 @@ class DiscourseTest(BaseBackendTest):
         #              'CieDRYgSqMYi4W',
         #     'return_sso_url': 'http://myapp.com'
         # }))
-        sso = 'dXNlcm5hbWU9YmVlcGJvb3Ambm9uY2U9NllSamU3eGxYaHB5ZUo2cXR2QmV' + \
-              'UVWpIa1hvMVVDVFFtQ3J6TjhHWGZqYTNBb0FGazJDaWVEUllnU3FNWWk0Vy' + \
-              'ZlbWFpbD11c2VyJTQwZXhhbXBsZS5jb20mcmV0dXJuX3Nzb191cmw9aHR0c' + \
-              'CUzQSUyRiUyRm15YXBwLmNvbQ=='
+        sso = (
+            "dXNlcm5hbWU9YmVlcGJvb3Ambm9uY2U9NllSamU3eGxYaHB5ZUo2cXR2QmV"
+            + "UVWpIa1hvMVVDVFFtQ3J6TjhHWGZqYTNBb0FGazJDaWVEUllnU3FNWWk0Vy"
+            + "ZlbWFpbD11c2VyJTQwZXhhbXBsZS5jb20mcmV0dXJuX3Nzb191cmw9aHR0c"
+            + "CUzQSUyRiUyRm15YXBwLmNvbQ=="
+        )
         # NOTE: the signature was verified using the 'foo' key, like so:
         # hmac.new('foo', sso, sha256).hexdigest()
-        sig = '04063f17c99a97b1a765c1e0d7bbb61afb8471d79a39ddcd6af5ba3c93eb10e1'
-        response_query_params = f'sso={sso}&sig={sig}'
+        sig = "04063f17c99a97b1a765c1e0d7bbb61afb8471d79a39ddcd6af5ba3c93eb10e1"
+        response_query_params = f"sso={sso}&sig={sig}"
 
-        response_url = f'{return_url}?{response_query_params}'
+        response_url = f"{return_url}?{response_query_params}"
         HTTPretty.register_uri(
             HTTPretty.GET, start_url, status=301, location=response_url
         )
@@ -45,7 +47,7 @@ class DiscourseTest(BaseBackendTest):
             HTTPretty.GET,
             return_url,
             status=200,
-            content_type='text/html',
+            content_type="text/html",
         )
 
         response = requests.get(start_url)
@@ -62,7 +64,7 @@ class DiscourseTest(BaseBackendTest):
         """
         # pretend we've started with a URL like /login/discourse:
         self.strategy.set_settings(
-            {'SERVER_URL': 'http://example.com', 'SECRET': 'foo'}
+            {"SERVER_URL": "http://example.com", "SECRET": "foo"}
         )
         self.do_login()
 
@@ -72,7 +74,7 @@ class DiscourseTest(BaseBackendTest):
         different secret than our payload
         """
         self.strategy.set_settings(
-            {'SERVER_URL': 'http://example.com', 'SECRET': 'bar'}
+            {"SERVER_URL": "http://example.com", "SECRET": "bar"}
         )
         with self.assertRaises(AuthException):
             self.do_login()

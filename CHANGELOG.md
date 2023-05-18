@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.4.2](https://github.com/python-social-auth/social-core/releases/tag/4.4.2) - 2023-43-22
+
+### Changed
+- Fixed Azure AD Tenant authentication with custom signing keys
+- Added CAS OIDC backend
+
+## [4.4.1](https://github.com/python-social-auth/social-core/releases/tag/4.4.1) - 2023-03-30
+
+### Changed
+- Moved Facebook Limited Login to a separate module to avoid extra dependency
+- Update Azure AD B2C base URL to match updated endpoints
+
+## [4.4.0](https://github.com/python-social-auth/social-core/releases/tag/4.4.0) - 2023-03-15
+
+
+### Added
+
+- Backend for OpenInfra OpenID
+- Facebook Limited Login backend
+- Add support for Python 3.11
+
+### Changed
+- Removed OpenStackDevOpenId backend
+- Updated `user_data` method in `StripeOAuth2` to return `email` in `get_user_details`
+- Removes fixed version of `lxml`
+- Fixed OIDC crash on groups
+- Fixed Qiita users identification
+- Dropped support for TLSv1
+- Coding style improvements
+
+
 ## [4.3.0](https://github.com/python-social-auth/social-core/releases/tag/4.3.0) - 2022-06-13
 
 ### Added
