@@ -19,8 +19,8 @@ services:
       context: .
       dockerfile: ./files/tests/Dockerfile
       args:
-      - PYTHON_VERSIONS=3.6.12 3.7.9 3.8.7 3.9.1
+      - PYTHON_VERSIONS=3.6.12 3.7.16 3.8.16 3.9.16 3.10.10 3.11.2
     environment:
-    - PYTHON_VERSIONS=3.6.12 3.7.9 3.8.7 3.9.1
+    - PYTHON_VERSIONS=3.6.12 3.7.16 3.8.16 3.9.16 3.10.10 3.11.2
     volumes:
     - .:/code
