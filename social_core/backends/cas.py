@@ -69,7 +69,7 @@ class CASOpenIdConnectAuth(OpenIdConnectAuth):
         if not allow_groups:
             return True
 
-        groups = response.get('groups', [])
+        groups = response.get("groups", [])
         for group in groups:
             if group in allow_groups:
                 return True
