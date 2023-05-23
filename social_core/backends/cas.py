@@ -62,15 +62,7 @@ class CASOpenIdConnectAuth(OpenIdConnectAuth):
         }
 
     def auth_allowed(self, response, details):
-        if not super().auth_allowed(response, details):
-            return False
-
-        allow_groups = self.setting("ALLOW_GROUPS", [])
-        if not allow_groups:
-            return True
-
-        groups = response.get("groups", [])
-        for group in groups:
-            if group in allow_groups:
-                return True
-        return False
+        allow_groups = set(self.setting("ALLOW_GROUPS", set()))
+        groups = set(response.get("groups", set()))
+        return super().auth_allowed(response, details) if groups.intersection(allow_groups) or \
+            not allow_groups else False
