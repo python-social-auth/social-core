@@ -141,6 +141,7 @@ class SteamOpenIdMissingSteamIdTest(SteamOpenIdTest):
         with self.assertRaises(AuthFailed):
             self.do_partial_pipeline()
 
+
 class SteamOpenIdFakeSteamIdTest(SteamOpenIdTest):
     server_response = urlencode(
         {
