@@ -149,7 +149,7 @@ class SteamOpenIdFakeSteamIdTest(SteamOpenIdTest):
             "openid.ns": "http://specs.openid.net/auth/2.0",
             "openid.mode": "id_res",
             "openid.op_endpoint": "https://steamcommunity.com/openid/login",
-            "openid.claimed_id": "https://steamcommunity.com/openid/123",
+            "openid.claimed_id": "https://fakesteamcommunity.com/openid/123",
             "openid.identity": "https://fakesteamcommunity.com/openid/123",
             "openid.return_to": "http://myapp.com/complete/steam/?"
             "janrain_nonce=" + JANRAIN_NONCE,
@@ -162,11 +162,11 @@ class SteamOpenIdFakeSteamIdTest(SteamOpenIdTest):
     )
 
     def test_login(self):
-        self._login_setup(user_url="https://steamcommunity.com/openid/123")
+        self._login_setup(user_url="https://fakesteamcommunity.com/openid/123")
         with self.assertRaises(AuthFailed):
             self.do_login()
 
     def test_partial_pipeline(self):
-        self._login_setup(user_url="https://steamcommunity.com/openid/123")
+        self._login_setup(user_url="https://fakesteamcommunity.com/openid/123")
         with self.assertRaises(AuthFailed):
             self.do_partial_pipeline()
