@@ -96,7 +96,6 @@ class KeycloakOAuth2(BaseOAuth2):  # pylint: disable=abstract-method
     """
 
     name = "keycloak"
-    ID_KEY = "username"
     ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
 
@@ -120,6 +119,9 @@ class KeycloakOAuth2(BaseOAuth2):  # pylint: disable=abstract-method
                 "-----END PUBLIC KEY-----",
             ]
         )
+
+    def id_key(self):
+        return self.setting("ID_KEY", default="username")
 
     def user_data(
         self, access_token, *args, **kwargs
@@ -149,5 +151,11 @@ class KeycloakOAuth2(BaseOAuth2):  # pylint: disable=abstract-method
         }
 
     def get_user_id(self, details, response):
-        """Get and associate Django User by the field indicated by ID_KEY"""
-        return details.get(self.ID_KEY)
+        """Get and associate Django User by the field indicated by ID_KEY
+
+        The ID_KEY can be any field in the user details or the access token.
+        """
+        id_key = self.id_key()
+        if id_key in details:
+            return details[id_key]
+        return response.get(id_key)
