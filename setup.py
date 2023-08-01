@@ -71,7 +71,7 @@ setup(
     long_description=long_description() or LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
     install_requires=requirements,
-    python_requires=">=3.6",
+    python_requires=">=3.8",
     extras_require={
         "openidconnect": [requirements_openidconnect],
         "saml": [requirements_saml],
@@ -88,10 +88,10 @@ setup(
         "Environment :: Web Environment",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
     ],
     package_data={
         "social_core/tests": [
