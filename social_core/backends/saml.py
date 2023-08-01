@@ -302,7 +302,11 @@ class SAMLAuth(BaseAuth):
         The user has been redirected back from the IdP and we should
         now log them in, if everything checks out.
         """
-        idp_name = self.strategy.request_data()["RelayState"]
+        try:
+            idp_name = self.strategy.request_data()["RelayState"]
+        except KeyError:
+            raise AuthMissingParameter(self, "RelayState")
+
         idp = self.get_idp(idp_name)
         auth = self._create_saml_auth(idp)
         auth.process_response()
