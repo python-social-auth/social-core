@@ -4,8 +4,13 @@ import json
 from calendar import timegm
 
 import jwt
+from jwt import (
+    ExpiredSignatureError,
+    InvalidAudienceError,
+    InvalidTokenError,
+    PyJWTError,
+)
 from jwt.utils import base64url_decode
-from jwt import ExpiredSignatureError, InvalidTokenError, PyJWTError, InvalidAudienceError
 
 from social_core.backends.oauth import BaseOAuth2
 from social_core.exceptions import AuthTokenError
@@ -190,7 +195,9 @@ class OpenIdConnectAuth(BaseOAuth2):
                 rsakey = jwt.PyJWK(key)
                 message, encoded_sig = id_token.rsplit(".", 1)
                 decoded_sig = base64url_decode(encoded_sig.encode("utf-8"))
-                if rsakey.Algorithm.verify(message.encode("utf-8"), rsakey.key, decoded_sig):
+                if rsakey.Algorithm.verify(
+                    message.encode("utf-8"), rsakey.key, decoded_sig
+                ):
                     return key
         return None
 
@@ -229,7 +236,7 @@ class OpenIdConnectAuth(BaseOAuth2):
 
         # pyjwt does not validate OIDC claims
         # see https://github.com/jpadilla/pyjwt/pull/296
-        if claims.get("at_hash") != self.calc_at_hash(access_token, key['alg']):
+        if claims.get("at_hash") != self.calc_at_hash(access_token, key["alg"]):
             raise AuthTokenError(self, "Invalid access token")
 
         self.validate_claims(claims)
@@ -271,4 +278,8 @@ class OpenIdConnectAuth(BaseOAuth2):
         """
         alg_obj = jwt.get_algorithm_by_name(algorithm)
         digest = alg_obj.compute_hash_digest(access_token.encode("utf-8"))
-        return base64.urlsafe_b64encode(digest[: (len(digest) // 2)]).decode("utf-8").rstrip("=")
+        return (
+            base64.urlsafe_b64encode(digest[: (len(digest) // 2)])
+            .decode("utf-8")
+            .rstrip("=")
+        )

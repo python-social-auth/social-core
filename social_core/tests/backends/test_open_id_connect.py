@@ -6,8 +6,8 @@ import sys
 from calendar import timegm
 from urllib.parse import urlparse
 
-from httpretty import HTTPretty
 import jwt
+from httpretty import HTTPretty
 
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 
@@ -155,7 +155,9 @@ class OpenIdConnectTestMixin:
 
         body["id_token"] = jwt.encode(
             id_token,
-            key=jwt.PyJWK(dict(self.key, iat=timegm(issue_datetime.utctimetuple()), nonce=nonce)).key,
+            key=jwt.PyJWK(
+                dict(self.key, iat=timegm(issue_datetime.utctimetuple()), nonce=nonce)
+            ).key,
             algorithm="RS256",
             headers=dict(kid=kid) if kid else None,
         )

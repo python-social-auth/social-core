@@ -45,7 +45,7 @@ class Auth0OAuth2Test(OAuth2Test):
                     "picture": "http://example.com/image.png",
                     "sub": "123456",
                     "iss": f"https://{DOMAIN}/",
-                    "aud": "a-key"
+                    "aud": "a-key",
                 },
                 jwt.PyJWK(JWK_KEY).key,
                 algorithm="RS256",
