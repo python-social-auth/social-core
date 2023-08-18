@@ -1,5 +1,7 @@
-from .oauth import BaseOAuth2
 from urllib.parse import urlencode
+
+from .oauth import BaseOAuth2
+
 
 class WLCGOAuth2(BaseOAuth2):
     """
@@ -25,14 +27,12 @@ class WLCGOAuth2(BaseOAuth2):
             "email": response.get("email"),
             "fullname": fullname,
             "first_name": first_name,
-            "last_name": last_name
+            "last_name": last_name,
         }
-
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        url = 'https://wlcg.cloud.cnaf.infn.it/userinfo?' + urlencode({
-            'access_token': access_token
-        })
+        url = "https://wlcg.cloud.cnaf.infn.it/userinfo?" + urlencode(
+            {"access_token": access_token}
+        )
         return self.get_json(url)
-    
