@@ -14,7 +14,7 @@ class WLCGOAuth2(BaseOAuth2):
     ACCESS_TOKEN_URL = "https://wlcg.cloud.cnaf.infn.it/token"
     REFRESH_TOKEN_URL = "https://wlcg.cloud.cnaf.infn.it/token"
     ACCESS_TOKEN_METHOD = "POST"
-    DEFAULT_SCOPE = ["openid", "profile", "wlcg", "offline_access"]
+    DEFAULT_SCOPE = ["openid", "email", "profile", "wlcg", "offline_access"]
     REDIRECT_STATE = False
 
     def get_user_details(self, response):
