@@ -1,5 +1,5 @@
 """
-Facebook OAuth2, Canvas Application and Limited Login backends, docs at:
+Facebook OAuth2, and Canvas Application  backends, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/facebook.html
 """
 import base64
@@ -12,12 +12,10 @@ from ..exceptions import (
     AuthCanceled,
     AuthException,
     AuthMissingParameter,
-    AuthTokenError,
     AuthUnknownError,
 )
 from ..utils import constant_time_compare, handle_http_errors, parse_qs
 from .oauth import BaseOAuth2
-from .open_id_connect import OpenIdConnectAuth
 
 API_VERSION = 12.0
 
@@ -249,46 +247,3 @@ class FacebookAppOAuth2(FacebookOAuth2):
                 time.time() - 86400
             ):
                 return data
-
-
-class FacebookLimitedLogin(OpenIdConnectAuth):
-    """Facebook Limited Login (OIDC) backend"""
-
-    name = "facebook-limited-login"
-    OIDC_ENDPOINT = "https://www.facebook.com"
-    ACCESS_TOKEN_URL = "https://facebook.com/dialog/oauth/"
-    ID_TOKEN_MAX_AGE = 3600
-
-    def authenticate(self, *args, **kwargs):
-        if (
-            "backend" not in kwargs
-            or kwargs["backend"].name != self.name
-            or "strategy" not in kwargs
-            or "response" not in kwargs
-        ):
-            return None
-
-        # Replace response with the decoded JWT
-        raw_jwt = kwargs.get("response", {}).get("access_token")
-        kwargs["response"] = self.validate_and_return_id_token(raw_jwt, "")
-        return super().authenticate(*args, **kwargs)
-
-    def get_user_details(self, response):
-        return {
-            "fullname": response.get("name"),
-            "email": response.get("email"),
-            "picture": response.get("picture"),
-        }
-
-    def user_data(self, access_token, *args, **kwargs):
-        # We don't have an access token to call any API for the user details.
-        return None
-
-    def validate_claims(self, id_token):
-        try:
-            super().validate_claims(id_token)
-        except AuthTokenError as e:
-            if "Incorrect id_token: nonce" in e.args:
-                # Ignore errors about nonce. We can't validate it since it's not generated server-side.
-                return
-            raise

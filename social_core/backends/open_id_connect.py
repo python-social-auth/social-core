@@ -1,10 +1,16 @@
+import base64
 import datetime
 import json
 from calendar import timegm
 
-from jose import jwk, jwt
-from jose.jwt import ExpiredSignatureError, JWTClaimsError, JWTError
-from jose.utils import base64url_decode
+import jwt
+from jwt import (
+    ExpiredSignatureError,
+    InvalidAudienceError,
+    InvalidTokenError,
+    PyJWTError,
+)
+from jwt.utils import base64url_decode
 
 from social_core.backends.oauth import BaseOAuth2
 from social_core.exceptions import AuthTokenError
@@ -186,10 +192,12 @@ class OpenIdConnectAuth(BaseOAuth2):
             if kid is None or kid == key.get("kid"):
                 if "alg" not in key:
                     key["alg"] = self.setting("JWT_ALGORITHMS", self.JWT_ALGORITHMS)[0]
-                rsakey = jwk.construct(key)
+                rsakey = jwt.PyJWK(key)
                 message, encoded_sig = id_token.rsplit(".", 1)
                 decoded_sig = base64url_decode(encoded_sig.encode("utf-8"))
-                if rsakey.verify(message.encode("utf-8"), decoded_sig):
+                if rsakey.Algorithm.verify(
+                    message.encode("utf-8"), rsakey.key, decoded_sig
+                ):
                     return key
         return None
 
@@ -205,24 +213,31 @@ class OpenIdConnectAuth(BaseOAuth2):
         if not key:
             raise AuthTokenError(self, "Signature verification failed")
 
-        rsakey = jwk.construct(key)
+        rsakey = jwt.PyJWK(key)
 
         try:
             claims = jwt.decode(
                 id_token,
-                rsakey.to_pem().decode("utf-8"),
+                rsakey.key,
                 algorithms=self.setting("JWT_ALGORITHMS", self.JWT_ALGORITHMS),
                 audience=client_id,
                 issuer=self.id_token_issuer(),
-                access_token=access_token,
                 options=self.setting("JWT_DECODE_OPTIONS", self.JWT_DECODE_OPTIONS),
             )
         except ExpiredSignatureError:
             raise AuthTokenError(self, "Signature has expired")
-        except JWTClaimsError as error:
+        except InvalidAudienceError:
+            # compatibility with jose error message
+            raise AuthTokenError(self, "Token error: Invalid audience")
+        except InvalidTokenError as error:
             raise AuthTokenError(self, str(error))
-        except JWTError:
+        except PyJWTError:
             raise AuthTokenError(self, "Invalid signature")
+
+        # pyjwt does not validate OIDC claims
+        # see https://github.com/jpadilla/pyjwt/pull/296
+        if claims.get("at_hash") != self.calc_at_hash(access_token, key["alg"]):
+            raise AuthTokenError(self, "Invalid access token")
 
         self.validate_claims(claims)
 
@@ -253,3 +268,18 @@ class OpenIdConnectAuth(BaseOAuth2):
             "first_name": response.get("given_name"),
             "last_name": response.get("family_name"),
         }
+
+    @staticmethod
+    def calc_at_hash(access_token, algorithm):
+        """
+        Calculates "at_hash" claim which is not done by pyjwt.
+
+        See https://pyjwt.readthedocs.io/en/stable/usage.html#oidc-login-flow
+        """
+        alg_obj = jwt.get_algorithm_by_name(algorithm)
+        digest = alg_obj.compute_hash_digest(access_token.encode("utf-8"))
+        return (
+            base64.urlsafe_b64encode(digest[: (len(digest) // 2)])
+            .decode("utf-8")
+            .rstrip("=")
+        )

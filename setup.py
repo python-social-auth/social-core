@@ -40,13 +40,12 @@ def read_tests_requirements(filename):
 
 
 requirements = read_requirements("requirements-base.txt")
-requirements_openidconnect = read_requirements("requirements-openidconnect.txt")
 requirements_saml = read_requirements("requirements-saml.txt")
 requirements_azuread = read_requirements("requirements-azuread.txt")
 
 tests_requirements = read_tests_requirements("requirements.txt")
 
-requirements_all = requirements_openidconnect + requirements_saml + requirements_azuread
+requirements_all = requirements_saml + requirements_azuread
 
 tests_requirements = tests_requirements + requirements_all
 
@@ -71,9 +70,8 @@ setup(
     long_description=long_description() or LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
     install_requires=requirements,
-    python_requires=">=3.6",
+    python_requires=">=3.8",
     extras_require={
-        "openidconnect": [requirements_openidconnect],
         "saml": [requirements_saml],
         "azuread": [requirements_azuread],
         "all": [requirements_all],
@@ -88,10 +86,10 @@ setup(
         "Environment :: Web Environment",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
     ],
     package_data={
         "social_core/tests": [

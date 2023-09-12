@@ -25,7 +25,12 @@ class KeycloakOAuth2(BaseOAuth2):  # pylint: disable=abstract-method
 
     To set up, please take the following steps:
 
-    1. Create a new Keycloak client in the Clients section.
+    1. Create a new Keycloak client in the Clients section:
+
+        a. Choose the `Client ID` in the `General Settings` pane.
+
+        b. Select `Client authentication` and `Authorization` in the
+           `Capability config` pane.
 
     2. Configure the following parameters in the Client setup:
 
@@ -33,29 +38,34 @@ class KeycloakOAuth2(BaseOAuth2):  # pylint: disable=abstract-method
             Client ID (copy to settings as `KEY` value)
         Credentials >
             Client Authenticator >
-                Secret (copy to settings as `SECRET` value)
+                Use `Client Id and Secret` and copy the `Client secret` value
+                to settings as `SECRET` value
 
     3. For the tokens to work with the JWT setup the following configuration has
        to be made in Keycloak:
 
-        Settings >
-            Access Type >
-                confidential
-        Settings >
-            Fine Grain OpenID Connect Configuration >
-                User Info Signed
-        Response Algorithm >
-            RS256
-        Settings >
-            Fine Grain OpenID Connect Configuration >
-                Request Object Signature Algorithm > RS256
+        Advanced >
+            Fine grain OpenID Connect configuration >
+                User Info Signed Response Algorithm >
+                    RS256
+        Advanced >
+            Fine grain OpenID Connect configuration >
+                Request Object Signature Algorithm >
+                    RS256
 
-    4. Get the public key (copy to settings as `PUBLIC_KEY` value) to be used
+    4. Re-enable the audience (see https://issues.redhat.com/browse/KEYCLOAK-6638
+       for context):
+
+       Go to Client scopes > YOUR-CLIENT-ID-dedicated > Add mapper > Audience, pick
+       a name for the mapper and select the Client ID corresponding to your client
+       in `Included Client Audience`.
+
+    5. Get the public key (copy to settings as `PUBLIC_KEY` value) to be used
        with the backend:
 
         Realm Settings > Keys > Public key
 
-    5. Configure access token fields are configured via the Keycloak Client
+    6. Configure access token fields are configured via the Keycloak Client
        mappers:
 
         Clients > Client ID > Mappers
@@ -63,7 +73,7 @@ class KeycloakOAuth2(BaseOAuth2):  # pylint: disable=abstract-method
     They have to include at least the `ID_KEY` value and the dictionary keys
     defined in the `get_user_details` method.
 
-    6. Configure your web backend. Example setting values for Django settings
+    7. Configure your web backend. Example setting values for Django settings
        could be:
 
         SOCIAL_AUTH_KEYCLOAK_KEY = 'example'
@@ -75,7 +85,7 @@ class KeycloakOAuth2(BaseOAuth2):  # pylint: disable=abstract-method
         SOCIAL_AUTH_KEYCLOAK_ACCESS_TOKEN_URL = \
           'https://sso.com/auth/realms/example/protocol/openid-connect/token'
 
-    7. The default behaviour is to associate users via username field, but you
+    8. The default behaviour is to associate users via username field, but you
        can change the key with e.g.
 
             SOCIAL_AUTH_KEYCLOAK_ID_KEY = 'email'
@@ -86,7 +96,6 @@ class KeycloakOAuth2(BaseOAuth2):  # pylint: disable=abstract-method
     """
 
     name = "keycloak"
-    ID_KEY = "username"
     ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
 
@@ -110,6 +119,9 @@ class KeycloakOAuth2(BaseOAuth2):  # pylint: disable=abstract-method
                 "-----END PUBLIC KEY-----",
             ]
         )
+
+    def id_key(self):
+        return self.setting("ID_KEY", default="username")
 
     def user_data(
         self, access_token, *args, **kwargs
@@ -139,5 +151,11 @@ class KeycloakOAuth2(BaseOAuth2):  # pylint: disable=abstract-method
         }
 
     def get_user_id(self, details, response):
-        """Get and associate Django User by the field indicated by ID_KEY"""
-        return details.get(self.ID_KEY)
+        """Get and associate Django User by the field indicated by ID_KEY
+
+        The ID_KEY can be any field in the user details or the access token.
+        """
+        id_key = self.id_key()
+        if id_key in details:
+            return details[id_key]
+        return response.get(id_key)

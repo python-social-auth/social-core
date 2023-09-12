@@ -14,7 +14,7 @@ repos:
   hooks:
   - id: ruff
 - repo: https://github.com/psf/black
-  rev: 23.1.0
+  rev: 23.9.1
   hooks:
   - id: black
 - repo: meta
@@ -22,7 +22,7 @@ repos:
   - id: check-hooks-apply
   - id: check-useless-excludes
 - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-  rev: v2.7.0
+  rev: v2.10.0
   hooks:
   - id: pretty-format-yaml
     args: [--autofix, --indent, '2']
