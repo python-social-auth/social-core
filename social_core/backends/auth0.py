@@ -2,7 +2,7 @@
 Auth0 implementation based on:
 https://auth0.com/docs/quickstart/webapp/django/01-login
 """
-from jose import jwt
+import jwt
 
 from .oauth import BaseOAuth2
 
@@ -37,9 +37,32 @@ class Auth0OAuth2(BaseOAuth2):
         jwks = self.get_json(self.api_path(".well-known/jwks.json"))
         issuer = self.api_path()
         audience = self.setting("KEY")  # CLIENT_ID
-        payload = jwt.decode(
-            id_token, jwks, algorithms=["RS256"], audience=audience, issuer=issuer
-        )
+        try:
+            # it could be a set of JWKs
+            keys = jwt.PyJWKSet.from_dict(jwks).keys
+        except jwt.PyJWKSetError:
+            # let any error raise from here
+            # try to get single JWK
+            keys = [jwt.PyJWK.from_dict(jwks, "RS256")]
+
+        signature_error = None
+        for key in keys:
+            try:
+                payload = jwt.decode(
+                    id_token,
+                    key.key,
+                    algorithms=["RS256"],
+                    audience=audience,
+                    issuer=issuer,
+                )
+            except (jwt.InvalidSignatureError, jwt.InvalidAlgorithmError) as ex:
+                signature_error = ex
+            else:
+                break
+        else:
+            # raise last esception found during iteration
+            raise signature_error
+
         fullname, first_name, last_name = self.get_user_names(payload["name"])
         return {
             "username": payload["nickname"],

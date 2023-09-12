@@ -40,13 +40,12 @@ def read_tests_requirements(filename):
 
 
 requirements = read_requirements("requirements-base.txt")
-requirements_openidconnect = read_requirements("requirements-openidconnect.txt")
 requirements_saml = read_requirements("requirements-saml.txt")
 requirements_azuread = read_requirements("requirements-azuread.txt")
 
 tests_requirements = read_tests_requirements("requirements.txt")
 
-requirements_all = requirements_openidconnect + requirements_saml + requirements_azuread
+requirements_all = requirements_saml + requirements_azuread
 
 tests_requirements = tests_requirements + requirements_all
 
@@ -73,7 +72,6 @@ setup(
     install_requires=requirements,
     python_requires=">=3.8",
     extras_require={
-        "openidconnect": [requirements_openidconnect],
         "saml": [requirements_saml],
         "azuread": [requirements_azuread],
         "all": [requirements_all],

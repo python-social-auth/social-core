@@ -1,7 +1,7 @@
 import json
 
+import jwt
 from httpretty import HTTPretty
-from jose import jwt
 
 from .oauth import OAuth2Test
 
@@ -45,8 +45,9 @@ class Auth0OAuth2Test(OAuth2Test):
                     "picture": "http://example.com/image.png",
                     "sub": "123456",
                     "iss": f"https://{DOMAIN}/",
+                    "aud": "a-key",
                 },
-                JWK_KEY,
+                jwt.PyJWK(JWK_KEY).key,
                 algorithm="RS256",
             ),
         }
