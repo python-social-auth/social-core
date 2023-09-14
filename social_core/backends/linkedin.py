@@ -1,35 +1,37 @@
+
 """
 LinkedIn OAuth1 and OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/linkedin.html
 """
 from social_core.exceptions import AuthCanceled
 
-from .oauth import BaseOAuth2
+from social_core.backends.oauth import BaseOAuth2
 
 
 class LinkedinOAuth2(BaseOAuth2):
     name = "linkedin-oauth2"
     AUTHORIZATION_URL = "https://www.linkedin.com/oauth/v2/authorization"
     ACCESS_TOKEN_URL = "https://www.linkedin.com/oauth/v2/accessToken"
-    USER_DETAILS_URL = "https://api.linkedin.com/v2/me?projection=({projection})"
+    USER_DETAILS_URL = "https://api.linkedin.com/v2/userinfo?projection=({projection})"
     USER_EMAILS_URL = (
         "https://api.linkedin.com/v2/emailAddress"
         "?q=members&projection=(elements*(handle~))"
     )
     ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
-    DEFAULT_SCOPE = ["r_liteprofile"]
+    DEFAULT_SCOPE = ['profile', 'email', 'openid']
     EXTRA_DATA = [
-        ("id", "id"),
-        ("expires_in", "expires"),
-        ("firstName", "first_name"),
-        ("lastName", "last_name"),
+        ("id", "sub"),
+        ("expires_in", "exp"),
+        ("firstName", "given_name"),
+        ("lastName", "family_name"),
+        ("emailAddress", "email"),
     ]
 
     def user_details_url(self):
         # use set() since LinkedIn fails when values are duplicated
         fields_selectors = list(
-            set(["id", "firstName", "lastName"] + self.setting("FIELD_SELECTORS", []))
+            set(["sub", "given_name", "family_name", "name", "email"] + self.setting("FIELD_SELECTORS", []))
         )
         # user sort to ease the tests URL mocking
         fields_selectors.sort()
@@ -57,37 +59,19 @@ class LinkedinOAuth2(BaseOAuth2):
         )
         email_addresses = []
         for element in response.get("elements", []):
-            email_address = element.get("handle~", {}).get("emailAddress")
+            email_address = element.get("handle~", {}).get("email")
             email_addresses.append(email_address)
         return list(filter(None, email_addresses))
 
     def get_user_details(self, response):
         """Return user details from Linkedin account"""
 
-        def get_localized_name(name):
-            """
-            FirstName & Last Name object
-            {
-                  'localized': {
-                     'en_US': 'Smith'
-                  },
-                  'preferredLocale': {
-                     'country': 'US',
-                     'language': 'en'
-                  }
-            }
-            :return the localizedName from the lastName object
-            """
-            locale = "{}_{}".format(
-                name["preferredLocale"]["language"], name["preferredLocale"]["country"]
-            )
-            return name["localized"].get(locale, "")
-
         fullname, first_name, last_name = self.get_user_names(
-            first_name=get_localized_name(response["firstName"]),
-            last_name=get_localized_name(response["lastName"]),
+            first_name=response["given_name"],
+            last_name=response["family_name"],
+            fullname=response.get("name"),
         )
-        email = response.get("emailAddress", "")
+        email = response.get("email", "")
         return {
             "username": first_name + last_name,
             "fullname": fullname,
