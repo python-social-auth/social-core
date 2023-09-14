@@ -1,11 +1,9 @@
-
 """
 LinkedIn OAuth1 and OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/linkedin.html
 """
-from social_core.exceptions import AuthCanceled
-
 from social_core.backends.oauth import BaseOAuth2
+from social_core.exceptions import AuthCanceled
 
 
 class LinkedinOAuth2(BaseOAuth2):
@@ -19,7 +17,7 @@ class LinkedinOAuth2(BaseOAuth2):
     )
     ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
-    DEFAULT_SCOPE = ['profile', 'email', 'openid']
+    DEFAULT_SCOPE = ["profile", "email", "openid"]
     EXTRA_DATA = [
         ("id", "sub"),
         ("expires_in", "exp"),
@@ -31,7 +29,10 @@ class LinkedinOAuth2(BaseOAuth2):
     def user_details_url(self):
         # use set() since LinkedIn fails when values are duplicated
         fields_selectors = list(
-            set(["sub", "given_name", "family_name", "name", "email"] + self.setting("FIELD_SELECTORS", []))
+            set(
+                ["sub", "given_name", "family_name", "name", "email"]
+                + self.setting("FIELD_SELECTORS", [])
+            )
         )
         # user sort to ease the tests URL mocking
         fields_selectors.sort()
