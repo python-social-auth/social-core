@@ -247,7 +247,7 @@ class BaseOAuth1(OAuthAuth):
     def unauthorized_token(self):
         """Return request for unauthorized token (first stage)"""
         params = self.request_token_extra_arguments()
-        params.update(self.get_scope_argument())
+        # params.update(self.get_scope_argument())
         key, secret = self.get_key_and_secret()
         state = self.get_or_create_state()
         response = self.request(
