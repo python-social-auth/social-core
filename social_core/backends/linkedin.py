@@ -18,6 +18,11 @@ class LinkedinOpenIdConnect(OpenIdConnectAuth):
     # Settings from https://www.linkedin.com/oauth/.well-known/openid-configuration
     OIDC_ENDPOINT = "https://www.linkedin.com/oauth"
 
+    # https://developer.okta.com/docs/reference/api/oidc/#response-example-success-9
+    # Override this value as it is not provided by Linkedin.
+    # else our request falls back to basic auth which is not supported.
+    TOKEN_ENDPOINT_AUTH_METHOD = "client_secret_post"
+
 
 class LinkedinOAuth2(BaseOAuth2):
     name = "linkedin-oauth2"
