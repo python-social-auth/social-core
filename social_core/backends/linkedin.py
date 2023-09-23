@@ -15,6 +15,8 @@ class LinkedinOpenIdConnect(OpenIdConnectAuth):
     """
 
     name = "linkedin-openidconnect"
+    # Settings from https://www.linkedin.com/oauth/.well-known/openid-configuration
+    OIDC_ENDPOINT = "https://www.linkedin.com/oauth"
 
 
 class LinkedinOAuth2(BaseOAuth2):
