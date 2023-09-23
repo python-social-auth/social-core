@@ -2,9 +2,14 @@
 LinkedIn OAuth1 and OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/linkedin.html
 """
+from social_core.backends.open_id_connect import OpenIdConnectAuth
 from social_core.exceptions import AuthCanceled
 
 from .oauth import BaseOAuth2
+
+
+class LinkedinOpenIdConnect(OpenIdConnectAuth):
+    name = "linkedin-openidconnect"
 
 
 class LinkedinOAuth2(BaseOAuth2):
