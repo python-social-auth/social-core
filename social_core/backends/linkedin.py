@@ -2,8 +2,11 @@
 LinkedIn OAuth1 and OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/linkedin.html
 """
+import datetime
+from calendar import timegm
+
 from social_core.backends.open_id_connect import OpenIdConnectAuth
-from social_core.exceptions import AuthCanceled
+from social_core.exceptions import AuthCanceled, AuthTokenError
 
 from .oauth import BaseOAuth2
 
@@ -22,6 +25,32 @@ class LinkedinOpenIdConnect(OpenIdConnectAuth):
     # Override this value as it is not provided by Linkedin.
     # else our request falls back to basic auth which is not supported.
     TOKEN_ENDPOINT_AUTH_METHOD = "client_secret_post"
+
+    def validate_claims(self, id_token):
+        """Copy of the regular validate_claims method without the nonce validation."""
+
+        utc_timestamp = timegm(datetime.datetime.utcnow().utctimetuple())
+
+        if "nbf" in id_token and utc_timestamp < id_token["nbf"]:
+            raise AuthTokenError(self, "Incorrect id_token: nbf")
+
+        # Verify the token was issued in the last 10 minutes
+        iat_leeway = self.setting("ID_TOKEN_MAX_AGE", self.ID_TOKEN_MAX_AGE)
+        if utc_timestamp > id_token["iat"] + iat_leeway:
+            raise AuthTokenError(self, "Incorrect id_token: iat")
+
+        # Skip the nonce validation for linkedin as it does not provide any nonce.
+        # https://stackoverflow.com/questions/76889585/issues-with-sign-in-with-linkedin-using-openid-connect
+
+        # nonce = id_token.get("nonce")
+        # if not nonce:
+        #     raise AuthTokenError(self, "Incorrect id_token: nonce")
+
+        # nonce_obj = self.get_nonce(nonce)
+        # if nonce_obj:
+        #     self.remove_nonce(nonce_obj.id)
+        # else:
+        #     raise AuthTokenError(self, "Incorrect id_token: nonce")
 
 
 class LinkedinOAuth2(BaseOAuth2):
