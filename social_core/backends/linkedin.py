@@ -9,6 +9,11 @@ from .oauth import BaseOAuth2
 
 
 class LinkedinOpenIdConnect(OpenIdConnectAuth):
+    """
+    Linkedin OpenID Connect backend. Oauth2 has been deprecated as of August 1, 2023.
+    https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2?context=linkedin/consumer/context
+    """
+
     name = "linkedin-openidconnect"
 
 
