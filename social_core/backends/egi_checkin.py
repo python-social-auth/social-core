@@ -12,8 +12,8 @@ CHECKIN_ENV_ENDPOINTS = {
 }
 
 
-class CheckinOpenIdConnect(OpenIdConnectAuth):
-    name = "checkin"
+class EGICheckinOpenIdConnect(OpenIdConnectAuth):
+    name = "egi-checkin"
     # Check-in provides 3 environments: production, demo and development
     # Set the one to use as "prod", "demo" or "dev"
     CHECKIN_ENV = "prod"
