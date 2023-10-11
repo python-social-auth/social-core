@@ -43,7 +43,6 @@ class LinkedinOpenIdConnect(OpenIdConnectAuth):
         # https://stackoverflow.com/questions/76889585/issues-with-sign-in-with-linkedin-using-openid-connect
 
 
-
 class LinkedinOAuth2(BaseOAuth2):
     name = "linkedin-oauth2"
     AUTHORIZATION_URL = "https://www.linkedin.com/oauth/v2/authorization"
