@@ -42,15 +42,6 @@ class LinkedinOpenIdConnect(OpenIdConnectAuth):
         # Skip the nonce validation for linkedin as it does not provide any nonce.
         # https://stackoverflow.com/questions/76889585/issues-with-sign-in-with-linkedin-using-openid-connect
 
-        # nonce = id_token.get("nonce")
-        # if not nonce:
-        #     raise AuthTokenError(self, "Incorrect id_token: nonce")
-
-        # nonce_obj = self.get_nonce(nonce)
-        # if nonce_obj:
-        #     self.remove_nonce(nonce_obj.id)
-        # else:
-        #     raise AuthTokenError(self, "Incorrect id_token: nonce")
 
 
 class LinkedinOAuth2(BaseOAuth2):
