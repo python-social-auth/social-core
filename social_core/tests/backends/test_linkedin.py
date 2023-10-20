@@ -36,6 +36,10 @@ class LinkedinOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
         }
     )
 
+    def test_invalid_nonce(self):
+        """Skip the invalid nonce test as LinkedIn does not provide any nonce."""
+        pass
+
 
 class BaseLinkedinTest:
     user_data_url = (
