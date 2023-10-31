@@ -5,7 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [4.4.2](https://github.com/python-social-auth/social-core/releases/tag/4.4.2) - 2023-43-22
+## [4.5.0](https://github.com/python-social-auth/social-core/releases/tag/4.5.0) - 2023-10-31
+
+### Changed
+- Add backend for LinkedIn OpenID Connect
+- Add backend for EGI Check-in
+- Support Python 3.12 (and 3.11)
+- Add backend for the WLCG IAM testing site
+- Add ping identity OIDC backend
+- Add uffd oauth2 backend
+- Add Clever backend
+- Add Twitter OAuth2 backend
+- Add backend for e-infra.cz
+- Replace jose with pyjwt
+
+## [4.4.2](https://github.com/python-social-auth/social-core/releases/tag/4.4.2) - 2023-04-22
 
 ### Changed
 - Fixed Azure AD Tenant authentication with custom signing keys
