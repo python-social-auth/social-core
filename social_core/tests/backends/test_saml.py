@@ -32,6 +32,7 @@ DATA_DIR = path.join(path.dirname(__file__), "data")
 class SAMLTest(BaseBackendTest):
     backend_path = "social_core.backends.saml.SAMLAuth"
     expected_username = "myself"
+    response_fixture = "saml_response.txt"
 
     def extra_settings(self):
         name = path.join(DATA_DIR, "saml_config.json")
@@ -58,7 +59,7 @@ class SAMLTest(BaseBackendTest):
         # we will eventually get a redirect back, with SAML assertion
         # data in the query string.  A pre-recorded correct response
         # is kept in this .txt file:
-        name = path.join(DATA_DIR, "saml_response.txt")
+        name = path.join(DATA_DIR, self.response_fixture)
         with open(name) as response_file:
             response_url = response_file.read()
         HTTPretty.register_uri(
@@ -91,14 +92,55 @@ class SAMLTest(BaseBackendTest):
         self.assertEqual(len(errors), 0)
         self.assertEqual(xml.decode()[0], "<")
 
-    def test_login(self):
-        """Test that we can authenticate with a SAML IdP (TestShib)"""
-        # pretend we've started with a URL like /login/saml/?idp=testshib:
+    def test_login_with_next_url(self):
+        """
+        Test that we login and then redirect to the "next" URL.
+        """
+        # pretend we've started with a URL like /login/saml/?idp=testshib&next=/foo/bar
+        self.strategy.set_request_data(
+            {"idp": "testshib", "next": "/foo/bar"}, self.backend
+        )
+        self.do_login()
+        # The core `do_complete` action assumes the "next" URL is stored in session state or the request data.
+        self.assertEqual(self.strategy.session_get("next"), "/foo/bar")
+
+    def test_login_no_next_url(self):
+        """
+        Test that we handle "next" being omitted from the request data and RelayState.
+        """
+        self.response_fixture = "saml_response_no_next_url.txt"
+
+        # pretend we've started with a URL like /login/saml/?idp=testshib
+        self.strategy.set_request_data({"idp": "testshib"}, self.backend)
+        self.do_login()
+        self.assertEqual(self.strategy.session_get("next"), None)
+
+    def test_login_with_legacy_relay_state(self):
+        """
+        Test that we handle legacy RelayState (i.e. just the IDP name, not a JSON object).
+
+        This is the form that RelayState had in prior versions of this library. It should be supported for backwards
+        compatibility.
+        """
+        self.response_fixture = "saml_response_legacy.txt"
+
         self.strategy.set_request_data({"idp": "testshib"}, self.backend)
         self.do_login()
 
-    def test_login_no_idp(self):
-        """Logging in without an idp param should raise AuthMissingParameter"""
+    def test_login_no_idp_in_initial_request(self):
+        """
+        Logging in without an idp param should raise AuthMissingParameter
+        """
+        with self.assertRaises(AuthMissingParameter):
+            self.do_start()
+
+    def test_login_no_idp_in_saml_response(self):
+        """
+        The RelayState should always contain a JSON object with an "idp" key, or be just the IDP name as a string.
+        This tests that an exception is raised if it is a JSON object, but is missing the "idp" key.
+        """
+        self.response_fixture = "saml_response_no_idp_name.txt"
+
         with self.assertRaises(AuthMissingParameter):
             self.do_start()
 
