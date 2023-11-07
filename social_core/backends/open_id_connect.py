@@ -236,7 +236,9 @@ class OpenIdConnectAuth(BaseOAuth2):
 
         # pyjwt does not validate OIDC claims
         # see https://github.com/jpadilla/pyjwt/pull/296
-        if claims.get("at_hash") != self.calc_at_hash(access_token, key["alg"]):
+        if "at_hash" in claims and claims["at_hash"] != self.calc_at_hash(
+            access_token, key["alg"]
+        ):
             raise AuthTokenError(self, "Invalid access token")
 
         self.validate_claims(claims)
