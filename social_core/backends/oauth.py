@@ -7,13 +7,13 @@ from requests_oauthlib import OAuth1
 
 from ..exceptions import (
     AuthCanceled,
+    AuthException,
     AuthFailed,
     AuthMissingParameter,
     AuthStateForbidden,
     AuthStateMissing,
     AuthTokenError,
     AuthUnknownError,
-    AuthException,
 )
 from ..utils import (
     constant_time_compare,
