@@ -480,10 +480,10 @@ class BaseOAuth2PKCE(BaseOAuth2):
 
     def create_code_verifier(self):
         name = self.name + "_code_verifier"
-        code_verifier_length = self.setting(
-            "CODE_VERIFIER_LENGTH", default=self.PKCE_DEFAULT_CODE_VERIFIER_LENGTH
+        code_verifier_len = self.setting(
+            "PKCE_CODE_VERIFIER_LENGTH", default=self.PKCE_DEFAULT_CODE_VERIFIER_LENGTH
         )
-        code_verifier = self.strategy.random_string(code_verifier_length)
+        code_verifier = self.strategy.random_string(code_verifier_len)
         self.strategy.session_set(name, code_verifier)
         return code_verifier
 
