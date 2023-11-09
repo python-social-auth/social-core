@@ -14,6 +14,8 @@ class BitbucketDataCenterOAuth2(BaseOAuth2PKCE):
     REFRESH_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
     STATE_PARAMETER = True
+    # ref: https://confluence.atlassian.com/bitbucketserver/bitbucket-oauth-2-0-provider-api-1108483661.html#BitbucketOAuth2.0providerAPI-scopes # noqa
+    DEFAULT_SCOPE = ["PUBLIC_REPOS"]
     USE_BASIC_AUTH = False
     EXTRA_DATA = [
         ("token_type", "token_type"),
@@ -70,7 +72,7 @@ class BitbucketDataCenterOAuth2(BaseOAuth2PKCE):
 
     def user_data(self, access_token, *args, **kwargs):
         """Fetch user data from Bitbucket Data Center REST API"""
-        # ref: https://developer.atlassian.com/server/bitbucket/rest/v815/api-group-system-maintenance/#api-api-latest-users-get
+        # ref: https://developer.atlassian.com/server/bitbucket/rest/v815/api-group-system-maintenance/#api-api-latest-users-get # noqa
         response = self.get_json(
             f"{self.server_base_rest_api_url}/users",
             headers={"Authorization": f"Bearer {access_token}"},
