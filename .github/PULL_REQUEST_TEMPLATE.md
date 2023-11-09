@@ -26,14 +26,9 @@ your code._
 
 - [ ] Lint and unit tests pass locally with my changes
 - [ ] I have added tests that prove my fix is effective or that my feature works
+- [ ] I have added documentation to https://github.com/python-social-auth/social-docs
 
 ## Other information
 
 Any other information that is important to this PR such as screenshots of how
 the component looks before and after the change.
-
-<!--
-    Pull request template based on the following templates:
-    * https://raw.githubusercontent.com/ionic-team/ionic/master/.github/PULL_REQUEST_TEMPLATE.md
-    * https://raw.githubusercontent.com/appium/appium/master/.github/PULL_REQUEST_TEMPLATE.md
--->
