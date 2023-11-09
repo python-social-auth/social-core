@@ -1,3 +1,5 @@
+import base64
+import hashlib
 from urllib.parse import unquote, urlencode
 
 from oauthlib.oauth1 import SIGNATURE_TYPE_AUTH_HEADER
@@ -11,6 +13,7 @@ from ..exceptions import (
     AuthStateMissing,
     AuthTokenError,
     AuthUnknownError,
+    AuthException,
 )
 from ..utils import (
     constant_time_compare,
@@ -459,3 +462,69 @@ class BaseOAuth2(OAuthAuth):
 
     def refresh_token_url(self):
         return self.REFRESH_TOKEN_URL or self.access_token_url()
+
+
+class BaseOAuth2PKCE(BaseOAuth2):
+    """
+    Base class for providers using OAuth2 with Proof Key for Code Exchange (PKCE).
+
+    OAuth2 details at:
+        https://datatracker.ietf.org/doc/html/rfc6749
+    PKCE details at:
+        https://datatracker.ietf.org/doc/html/rfc7636
+    """
+
+    PKCE_DEFAULT_CODE_CHALLENGE_METHOD = "s256"
+    PKCE_DEFAULT_CODE_VERIFIER_LENGTH = 32
+    USE_PKCE = True
+
+    def create_code_verifier(self):
+        name = self.name + "_code_verifier"
+        code_verifier_length = self.setting(
+            "CODE_VERIFIER_LENGTH", default=self.PKCE_DEFAULT_CODE_VERIFIER_LENGTH
+        )
+        code_verifier = self.strategy.random_string(code_verifier_length)
+        self.strategy.session_set(name, code_verifier)
+        return code_verifier
+
+    def get_code_verifier(self):
+        name = self.name + "_code_verifier"
+        code_verifier = self.strategy.session_get(name)
+        return code_verifier
+
+    def generate_code_challenge(self, code_verifier, challenge_method):
+        method = challenge_method.lower()
+        if method == "s256":
+            hashed = hashlib.sha256(code_verifier.encode()).digest()
+            encoded = base64.urlsafe_b64encode(hashed)
+            code_challenge = encoded.decode().replace("=", "")  # remove padding
+            return code_challenge
+        elif method == "plain":
+            return code_verifier
+        else:
+            raise AuthException("Unsupported code challenge method.")
+
+    def auth_params(self, state=None):
+        params = super().auth_params(state=state)
+
+        if self.USE_PKCE:
+            code_challenge_method = self.setting(
+                "PKCE_CODE_CHALLENGE_METHOD",
+                default=self.PKCE_DEFAULT_CODE_CHALLENGE_METHOD,
+            )
+            code_verifier = self.create_code_verifier()
+            code_challenge = self.generate_code_challenge(
+                code_verifier, code_challenge_method
+            )
+            params["code_challenge_method"] = code_challenge_method
+            params["code_challenge"] = code_challenge
+        return params
+
+    def auth_complete_params(self, state=None):
+        params = super().auth_complete_params(state=state)
+
+        if self.USE_PKCE:
+            code_verifier = self.get_code_verifier()
+            params["code_verifier"] = code_verifier
+
+        return params

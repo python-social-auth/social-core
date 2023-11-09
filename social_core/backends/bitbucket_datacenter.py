@@ -1,11 +1,7 @@
-import base64
-import hashlib
-
-from social_core.backends.oauth import BaseOAuth2
-from social_core.exceptions import AuthException
+from social_core.backends.oauth import BaseOAuth2PKCE
 
 
-class BitbucketDataCenterOAuth2(BaseOAuth2):
+class BitbucketDataCenterOAuth2(BaseOAuth2PKCE):
     """
     Implements client for Bitbucket Data Center OAuth 2.0 provider API.
     ref: https://confluence.atlassian.com/bitbucketserver/bitbucket-oauth-2-0-provider-api-1108483661.html
@@ -33,7 +29,9 @@ class BitbucketDataCenterOAuth2(BaseOAuth2):
         ("active", "active"),
         ("url", "url"),
     ]
-    PKCE_DEFAULT_CODE_CHALLENGE_METHOD = "s256"
+    PKCE_DEFAULT_CODE_CHALLENGE_METHOD = "s256"  # can be "plain" or "s256"
+    PKCE_DEFAULT_CODE_VERIFIER_LENGTH = 48  # must be b/w 43-127 chars
+    USE_PKCE = True
 
     @property
     def server_base_oauth2_api_url(self):
@@ -78,49 +76,3 @@ class BitbucketDataCenterOAuth2(BaseOAuth2):
             headers={"Authorization": f"Bearer {access_token}"},
         )
         return response["values"][0]
-
-    def create_code_verifier(self):
-        name = self.name + "_code_verifier"
-        code_verifier = self.strategy.random_string(48)
-        self.strategy.session_set(name, code_verifier)
-        return code_verifier
-
-    def get_code_verifier(self):
-        name = self.name + "_code_verifier"
-        code_verifier = self.strategy.session_get(name)
-        return code_verifier
-
-    def generate_code_challenge(self, code_verifier, challenge_method):
-        method = challenge_method.lower()
-        if method == "s256":
-            hashed = hashlib.sha256(code_verifier.encode()).digest()
-            encoded = base64.urlsafe_b64encode(hashed)
-            code_challenge = encoded.decode().replace("=", "")  # remove padding
-            return code_challenge
-        elif method == "plain":
-            return code_verifier
-        else:
-            raise AuthException("Unsupported code challenge method.")
-
-    def auth_params(self, state=None):
-        params = super().auth_params(state=state)
-
-        code_challenge_method = self.setting(
-            "PKCE_CODE_CHALLENGE_METHOD",
-            default=self.PKCE_DEFAULT_CODE_CHALLENGE_METHOD,
-        )
-        code_verifier = self.create_code_verifier()
-        code_challenge = self.generate_code_challenge(
-            code_verifier, code_challenge_method
-        )
-        params["code_challenge_method"] = code_challenge_method
-        params["code_challenge"] = code_challenge
-        return params
-
-    def auth_complete_params(self, state=None):
-        params = super().auth_complete_params(state=state)
-
-        code_verifier = self.get_code_verifier()
-        params["code_verifier"] = code_verifier
-
-        return params
