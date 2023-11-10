@@ -7,6 +7,8 @@ Terminology:
 "Identity Provider" (IdP): The third-party site that is authenticating
                            users via SAML
 """
+import json
+
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
 from onelogin.saml2.settings import OneLogin_Saml2_Settings
 
@@ -278,8 +280,12 @@ class SAMLAuth(BaseAuth):
         # Below, return_to sets the RelayState, which can contain
         # arbitrary data.  We use it to store the specific SAML IdP
         # name, since we multiple IdPs share the same auth_complete
-        # URL.
-        return auth.login(return_to=idp_name)
+        # URL, and the URL to redirect to after auth completes.
+        relay_state = {
+            "idp": idp_name,
+            "next": self.data.get("next"),
+        }
+        return auth.login(return_to=json.dumps(relay_state))
 
     def get_user_details(self, response):
         """Get user details like full name, email, etc. from the
@@ -303,9 +309,25 @@ class SAMLAuth(BaseAuth):
         now log them in, if everything checks out.
         """
         try:
-            idp_name = self.strategy.request_data()["RelayState"]
+            relay_state_str = self.strategy.request_data()["RelayState"]
         except KeyError:
             raise AuthMissingParameter(self, "RelayState")
+
+        try:
+            relay_state = json.loads(relay_state_str)
+            if not isinstance(relay_state, dict) or "idp" not in relay_state:
+                raise ValueError(
+                    "RelayState is expected to contain a JSON object with an 'idp' key"
+                )
+        except ValueError:
+            # Assume RelayState is just the idp_name, as it used to be in previous versions of this code.
+            # This ensures compatibility with previous versions.
+            idp_name = relay_state_str
+        else:
+            idp_name = relay_state["idp"]
+            if next_url := relay_state.get("next"):
+                # The do_complete action expects the "next" URL to be in session state or the request params.
+                self.strategy.session_set(kwargs.get("redirect_name", "next"), next_url)
 
         idp = self.get_idp(idp_name)
         auth = self._create_saml_auth(idp)
