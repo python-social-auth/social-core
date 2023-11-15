@@ -24,7 +24,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Fixed Azure AD Tenant authentication with custom signing keys
 - Added CAS OIDC backend
-- Made Keycloak `ID_KEY` configurable
 
 ## [4.4.1](https://github.com/python-social-auth/social-core/releases/tag/4.4.1) - 2023-03-30
 
