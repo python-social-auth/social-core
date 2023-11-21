@@ -1,6 +1,6 @@
 """
 Bitbucket Data Center OAuth2 backend, docs at:
-    https://python-social-auth.readthedocs.io/en/latest/backends/bitbucket-datacenter-oauth2.html
+    https://python-social-auth.readthedocs.io/en/latest/backends/bitbucket_datacenter_oauth2.html
     https://confluence.atlassian.com/bitbucketserver/bitbucket-oauth-2-0-provider-api-1108483661.html
 """
 
