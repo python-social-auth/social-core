@@ -2,7 +2,7 @@ import json
 
 from social_core.exceptions import AuthException
 
-from .oauth import OAuth2Test, OAuth2PkcePlainTest, OAuth2PkceS256Test
+from .oauth import OAuth2PkcePlainTest, OAuth2PkceS256Test, OAuth2Test
 
 
 class TwitterOAuth2Mixin:
