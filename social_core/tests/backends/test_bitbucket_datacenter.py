@@ -2,10 +2,10 @@ import json
 
 from httpretty import HTTPretty
 
-from .oauth import OAuth2Test
+from .oauth import OAuth2PkcePlainTest, OAuth2PkceS256Test
 
 
-class BitbucketDataCenterOAuth2Test(OAuth2Test):
+class BitbucketDataCenterOAuth2Mixin:
     backend_path = "social_core.backends.bitbucket_datacenter.BitbucketDataCenterOAuth2"
     application_properties_url = (
         "https://bachmanity.atlassian.net/rest/api/latest/application-properties"
@@ -135,3 +135,17 @@ class BitbucketDataCenterOAuth2Test(OAuth2Test):
         self.assertEqual(
             social.extra_data["refresh_token"], "dummy_refresh_token_refreshed"
         )
+
+
+class BitbucketDataCenterOAuth2TestPkcePlain(
+    BitbucketDataCenterOAuth2Mixin,
+    OAuth2PkcePlainTest,
+):
+    pass
+
+
+class BitbucketDataCenterOAuth2TestPkceS256(
+    BitbucketDataCenterOAuth2Mixin,
+    OAuth2PkceS256Test,
+):
+    pass
