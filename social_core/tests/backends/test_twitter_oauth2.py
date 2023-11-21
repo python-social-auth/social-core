@@ -184,9 +184,7 @@ class TwitterOAuth2TestInvalidCodeChallengeMethod(
     def test_login__error(self):
         self.strategy.set_settings(
             {
-                "SOCIAL_AUTH_"
-                + self.name
-                + "_PKCE_CODE_CHALLENGE_METHOD": "invalidmethodname"
+                f"SOCIAL_AUTH_{self.name}_PKCE_CODE_CHALLENGE_METHOD": "invalidmethodname",
             }
         )
 

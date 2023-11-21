@@ -37,7 +37,7 @@ class TwitterOAuth2(BaseOAuth2PKCE):
     ]
     PKCE_DEFAULT_CODE_CHALLENGE_METHOD = "s256"
     PKCE_DEFAULT_CODE_VERIFIER_LENGTH = 32
-    USE_PKCE = True
+    DEFAULT_USE_PKCE = True
 
     def get_user_details(self, response):
         """Return user details from Twitter account"""

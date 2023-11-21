@@ -476,7 +476,7 @@ class BaseOAuth2PKCE(BaseOAuth2):
 
     PKCE_DEFAULT_CODE_CHALLENGE_METHOD = "s256"
     PKCE_DEFAULT_CODE_VERIFIER_LENGTH = 32
-    USE_PKCE = True
+    DEFAULT_USE_PKCE = True
 
     def create_code_verifier(self):
         name = self.name + "_code_verifier"
@@ -507,7 +507,7 @@ class BaseOAuth2PKCE(BaseOAuth2):
     def auth_params(self, state=None):
         params = super().auth_params(state=state)
 
-        if self.USE_PKCE:
+        if self.setting("USE_PKCE", default=self.DEFAULT_USE_PKCE):
             code_challenge_method = self.setting(
                 "PKCE_CODE_CHALLENGE_METHOD",
                 default=self.PKCE_DEFAULT_CODE_CHALLENGE_METHOD,
@@ -523,7 +523,7 @@ class BaseOAuth2PKCE(BaseOAuth2):
     def auth_complete_params(self, state=None):
         params = super().auth_complete_params(state=state)
 
-        if self.USE_PKCE:
+        if self.setting("USE_PKCE", default=self.DEFAULT_USE_PKCE):
             code_verifier = self.get_code_verifier()
             params["code_verifier"] = code_verifier
 

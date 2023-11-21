@@ -62,7 +62,7 @@ class BitbucketDataCenterOAuth2Mixin:
     def extra_settings(self):
         settings = super().extra_settings()
         settings.update(
-            {"SOCIAL_AUTH_" + self.name + "_URL": "https://bachmanity.atlassian.net"}
+            {f"SOCIAL_AUTH_{self.name}_URL": "https://bachmanity.atlassian.net"}
         )
         return settings
 

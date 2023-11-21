@@ -127,7 +127,7 @@ class OAuth2PkcePlainTest(OAuth2Test):
     def extra_settings(self):
         settings = super().extra_settings()
         settings.update(
-            {"SOCIAL_AUTH_" + self.name + "_PKCE_CODE_CHALLENGE_METHOD": "plain"}
+            {f"SOCIAL_AUTH_{self.name}_PKCE_CODE_CHALLENGE_METHOD": "plain"}
         )
         return settings
 

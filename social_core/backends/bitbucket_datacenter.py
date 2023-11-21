@@ -43,8 +43,8 @@ class BitbucketDataCenterOAuth2(BaseOAuth2PKCE):
     ]
     PKCE_DEFAULT_CODE_CHALLENGE_METHOD = "s256"  # can be "plain" or "s256"
     PKCE_DEFAULT_CODE_VERIFIER_LENGTH = 48  # must be b/w 43-127 chars
-    USE_PKCE = True
-    DEFAULT_AVATAR_SIZE = 48
+    DEFAULT_USE_PKCE = True
+    DEFAULT_USER_AVATAR_SIZE = 48
 
     @property
     def server_base_oauth2_api_url(self) -> str:
@@ -100,6 +100,8 @@ class BitbucketDataCenterOAuth2(BaseOAuth2PKCE):
             url=f"{self.server_base_rest_api_url}/users/{username}",
             headers=headers,
             params={
-                "avatarSize": self.DEFAULT_AVATAR_SIZE  # to force `avatarUrl` in response
+                "avatarSize": self.setting(
+                    "USER_AVATAR_SIZE", default=self.DEFAULT_USER_AVATAR_SIZE
+                )  # to force `avatarUrl` in response
             },
         )
