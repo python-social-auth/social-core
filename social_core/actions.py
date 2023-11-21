@@ -46,7 +46,7 @@ def do_complete(backend, login, user=None, redirect_name="next", *args, **kwargs
         # clean partial data after usage
         backend.strategy.clean_partial_pipeline(partial.token)
     else:
-        user = backend.complete(user=user, *args, **kwargs)
+        user = backend.complete(user=user, redirect_name=redirect_name, *args, **kwargs)
 
     # pop redirect value before the session is trashed on login(), but after
     # the pipeline so that the pipeline can change the redirect if needed

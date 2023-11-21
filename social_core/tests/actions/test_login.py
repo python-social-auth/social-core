@@ -1,6 +1,31 @@
+from ...backends.base import BaseAuth
 from ...utils import PARTIAL_TOKEN_SESSION_NAME
-from ..models import User
+from ..models import TestUserSocialAuth, User
 from .actions import BaseActionTest
+
+
+class BackendThatControlsRedirect(BaseAuth):
+    """
+    A fake backend that sets the URL to redirect to after login.
+
+    It is not always possible to set the redirect URL in the session state prior to auth and then retrieve it when
+    auth is complete, because the session cookie might not be available post-auth. For example, for SAML, a POST request
+    redirects the user from the IdP (Identity Provider) back to the SP (Service Provider) to complete the auth process,
+    but the session cookie will not be present if the session cookie's `SameSite` attribute is not set to "None".
+    To mitigate this, SAML provides a `RelayState` parameter to pass data like a redirect URL from the SP to the IdP
+    and back again. In that case, the redirect URL is only known in `auth_complete`, and must be communicated back to
+    the `do_complete` action via session state so that it can issue the intended redirect.
+    """
+
+    ACCESS_TOKEN_URL = "https://example.com/oauth/access_token"
+
+    def auth_url(self):
+        return "https://example.com/oauth/auth?state=foo"
+
+    def auth_complete(self, *args, **kwargs):
+        # Put the redirect URL in the session state, as this is where the `do_complete` action looks for it.
+        self.strategy.session_set(kwargs["redirect_name"], "/after-login")
+        return kwargs["user"]
 
 
 class LoginActionTest(BaseActionTest):
@@ -34,6 +59,12 @@ class LoginActionTest(BaseActionTest):
 
     def test_redirect_value(self):
         self.strategy.set_request_data({"next": "/after-login"}, self.backend)
+        redirect = self.do_login(after_complete_checks=False)
+        self.assertEqual(redirect.url, "/after-login")
+
+    def test_redirect_value_set_by_backend(self):
+        self.backend = BackendThatControlsRedirect(self.strategy)
+        self.user = TestUserSocialAuth.create_user("test-user")
         redirect = self.do_login(after_complete_checks=False)
         self.assertEqual(redirect.url, "/after-login")
 
