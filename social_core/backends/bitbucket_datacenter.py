@@ -1,4 +1,10 @@
-from social_core.backends.oauth import BaseOAuth2PKCE
+"""
+Bitbucket Data Center OAuth2 backend, docs at:
+    https://python-social-auth.readthedocs.io/en/latest/backends/bitbucket-datacenter-oauth2.html
+    https://confluence.atlassian.com/bitbucketserver/bitbucket-oauth-2-0-provider-api-1108483661.html
+"""
+
+from .oauth import BaseOAuth2PKCE
 
 
 class BitbucketDataCenterOAuth2(BaseOAuth2PKCE):
@@ -21,37 +27,42 @@ class BitbucketDataCenterOAuth2(BaseOAuth2PKCE):
         ("token_type", "token_type"),
         ("access_token", "access_token"),
         ("refresh_token", "refresh_token"),
-        ("expires_in", "expires_in"),
+        ("expires_in", "expires"),
         ("scope", "scope"),
         # extra user profile fields
+        ("first_name", "first_name"),
+        ("last_name", "last_name"),
+        ("email", "email"),
         ("name", "name"),
         ("username", "username"),
         ("display_name", "display_name"),
         ("type", "type"),
         ("active", "active"),
         ("url", "url"),
+        ("avatar_url", "avatar_url"),
     ]
     PKCE_DEFAULT_CODE_CHALLENGE_METHOD = "s256"  # can be "plain" or "s256"
     PKCE_DEFAULT_CODE_VERIFIER_LENGTH = 48  # must be b/w 43-127 chars
     USE_PKCE = True
+    DEFAULT_AVATAR_SIZE = 48
 
     @property
-    def server_base_oauth2_api_url(self):
+    def server_base_oauth2_api_url(self) -> str:
         base_url = self.setting("URL")
         return f"{base_url}/rest/oauth2/latest"
 
     @property
-    def server_base_rest_api_url(self):
+    def server_base_rest_api_url(self) -> str:
         base_url = self.setting("URL")
         return f"{base_url}/rest/api/latest"
 
-    def authorization_url(self):
+    def authorization_url(self) -> str:
         return f"{self.server_base_oauth2_api_url}/authorize"
 
-    def access_token_url(self):
+    def access_token_url(self) -> str:
         return f"{self.server_base_oauth2_api_url}/token"
 
-    def get_user_details(self, response):
+    def get_user_details(self, response) -> dict:
         """Return user details for the Bitbucket Data Center account"""
         # `response` here is the return value of `user_data` method
         user_data = response
@@ -68,13 +79,27 @@ class BitbucketDataCenterOAuth2(BaseOAuth2PKCE):
             "type": user_data["type"],
             "active": user_data["active"],
             "url": user_data["links"]["self"][0]["href"],
+            "avatar_url": user_data["avatarUrl"],
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token, *args, **kwargs) -> dict:
         """Fetch user data from Bitbucket Data Center REST API"""
-        # ref: https://developer.atlassian.com/server/bitbucket/rest/v815/api-group-system-maintenance/#api-api-latest-users-get # noqa
-        response = self.get_json(
-            f"{self.server_base_rest_api_url}/users",
-            headers={"Authorization": f"Bearer {access_token}"},
+        # At this point, we don't know the current user's username
+        # and Bitbucket doesn't provide any API to do so.
+        # However, the current user's username is sent in every response header.
+        # ref: https://community.developer.atlassian.com/t/obtain-authorised-users-username-from-api/24422/2
+        headers = {"Authorization": f"Bearer {access_token}"}
+        response = self.request(
+            url=f"{self.server_base_rest_api_url}/application-properties",
+            method="GET",
+            headers=headers,
         )
-        return response["values"][0]
+        # ref: https://developer.atlassian.com/server/bitbucket/rest/v815/api-group-system-maintenance/#api-api-latest-users-userslug-get
+        username = response.headers["x-ausername"]
+        return self.get_json(
+            url=f"{self.server_base_rest_api_url}/users/{username}",
+            headers=headers,
+            params={
+                "avatarSize": self.DEFAULT_AVATAR_SIZE  # to force `avatarUrl` in response
+            },
+        )
