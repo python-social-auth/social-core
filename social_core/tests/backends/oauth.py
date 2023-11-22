@@ -1,7 +1,7 @@
 from urllib.parse import urlparse
 
 import requests
-from httpretty import HTTPretty
+from httpretty import HTTPretty, latest_requests
 
 from ...utils import parse_qs, url_add_parameters
 from ..models import User
@@ -121,3 +121,57 @@ class OAuth2Test(BaseOAuthTest):
         social = user.social[0]
         social.refresh_token(strategy=self.strategy, **self.refresh_token_arguments())
         return user, social
+
+
+class OAuth2PkcePlainTest(OAuth2Test):
+    def extra_settings(self):
+        settings = super().extra_settings()
+        settings.update(
+            {f"SOCIAL_AUTH_{self.name}_PKCE_CODE_CHALLENGE_METHOD": "plain"}
+        )
+        return settings
+
+    def do_login(self):
+        user = super().do_login()
+
+        requests = latest_requests()
+        auth_request = [
+            r for r in requests if self.backend.authorization_url() in r.url
+        ][0]
+        code_challenge = auth_request.querystring.get("code_challenge")[0]
+        code_challenge_method = auth_request.querystring.get("code_challenge_method")[0]
+        self.assertIsNotNone(code_challenge)
+        self.assertEqual(code_challenge_method, "plain")
+
+        auth_complete = [
+            r for r in requests if self.backend.access_token_url() in r.url
+        ][0]
+        code_verifier = auth_complete.parsed_body.get("code_verifier")[0]
+        self.assertEqual(code_challenge, code_verifier)
+
+        return user
+
+
+class OAuth2PkceS256Test(OAuth2Test):
+    def do_login(self):
+        # use default value of PKCE_CODE_CHALLENGE_METHOD (s256)
+        user = super().do_login()
+
+        requests = latest_requests()
+        auth_request = [
+            r for r in requests if self.backend.authorization_url() in r.url
+        ][0]
+        code_challenge = auth_request.querystring.get("code_challenge")[0]
+        code_challenge_method = auth_request.querystring.get("code_challenge_method")[0]
+        self.assertIsNotNone(code_challenge)
+        self.assertEqual(code_challenge_method, "s256")
+
+        auth_complete = [
+            r for r in requests if self.backend.access_token_url() in r.url
+        ][0]
+        code_verifier = auth_complete.parsed_body.get("code_verifier")[0]
+        self.assertEqual(
+            self.backend.generate_code_challenge(code_verifier, "s256"), code_challenge
+        )
+
+        return user

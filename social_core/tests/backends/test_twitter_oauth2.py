@@ -1,13 +1,11 @@
 import json
 
-import httpretty
-
 from social_core.exceptions import AuthException
 
-from .oauth import OAuth2Test
+from .oauth import OAuth2PkcePlainTest, OAuth2PkceS256Test, OAuth2Test
 
 
-class TwitterOAuth2Test(OAuth2Test):
+class TwitterOAuth2Mixin:
     backend_path = "social_core.backends.twitter_oauth2.TwitterOAuth2"
     user_data_url = "https://api.twitter.com/2/users/me"
     access_token_body = json.dumps(
@@ -172,58 +170,21 @@ class TwitterOAuth2TestMissingOptionalValue(OAuth2Test):
         self.assertIsNone(social.extra_data.get("public_metrics"))
 
 
-class TwitterOAuth2TestPkcePlain(TwitterOAuth2Test):
-    def test_login(self):
-        self.strategy.set_settings(
-            {"SOCIAL_AUTH_TWITTER_OAUTH2_PKCE_CODE_CHALLENGE_METHOD": "plain"}
-        )
-
-        self.do_login()
-
-        requests = httpretty.latest_requests()
-        auth_request = [
-            r for r in requests if "https://twitter.com/i/oauth2/authorize" in r.url
-        ][0]
-        code_challenge = auth_request.querystring.get("code_challenge")[0]
-        code_challenge_method = auth_request.querystring.get("code_challenge_method")[0]
-        self.assertIsNotNone(code_challenge)
-        self.assertEqual(code_challenge_method, "plain")
-
-        auth_complete = [
-            r for r in requests if "https://api.twitter.com/2/oauth2/token" in r.url
-        ][0]
-        code_verifier = auth_complete.parsed_body.get("code_verifier")[0]
-        self.assertEqual(code_challenge, code_verifier)
+class TwitterOAuth2TestPkcePlain(TwitterOAuth2Mixin, OAuth2PkcePlainTest):
+    pass
 
 
-class TwitterOAuth2TestPkceS256(TwitterOAuth2Test):
-    def test_login(self):
-        # use default value of PKCE_CODE_CHALLENGE_METHOD (s256)
-        self.do_login()
-
-        requests = httpretty.latest_requests()
-        auth_request = [
-            r for r in requests if "https://twitter.com/i/oauth2/authorize" in r.url
-        ][0]
-        code_challenge = auth_request.querystring.get("code_challenge")[0]
-        code_challenge_method = auth_request.querystring.get("code_challenge_method")[0]
-        self.assertIsNotNone(code_challenge)
-        self.assertEqual(code_challenge_method, "s256")
-
-        auth_complete = [
-            r for r in requests if "https://api.twitter.com/2/oauth2/toke" in r.url
-        ][0]
-        code_verifier = auth_complete.parsed_body.get("code_verifier")[0]
-        self.assertEqual(
-            self.backend.generate_code_challenge(code_verifier, "s256"), code_challenge
-        )
+class TwitterOAuth2TestPkceS256(TwitterOAuth2Mixin, OAuth2PkceS256Test):
+    pass
 
 
-class TwitterOAuth2TestInvalidCodeChallengeMethod(TwitterOAuth2Test):
+class TwitterOAuth2TestInvalidCodeChallengeMethod(
+    TwitterOAuth2Mixin, OAuth2PkcePlainTest
+):
     def test_login__error(self):
         self.strategy.set_settings(
             {
-                "SOCIAL_AUTH_TWITTER_OAUTH2_PKCE_CODE_CHALLENGE_METHOD": "invalidmethodname"
+                f"SOCIAL_AUTH_{self.name}_PKCE_CODE_CHALLENGE_METHOD": "invalidmethodname",
             }
         )
 
