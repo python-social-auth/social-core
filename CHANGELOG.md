@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.5.1](https://github.com/python-social-auth/social-core/releases/tag/4.5.1) - 2023-11-29
+
+### Changed
+- OpenID Connect skips `at_hash` validation when missing
+- `redirect_name` is now passed to backend on `do_complete`
+- `next` is preserved through SAML RelayState
+- Add Discogs backend
+- Add BitbucketDataCenterOAuth2 backend
+- Keycloak's `ID_KEY` is no longer configurable (it never worked)
+
 ## [4.5.0](https://github.com/python-social-auth/social-core/releases/tag/4.5.0) - 2023-10-31
 
 ### Changed
@@ -24,6 +34,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Fixed Azure AD Tenant authentication with custom signing keys
 - Added CAS OIDC backend
+- Made Keycloak `ID_KEY` configurable
 
 ## [4.4.1](https://github.com/python-social-auth/social-core/releases/tag/4.4.1) - 2023-03-30
 
