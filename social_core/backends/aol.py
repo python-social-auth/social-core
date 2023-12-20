@@ -6,5 +6,5 @@ from .open_id import OpenIdAuth
 
 
 class AOLOpenId(OpenIdAuth):
-    name = 'aol'
-    URL = 'http://openid.aol.com'
+    name = "aol"
+    URL = "http://openid.aol.com"

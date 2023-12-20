@@ -8,12 +8,14 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: '3.9'
+        cache: pip
+        cache-dependency-path: requirements*.txt
 
     - name: Install Python dependencies
       run: |
@@ -35,7 +37,7 @@ jobs:
       run: python setup.py sdist bdist_wheel --python-tag py3
 
     - name: Archive dist
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: dist
         path: |

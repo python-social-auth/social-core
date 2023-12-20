@@ -1,7 +1,13 @@
 import base64
 
-from ..storage import (AssociationMixin, BaseStorage, CodeMixin, NonceMixin,
-                       PartialMixin, UserMixin)
+from ..storage import (
+    AssociationMixin,
+    BaseStorage,
+    CodeMixin,
+    NonceMixin,
+    PartialMixin,
+    UserMixin,
+)
 
 
 class BaseModel:
@@ -119,9 +125,11 @@ class TestUserSocialAuth(UserMixin, BaseModel):
 
     @classmethod
     def get_social_auth_for_user(cls, user, provider=None, id=None):
-        return [usa for usa in user.social
-                if provider in (None, usa.provider) and
-                id in (None, usa.id)]
+        return [
+            usa
+            for usa in user.social
+            if provider in (None, usa.provider) and id in (None, usa.id)
+        ]
 
     @classmethod
     def create_social_auth(cls, user, uid, provider):
@@ -174,8 +182,7 @@ class TestAssociation(AssociationMixin, BaseModel):
     def store(cls, server_url, association):
         assoc = TestAssociation.cache.get((server_url, association.handle))
         if assoc is None:
-            assoc = TestAssociation(server_url=server_url,
-                                    handle=association.handle)
+            assoc = TestAssociation(server_url=server_url, handle=association.handle)
         assoc.secret = base64.encodebytes(association.secret)
         assoc.issued = association.issued
         assoc.lifetime = association.lifetime
@@ -195,8 +202,7 @@ class TestAssociation(AssociationMixin, BaseModel):
 
     @classmethod
     def remove(cls, ids_to_delete):
-        assoc = filter(lambda a: a.id in ids_to_delete,
-                       TestAssociation.cache.values())
+        assoc = filter(lambda a: a.id in ids_to_delete, TestAssociation.cache.values())
         for a in list(assoc):
             TestAssociation.cache.pop((a.server_url, a.handle), None)
 

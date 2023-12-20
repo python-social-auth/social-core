@@ -2,9 +2,9 @@ from .legacy import BaseLegacyTest
 
 
 class UsernameTest(BaseLegacyTest):
-    backend_path = 'social_core.backends.username.UsernameAuth'
-    expected_username = 'foobar'
-    response_body = 'username=foobar'
+    backend_path = "social_core.backends.username.UsernameAuth"
+    expected_username = "foobar"
+    response_body = "username=foobar"
     form = """
     <form method="post" action="{0}">
         <input name="username" type="text">

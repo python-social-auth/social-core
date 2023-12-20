@@ -9,7 +9,8 @@ from ..utils import SSLHttpAdapter, module_member, parse_qs, user_agent
 class BaseAuth:
     """A authentication backend that authenticates the user based on
     the provider response"""
-    name = ''  # provider name, it's stored in database
+
+    name = ""  # provider name, it's stored in database
     supports_inactive_user = False  # Django auth
     ID_KEY = None
     EXTRA_DATA = None
@@ -22,9 +23,7 @@ class BaseAuth:
         self.strategy = strategy
         self.redirect_uri = redirect_uri
         self.data = self.strategy.request_data()
-        self.redirect_uri = self.strategy.absolute_uri(
-            self.redirect_uri
-        )
+        self.redirect_uri = self.strategy.absolute_uri(self.redirect_uri)
 
     def setting(self, name, default=None):
         """Return setting value from strategy"""
@@ -41,15 +40,15 @@ class BaseAuth:
 
     def auth_url(self):
         """Must return redirect URL to auth provider"""
-        raise NotImplementedError('Implement in subclass')
+        raise NotImplementedError("Implement in subclass")
 
     def auth_html(self):
         """Must return login HTML content returned by provider"""
-        raise NotImplementedError('Implement in subclass')
+        raise NotImplementedError("Implement in subclass")
 
     def auth_complete(self, *args, **kwargs):
         """Completes login process, must return user instance"""
-        raise NotImplementedError('Implement in subclass')
+        raise NotImplementedError("Implement in subclass")
 
     def process_error(self, data):
         """Process data for errors, raise exception if needed.
@@ -67,14 +66,18 @@ class BaseAuth:
         # response be passed in as a keyword argument, to make sure we
         # don't match the username/password calling conventions of
         # authenticate.
-        if 'backend' not in kwargs or kwargs['backend'].name != self.name or \
-           'strategy' not in kwargs or 'response' not in kwargs:
+        if (
+            "backend" not in kwargs
+            or kwargs["backend"].name != self.name
+            or "strategy" not in kwargs
+            or "response" not in kwargs
+        ):
             return None
 
-        self.strategy = kwargs.get('strategy') or self.strategy
-        self.redirect_uri = kwargs.get('redirect_uri') or self.redirect_uri
+        self.strategy = kwargs.get("strategy") or self.strategy
+        self.redirect_uri = kwargs.get("redirect_uri") or self.redirect_uri
         self.data = self.strategy.request_data()
-        kwargs.setdefault('is_new', False)
+        kwargs.setdefault("is_new", False)
         pipeline = self.strategy.get_pipeline(self)
         args, kwargs = self.strategy.clean_authenticate_args(*args, **kwargs)
         return self.pipeline(pipeline, *args, **kwargs)
@@ -83,32 +86,34 @@ class BaseAuth:
         out = self.run_pipeline(pipeline, pipeline_index, *args, **kwargs)
         if not isinstance(out, dict):
             return out
-        user = out.get('user')
+        user = out.get("user")
         if user:
-            user.social_user = out.get('social')
-            user.is_new = out.get('is_new')
+            user.social_user = out.get("social")
+            user.is_new = out.get("is_new")
         return user
 
     def disconnect(self, *args, **kwargs):
         pipeline = self.strategy.get_disconnect_pipeline(self)
-        kwargs['name'] = self.name
-        kwargs['user_storage'] = self.strategy.storage.user
+        kwargs["name"] = self.name
+        kwargs["user_storage"] = self.strategy.storage.user
         return self.run_pipeline(pipeline, *args, **kwargs)
 
     def run_pipeline(self, pipeline, pipeline_index=0, *args, **kwargs):
         out = kwargs.copy()
-        out.setdefault('strategy', self.strategy)
-        out.setdefault('backend', out.pop(self.name, None) or self)
-        out.setdefault('request', self.strategy.request_data())
-        out.setdefault('details', {})
+        out.setdefault("strategy", self.strategy)
+        out.setdefault("backend", out.pop(self.name, None) or self)
+        out.setdefault("request", self.strategy.request_data())
+        out.setdefault("details", {})
 
-        if not isinstance(pipeline_index, int) or \
-           pipeline_index < 0 or \
-           pipeline_index >= len(pipeline):
+        if (
+            not isinstance(pipeline_index, int)
+            or pipeline_index < 0
+            or pipeline_index >= len(pipeline)
+        ):
             pipeline_index = 0
 
         for idx, name in enumerate(pipeline[pipeline_index:]):
-            out['pipeline_index'] = pipeline_index + idx
+            out["pipeline_index"] = pipeline_index + idx
             func = module_member(name)
             result = func(*args, **out) or {}
             if not isinstance(result, dict):
@@ -120,13 +125,15 @@ class BaseAuth:
         """Return default extra data to store in extra_data field"""
         data = {
             # store the last time authentication toke place
-            'auth_time': int(time.time())
+            "auth_time": int(time.time())
         }
         extra_data_entries = []
-        if self.GET_ALL_EXTRA_DATA or self.setting('GET_ALL_EXTRA_DATA', False):
+        if self.GET_ALL_EXTRA_DATA or self.setting("GET_ALL_EXTRA_DATA", False):
             extra_data_entries = response.keys()
         else:
-            extra_data_entries = (self.EXTRA_DATA or []) + self.setting('EXTRA_DATA', [])
+            extra_data_entries = (self.EXTRA_DATA or []) + self.setting(
+                "EXTRA_DATA", []
+            )
         for entry in extra_data_entries:
             if not isinstance(entry, (list, tuple)):
                 entry = (entry,)
@@ -148,13 +155,13 @@ class BaseAuth:
     def auth_allowed(self, response, details):
         """Return True if the user should be allowed to authenticate, by
         default check if email is whitelisted (if there's a whitelist)"""
-        emails = [email.lower() for email in self.setting('WHITELISTED_EMAILS', [])]
-        domains = [domain.lower() for domain in self.setting('WHITELISTED_DOMAINS', [])]
-        email = details.get('email')
+        emails = [email.lower() for email in self.setting("WHITELISTED_EMAILS", [])]
+        domains = [domain.lower() for domain in self.setting("WHITELISTED_DOMAINS", [])]
+        email = details.get("email")
         allowed = True
         if email and (emails or domains):
             email = email.lower()
-            domain = email.split('@', 1)[1]
+            domain = email.split("@", 1)[1]
             allowed = email in emails or domain in domains
         return allowed
 
@@ -165,26 +172,26 @@ class BaseAuth:
 
     def get_user_details(self, response):
         """Must return user details in a know internal struct:
-            {'username': <username if any>,
-             'email': <user email if any>,
-             'fullname': <user full name if any>,
-             'first_name': <user first name if any>,
-             'last_name': <user last name if any>}
+        {'username': <username if any>,
+         'email': <user email if any>,
+         'fullname': <user full name if any>,
+         'first_name': <user first name if any>,
+         'last_name': <user last name if any>}
         """
-        raise NotImplementedError('Implement in subclass')
+        raise NotImplementedError("Implement in subclass")
 
-    def get_user_names(self, fullname='', first_name='', last_name=''):
+    def get_user_names(self, fullname="", first_name="", last_name=""):
         # Avoid None values
-        fullname = fullname or ''
-        first_name = first_name or ''
-        last_name = last_name or ''
+        fullname = fullname or ""
+        first_name = first_name or ""
+        last_name = last_name or ""
         if fullname and not (first_name or last_name):
             try:
-                first_name, last_name = fullname.split(' ', 1)
+                first_name, last_name = fullname.split(" ", 1)
             except ValueError:
-                first_name = first_name or fullname or ''
-                last_name = last_name or ''
-        fullname = fullname or ' '.join((first_name, last_name))
+                first_name = first_name or fullname or ""
+                last_name = last_name or ""
+        fullname = fullname or " ".join((first_name, last_name))
         return fullname.strip(), first_name.strip(), last_name.strip()
 
     def get_user(self, user_id):
@@ -196,17 +203,17 @@ class BaseAuth:
 
     def continue_pipeline(self, partial):
         """Continue previous halted pipeline"""
-        return self.strategy.authenticate(self,
-                                          pipeline_index=partial.next_step,
-                                          *partial.args,
-                                          **partial.kwargs)
+        return self.strategy.authenticate(
+            self, pipeline_index=partial.next_step, *partial.args, **partial.kwargs
+        )
 
     def auth_extra_arguments(self):
         """Return extra arguments needed on auth process. The defaults can be
         overridden by GET parameters."""
-        extra_arguments = self.setting('AUTH_EXTRA_ARGUMENTS', {}).copy()
-        extra_arguments.update((key, self.data[key]) for key in extra_arguments
-                               if key in self.data)
+        extra_arguments = self.setting("AUTH_EXTRA_ARGUMENTS", {}).copy()
+        extra_arguments.update(
+            (key, self.data[key]) for key in extra_arguments if key in self.data
+        )
         return extra_arguments
 
     def uses_redirect(self):
@@ -214,18 +221,19 @@ class BaseAuth:
         otherwise return false."""
         return True
 
-    def request(self, url, method='GET', *args, **kwargs):
-        kwargs.setdefault('headers', {})
-        if self.setting('PROXIES') is not None:
-            kwargs.setdefault('proxies', self.setting('PROXIES'))
+    def request(self, url, method="GET", *args, **kwargs):
+        kwargs.setdefault("headers", {})
+        if self.setting("PROXIES") is not None:
+            kwargs.setdefault("proxies", self.setting("PROXIES"))
 
-        if self.setting('VERIFY_SSL') is not None:
-            kwargs.setdefault('verify', self.setting('VERIFY_SSL'))
-        kwargs.setdefault('timeout', self.setting('REQUESTS_TIMEOUT') or
-                          self.setting('URLOPEN_TIMEOUT'))
-        if self.SEND_USER_AGENT and 'User-Agent' not in kwargs['headers']:
-            kwargs['headers']['User-Agent'] = self.setting('USER_AGENT') or \
-                                              user_agent()
+        if self.setting("VERIFY_SSL") is not None:
+            kwargs.setdefault("verify", self.setting("VERIFY_SSL"))
+        kwargs.setdefault(
+            "timeout",
+            self.setting("REQUESTS_TIMEOUT") or self.setting("URLOPEN_TIMEOUT"),
+        )
+        if self.SEND_USER_AGENT and "User-Agent" not in kwargs["headers"]:
+            kwargs["headers"]["User-Agent"] = self.setting("USER_AGENT") or user_agent()
 
         try:
             if self.SSL_PROTOCOL:
@@ -248,4 +256,4 @@ class BaseAuth:
         """Return tuple with Consumer Key and Consumer Secret for current
         service provider. Must return (key, secret), order *must* be respected.
         """
-        return self.setting('KEY'), self.setting('SECRET')
+        return self.setting("KEY"), self.setting("SECRET")

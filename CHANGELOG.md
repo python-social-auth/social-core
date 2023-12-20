@@ -5,6 +5,76 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.5.1](https://github.com/python-social-auth/social-core/releases/tag/4.5.1) - 2023-11-29
+
+### Changed
+- OpenID Connect skips `at_hash` validation when missing
+- `redirect_name` is now passed to backend on `do_complete`
+- `next` is preserved through SAML RelayState
+- Add Discogs backend
+- Add BitbucketDataCenterOAuth2 backend
+- Keycloak's `ID_KEY` is no longer configurable (it never worked)
+
+## [4.5.0](https://github.com/python-social-auth/social-core/releases/tag/4.5.0) - 2023-10-31
+
+### Changed
+- Add backend for LinkedIn OpenID Connect
+- Add backend for EGI Check-in
+- Support Python 3.12 (and 3.11)
+- Add backend for the WLCG IAM testing site
+- Add ping identity OIDC backend
+- Add uffd oauth2 backend
+- Add Clever backend
+- Add Twitter OAuth2 backend
+- Add backend for e-infra.cz
+- Replace jose with pyjwt
+
+## [4.4.2](https://github.com/python-social-auth/social-core/releases/tag/4.4.2) - 2023-04-22
+
+### Changed
+- Fixed Azure AD Tenant authentication with custom signing keys
+- Added CAS OIDC backend
+- Made Keycloak `ID_KEY` configurable
+
+## [4.4.1](https://github.com/python-social-auth/social-core/releases/tag/4.4.1) - 2023-03-30
+
+### Changed
+- Moved Facebook Limited Login to a separate module to avoid extra dependency
+- Update Azure AD B2C base URL to match updated endpoints
+
+## [4.4.0](https://github.com/python-social-auth/social-core/releases/tag/4.4.0) - 2023-03-15
+
+
+### Added
+
+- Backend for OpenInfra OpenID
+- Facebook Limited Login backend
+- Add support for Python 3.11
+
+### Changed
+- Removed OpenStackDevOpenId backend
+- Updated `user_data` method in `StripeOAuth2` to return `email` in `get_user_details`
+- Removes fixed version of `lxml`
+- Fixed OIDC crash on groups
+- Fixed Qiita users identification
+- Dropped support for TLSv1
+- Coding style improvements
+
+
+## [4.3.0](https://github.com/python-social-auth/social-core/releases/tag/4.3.0) - 2022-06-13
+
+### Added
+- Add backend for Hashicorp Vault OIDC backend
+- Add generic OpenID Connect backend
+- Add Grafana OAuth2 backend
+- Add MusicBrainz OAuth2 backend
+
+### Changed
+- Fixed redirect state for Keycloak backend
+- Add fallback to RSA256 in OpenID Connect when alg is not set
+- Fixed Azure backend so it can be used with all Azure authority hosts
+
+
 ## [4.2.0](https://github.com/python-social-auth/social-core/releases/tag/4.2.0) - 2022-01-17
 
 ### Added
@@ -154,7 +224,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Send User-Agent header on GitHub backend
 - Remove profile scope and verification at hash on Elixir backend
 - Mark description as Markdown for PyPI
-- Use `hmac.compare_digest` for constant time comparision
+- Use `hmac.compare_digest` for constant time comparison
 - Replace deprecated Google+ API usage in GoogleOpenIdConnect
 - Defined scope separator for Strava backend
 - Ensure `saml_config.json` is included by addint it to `MANIFEST.in`

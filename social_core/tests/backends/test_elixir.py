@@ -3,8 +3,8 @@ from .test_open_id_connect import OpenIdConnectTestMixin
 
 
 class ElixirOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
-    backend_path = 'social_core.backends.elixir.ElixirOpenIdConnect'
-    issuer = 'https://login.elixir-czech.org/oidc/'
+    backend_path = "social_core.backends.elixir.ElixirOpenIdConnect"
+    issuer = "https://login.elixir-czech.org/oidc/"
     openid_config_body = """
     {
         "claims_supported": [
