@@ -75,7 +75,7 @@ class AppleIdAuth(BaseOAuth2):
 
     def generate_client_secret(self):
         now = int(time.time())
-        client_id = self.setting("CLIENT")
+        client_id = self.data.get("client_id", self.setting("CLIENT"))
         team_id = self.setting("TEAM")
         key_id = self.setting("KEY")
         private_key = self.get_private_key()
@@ -92,7 +92,7 @@ class AppleIdAuth(BaseOAuth2):
         return jwt.encode(payload, key=private_key, algorithm="ES256", headers=headers)
 
     def get_key_and_secret(self):
-        client_id = self.setting("CLIENT")
+        client_id = self.data.get("client_id", self.setting("CLIENT"))
         client_secret = self.generate_client_secret()
         return client_id, client_secret
 
