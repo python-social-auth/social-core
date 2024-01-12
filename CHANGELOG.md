@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+### Changed
+- Updated Facebook API version to 18.0
+
+
 ## [4.5.1](https://github.com/python-social-auth/social-core/releases/tag/4.5.1) - 2023-11-29
 
 ### Changed

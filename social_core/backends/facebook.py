@@ -17,7 +17,7 @@ from ..exceptions import (
 from ..utils import constant_time_compare, handle_http_errors, parse_qs
 from .oauth import BaseOAuth2
 
-API_VERSION = 12.0
+API_VERSION = 18.0
 
 
 class FacebookOAuth2(BaseOAuth2):
