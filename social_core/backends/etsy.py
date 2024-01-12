@@ -16,19 +16,19 @@ class EtsyOAuth2(BaseOAuth2PKCE):
         ("token_type", "token_type"),
         ("access_token", "access_token"),
         # User Data Fields
-        ('primary_email', 'primary_email'),
-        ('first_name', 'first_name'),
-        ('last_name', 'last_name'),
-        ('image_url_75x75', 'image_url_75x75')
+        ("primary_email", "primary_email"),
+        ("first_name", "first_name"),
+        ("last_name", "last_name"),
+        ("image_url_75x75", "image_url_75x75"),
     ]
 
     def user_data(self, access_token, *args, **kwargs) -> dict:
         client_id, _ = self.get_key_and_secret()
         user_id = access_token.split(".")[0]
-        headers = {"Authorization": f"Bearer {access_token}", 'x-api-key': client_id}
+        headers = {"Authorization": f"Bearer {access_token}", "x-api-key": client_id}
         return self.get_json(
             url=f"https://openapi.etsy.com/v3/application/users/{user_id}",
-            headers=headers
+            headers=headers,
         )
 
     def get_user_details(self, response):
@@ -38,5 +38,5 @@ class EtsyOAuth2(BaseOAuth2PKCE):
             "last_name": response["last_name"],
             "email": response["primary_email"],
             "image_url_75x75": response["image_url_75x75"],
-            "username": response["user_id"]
+            "username": response["user_id"],
         }

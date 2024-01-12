@@ -22,9 +22,7 @@ class EtsyOAuth2Mixin:
         }
     )
 
-    user_data_url = (
-        "https://openapi.etsy.com/v3/application/users/dummy_user_id"
-    )
+    user_data_url = "https://openapi.etsy.com/v3/application/users/dummy_user_id"
     user_data_body = json.dumps(
         {
             "user_id": "dummy_user_id",
@@ -49,10 +47,14 @@ class EtsyOAuth2Mixin:
             social.extra_data["image_url_75x75"],
             "http://www.gravatar.com/avatar/af7d968fe79ea45271e3100391824b79.jpg?s=48&d=mm",
         )
-        self.assertEqual(social.extra_data["access_token"], "dummy_user_id.dummy_access_token")
+        self.assertEqual(
+            social.extra_data["access_token"], "dummy_user_id.dummy_access_token"
+        )
         self.assertEqual(social.extra_data["token_type"], "bearer")
         self.assertEqual(social.extra_data["expires_in"], 3600)
-        self.assertEqual(social.extra_data["refresh_token"], "dummy_user_id.dummy_refresh_token")
+        self.assertEqual(
+            social.extra_data["refresh_token"], "dummy_user_id.dummy_refresh_token"
+        )
 
     def test_refresh_token(self):
         _, social = self.do_refresh_token()
@@ -65,10 +67,16 @@ class EtsyOAuth2Mixin:
             social.extra_data["image_url_75x75"],
             "http://www.gravatar.com/avatar/af7d968fe79ea45271e3100391824b79.jpg?s=48&d=mm",
         )
-        self.assertEqual(social.extra_data["access_token"], "dummy_user_id.dummy_access_token_refreshed")
+        self.assertEqual(
+            social.extra_data["access_token"],
+            "dummy_user_id.dummy_access_token_refreshed",
+        )
         self.assertEqual(social.extra_data["token_type"], "bearer")
         self.assertEqual(social.extra_data["expires_in"], 3600)
-        self.assertEqual(social.extra_data["refresh_token"], "dummy_user_id.dummy_refresh_token_refreshed")
+        self.assertEqual(
+            social.extra_data["refresh_token"],
+            "dummy_user_id.dummy_refresh_token_refreshed",
+        )
 
 
 class EtsyOAuth2TestPkceS256(
