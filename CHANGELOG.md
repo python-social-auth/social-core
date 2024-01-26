@@ -5,11 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [4.5.2](https://github.com/python-social-auth/social-core/releases/tag/4.5.2) - 2024-01-26
+
+### Added
+- Etsy backend
 
 ### Changed
 - Updated Facebook API version to 18.0
-
+- Make AppleID work with multiple identifiers
 
 ## [4.5.1](https://github.com/python-social-auth/social-core/releases/tag/4.5.1) - 2023-11-29
 
