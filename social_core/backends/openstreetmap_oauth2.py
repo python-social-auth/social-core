@@ -11,6 +11,7 @@ More info: https://wiki.openstreetmap.org/wiki/OAuth
 
 from .oauth import BaseOAuth2PKCE
 
+
 class OpenStreetMapOAuth2(BaseOAuth2PKCE):
     """OpenStreetMap OAuth2 authentication backend"""
 
@@ -45,12 +46,12 @@ class OpenStreetMapOAuth2(BaseOAuth2PKCE):
         headers = {"Authorization": f"Bearer {access_token}"}
         response = self.get_json(
             url="https://api.openstreetmap.org/api/0.6/user/details.json",
-            headers=headers
+            headers=headers,
         )
 
         return {
             "id": response["user"]["id"],
             "username": response["user"]["display_name"],
             "account_created": response["user"]["account_created"],
-            "avatar": response["user"].get("img", {}).get("href")
+            "avatar": response["user"].get("img", {}).get("href"),
         }

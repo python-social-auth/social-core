@@ -18,8 +18,8 @@ class OpenStreetMapOAuth2Test(OAuth2Test):
             "user": {
                 "id": 1,
                 "display_name": "Steve",
-                "account_created": "2005-09-13T15:32:57Z"
-            }
+                "account_created": "2005-09-13T15:32:57Z",
+            },
         }
     )
 
