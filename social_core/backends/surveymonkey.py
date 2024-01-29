@@ -2,6 +2,7 @@
 SurveyMonkey OAuth2 backend, docs at:
     https://developer.surveymonkey.com/api/v3/#authentication
 """
+
 from .oauth import BaseOAuth2
 
 

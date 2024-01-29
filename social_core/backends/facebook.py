@@ -2,6 +2,7 @@
 Facebook OAuth2, and Canvas Application  backends, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/facebook.html
 """
+
 import base64
 import hashlib
 import hmac

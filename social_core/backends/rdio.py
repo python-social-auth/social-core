@@ -2,6 +2,7 @@
 Rdio OAuth1 and OAuth2 backends, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/rdio.html
 """
+
 from .oauth import BaseOAuth1, BaseOAuth2, OAuthAuth
 
 RDIO_API = "https://www.rdio.com/api/1/"

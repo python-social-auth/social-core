@@ -2,6 +2,7 @@
 Twilio auth backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/twilio.html
 """
+
 from re import sub
 from urllib.parse import urlencode
 

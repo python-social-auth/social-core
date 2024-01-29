@@ -2,11 +2,11 @@
 Zotero OAuth1 backends, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/zotero.html
 """
+
 from .oauth import BaseOAuth1
 
 
 class ZoteroOAuth(BaseOAuth1):
-
     """Zotero OAuth authorization mechanism"""
 
     name = "zotero"

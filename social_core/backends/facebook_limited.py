@@ -2,6 +2,7 @@
 Facebook Limited Login backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/facebook.html
 """
+
 from ..exceptions import AuthTokenError
 from .open_id_connect import OpenIdConnectAuth
 

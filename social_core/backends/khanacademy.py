@@ -2,6 +2,7 @@
 Khan Academy OAuth backend, docs at:
     https://github.com/Khan/khan-api/wiki/Khan-Academy-API-Authentication
 """
+
 from urllib.parse import urlencode
 
 from oauthlib.oauth1 import SIGNATURE_HMAC, SIGNATURE_TYPE_QUERY

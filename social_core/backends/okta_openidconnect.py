@@ -2,6 +2,7 @@
 Okta OAuth2 and OpenIdConnect:
     https://python-social-auth.readthedocs.io/en/latest/backends/okta.html
 """
+
 from .okta import OktaOAuth2
 from .open_id_connect import OpenIdConnectAuth
 

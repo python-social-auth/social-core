@@ -7,6 +7,7 @@ implementation for GitLab support on his blog post [Weblate with
 GitLab as OAuth provider](http://widerin.net/blog/weblate-gitlab-oauth-login/).
 His code was a great reference when working on this implementation.
 """
+
 from .oauth import BaseOAuth2
 
 

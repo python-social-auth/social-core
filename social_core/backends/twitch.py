@@ -2,6 +2,7 @@
 Twitch OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/twitch.html
 """
+
 from .oauth import BaseOAuth2
 from .open_id_connect import OpenIdConnectAuth
 

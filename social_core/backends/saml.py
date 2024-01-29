@@ -7,6 +7,7 @@ Terminology:
 "Identity Provider" (IdP): The third-party site that is authenticating
                            users via SAML
 """
+
 import json
 
 from onelogin.saml2.auth import OneLogin_Saml2_Auth

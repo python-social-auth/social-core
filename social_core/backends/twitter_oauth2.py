@@ -3,6 +3,7 @@ Twitter OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/twitter-oauth2.html
     https://developer.twitter.com/en/docs/authentication/oauth-2-0/authorization-code
 """
+
 from .oauth import BaseOAuth2PKCE
 
 

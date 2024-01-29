@@ -1,6 +1,7 @@
 """
 OAuth2 Backend to work with microsoft graph.
 """
+
 import time
 
 from .oauth import BaseOAuth2

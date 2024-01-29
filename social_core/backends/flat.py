@@ -2,6 +2,7 @@
 Flat OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/flat.html
 """
+
 from .oauth import BaseOAuth2
 
 

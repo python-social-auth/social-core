@@ -3,6 +3,7 @@ NGP VAN's `ActionID` Provider
 
 http://developers.ngpvan.com/action-id
 """
+
 from openid.extensions import ax
 
 from .open_id import OpenIdAuth

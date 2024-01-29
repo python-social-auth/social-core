@@ -2,6 +2,7 @@
 Readability OAuth1 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/readability.html
 """
+
 from .oauth import BaseOAuth1
 
 READABILITY_API = "https://www.readability.com/api/rest/v1"

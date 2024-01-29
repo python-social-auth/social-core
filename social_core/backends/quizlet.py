@@ -2,6 +2,7 @@
 Quizlet OAuth2 Sign-in backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/quizlet.html
 """
+
 from .oauth import BaseOAuth2
 
 

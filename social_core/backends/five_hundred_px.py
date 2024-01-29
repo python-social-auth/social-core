@@ -2,6 +2,7 @@
 500px OAuth1 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/five_hundred_px.html
 """
+
 from .oauth import BaseOAuth1
 
 

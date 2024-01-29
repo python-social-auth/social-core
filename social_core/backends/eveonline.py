@@ -2,6 +2,7 @@
 EVE Online Single Sign-On (SSO) OAuth2 backend
 Documentation at https://eveonline-third-party-documentation.readthedocs.io/en/latest/sso/index.html
 """
+
 from .oauth import BaseOAuth2
 
 

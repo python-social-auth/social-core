@@ -2,6 +2,7 @@
 Drip OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/drip.html
 """
+
 from .oauth import BaseOAuth2
 
 

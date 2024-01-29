@@ -5,6 +5,7 @@ Moves OAuth2 backend, docs at:
 Written by Avi Alkalay <avi at unix dot sh>
 Certified to work with Django 1.6
 """
+
 from .oauth import BaseOAuth2
 
 

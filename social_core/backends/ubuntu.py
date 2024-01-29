@@ -1,6 +1,7 @@
 """
 Ubuntu One OpenId backend
 """
+
 from .open_id import OpenIdAuth
 
 

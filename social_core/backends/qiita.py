@@ -4,6 +4,7 @@ Qiita OAuth2 backend, docs at:
     http://qiita.com/api/v2/docs#get-apiv2oauthauthorize
     https://qiita.com/api/v2/docs#get-apiv2authenticated_user
 """
+
 import json
 
 from social_core.exceptions import AuthException
