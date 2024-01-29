@@ -2,6 +2,7 @@
 Appsfueld OAuth2 backend (with sandbox mode support), docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/appsfuel.html
 """
+
 from .oauth import BaseOAuth2
 
 

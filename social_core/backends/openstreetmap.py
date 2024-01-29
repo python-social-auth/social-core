@@ -8,6 +8,7 @@ must be defined with the corresponding values.
 
 More info: https://wiki.openstreetmap.org/wiki/OAuth
 """
+
 from xml.dom import minidom
 
 from .oauth import BaseOAuth1

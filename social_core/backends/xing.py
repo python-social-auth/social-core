@@ -2,6 +2,7 @@
 XING OAuth1 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/xing.html
 """
+
 from oauthlib.oauth1 import SIGNATURE_TYPE_AUTH_HEADER
 from requests_oauthlib import OAuth1
 

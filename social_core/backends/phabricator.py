@@ -2,6 +2,7 @@
 Phabricator OAuth2 backend, docs at:
     https://secure.phabricator.com/book/phabcontrib/article/using_oauthserver/
 """
+
 from .oauth import BaseOAuth2
 
 

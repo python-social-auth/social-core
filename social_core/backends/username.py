@@ -2,6 +2,7 @@
 Legacy Username backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/username.html
 """
+
 from .legacy import LegacyAuth
 
 

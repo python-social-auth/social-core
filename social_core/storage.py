@@ -1,4 +1,5 @@
 """Models mixins for Social Auth"""
+
 import base64
 import re
 import time

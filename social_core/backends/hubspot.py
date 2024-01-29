@@ -2,6 +2,7 @@
 HubSpot OAuth2 backend, docs at:
     https://developers.hubspot.com/docs/methods/oauth2/oauth2-overview
 """
+
 from .oauth import BaseOAuth2
 
 

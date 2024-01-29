@@ -4,6 +4,7 @@ Professionaly OAuth 2.0 support.
 This contribution adds support for professionaly.ru OAuth 2.0.
 Username is retrieved from the identity returned by server.
 """
+
 from time import time
 
 from ..utils import parse_qs

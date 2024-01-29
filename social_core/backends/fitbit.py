@@ -2,6 +2,7 @@
 Fitbit OAuth backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/fitbit.html
 """
+
 import base64
 
 from .oauth import BaseOAuth1, BaseOAuth2

@@ -2,6 +2,7 @@
 Tumblr OAuth1 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/tumblr.html
 """
+
 from ..utils import first
 from .oauth import BaseOAuth1
 

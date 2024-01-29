@@ -49,7 +49,7 @@ class PodioOAuth2Test(OAuth2Test):
                 "link": "https://podio.com/users/1010101010",
                 "name": "Foo Bar",
                 # more properties ...
-            }
+            },
             # more properties ...
         }
     )

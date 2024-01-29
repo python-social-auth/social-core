@@ -2,6 +2,7 @@
 Github Enterprise OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/github_enterprise.html
 """
+
 from urllib.parse import urljoin
 
 from ..utils import append_slash

@@ -2,6 +2,7 @@
 Google OpenIdConnect:
     https://python-social-auth.readthedocs.io/en/latest/backends/google.html
 """
+
 from .google import GoogleOAuth2
 from .open_id_connect import OpenIdConnectAuth
 

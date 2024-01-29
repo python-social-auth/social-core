@@ -2,6 +2,7 @@
 LINE Login OAuth2 backend, docs at:
     https://developers.line.me/en/docs/line-login/
 """
+
 import json
 
 import requests
