@@ -171,7 +171,8 @@ class OAuth2PkceS256Test(OAuth2Test):
         ][0]
         code_verifier = auth_complete.parsed_body.get("code_verifier")[0]
         self.assertEqual(
-            self.backend.generate_code_challenge(code_verifier, code_challenge_method), code_challenge
+            self.backend.generate_code_challenge(code_verifier, code_challenge_method),
+            code_challenge,
         )
 
         return user
