@@ -164,14 +164,15 @@ class OAuth2PkceS256Test(OAuth2Test):
         code_challenge = auth_request.querystring.get("code_challenge")[0]
         code_challenge_method = auth_request.querystring.get("code_challenge_method")[0]
         self.assertIsNotNone(code_challenge)
-        self.assertEqual(code_challenge_method, "s256")
+        self.assertTrue(code_challenge_method in ["s256", "S256"])
 
         auth_complete = [
             r for r in requests if self.backend.access_token_url() in r.url
         ][0]
         code_verifier = auth_complete.parsed_body.get("code_verifier")[0]
         self.assertEqual(
-            self.backend.generate_code_challenge(code_verifier, "s256"), code_challenge
+            self.backend.generate_code_challenge(code_verifier, code_challenge_method),
+            code_challenge,
         )
 
         return user

@@ -7,9 +7,11 @@ class EtsyOAuth2(BaseOAuth2PKCE):
     AUTHORIZATION_URL = "https://www.etsy.com/oauth/connect"
     ACCESS_TOKEN_URL = "https://api.etsy.com/v3/public/oauth/token"
     REFRESH_TOKEN_URL = "https://api.etsy.com/v3/public/oauth/token"
+    PKCE_DEFAULT_CODE_CHALLENGE_METHOD = "S256"
     ACCESS_TOKEN_METHOD = "POST"
     REQUEST_TOKEN_METHOD = "POST"
     SCOPE_SEPARATOR = " "
+    REDIRECT_STATE = False
     EXTRA_DATA = [
         ("refresh_token", "refresh_token"),
         ("expires_in", "expires_in"),
@@ -38,5 +40,5 @@ class EtsyOAuth2(BaseOAuth2PKCE):
             "last_name": response["last_name"],
             "email": response["primary_email"],
             "image_url_75x75": response["image_url_75x75"],
-            "username": response["user_id"],
+            "username": str(response["user_id"]),
         }
