@@ -24,7 +24,7 @@ class BackendThatControlsRedirect(BaseAuth):
 
     def auth_complete(self, *args, **kwargs):
         # Put the redirect URL in the session state, as this is where the `do_complete` action looks for it.
-        self.strategy.session_set(kwargs["redirect_name"], "/after-login")
+        self.strategy.session_set(kwargs["redirect_name"], "/after-login#content")
         return kwargs["user"]
 
 
@@ -58,15 +58,15 @@ class LoginActionTest(BaseActionTest):
         self.assertEqual(self.strategy.session_get("bar"), None)
 
     def test_redirect_value(self):
-        self.strategy.set_request_data({"next": "/after-login"}, self.backend)
+        self.strategy.set_request_data({"next": "/after-login#content"}, self.backend)
         redirect = self.do_login(after_complete_checks=False)
-        self.assertEqual(redirect.url, "/after-login")
+        self.assertEqual(redirect.url, "/after-login#content")
 
     def test_redirect_value_set_by_backend(self):
         self.backend = BackendThatControlsRedirect(self.strategy)
         self.user = TestUserSocialAuth.create_user("test-user")
         redirect = self.do_login(after_complete_checks=False)
-        self.assertEqual(redirect.url, "/after-login")
+        self.assertEqual(redirect.url, "/after-login#content")
 
     def test_login_with_invalid_partial_pipeline(self):
         def before_complete():
