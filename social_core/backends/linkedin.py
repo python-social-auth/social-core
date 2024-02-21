@@ -61,6 +61,8 @@ class LinkedinOAuth2(BaseOAuth2):
         ("expires_in", "expires"),
         ("firstName", "first_name"),
         ("lastName", "last_name"),
+        ("refresh_token", "refresh_token"),
+        ("refresh_token_expires_in", "refresh_expires_in"),
     ]
 
     def user_details_url(self):
