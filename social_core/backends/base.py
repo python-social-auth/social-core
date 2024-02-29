@@ -146,7 +146,7 @@ class BaseAuth:
                 elif size == 1:
                     name = alias = entry[0]
                     discard = False
-                value = response.get(name) or details.get(name) or details.get(alias)
+                value = response.get(name, details.get(name, details.get(alias)))
                 if discard and not value:
                     continue
                 data[alias] = value
