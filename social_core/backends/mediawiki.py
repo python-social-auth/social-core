@@ -91,6 +91,8 @@ class MediaWiki(BaseOAuth1):
             params={"title": "Special:Oauth/token"},
             auth=auth_token,
         )
+        if response.content.decode().startswith("Error"):
+            raise AuthException(self, response.content.decode())
         credentials = parse_qs(response.content)
         oauth_token_key = credentials.get(b"oauth_token")[0]
         oauth_token_secret = credentials.get(b"oauth_token_secret")[0]
