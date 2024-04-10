@@ -87,7 +87,10 @@ class AzureADTenantOAuth2(AzureADOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         response = kwargs.get("response")
-        id_token = response.get("id_token")
+        if response and response.get("id_token"):
+            id_token = response.get("id_token")
+        else:
+            id_token = access_token
 
         # get key id and algorithm
         key_id = get_unverified_header(id_token)["kid"]
