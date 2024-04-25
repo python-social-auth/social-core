@@ -45,7 +45,7 @@ class SteamOpenId(OpenIdAuth):
         return self._consumer
 
     def _user_id(self, response):
-        if not response.identity_url.startswith(SteamOpenId.URL):
+        if not response.identity_url.startswith(self.URL):
             raise AuthFailed(self, "Openid identifier mismatch")
         user_id = response.identity_url.rsplit("/", 1)[-1]
         if not user_id.isdigit():
