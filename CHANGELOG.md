@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.5.4](https://github.com/python-social-auth/social-core/releases/tag/4.5.4) - 2024-04-25
+
+### Added
+- LinkedIn supports refresh token
+
+### Changed
+- SteamOpenId validation of identify URL
+- Box state redirestion
+- The `uid` is automatically converted to string in the pipeline
+- Mediawiki error handling
+
 ## [4.5.3](https://github.com/python-social-auth/social-core/releases/tag/4.5.3) - 2024-02-14
 
 ### Added
