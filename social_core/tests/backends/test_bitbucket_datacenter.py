@@ -83,7 +83,7 @@ class BitbucketDataCenterOAuth2Mixin:
         self.assertEqual(len(user.social), 1)
 
         social = user.social[0]
-        self.assertEqual(social.uid, 1)
+        self.assertEqual(social.uid, "1")
         self.assertEqual(social.extra_data["first_name"], "Erlich")
         self.assertEqual(social.extra_data["last_name"], "Bachman")
         self.assertEqual(social.extra_data["email"], "erlich@bachmanity.com")
@@ -109,7 +109,7 @@ class BitbucketDataCenterOAuth2Mixin:
     def test_refresh_token(self):
         _, social = self.do_refresh_token()
 
-        self.assertEqual(social.uid, 1)
+        self.assertEqual(social.uid, "1")
         self.assertEqual(social.extra_data["first_name"], "Erlich")
         self.assertEqual(social.extra_data["last_name"], "Bachman")
         self.assertEqual(social.extra_data["email"], "erlich@bachmanity.com")
