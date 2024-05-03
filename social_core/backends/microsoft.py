@@ -59,15 +59,19 @@ class MicrosoftOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Return user data by querying Microsoft service"""
-        return self.get_json(
+        data = self.get_json(
             "https://graph.microsoft.com/v1.0/me",
-            headers={
-                "Content-Type": "application/x-www-form-urlencoded",
-                "Accept": "application/json",
-                "Authorization": "Bearer " + access_token,
-            },
-            method="GET",
+            headers={"Authorization": "Bearer " + access_token},
         )
+
+        data_aliases = {
+            "email": data.get("mail", ""),
+            "first_name": data.get("givenName", ""),
+            "last_name": data.get("surname", ""),
+        }
+
+        data.update(data_aliases)
+        return data
 
     def refresh_token_params(self, token, *args, **kwargs):
         return {
