@@ -80,35 +80,34 @@ class AzureADOAuth2(BaseOAuth2):
         return response.get("upn")
 
     def get_user_details(self, response):
-        """Return user details from Azure AD account"""
-        fullname, first_name, last_name = (
-            response.get("name", ""),
-            response.get("given_name", ""),
-            response.get("family_name", ""),
-        )
+        """Return user details from Microsoft online account"""
+        email = response.get("mail")
+        username = response.get("userPrincipalName")
+
+        if "@" in username:
+            if not email:
+                email = username
+            username = username.split("@", 1)[0]
+
         return {
-            "username": fullname,
-            "email": response.get("email", response.get("upn")),
-            "fullname": fullname,
-            "first_name": first_name,
-            "last_name": last_name,
+            "username": username,
+            "email": email,
+            "fullname": response.get("displayName", ""),
+            "first_name": response.get("givenName", ""),
+            "last_name": response.get("surname", ""),
         }
 
     def user_data(self, access_token, *args, **kwargs):
         """Return user data by querying Microsoft service"""
-        data = self.get_json(
+        return self.get_json(
             "https://graph.microsoft.com/v1.0/me",
-            headers={"Authorization": "Bearer " + access_token},
+            headers={
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Accept": "application/json",
+                "Authorization": "Bearer " + access_token,
+            },
+            method="GET",
         )
-
-        data_aliases = {
-            "email": data.get("mail", ""),
-            "first_name": data.get("givenName", ""),
-            "last_name": data.get("surname", ""),
-        }
-
-        data.update(data_aliases)
-        return data
 
     def auth_extra_arguments(self):
         """Return extra arguments needed on auth process. The defaults can be
