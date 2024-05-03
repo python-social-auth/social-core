@@ -1,7 +1,5 @@
 import time
 
-import jwt
-
 from ..exceptions import AuthTokenError
 from .oauth import BaseOAuth2
 
