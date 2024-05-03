@@ -1,6 +1,5 @@
 import time
 
-from ..exceptions import AuthTokenError
 from .oauth import BaseOAuth2
 
 """
