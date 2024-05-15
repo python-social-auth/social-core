@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+### Changed
+- Handle case where user has not registered a `family-name`  with ORCID
+
 ## [4.5.4](https://github.com/python-social-auth/social-core/releases/tag/4.5.4) - 2024-04-25
 
 ### Added

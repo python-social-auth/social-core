@@ -76,7 +76,8 @@ class ORCIDOAuth2(BaseOAuth2):
 
             if name:
                 first_name = name.get("given-names", {}).get("value", "")
-                last_name = name.get("family-name", {}).get("value", "")
+                if name.get("family-name", None) is not None:
+                    last_name = name.get("family-name").get("value", "")
 
             emails = person.get("emails")
             if emails:
