@@ -55,7 +55,7 @@ class LinkedinOAuth2(BaseOAuth2):
     )
     ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
-    DEFAULT_SCOPE = ['email', 'profile', 'openid']
+    DEFAULT_SCOPE = ["email", "profile", "openid"]
     EXTRA_DATA = [
         ("id", "id"),
         ("expires_in", "expires"),
@@ -68,7 +68,10 @@ class LinkedinOAuth2(BaseOAuth2):
     def user_details_url(self):
         # use set() since LinkedIn fails when values are duplicated
         fields_selectors = list(
-            set(["sub", "given_name", "family_name", "email"] + self.setting("FIELD_SELECTORS", []))
+            set(
+                ["sub", "given_name", "family_name", "email"]
+                + self.setting("FIELD_SELECTORS", [])
+            )
         )
         # user sort to ease the tests URL mocking
         fields_selectors.sort()
@@ -102,7 +105,7 @@ class LinkedinOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Linkedin account"""
-        response = self.user_data(access_token=response['access_token'])
+        response = self.user_data(access_token=response["access_token"])
         fullname, first_name, last_name = self.get_user_names(
             first_name=response["given_name"],
             last_name=response["family_name"],
