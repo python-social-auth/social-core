@@ -43,7 +43,7 @@ class TelegramAuth(BaseAuth):
         last_name = response.get("last_name", "")
         fullname = f"{first_name} {last_name}".strip()
         return {
-            "username": response.get("username") or response[self.ID_KEY],
+            "username": response.get("username") or str(response[self.ID_KEY]),
             "first_name": first_name,
             "last_name": last_name,
             "fullname": fullname,
