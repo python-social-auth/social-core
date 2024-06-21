@@ -25,6 +25,7 @@ class CASOpenIdConnectAuth(OpenIdConnectAuth):
     SOCIAL_AUTH_CAS_OIDC_ENDPOINT = 'https://.....'  # endpoint without /.well-known/openid-configuration
     SOCIAL_AUTH_CAS_KEY = '<client_id>'
     SOCIAL_AUTH_CAS_SECRET = '<client_secret>'
+    SOCIAL_AUTH_CAS_ALLOW_GROUPS = []
     """
 
     name = "cas"
@@ -59,3 +60,12 @@ class CASOpenIdConnectAuth(OpenIdConnectAuth):
             "first_name": attributes.get("given_name"),
             "last_name": attributes.get("family_name"),
         }
+
+    def auth_allowed(self, response, details):
+        allow_groups = set(self.setting("ALLOW_GROUPS", set()))
+        groups = set(response.get("groups", set()))
+        return (
+            super().auth_allowed(response, details)
+            if groups.intersection(allow_groups) or not allow_groups
+            else False
+        )
