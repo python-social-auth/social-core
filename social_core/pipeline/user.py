@@ -96,7 +96,9 @@ def user_details(strategy, details, backend, user=None, *args, **kwargs):
             "is_superuser",
         )
 
-    protected = protected + tuple(strategy.setting("PROTECTED_USER_FIELDS", [], backend=backend))
+    protected = protected + tuple(
+        strategy.setting("PROTECTED_USER_FIELDS", [], backend=backend)
+    )
 
     # Update user model attributes with the new data sent by the current
     # provider. Update on some attributes is disabled by default, for
@@ -113,7 +115,9 @@ def user_details(strategy, details, backend, user=None, *args, **kwargs):
         if current_value == value:
             continue
 
-        immutable_fields = tuple(strategy.setting("IMMUTABLE_USER_FIELDS", [], backend=backend))
+        immutable_fields = tuple(
+            strategy.setting("IMMUTABLE_USER_FIELDS", [], backend=backend)
+        )
         if name in immutable_fields and current_value:
             continue
 
