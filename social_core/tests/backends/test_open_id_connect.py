@@ -136,7 +136,7 @@ class OpenIdConnectTestMixin:
 
         body = {"access_token": "foobar", "token_type": "bearer"}
         client_key = client_key or self.client_key
-        now = datetime.datetime.utcnow()
+        now = datetime.datetime.now(datetime.timezone.utc)
         expiration_datetime = expiration_datetime or (
             now + datetime.timedelta(seconds=30)
         )
@@ -145,8 +145,8 @@ class OpenIdConnectTestMixin:
         issuer = issuer or self.issuer
         id_token = self.get_id_token(
             client_key,
-            timegm(expiration_datetime.utctimetuple()),
-            timegm(issue_datetime.utctimetuple()),
+            timegm(expiration_datetime.timetuple()),
+            timegm(issue_datetime.timetuple()),
             nonce,
             issuer,
         )
@@ -156,7 +156,7 @@ class OpenIdConnectTestMixin:
         body["id_token"] = jwt.encode(
             id_token,
             key=jwt.PyJWK(
-                dict(self.key, iat=timegm(issue_datetime.utctimetuple()), nonce=nonce)
+                dict(self.key, iat=timegm(issue_datetime.timetuple()), nonce=nonce)
             ).key,
             algorithm="RS256",
             headers=dict(kid=kid) if kid else None,
@@ -190,9 +190,9 @@ class OpenIdConnectTestMixin:
         )
 
     def test_expired_signature(self):
-        expiration_datetime = datetime.datetime.utcnow() - datetime.timedelta(
-            seconds=30
-        )
+        expiration_datetime = datetime.datetime.now(
+            datetime.timezone.utc
+        ) - datetime.timedelta(seconds=30)
         self.authtoken_raised(
             "Token error: Signature has expired",
             expiration_datetime=expiration_datetime,
@@ -207,9 +207,9 @@ class OpenIdConnectTestMixin:
         )
 
     def test_invalid_issue_time(self):
-        expiration_datetime = datetime.datetime.utcnow() - datetime.timedelta(
-            seconds=self.backend.ID_TOKEN_MAX_AGE * 2
-        )
+        expiration_datetime = datetime.datetime.now(
+            datetime.timezone.utc
+        ) - datetime.timedelta(seconds=self.backend.ID_TOKEN_MAX_AGE * 2)
         self.authtoken_raised(
             "Token error: Incorrect id_token: iat", issue_datetime=expiration_datetime
         )
