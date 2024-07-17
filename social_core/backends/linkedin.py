@@ -30,7 +30,7 @@ class LinkedinOpenIdConnect(OpenIdConnectAuth):
     def validate_claims(self, id_token):
         """Copy of the regular validate_claims method without the nonce validation."""
 
-        utc_timestamp = timegm(datetime.datetime.utcnow().utctimetuple())
+        utc_timestamp = timegm(datetime.datetime.now(datetime.timezone.utc).timetuple())
 
         if "nbf" in id_token and utc_timestamp < id_token["nbf"]:
             raise AuthTokenError(self, "Incorrect id_token: nbf")

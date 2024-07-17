@@ -5,7 +5,7 @@ import re
 import time
 import uuid
 import warnings
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from openid.association import Association as OpenIdAssociation
 
@@ -68,19 +68,19 @@ class UserMixin:
             except (ValueError, TypeError):
                 return None
 
-            now = datetime.utcnow()
+            now = datetime.now(timezone.utc)
 
             # Detect if expires is a timestamp
             if expires > time.mktime(now.timetuple()):
                 # expires is a datetime, return the remaining difference
-                return datetime.utcfromtimestamp(expires) - now
+                return datetime.fromtimestamp(expires, tz=timezone.utc) - now
             else:
                 # expires is the time to live seconds since creation,
                 # check against auth_time if present, otherwise return
                 # the value
                 auth_time = self.extra_data.get("auth_time")
                 if auth_time:
-                    reference = datetime.utcfromtimestamp(auth_time)
+                    reference = datetime.fromtimestamp(auth_time, tz=timezone.utc)
                     return (reference + timedelta(seconds=expires)) - now
                 else:
                     return timedelta(seconds=expires)
