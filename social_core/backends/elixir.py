@@ -32,3 +32,14 @@ class ElixirOpenIdConnect(OpenIdConnectAuth):
             "first_name": first_name,
             "last_name": last_name,
         }
+
+    def refresh_token(self, token, *args, **kwargs):
+        params = "&".join(
+            f"{param}={value}"
+            for param, value in self.refresh_token_params(token, *args, **kwargs).items()
+        )
+	    url = self.refresh_token_url()
+        method = self.REFRESH_TOKEN_METHOD
+        key = "params" if method == "GET" else "data"
+        request_args = {"headers": self.auth_headers(), "method": method, key: params}
+        return self.process_refresh_token_response(request, *args, **kwargs)
