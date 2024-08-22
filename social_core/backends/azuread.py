@@ -145,3 +145,14 @@ class AzureADOAuth2(BaseOAuth2):
             new_token_response = self.refresh_token(token=access_token)
             access_token = new_token_response["access_token"]
         return access_token
+
+
+class AzureADOAuth2V2(AzureADOAuth2):
+    """Version of the AzureADOAuth2 backend that uses the v2.0 API endpoints,
+    supporting users with personal Microsoft accounts, if the app settings
+    allow them."""
+
+    name = "azuread-oauth2-v2"
+    AUTHORIZATION_URL = "{base_url}/oauth2/v2.0/authorize"
+    ACCESS_TOKEN_URL = "{base_url}/oauth2/v2.0/token"
+    DEFAULT_SCOPE = ["User.Read profile openid email"]
