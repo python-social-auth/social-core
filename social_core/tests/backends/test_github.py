@@ -10,7 +10,24 @@ class GithubOAuth2Test(OAuth2Test):
     backend_path = "social_core.backends.github.GithubOAuth2"
     user_data_url = "https://api.github.com/user"
     expected_username = "foobar"
-    access_token_body = json.dumps({"access_token": "foobar", "token_type": "bearer"})
+    access_token_body = json.dumps(
+        {
+            "access_token": "foobar",
+            "token_type": "bearer",
+            "expires_in": 28800,
+            "refresh_token": "foobar-refresh-token",
+        }
+    )
+    refresh_token_body = json.dumps(
+        {
+            "access_token": "foobar-new-token",
+            "token_type": "bearer",
+            "expires_in": 28800,
+            "refresh_token": "foobar-new-refresh-token",
+            "refresh_token_expires_in": 15897600,
+            "scope": "",
+        }
+    )
     user_data_body = json.dumps(
         {
             "login": "foobar",
@@ -46,11 +63,24 @@ class GithubOAuth2Test(OAuth2Test):
         }
     )
 
+    def do_login(self):
+        user = super().do_login()
+        social = user.social[0]
+
+        self.assertIsNotNone(social.extra_data["expires"])
+        self.assertIsNotNone(social.extra_data["refresh_token"])
+
+        return user
+
     def test_login(self):
         self.do_login()
 
     def test_partial_pipeline(self):
         self.do_partial_pipeline()
+
+    def test_refresh_token(self):
+        user, social = self.do_refresh_token()
+        self.assertEqual(social.extra_data["access_token"], "foobar-new-token")
 
 
 class GithubOAuth2NoEmailTest(GithubOAuth2Test):
@@ -122,6 +152,17 @@ class GithubOAuth2NoEmailTest(GithubOAuth2Test):
         )
         self.do_partial_pipeline()
 
+    def test_refresh_token(self):
+        url = "https://api.github.com/user/emails"
+        HTTPretty.register_uri(
+            HTTPretty.GET,
+            url,
+            status=200,
+            body=json.dumps([{"email": "foo@bar.com"}]),
+            content_type="application/json",
+        )
+        self.do_refresh_token()
+
 
 class GithubOrganizationOAuth2Test(GithubOAuth2Test):
     backend_path = "social_core.backends.github.GithubOrganizationOAuth2"
@@ -138,6 +179,10 @@ class GithubOrganizationOAuth2Test(GithubOAuth2Test):
     def test_partial_pipeline(self):
         self.strategy.set_settings({"SOCIAL_AUTH_GITHUB_ORG_NAME": "foobar"})
         self.do_partial_pipeline()
+
+    def test_refresh_token(self):
+        self.strategy.set_settings({"SOCIAL_AUTH_GITHUB_ORG_NAME": "foobar"})
+        self.do_refresh_token()
 
 
 class GithubOrganizationOAuth2FailTest(GithubOAuth2Test):
@@ -164,6 +209,11 @@ class GithubOrganizationOAuth2FailTest(GithubOAuth2Test):
         with self.assertRaises(AuthFailed):
             self.do_partial_pipeline()
 
+    def test_refresh_token(self):
+        self.strategy.set_settings({"SOCIAL_AUTH_GITHUB_ORG_NAME": "foobar"})
+        with self.assertRaises(AuthFailed):
+            self.do_refresh_token()
+
 
 class GithubTeamOAuth2Test(GithubOAuth2Test):
     backend_path = "social_core.backends.github.GithubTeamOAuth2"
@@ -180,6 +230,10 @@ class GithubTeamOAuth2Test(GithubOAuth2Test):
     def test_partial_pipeline(self):
         self.strategy.set_settings({"SOCIAL_AUTH_GITHUB_TEAM_ID": "123"})
         self.do_partial_pipeline()
+
+    def test_refresh_token(self):
+        self.strategy.set_settings({"SOCIAL_AUTH_GITHUB_TEAM_ID": "123"})
+        self.do_refresh_token()
 
 
 class GithubTeamOAuth2FailTest(GithubOAuth2Test):
@@ -205,3 +259,8 @@ class GithubTeamOAuth2FailTest(GithubOAuth2Test):
         self.strategy.set_settings({"SOCIAL_AUTH_GITHUB_TEAM_ID": "123"})
         with self.assertRaises(AuthFailed):
             self.do_partial_pipeline()
+
+    def test_refresh_token(self):
+        self.strategy.set_settings({"SOCIAL_AUTH_GITHUB_TEAM_ID": "123"})
+        with self.assertRaises(AuthFailed):
+            self.do_refresh_token()
