@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - Handle case where user has not registered a `family-name`  with ORCID
+- Fix access token expiration and refresh token handling in GitHub backend
 
 ## [4.5.4](https://github.com/python-social-auth/social-core/releases/tag/4.5.4) - 2024-04-25
 
