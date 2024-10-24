@@ -9,7 +9,7 @@ class AtlassianOAuth2Test(OAuth2Test):
     backend_path = "social_core.backends.atlassian.AtlassianOAuth2"
     tenant_url = "https://api.atlassian.com/oauth/token/accessible-resources"
     user_data_url = "https://api.atlassian.com/ex/jira/FAKED_CLOUD_ID/rest/api/2/myself"
-    expected_username = "erlich"
+    expected_username = "9927935d01-92a7-4687-8272-a9b8d3b2ae2e"
     access_token_body = json.dumps({"access_token": "aviato", "token_type": "bearer"})
     tenant_data_body = json.dumps(
         [
@@ -26,7 +26,6 @@ class AtlassianOAuth2Test(OAuth2Test):
             "self": "http://bachmanity.atlassian.net/rest/api/3/user?username=erlich",
             "key": "erlich",
             "accountId": "99:27935d01-92a7-4687-8272-a9b8d3b2ae2e",
-            "name": "erlich",
             "emailAddress": "erlich@bachmanity.com",
             "avatarUrls": {
                 "48x48": "http://bachmanity.atlassian.net/secure/useravatar?size=large&ownerId=erlich",

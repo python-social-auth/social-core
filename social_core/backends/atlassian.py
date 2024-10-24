@@ -22,7 +22,7 @@ class AtlassianOAuth2(BaseOAuth2):
     def get_user_details(self, response):
         fullname, first_name, last_name = self.get_user_names(response["displayName"])
         return {
-            "username": response["name"],
+            "username": response["accountId"],
             "email": response["emailAddress"],
             "fullname": fullname,
             "first_name": first_name,
