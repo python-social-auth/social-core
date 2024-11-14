@@ -40,7 +40,7 @@ jobs:
     - name: Test with tox
       run: tox -e "py${PYTHON_VERSION/\./}"
 
-    - uses: codecov/codecov-action@v3
+    - uses: codecov/codecov-action@v5
       with:
         flags: unittests
         name: Python ${{ matrix.python-version }}
