@@ -134,7 +134,7 @@ class BaseActionTest(unittest.TestCase):
 
         def _login(backend, user, social_user):
             backend.strategy.session_set("username", user.username)
-            user_email = getattr(user, 'email', None)
+            user_email = getattr(user, "email", None)
             if user_email:
                 backend.strategy.session_set("email", user_email)
 
@@ -212,7 +212,7 @@ class BaseActionTest(unittest.TestCase):
 
         def _login(backend, user, social_user):
             backend.strategy.session_set("username", user.username)
-            user_email = getattr(user, 'email', None)
+            user_email = getattr(user, "email", None)
             if user_email:
                 backend.strategy.session_set("email", user_email)
 
