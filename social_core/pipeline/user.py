@@ -70,6 +70,13 @@ def create_user(strategy, details, backend, user=None, *args, **kwargs):
     if not fields:
         return
 
+    # Allow overriding the email field if desired by application specification
+    if backend.setting('FORCE_EMAIL_LOWERCASE', False):
+        emailfield = fields.get('email', None)
+        if emailfield:
+            fields['email'] = emailfield.lower()
+
+
     return {"is_new": True, "user": strategy.create_user(**fields)}
 
 
