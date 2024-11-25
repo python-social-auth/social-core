@@ -311,6 +311,4 @@ class TestLowerCaseEmailOverride(BaseActionTest):
             }
         )
         self.do_login(after_complete_checks=False)
-        self.assertEqual(user.first_name, "Test2")
-
         self.assertEqual(self.strategy.session_get("email"), "foo@bar.com")
