@@ -134,6 +134,9 @@ class BaseActionTest(unittest.TestCase):
 
         def _login(backend, user, social_user):
             backend.strategy.session_set("username", user.username)
+            user_email = getattr(user, "email", None)
+            if user_email:
+                backend.strategy.session_set("email", user_email)
 
         redirect = do_complete(self.backend, user=self.user, login=_login)
 
@@ -209,6 +212,9 @@ class BaseActionTest(unittest.TestCase):
 
         def _login(backend, user, social_user):
             backend.strategy.session_set("username", user.username)
+            user_email = getattr(user, "email", None)
+            if user_email:
+                backend.strategy.session_set("email", user_email)
 
         redirect = do_complete(self.backend, user=self.user, login=_login)
         url = self.strategy.build_absolute_uri("/password")
