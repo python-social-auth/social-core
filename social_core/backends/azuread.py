@@ -64,7 +64,7 @@ class AzureADOAuth2(BaseOAuth2):
 
     @property
     def tenant_id(self):
-        return "common"
+        return self.setting("TENANT_ID", "common")
 
     @property
     def base_url(self):
