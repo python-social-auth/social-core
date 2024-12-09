@@ -2,7 +2,7 @@ import json
 
 from httpretty import HTTPretty
 
-from .oauth import OAuth2Test
+from .oauth import OAuth2Test, BaseAuthUrlTestMixin
 from .test_open_id_connect import OpenIdConnectTestMixin
 
 ROOT_URL = "https://vault.example.net:8200/"

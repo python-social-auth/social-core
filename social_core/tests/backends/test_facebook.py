@@ -2,11 +2,11 @@ import json
 
 from ...backends.facebook import API_VERSION
 from ...exceptions import AuthCanceled, AuthUnknownError
-from .oauth import OAuth2Test
+from .oauth import OAuth2Test, BaseAuthUrlTestMixin
 from .test_open_id_connect import OpenIdConnectTestMixin
 
 
-class FacebookOAuth2Test(OAuth2Test):
+class FacebookOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.facebook.FacebookOAuth2"
     user_data_url = "https://graph.facebook.com/v{version}/me".format(
         version=API_VERSION

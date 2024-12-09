@@ -1,7 +1,7 @@
 import json
 from unittest.mock import patch
 
-from .oauth import OAuth2Test
+from .oauth import OAuth2Test, BaseAuthUrlTestMixin
 
 TEST_KEY = """
 -----BEGIN EC PRIVATE KEY-----
@@ -20,7 +20,7 @@ token_data = {
 }
 
 
-class AppleIdTest(OAuth2Test):
+class AppleIdTest(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.apple.AppleIdAuth"
     user_data_url = "https://appleid.apple.com/auth/authorize/"
     id_token = "a-id-token"

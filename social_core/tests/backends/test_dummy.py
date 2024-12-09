@@ -8,7 +8,7 @@ from ...actions import do_disconnect
 from ...backends.oauth import BaseOAuth2
 from ...exceptions import AuthForbidden
 from ..models import User
-from .oauth import OAuth2Test
+from .oauth import OAuth2Test, BaseAuthUrlTestMixin
 
 
 class DummyOAuth2(BaseOAuth2):
@@ -40,7 +40,7 @@ class Dummy2OAuth2(DummyOAuth2):
     GET_ALL_EXTRA_DATA = True
 
 
-class DummyOAuth2Test(OAuth2Test):
+class DummyOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.tests.backends.test_dummy.DummyOAuth2"
     user_data_url = "http://dummy.com/user"
     expected_username = "foobar"

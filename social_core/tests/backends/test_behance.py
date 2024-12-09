@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import OAuth2Test, BaseAuthUrlTestMixin
 
 
-class BehanceOAuth2Test(OAuth2Test):
+class BehanceOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.behance.BehanceOAuth2"
     access_token_body = json.dumps(
         {

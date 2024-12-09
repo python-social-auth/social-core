@@ -31,7 +31,7 @@ import jwt
 from httpretty import HTTPretty
 from jwt.algorithms import RSAAlgorithm
 
-from .oauth import OAuth2Test
+from .oauth import OAuth2Test, BaseAuthUrlTestMixin
 
 # Dummy private and private keys:
 RSA_PUBLIC_JWT_KEY = {
@@ -84,7 +84,7 @@ RSA_PRIVATE_JWT_KEY = {
 }
 
 
-class AzureADB2COAuth2Test(OAuth2Test):
+class AzureADB2COAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     AUTH_KEY = "abcdef12-1234-9876-0000-abcdef098765"
     EXPIRES_IN = 3600
     AUTH_TIME = int(time())

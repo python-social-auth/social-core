@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import OAuth2Test, BaseAuthUrlTestMixin
 
 
-class MapMyFitnessOAuth2Test(OAuth2Test):
+class MapMyFitnessOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.mapmyfitness.MapMyFitnessOAuth2"
     user_data_url = "https://oauth2-api.mapmyapi.com/v7.0/user/self/"
     expected_username = "FredFlinstone"

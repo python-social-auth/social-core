@@ -4,7 +4,7 @@ from urllib.parse import urlencode
 from httpretty import HTTPretty
 
 from ...exceptions import AuthForbidden
-from .oauth import OAuth1Test, OAuth2Test
+from .oauth import OAuth1Test, OAuth1AuthUrlTestMixin, OAuth2Test
 
 
 class BitbucketOAuthMixin:

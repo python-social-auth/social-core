@@ -13,7 +13,7 @@ from social_core.backends.open_id_connect import OpenIdConnectAuth
 
 from ...exceptions import AuthTokenError
 from ...utils import parse_qs
-from .oauth import OAuth2Test
+from .oauth import OAuth2Test, BaseAuthUrlTestMixin
 
 sys.path.insert(0, "..")
 

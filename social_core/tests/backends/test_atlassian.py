@@ -2,10 +2,10 @@ import json
 
 from httpretty import HTTPretty
 
-from .oauth import OAuth2Test
+from .oauth import OAuth2Test, BaseAuthUrlTestMixin
 
 
-class AtlassianOAuth2Test(OAuth2Test):
+class AtlassianOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.atlassian.AtlassianOAuth2"
     tenant_url = "https://api.atlassian.com/oauth/token/accessible-resources"
     user_data_url = "https://api.atlassian.com/ex/jira/FAKED_CLOUD_ID/rest/api/2/myself"
