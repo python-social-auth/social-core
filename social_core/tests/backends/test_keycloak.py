@@ -3,7 +3,7 @@ import time
 
 import jwt
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 _PRIVATE_KEY_HEADERLESS = """
 MIIEowIBAAKCAQEAvyo2hx1L3ALHeUd/6xk/lIhTyZ/HJZ+Sss/ge6T6gPdES4Dw
@@ -93,7 +93,7 @@ def _decode(token, key=_PUBLIC_KEY, algorithms=[_ALGORITHM], audience=_KEY):
     return jwt.decode(token, key=key, algorithms=algorithms, audience=audience)
 
 
-class KeycloakOAuth2Test(OAuth2Test):
+class KeycloakOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.keycloak.KeycloakOAuth2"
     expected_username = "john.doe"
     access_token_body = json.dumps(

@@ -2,7 +2,7 @@ import json
 
 from httpretty import HTTPretty
 
-from social_core.tests.backends.oauth import OAuth2Test
+from social_core.tests.backends.oauth import BaseAuthUrlTestMixin, OAuth2Test
 from social_core.tests.backends.test_open_id_connect import OpenIdConnectTestMixin
 
 JWK_KEY = {
@@ -28,7 +28,7 @@ JWK_KEY = {
 JWK_PUBLIC_KEY = {key: value for key, value in JWK_KEY.items() if key != "d"}
 
 
-class OktaOAuth2Test(OAuth2Test):
+class OktaOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.okta.OktaOAuth2"
     user_data_url = "https://dev-000000.oktapreview.com/oauth2/v1/userinfo"
     expected_username = "foo"

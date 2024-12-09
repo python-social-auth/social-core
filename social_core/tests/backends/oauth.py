@@ -1,3 +1,4 @@
+from unittest.mock import patch
 from urllib.parse import urlparse
 
 import requests
@@ -176,3 +177,38 @@ class OAuth2PkceS256Test(OAuth2Test):
         )
 
         return user
+
+
+class BaseAuthUrlTestMixin:
+
+    def check_parameters_in_authorization_url(self, auth_url_key="AUTHORIZATION_URL"):
+        """
+        Check the parameters in authorization url
+
+        When inserting parameters directly into AUTHORIZATION_URL, we expect the
+        other parameters to be added to the end of the url
+        """
+        original_url = (
+            self.backend.AUTHORIZATION_URL or self.backend.authorization_url()
+        )
+        with patch.object(
+            self.backend,
+            "authorization_url",
+            return_value=original_url + "?param1=value1&param2=value2",
+        ):
+            with patch.object(
+                self.backend,
+                auth_url_key,
+                original_url + "?param1=value1&param2=value2",
+            ):
+                # we expect an & symbol to join the different parameters
+                assert "?param1=value1&param2=value2&" in self.backend.auth_url()
+
+    def test_auth_url_parameters(self):
+        self.check_parameters_in_authorization_url()
+
+
+class OAuth1AuthUrlTestMixin(BaseAuthUrlTestMixin):
+    def test_auth_url_parameters(self):
+        self.request_token_handler()
+        self.check_parameters_in_authorization_url()

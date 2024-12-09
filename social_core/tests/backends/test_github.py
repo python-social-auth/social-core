@@ -3,10 +3,10 @@ import json
 from httpretty import HTTPretty
 
 from ...exceptions import AuthFailed
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class GithubOAuth2Test(OAuth2Test):
+class GithubOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.github.GithubOAuth2"
     user_data_url = "https://api.github.com/user"
     expected_username = "foobar"

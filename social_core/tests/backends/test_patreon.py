@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class PatreonOAuth2Test(OAuth2Test):
+class PatreonOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.patreon.PatreonOAuth2"
     user_data_url = (
         "https://www.patreon.com/api/oauth2/v2/identity?"

@@ -1,10 +1,10 @@
 import json
 from urllib.parse import urlencode
 
-from .oauth import OAuth1Test
+from .oauth import OAuth1AuthUrlTestMixin, OAuth1Test
 
 
-class UpworkOAuth1Test(OAuth1Test):
+class UpworkOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
     backend_path = "social_core.backends.upwork.UpworkOAuth"
     user_data_url = "https://www.upwork.com/api/auth/v1/info.json"
     expected_username = "10101010"

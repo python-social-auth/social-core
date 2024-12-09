@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class SpotifyOAuth2Test(OAuth2Test):
+class SpotifyOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.spotify.SpotifyOAuth2"
     user_data_url = "https://api.spotify.com/v1/me"
     expected_username = "foobar"

@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class OrbiOAuth2Test(OAuth2Test):
+class OrbiOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.orbi.OrbiOAuth2"
     user_data_url = "https://login.orbi.kr/oauth/user/get"
     expected_username = "foobar"

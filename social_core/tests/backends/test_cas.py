@@ -2,13 +2,13 @@ import json
 
 from httpretty import HTTPretty
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 from .test_open_id_connect import OpenIdConnectTestMixin
 
 ROOT_URL = "https://cas.example.net/"
 
 
-class CASOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
+class CASOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.cas.CASOpenIdConnectAuth"
     issuer = f"{ROOT_URL}oidc"
     openid_config_body = json.dumps(

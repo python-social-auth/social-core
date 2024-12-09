@@ -3,10 +3,10 @@ import json
 import requests
 from httpretty import HTTPretty
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class StripeOAuth2Test(OAuth2Test):
+class StripeOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.stripe.StripeOAuth2"
     account_data_url = "https://api.stripe.com/v1/account"
     access_token_body = json.dumps(

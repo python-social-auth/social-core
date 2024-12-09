@@ -3,10 +3,10 @@ from urllib.parse import urlencode
 from requests import HTTPError
 
 from ...exceptions import AuthCanceled
-from .oauth import OAuth1Test
+from .oauth import OAuth1AuthUrlTestMixin, OAuth1Test
 
 
-class EvernoteOAuth1Test(OAuth1Test):
+class EvernoteOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
     backend_path = "social_core.backends.evernote.EvernoteOAuth"
     expected_username = "101010"
     access_token_body = urlencode(

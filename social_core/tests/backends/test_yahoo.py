@@ -4,10 +4,10 @@ from urllib.parse import urlencode
 import requests
 from httpretty import HTTPretty
 
-from .oauth import OAuth1Test
+from .oauth import OAuth1AuthUrlTestMixin, OAuth1Test
 
 
-class YahooOAuth1Test(OAuth1Test):
+class YahooOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
     backend_path = "social_core.backends.yahoo.YahooOAuth"
     user_data_url = "https://social.yahooapis.com/v1/user/a-guid/profile?" "format=json"
     expected_username = "foobar"

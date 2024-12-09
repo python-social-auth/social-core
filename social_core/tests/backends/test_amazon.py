@@ -2,10 +2,10 @@ import json
 
 from httpretty import HTTPretty
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class AmazonOAuth2Test(OAuth2Test):
+class AmazonOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.amazon.AmazonOAuth2"
     user_data_url = "https://api.amazon.com/user/profile"
     expected_username = "FooBar"
@@ -25,7 +25,7 @@ class AmazonOAuth2Test(OAuth2Test):
         self.do_partial_pipeline()
 
 
-class AmazonOAuth2BrokenServerResponseTest(OAuth2Test):
+class AmazonOAuth2BrokenServerResponseTest(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.amazon.AmazonOAuth2"
     user_data_url = "https://www.amazon.com/ap/user/profile"
     expected_username = "FooBar"

@@ -2,10 +2,10 @@ import json
 
 from social_core.exceptions import AuthException
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class QiitaOAuth2Test(OAuth2Test):
+class QiitaOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.qiita.QiitaOAuth2"
     user_data_url = "https://qiita.com/api/v2/authenticated_user"
     expected_username = "foobar"

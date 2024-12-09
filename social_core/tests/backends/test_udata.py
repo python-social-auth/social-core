@@ -1,10 +1,10 @@
 import json
 from urllib.parse import urlencode
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class DatagouvfrOAuth2Test(OAuth2Test):
+class DatagouvfrOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.udata.DatagouvfrOAuth2"
     user_data_url = "https://www.data.gouv.fr/api/1/me/"
     expected_username = "foobar"

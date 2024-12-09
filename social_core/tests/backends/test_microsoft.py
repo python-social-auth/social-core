@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class MicrosoftOAuth2Test(OAuth2Test):
+class MicrosoftOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.microsoft.MicrosoftOAuth2"
     user_data_url = "https://graph.microsoft.com/v1.0/me"
     expected_username = "foobar"

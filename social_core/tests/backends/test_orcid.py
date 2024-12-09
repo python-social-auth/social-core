@@ -2,10 +2,10 @@ import json
 
 from social_core.backends.orcid import ORCIDOAuth2
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class ORCIDOAuth2Test(OAuth2Test):
+class ORCIDOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.orcid.ORCIDOAuth2"
     user_data_url = ORCIDOAuth2.USER_ID_URL
     expected_username = "0000-0002-2601-8132"

@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class RedditOAuth2Test(OAuth2Test):
+class RedditOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.reddit.RedditOAuth2"
     user_data_url = "https://oauth.reddit.com/api/v1/me.json"
     expected_username = "foobar"

@@ -3,10 +3,10 @@ from urllib.parse import urlencode
 
 from httpretty import HTTPretty
 
-from .oauth import OAuth1Test
+from .oauth import OAuth1AuthUrlTestMixin, OAuth1Test
 
 
-class DiscsogsOAuth1Test(OAuth1Test):
+class DiscsogsOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
     _test_token = "lalala123boink"
     backend_path = "social_core.backends.discogs.DiscogsOAuth1"
     expected_username = "rodneyfool"

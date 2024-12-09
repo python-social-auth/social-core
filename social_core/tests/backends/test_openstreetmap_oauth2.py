@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class OpenStreetMapOAuth2Test(OAuth2Test):
+class OpenStreetMapOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.openstreetmap_oauth2.OpenStreetMapOAuth2"
     user_data_url = "https://api.openstreetmap.org/api/0.6/user/details.json"
     expected_username = "Steve"

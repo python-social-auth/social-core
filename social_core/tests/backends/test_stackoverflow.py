@@ -1,10 +1,10 @@
 import json
 from urllib.parse import urlencode
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class StackoverflowOAuth2Test(OAuth2Test):
+class StackoverflowOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.stackoverflow.StackoverflowOAuth2"
     user_data_url = "https://api.stackexchange.com/2.1/me"
     expected_username = "foobar"

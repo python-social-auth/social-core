@@ -13,7 +13,7 @@ from social_core.backends.open_id_connect import OpenIdConnectAuth
 
 from ...exceptions import AuthTokenError
 from ...utils import parse_qs
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 sys.path.insert(0, "..")
 
@@ -227,7 +227,7 @@ class OpenIdConnectTestMixin:
         )
 
 
-class BaseOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
+class BaseOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.open_id_connect.OpenIdConnectAuth"
     issuer = "https://example.com"
     openid_config_body = json.dumps(

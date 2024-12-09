@@ -1,10 +1,10 @@
 import json
 from urllib.parse import urlencode
 
-from .oauth import OAuth1Test
+from .oauth import OAuth1AuthUrlTestMixin, OAuth1Test
 
 
-class FiveHundredPxOAuth1Test(OAuth1Test):
+class FiveHundredPxOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
     backend_path = "social_core.backends.five_hundred_px.FiveHundredPxOAuth"
     user_data_url = "https://api.500px.com/v1/users"
     expected_username = "foobar"

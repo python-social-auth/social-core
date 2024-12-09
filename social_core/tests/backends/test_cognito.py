@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class CognitoAuth2Test(OAuth2Test):
+class CognitoAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.cognito.CognitoOAuth2"
     pool_domain = "https://social_core.auth.eu-west-1.amazoncognito.com"
     expected_username = "cognito.account.ABCDE1234"

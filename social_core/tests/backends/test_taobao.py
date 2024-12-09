@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class TaobaoOAuth2Test(OAuth2Test):
+class TaobaoOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.taobao.TAOBAOAuth"
     user_data_url = "https://eco.taobao.com/router/rest"
     expected_username = "foobar"

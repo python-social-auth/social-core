@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class ZoomOAuth2Test(OAuth2Test):
+class ZoomOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.zoom.ZoomOAuth2"
     user_data_url = "https://api.zoom.us/v2/users/me"
     expected_username = "foobar"

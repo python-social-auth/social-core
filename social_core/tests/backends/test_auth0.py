@@ -3,7 +3,7 @@ import json
 import jwt
 from httpretty import HTTPretty
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 JWK_KEY = {
     "kty": "RSA",
@@ -30,7 +30,7 @@ JWK_PUBLIC_KEY = {key: value for key, value in JWK_KEY.items() if key != "d"}
 DOMAIN = "foobar.auth0.com"
 
 
-class Auth0OAuth2Test(OAuth2Test):
+class Auth0OAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.auth0.Auth0OAuth2"
     access_token_body = json.dumps(
         {

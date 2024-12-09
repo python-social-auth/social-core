@@ -4,7 +4,7 @@ from urllib.parse import urlencode
 from httpretty import HTTPretty
 
 from ...exceptions import AuthForbidden
-from .oauth import OAuth1Test, OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth1AuthUrlTestMixin, OAuth1Test, OAuth2Test
 
 
 class BitbucketOAuthMixin:
@@ -72,7 +72,7 @@ class BitbucketOAuthMixin:
     )
 
 
-class BitbucketOAuth1Test(BitbucketOAuthMixin, OAuth1Test):
+class BitbucketOAuth1Test(BitbucketOAuthMixin, OAuth1Test, OAuth1AuthUrlTestMixin):
     backend_path = "social_core.backends.bitbucket.BitbucketOAuth"
 
     request_token_body = urlencode(
@@ -131,7 +131,7 @@ class BitbucketOAuth1FailTest(BitbucketOAuth1Test):
             super().test_partial_pipeline()
 
 
-class BitbucketOAuth2Test(BitbucketOAuthMixin, OAuth2Test):
+class BitbucketOAuth2Test(BitbucketOAuthMixin, OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.bitbucket.BitbucketOAuth2"
 
     access_token_body = json.dumps(

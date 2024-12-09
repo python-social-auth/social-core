@@ -1,6 +1,6 @@
 import base64
 import hashlib
-from urllib.parse import unquote, urlencode
+from urllib.parse import urlencode
 
 from oauthlib.oauth1 import SIGNATURE_TYPE_AUTH_HEADER
 from requests_oauthlib import OAuth1
@@ -277,7 +277,7 @@ class BaseOAuth1(OAuthAuth):
         )
         state = self.get_or_create_state()
         params[self.REDIRECT_URI_PARAMETER_NAME] = self.get_redirect_uri(state)
-        return f"{self.authorization_url()}?{urlencode(params)}"
+        return url_add_parameters(self.authorization_url(), params)
 
     def oauth_auth(
         self, token=None, oauth_verifier=None, signature_type=SIGNATURE_TYPE_AUTH_HEADER
@@ -352,12 +352,12 @@ class BaseOAuth2(OAuthAuth):
         params = self.auth_params(state)
         params.update(self.get_scope_argument())
         params.update(self.auth_extra_arguments())
-        params = urlencode(params)
-        if not self.REDIRECT_STATE:
-            # redirect_uri matching is strictly enforced, so match the
-            # providers value exactly.
-            params = unquote(params)
-        return f"{self.authorization_url()}?{params}"
+
+        # when self.REDIRECT_STATE is False, redirect_uri matching is strictly enforced,
+        # so match the providers value exactly.
+        return url_add_parameters(
+            self.authorization_url(), params, not self.REDIRECT_STATE
+        )
 
     def auth_complete_params(self, state=None):
         params = {
