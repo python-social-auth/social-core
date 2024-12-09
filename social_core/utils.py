@@ -6,7 +6,7 @@ import sys
 import time
 import unicodedata
 from urllib.parse import parse_qs as battery_parse_qs
-from urllib.parse import urlencode, urlparse, urlunparse
+from urllib.parse import urlencode, urlparse, urlunparse, unquote
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -65,13 +65,15 @@ def user_agent():
     return "social-auth-" + social_core.__version__
 
 
-def url_add_parameters(url, params):
+def url_add_parameters(url, params, _unquote_query=False):
     """Adds parameters to URL, parameter will be repeated if already present"""
     if params:
         fragments = list(urlparse(url))
         value = parse_qs(fragments[4])
         value.update(params)
         fragments[4] = urlencode(value)
+        if _unquote_query:
+            fragments[4] = unquote(fragments[4])
         url = urlunparse(fragments)
     return url
 

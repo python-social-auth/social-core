@@ -6,6 +6,7 @@ Soundcloud OAuth2 backend, docs at:
 from urllib.parse import urlencode
 
 from .oauth import BaseOAuth2
+from ..utils import url_add_parameters
 
 
 class SoundcloudOAuth2(BaseOAuth2):
@@ -56,4 +57,4 @@ class SoundcloudOAuth2(BaseOAuth2):
         params = self.auth_params(state)
         params.update(self.get_scope_argument())
         params.update(self.auth_extra_arguments())
-        return self.AUTHORIZATION_URL + "?" + urlencode(params)
+        return url_add_parameters(self.AUTHORIZATION_URL, params, True)
