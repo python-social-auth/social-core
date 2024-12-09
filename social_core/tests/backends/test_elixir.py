@@ -2,7 +2,7 @@ from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 from .test_open_id_connect import OpenIdConnectTestMixin
 
 
-class ElixirOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
+class ElixirOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.elixir.ElixirOpenIdConnect"
     issuer = "https://login.elixir-czech.org/oidc/"
     openid_config_body = """

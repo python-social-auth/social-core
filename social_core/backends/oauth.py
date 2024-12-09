@@ -1,6 +1,6 @@
 import base64
 import hashlib
-from urllib.parse import unquote, urlencode
+from urllib.parse import urlencode
 
 from oauthlib.oauth1 import SIGNATURE_TYPE_AUTH_HEADER
 from requests_oauthlib import OAuth1

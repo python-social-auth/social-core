@@ -5,11 +5,11 @@ from httpretty import HTTPretty
 
 from ...actions import do_disconnect
 from ..models import User
-from .oauth import OAuth1AuthUrlTestMixin, OAuth1Test, OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth1AuthUrlTestMixin, OAuth1Test, OAuth2Test
 from .test_open_id_connect import OpenIdConnectTestMixin
 
 
-class GoogleOAuth2Test(OAuth2Test, AuthUrlTestMixin):
+class GoogleOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.google.GoogleOAuth2"
     user_data_url = "https://www.googleapis.com/oauth2/v3/userinfo"
     expected_username = "foo"

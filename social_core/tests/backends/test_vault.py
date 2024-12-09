@@ -8,7 +8,7 @@ from .test_open_id_connect import OpenIdConnectTestMixin
 ROOT_URL = "https://vault.example.net:8200/"
 
 
-class VaultOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
+class VaultOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.vault.VaultOpenIdConnect"
     issuer = f"{ROOT_URL}v1/identity/oidc/provider/default"
     openid_config_body = json.dumps(

@@ -4,7 +4,7 @@ from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 from .test_open_id_connect import OpenIdConnectTestMixin
 
 
-class FenceOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
+class FenceOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.fence.Fence"
     issuer = "https://nci-crdc.datacommons.io/"
     openid_config_body = json.dumps(

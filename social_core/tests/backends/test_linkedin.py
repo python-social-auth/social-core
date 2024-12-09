@@ -4,7 +4,9 @@ from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 from .test_open_id_connect import OpenIdConnectTestMixin
 
 
-class LinkedinOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
+class LinkedinOpenIdConnectTest(
+    OpenIdConnectTestMixin, OAuth2Test, BaseAuthUrlTestMixin
+):
     backend_path = "social_core.backends.linkedin.LinkedinOpenIdConnect"
     user_data_url = "https://api.linkedin.com/v2/userinfo"
     issuer = "https://www.linkedin.com"
