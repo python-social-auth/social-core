@@ -1,5 +1,5 @@
-from urllib.parse import urlparse
 from unittest.mock import patch
+from urllib.parse import urlparse
 
 import requests
 from httpretty import HTTPretty, latest_requests
@@ -185,7 +185,7 @@ class BaseAuthUrlTestMixin:
         """
         Check the parameters in authorization url
 
-        When inserting parameters directly into AUTHORIZATION_URL, we expect the 
+        When inserting parameters directly into AUTHORIZATION_URL, we expect the
         other parameters to be added to the end of the url
         """
         original_url = (

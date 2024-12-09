@@ -5,8 +5,8 @@ Soundcloud OAuth2 backend, docs at:
 
 from urllib.parse import urlencode
 
-from .oauth import BaseOAuth2
 from ..utils import url_add_parameters
+from .oauth import BaseOAuth2
 
 
 class SoundcloudOAuth2(BaseOAuth2):

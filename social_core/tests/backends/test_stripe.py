@@ -3,7 +3,7 @@ import json
 import requests
 from httpretty import HTTPretty
 
-from .oauth import OAuth2Test, BaseAuthUrlTestMixin
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
 class StripeOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):

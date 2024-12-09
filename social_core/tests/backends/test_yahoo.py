@@ -4,7 +4,7 @@ from urllib.parse import urlencode
 import requests
 from httpretty import HTTPretty
 
-from .oauth import OAuth1Test, OAuth1AuthUrlTestMixin
+from .oauth import OAuth1AuthUrlTestMixin, OAuth1Test
 
 
 class YahooOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):

@@ -2,7 +2,7 @@ import json
 
 from social_core.backends.orcid import ORCIDOAuth2
 
-from .oauth import OAuth2Test, BaseAuthUrlTestMixin
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
 class ORCIDOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):

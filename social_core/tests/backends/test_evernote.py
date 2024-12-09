@@ -3,7 +3,7 @@ from urllib.parse import urlencode
 from requests import HTTPError
 
 from ...exceptions import AuthCanceled
-from .oauth import OAuth1Test, OAuth1AuthUrlTestMixin
+from .oauth import OAuth1AuthUrlTestMixin, OAuth1Test
 
 
 class EvernoteOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):

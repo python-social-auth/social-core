@@ -2,7 +2,7 @@ import json
 
 from httpretty import HTTPretty
 
-from .oauth import OAuth2Test, BaseAuthUrlTestMixin
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 from .test_open_id_connect import OpenIdConnectTestMixin
 
 ROOT_URL = "https://cas.example.net/"

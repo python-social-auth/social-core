@@ -3,7 +3,7 @@ import time
 
 import jwt
 
-from .oauth import OAuth2Test, BaseAuthUrlTestMixin
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 _PRIVATE_KEY_HEADERLESS = """
 MIIEowIBAAKCAQEAvyo2hx1L3ALHeUd/6xk/lIhTyZ/HJZ+Sss/ge6T6gPdES4Dw

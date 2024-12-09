@@ -1,7 +1,7 @@
 import json
 from urllib.parse import urlencode
 
-from .oauth import OAuth2Test, BaseAuthUrlTestMixin
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
 class DatagouvfrOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):

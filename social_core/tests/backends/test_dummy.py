@@ -8,7 +8,7 @@ from ...actions import do_disconnect
 from ...backends.oauth import BaseOAuth2
 from ...exceptions import AuthForbidden
 from ..models import User
-from .oauth import OAuth2Test, BaseAuthUrlTestMixin
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
 class DummyOAuth2(BaseOAuth2):

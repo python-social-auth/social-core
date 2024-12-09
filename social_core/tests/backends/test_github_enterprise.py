@@ -3,7 +3,7 @@ import json
 from httpretty import HTTPretty
 
 from ...exceptions import AuthFailed
-from .oauth import OAuth2Test, BaseAuthUrlTestMixin
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
 class GithubEnterpriseOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):

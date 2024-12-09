@@ -6,7 +6,7 @@ import sys
 import time
 import unicodedata
 from urllib.parse import parse_qs as battery_parse_qs
-from urllib.parse import urlencode, urlparse, urlunparse, unquote
+from urllib.parse import unquote, urlencode, urlparse, urlunparse
 
 import requests
 from requests.adapters import HTTPAdapter

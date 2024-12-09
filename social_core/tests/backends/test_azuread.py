@@ -26,7 +26,7 @@ SOFTWARE.
 
 import json
 
-from .oauth import OAuth2Test, BaseAuthUrlTestMixin
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
 class AzureADOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):

@@ -1,6 +1,6 @@
 import json
 
-from .oauth import OAuth2Test, BaseAuthUrlTestMixin
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
 class ClefOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):

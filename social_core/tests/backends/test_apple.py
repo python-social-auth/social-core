@@ -1,7 +1,7 @@
 import json
 from unittest.mock import patch
 
-from .oauth import OAuth2Test, BaseAuthUrlTestMixin
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 TEST_KEY = """
 -----BEGIN EC PRIVATE KEY-----

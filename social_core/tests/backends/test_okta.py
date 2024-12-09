@@ -2,7 +2,7 @@ import json
 
 from httpretty import HTTPretty
 
-from social_core.tests.backends.oauth import OAuth2Test, BaseAuthUrlTestMixin
+from social_core.tests.backends.oauth import BaseAuthUrlTestMixin, OAuth2Test
 from social_core.tests.backends.test_open_id_connect import OpenIdConnectTestMixin
 
 JWK_KEY = {

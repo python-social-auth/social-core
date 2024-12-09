@@ -5,7 +5,7 @@ from httpretty import HTTPretty
 
 from ...actions import do_disconnect
 from ..models import User
-from .oauth import OAuth1Test, OAuth1AuthUrlTestMixin, OAuth2Test
+from .oauth import OAuth1AuthUrlTestMixin, OAuth1Test, OAuth2Test
 from .test_open_id_connect import OpenIdConnectTestMixin
 
 

@@ -1,7 +1,7 @@
 import json
 from urllib.parse import urlencode
 
-from .oauth import OAuth1Test, OAuth1AuthUrlTestMixin
+from .oauth import OAuth1AuthUrlTestMixin, OAuth1Test
 
 
 class ThisIsMyJameOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):

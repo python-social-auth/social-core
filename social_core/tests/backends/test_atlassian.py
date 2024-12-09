@@ -2,7 +2,7 @@ import json
 
 from httpretty import HTTPretty
 
-from .oauth import OAuth2Test, BaseAuthUrlTestMixin
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
 class AtlassianOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):

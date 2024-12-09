@@ -3,7 +3,7 @@ import json
 import jwt
 from httpretty import HTTPretty
 
-from .oauth import OAuth2Test, BaseAuthUrlTestMixin
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 JWK_KEY = {
     "kty": "RSA",

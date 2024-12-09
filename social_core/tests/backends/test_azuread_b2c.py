@@ -31,7 +31,7 @@ import jwt
 from httpretty import HTTPretty
 from jwt.algorithms import RSAAlgorithm
 
-from .oauth import OAuth2Test, BaseAuthUrlTestMixin
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 # Dummy private and private keys:
 RSA_PUBLIC_JWT_KEY = {

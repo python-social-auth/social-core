@@ -2,7 +2,7 @@ import json
 
 from social_core.exceptions import AuthException
 
-from .oauth import OAuth2Test, BaseAuthUrlTestMixin
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
 class QiitaOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
