@@ -1,9 +1,8 @@
 from collections import OrderedDict
 
-from .base import BaseAuth
 from ..exceptions import MissingBackend
 from ..utils import module_member, user_is_authenticated
-
+from .base import BaseAuth
 
 # Cache for discovered backends.
 BACKENDSCACHE = OrderedDict()
@@ -70,13 +69,10 @@ def user_backends_data(user, backends, storage):
     no difference between 'not_associated' and 'backends'.
     """
     available = list(load_backends(backends).keys())
-    values = {'associated': [],
-              'not_associated': available,
-              'backends': available}
+    values = {"associated": [], "not_associated": available, "backends": available}
     if user_is_authenticated(user):
         associated = storage.user.get_social_auth_for_user(user)
-        not_associated = list(set(available) -
-                              set(assoc.provider for assoc in associated))
-        values['associated'] = associated
-        values['not_associated'] = not_associated
+        not_associated = list(set(available) - {assoc.provider for assoc in associated})
+        values["associated"] = associated
+        values["not_associated"] = not_associated
     return values
