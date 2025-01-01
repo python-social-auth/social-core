@@ -42,26 +42,23 @@ class LinkedinOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
 
 
 class BaseLinkedinTest:
-    user_data_url = (
-        "https://api.linkedin.com/v2/me" "?projection=(firstName,id,lastName)"
-    )
+    user_data_url = "https://api.linkedin.com/v2/userinfo"
     expected_username = "FooBar"
     access_token_body = json.dumps({"access_token": "foobar", "token_type": "bearer"})
 
     # Reference:
-    # https://docs.microsoft.com/en-us/linkedin/consumer/integrations/self
-    # -serve/sign-in-with-linkedin?context=linkedin/consumer/context#api-request
+    # https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self
+    # -serve/sign-in-with-linkedin-v2#response-body-schema
     user_data_body = json.dumps(
         {
-            "id": "1010101010",
-            "firstName": {
-                "localized": {"en_US": "Foo"},
-                "preferredLocale": {"country": "US", "language": "en"},
-            },
-            "lastName": {
-                "localized": {"en_US": "Bar"},
-                "preferredLocale": {"country": "US", "language": "en"},
-            },
+            "sub": "782bbtaQ",
+            "name": "FooBar",
+            "given_name": "Foo",
+            "family_name": "Bar",
+            "picture": "https://media.licdn-ei.com/dms/image/C5F03AQHqK8v7tB1HCQ/profile-displayphoto-shrink_100_100/0/",  # noqa: E501
+            "locale": "en-US",
+            "email": "doe@email.com",
+            "email_verified": True,
         }
     )
 
