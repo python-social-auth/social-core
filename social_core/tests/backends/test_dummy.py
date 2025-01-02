@@ -121,9 +121,7 @@ class ExpirationTimeTest(DummyOAuth2Test):
             "first_name": "Foo",
             "last_name": "Bar",
             "email": "foo@bar.com",
-            "expires": time.mktime(
-                (datetime.datetime.now(datetime.timezone.utc) + DELTA).timetuple()
-            ),
+            "expires": (datetime.datetime.now() + DELTA).timestamp(),
         }
     )
 
