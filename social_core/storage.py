@@ -71,9 +71,10 @@ class UserMixin:
             now = datetime.now(timezone.utc)
 
             # Detect if expires is a timestamp
-            if expires > time.mktime(now.timetuple()):
+            if expires > now.timestamp():
                 # expires is a datetime, return the remaining difference
-                return datetime.fromtimestamp(expires, tz=timezone.utc) - now
+                expiry_time = datetime.fromtimestamp(expires, tz=timezone.utc)
+                return expiry_time - now
             else:
                 # expires is the time to live seconds since creation,
                 # check against auth_time if present, otherwise return
