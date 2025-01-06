@@ -1,0 +1,81 @@
+[project]
+name = "social-auth-core"
+version = "4.5.4"
+description = "Python social authentication made simple."
+authors = [
+    {name = "Matias Aguirre", email = "matiasaguirre@gmail.com"},
+]
+dependencies = [
+    "PyJWT>=2.7.0",
+    "cryptography>=1.4",
+    "defusedxml>=0.5.0",
+    "oauthlib>=1.0.3",
+    "python3-openid>=3.0.10",
+    "requests-oauthlib>=0.6.1",
+    "requests>=2.9.1",
+]
+requires-python = ">=3.8"
+readme = "README.md"
+license = {text = "BSD"}
+keywords = ["openid", "oauth", "saml", "social auth"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Web Environment",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Topic :: Internet",
+]
+
+[tool.setuptools]
+packages = ["social_core"]
+
+[project.urls]
+Homepage = "https://github.com/python-social-auth/social-core"
+
+[project.optional-dependencies]
+saml = [
+   "python3-saml>=1.5.0",
+]
+azuread = [
+    "cryptography>=2.1.1",
+]
+all = [
+    "social-auth-core[saml]",
+    "social-auth-core[azuread]",
+]
+allpy3 = [
+    "social-auth-core[all]",
+]
+# This is present until pip implements supports for PEP 735
+# see https://github.com/pypa/pip/issues/12963
+dev = [
+    "flake8>=5.0.4",
+    "pytest>=4.5",
+    "httpretty~=1.1.0",
+    "coverage>=3.6",
+    "pytest-cov>=2.7.1",
+    # pinned because of https://github.com/gabrielfalcao/HTTPretty/issues/484
+    "urllib3~=2.2.0",
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[dependency-groups]
+dev = [
+    "flake8>=5.0.4",
+    "pytest>=4.5",
+    "httpretty~=1.1.0",
+    "coverage>=3.6",
+    "pytest-cov>=2.7.1",
+    # pinned because of https://github.com/gabrielfalcao/HTTPretty/issues/484
+    "urllib3~=2.2.0",
+]

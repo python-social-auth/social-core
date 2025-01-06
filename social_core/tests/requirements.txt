@@ -1,4 +1,0 @@
-pytest>=4.5
-httpretty>=0.9.6
-coverage>=3.6
-pytest-cov>=2.7.1
