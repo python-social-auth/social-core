@@ -39,7 +39,7 @@ class DiscourseAuth(BaseAuth):
         return response["email"]
 
     def get_user_details(self, response):
-        results = {
+        return {
             "username": response.get("username"),
             "email": response.get("email"),
             "name": response.get("name"),
@@ -48,7 +48,6 @@ class DiscourseAuth(BaseAuth):
             or response.get("moderator") == "true",
             "is_superuser": response.get("admin") == "true",
         }
-        return results
 
     def add_nonce(self, nonce):
         self.strategy.storage.nonce.use(self.setting("SERVER_URL"), time.time(), nonce)

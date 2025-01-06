@@ -7,7 +7,7 @@ USER_FIELDS = ["username", "email"]
 
 def get_username(strategy, details, backend, user=None, *args, **kwargs):
     if "username" not in backend.setting("USER_FIELDS", USER_FIELDS):
-        return
+        return None
     storage = strategy.storage
 
     if not user:
@@ -68,7 +68,7 @@ def create_user(strategy, details, backend, user=None, *args, **kwargs):
         for name in backend.setting("USER_FIELDS", USER_FIELDS)
     }
     if not fields:
-        return
+        return None
 
     # Allow overriding the email field if desired by application specification
     if backend.setting("FORCE_EMAIL_LOWERCASE", False):
