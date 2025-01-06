@@ -113,7 +113,7 @@ class TestUserSocialAuth(UserMixin, BaseModel):
 
     @classmethod
     def get_user(cls, pk):
-        for username, user in User.cache.items():
+        for user in User.cache.values():
             if user.id == pk:
                 return user
         return None
