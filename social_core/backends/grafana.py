@@ -25,5 +25,5 @@ class GrafanaOAuth2(BaseOAuth2):
         """Loads user data from service"""
         return self.get_json(
             self.USER_DETAILS_URL,
-            **{"headers": {"Authorization": f"Bearer {access_token}"}},
+            headers={"Authorization": f"Bearer {access_token}"},
         )
