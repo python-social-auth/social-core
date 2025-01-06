@@ -48,14 +48,14 @@ class LinkedinOAuth2(BaseOAuth2):
     name = "linkedin-oauth2"
     AUTHORIZATION_URL = "https://www.linkedin.com/oauth/v2/authorization"
     ACCESS_TOKEN_URL = "https://www.linkedin.com/oauth/v2/accessToken"
-    USER_DETAILS_URL = "https://api.linkedin.com/v2/me?projection=({projection})"
+    USER_DETAILS_URL = "https://api.linkedin.com/v2/userinfo?projection=({projection})"
     USER_EMAILS_URL = (
         "https://api.linkedin.com/v2/emailAddress"
         "?q=members&projection=(elements*(handle~))"
     )
     ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
-    DEFAULT_SCOPE = ["r_liteprofile"]
+    DEFAULT_SCOPE = ["email", "profile", "openid"]
     EXTRA_DATA = [
         ("id", "id"),
         ("expires_in", "expires"),
@@ -66,14 +66,7 @@ class LinkedinOAuth2(BaseOAuth2):
     ]
 
     def user_details_url(self):
-        # use set() since LinkedIn fails when values are duplicated
-        fields_selectors = list(
-            set(["id", "firstName", "lastName"] + self.setting("FIELD_SELECTORS", []))
-        )
-        # user sort to ease the tests URL mocking
-        fields_selectors.sort()
-        fields_selectors = ",".join(fields_selectors)
-        return self.USER_DETAILS_URL.format(projection=fields_selectors)
+        return self.USER_DETAILS_URL
 
     def user_emails_url(self):
         return self.USER_EMAILS_URL
@@ -83,10 +76,10 @@ class LinkedinOAuth2(BaseOAuth2):
             self.user_details_url(), headers=self.user_data_headers(access_token)
         )
 
-        if "emailAddress" in set(self.setting("FIELD_SELECTORS", [])):
+        if "email" in set(self.setting("FIELD_SELECTORS", [])):
             emails = self.email_data(access_token, *args, **kwargs)
             if emails:
-                response["emailAddress"] = emails[0]
+                response["email"] = emails[0]
 
         return response
 
@@ -96,38 +89,20 @@ class LinkedinOAuth2(BaseOAuth2):
         )
         email_addresses = []
         for element in response.get("elements", []):
-            email_address = element.get("handle~", {}).get("emailAddress")
+            email_address = element.get("handle~", {}).get("email")
             email_addresses.append(email_address)
         return list(filter(None, email_addresses))
 
     def get_user_details(self, response):
         """Return user details from Linkedin account"""
-
-        def get_localized_name(name):
-            """
-            FirstName & Last Name object
-            {
-                  'localized': {
-                     'en_US': 'Smith'
-                  },
-                  'preferredLocale': {
-                     'country': 'US',
-                     'language': 'en'
-                  }
-            }
-            :return the localizedName from the lastName object
-            """
-            locale = "{}_{}".format(
-                name["preferredLocale"]["language"], name["preferredLocale"]["country"]
-            )
-            return name["localized"].get(locale, "")
-
+        response = self.user_data(access_token=response["access_token"])
         fullname, first_name, last_name = self.get_user_names(
-            first_name=get_localized_name(response["firstName"]),
-            last_name=get_localized_name(response["lastName"]),
+            first_name=response["given_name"],
+            last_name=response["family_name"],
         )
-        email = response.get("emailAddress", "")
+        email = response.get("email", "")
         return {
+            "id": response.get("sub", ""),
             "username": first_name + last_name,
             "fullname": fullname,
             "first_name": first_name,
