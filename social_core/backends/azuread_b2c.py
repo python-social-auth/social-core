@@ -30,10 +30,8 @@ See https://nicksnettravels.builttoroam.com/post/2017/01/24/Verifying-Azure-Acti
 import json
 
 from cryptography.hazmat.primitives import serialization
-from jwt import DecodeError, ExpiredSignatureError
+from jwt import DecodeError, ExpiredSignatureError, get_unverified_header
 from jwt import decode as jwt_decode
-from jwt import get_unverified_header
-
 from jwt.algorithms import RSAAlgorithm
 
 from ..exceptions import AuthException, AuthTokenError
