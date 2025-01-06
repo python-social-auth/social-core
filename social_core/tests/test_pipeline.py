@@ -29,8 +29,7 @@ class IntegrityErrorUserSocialAuth(TestUserSocialAuth):
         if cls._called_times == 2:
             user = list(User.cache.values())[0]
             return IntegrityErrorUserSocialAuth(user, provider, uid)
-        else:
-            return super().get_social_auth(provider, uid)
+        return super().get_social_auth(provider, uid)
 
 
 class IntegrityErrorStorage(TestStorage):

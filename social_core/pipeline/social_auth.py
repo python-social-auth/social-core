@@ -74,7 +74,7 @@ def associate_by_email(backend, details, user=None, *args, **kwargs):
         users = list(backend.strategy.storage.user.get_users_by_email(email))
         if len(users) == 0:
             return None
-        elif len(users) > 1:
+        if len(users) > 1:
             raise AuthException(
                 backend, "The given email address is associated with another account"
             )

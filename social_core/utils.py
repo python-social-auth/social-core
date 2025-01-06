@@ -207,8 +207,7 @@ def partial_pipeline_data(backend, user=None, partial_token=None, *args, **kwarg
             kwargs.setdefault("request", request_data)
             partial.extend_kwargs(kwargs)
             return partial
-        else:
-            backend.strategy.clean_partial_pipeline(partial_token)
+        backend.strategy.clean_partial_pipeline(partial_token)
 
 
 def build_absolute_uri(host_url, path=None):
@@ -238,10 +237,9 @@ def setting_url(backend, *names):
     for name in names:
         if is_url(name):
             return name
-        else:
-            value = backend.setting(name)
-            if is_url(value):
-                return value
+        value = backend.setting(name)
+        if is_url(value):
+            return value
 
 
 def handle_http_errors(func):
