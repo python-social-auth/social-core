@@ -121,9 +121,7 @@ class KeycloakOAuth2(BaseOAuth2):  # pylint: disable=abstract-method
             ]
         )
 
-    def user_data(
-        self, access_token, *args, **kwargs
-    ):  # pylint: disable=unused-argument
+    def user_data(self, access_token, *args, **kwargs):  # pylint: disable=unused-argument
         """Decode user data from the access_token
 
         You can specialize this method to e.g. get information
