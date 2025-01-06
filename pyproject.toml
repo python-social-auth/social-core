@@ -65,11 +65,6 @@ dev = [
     "urllib3~=2.2.0",
 ]
 
-[tool.flake8]
-max-line-length = 100
-# Ignore some well known paths
-exclude = ".venv,.tox,dist,doc,build,*.egg,db/env.py,db/versions/*.py,site"
-
 [build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
