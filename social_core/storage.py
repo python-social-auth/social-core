@@ -2,7 +2,6 @@
 
 import base64
 import re
-import time
 import uuid
 import warnings
 from datetime import datetime, timedelta, timezone

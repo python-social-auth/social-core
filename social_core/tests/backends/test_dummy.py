@@ -1,6 +1,5 @@
 import datetime
 import json
-import time
 
 from httpretty import HTTPretty
 
