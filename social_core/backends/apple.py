@@ -106,7 +106,7 @@ class AppleIdAuth(BaseOAuth2):
             raise AuthFailed(self, "Invalid jwk response")
 
         if kid:
-            return json.dumps([key for key in keys if key["kid"] == kid][0])
+            return json.dumps(next(key for key in keys if key["kid"] == kid))
         return (json.dumps(key) for key in keys)
 
     def decode_id_token(self, id_token):
