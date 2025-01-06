@@ -42,7 +42,7 @@ class MailruOAuth2(BaseOAuth2):
             "app_id": key,
             "secure": "1",
         }
-        param_list = sorted(list(item + "=" + data[item] for item in data))
+        param_list = sorted(f"{item}={value}" for item, value in data.values())
         data["sig"] = md5(("".join(param_list) + secret).encode("utf-8")).hexdigest()
         return self.get_json("http://www.appsmail.ru/platform/api", params=data)[0]
 

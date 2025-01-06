@@ -53,7 +53,7 @@ class OpenIdConnectAuth(BaseOAuth2):
     ID_KEY = "sub"
     USERNAME_KEY = "preferred_username"
     JWT_ALGORITHMS = ["RS256"]
-    JWT_DECODE_OPTIONS = dict()
+    JWT_DECODE_OPTIONS = {}
     # When these options are unspecified, server will choose via openid autoconfiguration
     ID_TOKEN_ISSUER = ""
     ACCESS_TOKEN_URL = ""

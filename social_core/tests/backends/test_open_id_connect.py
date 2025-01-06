@@ -159,7 +159,7 @@ class OpenIdConnectTestMixin:
                 dict(self.key, iat=timegm(issue_datetime.timetuple()), nonce=nonce)
             ).key,
             algorithm="RS256",
-            headers=dict(kid=kid) if kid else None,
+            headers={"kid": kid} if kid else None,
         )
 
         if tamper_message:

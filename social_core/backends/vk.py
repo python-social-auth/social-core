@@ -196,7 +196,7 @@ def vk_api(backend, method, data):
         data["method"] = method
         data["format"] = "json"
         url = "https://api.vk.com/api.php"
-        param_list = sorted(list(item + "=" + data[item] for item in data))
+        param_list = sorted(item + "=" + data[item] for item in data)
         data["sig"] = md5(("".join(param_list) + secret).encode("utf-8")).hexdigest()
     else:
         url = "https://api.vk.com/method/" + method
