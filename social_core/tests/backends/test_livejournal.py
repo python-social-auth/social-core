@@ -14,19 +14,15 @@ JANRAIN_NONCE = datetime.datetime.now(datetime.timezone.utc).strftime(
 class LiveJournalOpenIdTest(OpenIdTest):
     backend_path = "social_core.backends.livejournal.LiveJournalOpenId"
     expected_username = "foobar"
-    discovery_body = "".join(
-        [
-            '<xrds:XRDS xmlns:xrds="xri://$xrds" xmlns="xri://$xrd*($v*2.0)">',
-            "<XRD>",
-            '<Service priority="0">',
-            "<Type>http://specs.openid.net/auth/2.0/signon</Type>",
-            "<URI>http://www.livejournal.com/openid/server.bml</URI>",
-            "<LocalID>http://foobar.livejournal.com/</LocalID>",
-            "</Service>",
-            "</XRD>",
-            "</xrds:XRDS>",
-        ]
-    )
+    discovery_body = """<xrds:XRDS xmlns:xrds="xri://$xrds" xmlns="xri://$xrd*($v*2.0)">
+    <XRD>
+        <Service priority="0">
+            <Type>http://specs.openid.net/auth/2.0/signon</Type>
+            <URI>http://www.livejournal.com/openid/server.bml</URI>
+            <LocalID>http://foobar.livejournal.com/</LocalID>
+        </Service>
+    </XRD>
+</xrds:XRDS>"""
     server_response = urlencode(
         {
             "janrain_nonce": JANRAIN_NONCE,
@@ -44,20 +40,14 @@ class LiveJournalOpenIdTest(OpenIdTest):
             "openid.sig": "Z8MOozVPTOBhHG5ZS1NeGofxs1Q=",
         }
     )
-    server_bml_body = "\n".join(
-        [
-            "assoc_handle:1364935340:ZhruPQ7DJ9eGgUkeUA9A:27f8c32464",
-            "assoc_type:HMAC-SHA1",
-            "dh_server_public:WzsRyLomvAV3vwvGUrfzXDgfqnTF+m1l3JWb55fyHO7visPT4tmQ"
-            "iTjqFFnSVAtAOvQzoViMiZQisxNwnqSK4lYexoez1z6pP5ry3pqxJAEYj60vFGvRztict"
-            "Eo0brjhmO1SNfjK1ppjOymdykqLpZeaL5fsuLtMCwTnR/JQZVA=",
-            "enc_mac_key:LiOEVlLJSVUqfNvb5zPd76nEfvc=",
-            "expires_in:1207060",
-            "ns:http://specs.openid.net/auth/2.0",
-            "session_type:DH-SHA1",
-            "",
-        ]
-    )
+    server_bml_body = """assoc_handle:1364935340:ZhruPQ7DJ9eGgUkeUA9A:27f8c32464
+assoc_type:HMAC-SHA1
+dh_server_public:WzsRyLomvAV3vwvGUrfzXDgfqnTF+m1l3JWb55fyHO7visPT4tmQiTjqFFnSVAtAOvQzoViMiZQisxNwnqSK4lYexoez1z6pP5ry3pqxJAEYj60vFGvRztictEo0brjhmO1SNfjK1ppjOymdykqLpZeaL5fsuLtMCwTnR/JQZVA=
+enc_mac_key:LiOEVlLJSVUqfNvb5zPd76nEfvc=
+expires_in:1207060
+ns:http://specs.openid.net/auth/2.0
+session_type:DH-SHA1
+"""
 
     def openid_url(self):
         return super().openid_url() + "/data/yadis"

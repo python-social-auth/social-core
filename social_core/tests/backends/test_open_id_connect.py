@@ -166,7 +166,7 @@ class OpenIdConnectTestMixin:
             header, msg, sig = body["id_token"].split(".")
             id_token["sub"] = "1235"
             msg = base64.encodebytes(json.dumps(id_token).encode()).decode()
-            body["id_token"] = ".".join([header, msg, sig])
+            body["id_token"] = f"{header}.{msg}.{sig}"
 
         return json.dumps(body)
 

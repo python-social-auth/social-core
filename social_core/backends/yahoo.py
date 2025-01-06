@@ -74,7 +74,7 @@ class YahooOAuth2(BaseOAuth2):
 
     def get_user_names(self, first_name, last_name):
         if first_name or last_name:
-            return " ".join((first_name, last_name)), first_name, last_name
+            return f"{first_name} {last_name}", first_name, last_name
         return None, None, None
 
     def get_user_details(self, response):

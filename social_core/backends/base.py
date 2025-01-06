@@ -190,7 +190,7 @@ class BaseAuth:
             except ValueError:
                 first_name = first_name or fullname or ""
                 last_name = last_name or ""
-        fullname = fullname or " ".join((first_name, last_name))
+        fullname = fullname or f"{first_name} {last_name}"
         return fullname.strip(), first_name.strip(), last_name.strip()
 
     def get_user(self, user_id):
