@@ -180,7 +180,6 @@ class OAuth2PkceS256Test(OAuth2Test):
 
 
 class BaseAuthUrlTestMixin:
-
     def check_parameters_in_authorization_url(self, auth_url_key="AUTHORIZATION_URL"):
         """
         Check the parameters in authorization url

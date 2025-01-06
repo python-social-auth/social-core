@@ -76,7 +76,7 @@ class UntappdOAuth2(BaseOAuth2):
             response["response"]["access_token"],
             response=response["response"],
             *args,
-            **kwargs
+            **kwargs,
         )
 
     def get_user_details(self, response):

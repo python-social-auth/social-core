@@ -2,6 +2,7 @@
 """
 Weixin OAuth2 backend
 """
+
 from urllib.parse import urlencode
 
 from requests import HTTPError
