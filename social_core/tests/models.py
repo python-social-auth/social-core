@@ -116,12 +116,14 @@ class TestUserSocialAuth(UserMixin, BaseModel):
         for username, user in User.cache.items():
             if user.id == pk:
                 return user
+        return None
 
     @classmethod
     def get_social_auth(cls, provider, uid):
         social_user = cls.cache_by_uid.get(uid)
         if social_user and social_user.provider == provider:
             return social_user
+        return None
 
     @classmethod
     def get_social_auth_for_user(cls, user, provider=None, id=None):
@@ -216,6 +218,7 @@ class TestCode(CodeMixin, BaseModel):
         for c in cls.cache.values():
             if c.code == code:
                 return c
+        return None
 
 
 class TestPartial(PartialMixin, BaseModel):

@@ -82,6 +82,7 @@ class UserMixin:
                 reference = datetime.fromtimestamp(auth_time, tz=timezone.utc)
                 return (reference + timedelta(seconds=expires)) - now
             return timedelta(seconds=expires)
+        return None
 
     def expiration_datetime(self):
         # backward compatible alias
@@ -108,6 +109,7 @@ class UserMixin:
             else:
                 self.extra_data = extra_data
             return True
+        return None
 
     @classmethod
     def clean_username(cls, value):

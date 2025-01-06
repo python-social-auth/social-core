@@ -51,6 +51,7 @@ def associate_user(backend, uid, user=None, social=None, *args, **kwargs):
             return result
         else:
             return {"social": social, "user": social.user, "new_association": True}
+    return None
 
 
 def associate_by_email(backend, details, user=None, *args, **kwargs):
@@ -80,6 +81,7 @@ def associate_by_email(backend, details, user=None, *args, **kwargs):
             )
         else:
             return {"user": users[0], "is_new": False}
+    return None
 
 
 def load_extra_data(backend, details, response, uid, user, *args, **kwargs):

@@ -18,6 +18,7 @@ class GoogleAppEngineAuth(BaseAuth):
         user = users.get_current_user()
         if user:
             return user.user_id()
+        return None
 
     def get_user_details(self, response):
         """Return user basic information (id and email only)."""

@@ -153,6 +153,7 @@ def first(func, items):
     for item in items:
         if func(item):
             return item
+    return None
 
 
 def parse_qs(value):
@@ -208,6 +209,8 @@ def partial_pipeline_data(backend, user=None, partial_token=None, *args, **kwarg
             partial.extend_kwargs(kwargs)
             return partial
         backend.strategy.clean_partial_pipeline(partial_token)
+        return None
+    return None
 
 
 def build_absolute_uri(host_url, path=None):
@@ -240,6 +243,7 @@ def setting_url(backend, *names):
         value = backend.setting(name)
         if is_url(value):
             return value
+    return None
 
 
 def handle_http_errors(func):
