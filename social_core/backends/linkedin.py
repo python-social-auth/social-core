@@ -117,9 +117,7 @@ class LinkedinOAuth2(BaseOAuth2):
             headers["Accept-Language"] = (
                 lang if lang is not True else self.strategy.get_language()
             )
-        headers["Authorization"] = "Bearer {access_token}".format(
-            access_token=access_token
-        )
+        headers["Authorization"] = f"Bearer {access_token}"
         return headers
 
     def request_access_token(self, *args, **kwargs):

@@ -22,11 +22,7 @@ class ZoomOAuth2(BaseOAuth2):
     def user_data(self, access_token, *args, **kwargs):
         response = self.get_json(
             self.USER_DETAILS_URL,
-            headers={
-                "Authorization": "Bearer {access_token}".format(
-                    access_token=access_token
-                )
-            },
+            headers={"Authorization": f"Bearer {access_token}"},
         )
         return response
 
