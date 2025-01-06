@@ -50,7 +50,8 @@ class MendeleyOAuth2(MendeleyMixin, BaseOAuth2):
     ACCESS_TOKEN_METHOD = "POST"
     DEFAULT_SCOPE = ["all"]
     REDIRECT_STATE = False
-    EXTRA_DATA = MendeleyMixin.EXTRA_DATA + [
+    EXTRA_DATA = [
+        *MendeleyMixin.EXTRA_DATA,
         ("refresh_token", "refresh_token"),
         ("expires_in", "expires_in"),
         ("token_type", "token_type"),

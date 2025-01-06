@@ -238,7 +238,7 @@ class BaseOAuth1(OAuthAuth):
     def set_unauthorized_token(self):
         token = self.unauthorized_token()
         name = self.name + self.UNATHORIZED_TOKEN_SUFIX
-        tokens = self.strategy.session_get(name, []) + [token]
+        tokens = [*self.strategy.session_get(name, []), token]
         self.strategy.session_set(name, tokens)
         return token
 

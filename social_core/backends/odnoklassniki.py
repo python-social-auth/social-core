@@ -77,8 +77,12 @@ class OdnoklassnikiApp(BaseAuth):
     def auth_complete(self, *args, **kwargs):
         self.verify_auth_sig()
         response = self.get_response()
-        fields = ("uid", "first_name", "last_name", "name") + self.setting(
-            "EXTRA_USER_DATA_LIST", ()
+        fields = (
+            "uid",
+            "first_name",
+            "last_name",
+            "name",
+            *self.setting("EXTRA_USER_DATA_LIST", ()),
         )
         data = {
             "method": "users.getInfo",

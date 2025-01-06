@@ -83,7 +83,7 @@ def to_setting_name(*names):
 
 
 def setting_name(*names):
-    return to_setting_name(*((SETTING_PREFIX,) + names))
+    return to_setting_name(*((SETTING_PREFIX, *names)))
 
 
 def sanitize_redirect(hosts, redirect_to):

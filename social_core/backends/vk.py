@@ -106,7 +106,8 @@ class VKOAuth2(BaseOAuth2):
             "screen_name",
             "nickname",
             "photo",
-        ] + self.setting("EXTRA_DATA", [])
+            *self.setting("EXTRA_DATA", []),
+        ]
 
         fields = ",".join(set(request_data))
         data = vk_api(
