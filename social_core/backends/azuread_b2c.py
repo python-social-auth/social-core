@@ -34,17 +34,7 @@ from jwt import DecodeError, ExpiredSignatureError
 from jwt import decode as jwt_decode
 from jwt import get_unverified_header
 
-try:
-    from jwt.algorithms import RSAAlgorithm
-except ImportError:
-    raise Exception(
-        # Python 3.3 is not supported because of compatibility in
-        # Cryptography package in Python3.3 You are welcome to patch
-        # and open a pull request.
-        "Cryptography library is required for this backend "
-        "(AzureADB2COAuth2) to work. Note that this backend is only "
-        "supported on Python 2 and Python 3.4+."
-    )
+from jwt.algorithms import RSAAlgorithm
 
 from ..exceptions import AuthException, AuthTokenError
 from .azuread import AzureADOAuth2

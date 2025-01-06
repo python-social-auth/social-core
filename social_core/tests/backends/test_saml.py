@@ -1,5 +1,4 @@
 import json
-import os
 import re
 import sys
 import unittest
@@ -10,11 +9,7 @@ from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 import requests
 from httpretty import HTTPretty
 
-try:
-    from onelogin.saml2.utils import OneLogin_Saml2_Utils
-except ImportError:
-    # Only available for python 2.7 at the moment, so don't worry if this fails
-    pass
+from onelogin.saml2.utils import OneLogin_Saml2_Utils
 
 from ...exceptions import AuthMissingParameter
 from .base import BaseBackendTest
@@ -22,10 +17,6 @@ from .base import BaseBackendTest
 DATA_DIR = path.join(path.dirname(__file__), "data")
 
 
-@unittest.skipIf(
-    "TRAVIS" in os.environ,
-    "Travis-ci segfaults probably due to a bad " "dependencies build",
-)
 @unittest.skipIf(
     "__pypy__" in sys.builtin_module_names, "dm.xmlsec not compatible with pypy"
 )
