@@ -45,7 +45,7 @@ class BaseGoogleOAuth2API(BaseGoogleAuth):
         return self.get_json(
             "https://www.googleapis.com/oauth2/v3/userinfo",
             headers={
-                "Authorization": "Bearer %s" % access_token,
+                "Authorization": f"Bearer {access_token}",
             },
         )
 

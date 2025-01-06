@@ -31,7 +31,7 @@ class ShimmeringOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        headers = {"Authorization": "Bearer %s" % access_token}
+        headers = {"Authorization": f"Bearer {access_token}"}
         return self.get_json(
             "http://developers.shimmeringverify.com/user_info/", headers=headers
         )
