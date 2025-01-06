@@ -74,16 +74,14 @@ class UserMixin:
                 # expires is a datetime, return the remaining difference
                 expiry_time = datetime.fromtimestamp(expires, tz=timezone.utc)
                 return expiry_time - now
-            else:
-                # expires is the time to live seconds since creation,
-                # check against auth_time if present, otherwise return
-                # the value
-                auth_time = self.extra_data.get("auth_time")
-                if auth_time:
-                    reference = datetime.fromtimestamp(auth_time, tz=timezone.utc)
-                    return (reference + timedelta(seconds=expires)) - now
-                else:
-                    return timedelta(seconds=expires)
+            # expires is the time to live seconds since creation,
+            # check against auth_time if present, otherwise return
+            # the value
+            auth_time = self.extra_data.get("auth_time")
+            if auth_time:
+                reference = datetime.fromtimestamp(auth_time, tz=timezone.utc)
+                return (reference + timedelta(seconds=expires)) - now
+            return timedelta(seconds=expires)
 
     def expiration_datetime(self):
         # backward compatible alias

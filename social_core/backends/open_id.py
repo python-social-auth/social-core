@@ -253,7 +253,6 @@ class OpenIdAuth(BaseAuth):
         provider URL."""
         if self.URL:
             return self.URL
-        elif OPENID_ID_FIELD in self.data:
+        if OPENID_ID_FIELD in self.data:
             return self.data[OPENID_ID_FIELD]
-        else:
-            raise AuthMissingParameter(self, OPENID_ID_FIELD)
+        raise AuthMissingParameter(self, OPENID_ID_FIELD)

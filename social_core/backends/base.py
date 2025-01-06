@@ -32,8 +32,7 @@ class BaseAuth:
     def start(self):
         if self.uses_redirect():
             return self.strategy.redirect(self.auth_url())
-        else:
-            return self.strategy.html(self.auth_html())
+        return self.strategy.html(self.auth_html())
 
     def complete(self, *args, **kwargs):
         return self.auth_complete(*args, **kwargs)

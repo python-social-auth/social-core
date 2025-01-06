@@ -21,8 +21,7 @@ def force_unicode(value):
     """
     if isinstance(value, str):
         return value
-    else:
-        return str(value, "unicode-escape")
+    return str(value, "unicode-escape")
 
 
 class MediaWiki(BaseOAuth1):

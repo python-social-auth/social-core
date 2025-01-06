@@ -107,8 +107,7 @@ class AppleIdAuth(BaseOAuth2):
 
         if kid:
             return json.dumps([key for key in keys if key["kid"] == kid][0])
-        else:
-            return (json.dumps(key) for key in keys)
+        return (json.dumps(key) for key in keys)
 
     def decode_id_token(self, id_token):
         """

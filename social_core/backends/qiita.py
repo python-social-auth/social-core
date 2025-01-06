@@ -83,5 +83,4 @@ class QiitaOAuth2(BaseOAuth2):
 
         if user_id is not None:
             return str(user_id)
-        else:
-            raise AuthException("failed to get user id")
+        raise AuthException("failed to get user id")
