@@ -8,7 +8,6 @@ from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 import requests
 from httpretty import HTTPretty
-
 from onelogin.saml2.utils import OneLogin_Saml2_Utils
 
 from ...exceptions import AuthMissingParameter

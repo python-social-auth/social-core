@@ -2,9 +2,8 @@ import base64
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.x509 import load_der_x509_certificate
-from jwt import DecodeError, ExpiredSignatureError
+from jwt import DecodeError, ExpiredSignatureError, get_unverified_header
 from jwt import decode as jwt_decode
-from jwt import get_unverified_header
 
 from ..exceptions import AuthTokenError
 from .azuread import AzureADOAuth2
