@@ -190,18 +190,20 @@ class BaseAuthUrlTestMixin:
         original_url = (
             self.backend.AUTHORIZATION_URL or self.backend.authorization_url()
         )
-        with patch.object(
-            self.backend,
-            "authorization_url",
-            return_value=original_url + "?param1=value1&param2=value2",
-        ):
-            with patch.object(
+        with (
+            patch.object(
+                self.backend,
+                "authorization_url",
+                return_value=original_url + "?param1=value1&param2=value2",
+            ),
+            patch.object(
                 self.backend,
                 auth_url_key,
                 original_url + "?param1=value1&param2=value2",
-            ):
-                # we expect an & symbol to join the different parameters
-                assert "?param1=value1&param2=value2&" in self.backend.auth_url()
+            ),
+        ):
+            # we expect an & symbol to join the different parameters
+            assert "?param1=value1&param2=value2&" in self.backend.auth_url()
 
     def test_auth_url_parameters(self):
         self.check_parameters_in_authorization_url()
