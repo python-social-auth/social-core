@@ -160,6 +160,7 @@ class OAuthAuth(BaseAuth):
                 method=self.REVOKE_TOKEN_METHOD,
             )
             return self.process_revoke_token_response(response)
+        return None
 
 
 class BaseOAuth1(OAuthAuth):

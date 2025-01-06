@@ -18,6 +18,7 @@ def mail_validation(backend, details, is_new=False, *args, **kwargs):
                 details["email"], data["verification_code"]
             ):
                 raise InvalidEmail(backend)
+            return None
         else:
             current_partial = kwargs.get("current_partial")
             backend.strategy.send_email_validation(
@@ -27,3 +28,4 @@ def mail_validation(backend, details, is_new=False, *args, **kwargs):
             return backend.strategy.redirect(
                 backend.strategy.setting("EMAIL_VALIDATION_URL")
             )
+    return None

@@ -48,6 +48,7 @@ class OpenIdStore(BaseOpenIDStore):
 
         if associations:  # return most recet association
             return associations[0]
+        return None
 
     def useNonce(self, server_url, timestamp, salt):
         """Generate one use number and return *if* it was created"""

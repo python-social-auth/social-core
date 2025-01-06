@@ -26,6 +26,7 @@ class PingOpenIdConnect(OpenIdConnectAuth):
             decoded_sig = base64url_decode(encoded_sig.encode("utf-8"))
             if rsakey.verify(message.encode("utf-8"), decoded_sig):
                 return key
+        return None
 
     def validate_and_return_id_token(self, id_token, access_token):
         """
