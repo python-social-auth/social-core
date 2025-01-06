@@ -53,8 +53,7 @@ class EvernoteOAuth(BaseOAuth1):
             # Evernote returns a 401 error when AuthCanceled
             if err.response.status_code == 401:
                 raise AuthCanceled(self, response=err.response)
-            else:
-                raise
+            raise
 
     def extra_data(self, user, uid, response, details=None, *args, **kwargs):
         data = super().extra_data(user, uid, response, details, *args, **kwargs)

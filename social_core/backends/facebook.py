@@ -204,8 +204,7 @@ class FacebookAppOAuth2(FacebookOAuth2):
         if access_token is None:
             if self.data.get("error") == "access_denied":
                 raise AuthCanceled(self)
-            else:
-                raise AuthException(self)
+            raise AuthException(self)
         return self.do_auth(access_token, response, *args, **kwargs)
 
     def auth_html(self):

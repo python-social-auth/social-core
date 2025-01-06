@@ -183,11 +183,11 @@ class OpenIdAuth(BaseAuth):
     def process_error(self, data):
         if not data:
             raise AuthException(self, "OpenID relying party endpoint")
-        elif data.status == FAILURE:
+        if data.status == FAILURE:
             raise AuthFailed(self, data.message)
-        elif data.status == CANCEL:
+        if data.status == CANCEL:
             raise AuthCanceled(self)
-        elif data.status != SUCCESS:
+        if data.status != SUCCESS:
             raise AuthUnknownError(self, data.status)
 
     def setup_request(self, params=None):
