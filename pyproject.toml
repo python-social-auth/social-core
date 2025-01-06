@@ -36,6 +36,89 @@ classifiers = [
 [tool.setuptools]
 packages = ["social_core"]
 
+[tool.ruff.lint]
+extend-safe-fixes = [
+  "D",
+  "TCH",
+  "FLY",
+  "SIM",
+  "ANN",
+  "FA102",
+  "UP"
+]
+select = ["ALL"]
+ignore = [
+  "COM",  # CONFIG: No trailing commas
+  "D203",  # CONFIG: incompatible with D211
+  "D212",  # CONFIG: incompatible with D213
+  "E501",  # WONTFIX: we accept long strings (rest is formatted by ruff)
+  'ISC001',  # CONFIG: formatter
+  "PT",  # CONFIG: Not using pytest
+  "FIX002",  # CONFIG: we use TODO
+  "TD002",  # CONFIG: no detailed TODO documentation is required
+  "TD003",  # CONFIG: no detailed TODO documentation is required
+  "ANN",  # TODO: Missing type annotations
+  "D",  # TODO: Missing documentation
+  "B904", # TODO: use raise from
+  "PLR2004", # TODO: Magic value used in comparison
+  "PLW2901", # TODO: loop variable overwritten by assignment target
+  "N", # TODO: Naming issues
+  "PTH",  # TODO: Not using pathlib
+  "RUF012", # TODO: Type annotations
+  "ARG001",  # TODO: Unused function argument (mostly for API compatibility)
+  "ARG002",  # TODO: Unused method argument (mostly for API compatibility)
+  "ARG003",  # TODO: Unused class method argument
+  "ARG005", # TODO: Unused lambda argument
+  "TID252", # TODO: Prefer absolute imports over relative imports from parent modules
+  "FBT",  # TODO: Boolean in function definition
+  "S105",  # TODO: Possible hardcoded password assigned
+  "S113",  # TODO: Probable use of `requests` call without timeout
+  "B018", # TODO: Found useless expression. 
+  "A001", # TODO: Variable is shadowing a Python builtin
+  "A002", # TODO: Function argument is shadowing a Python builtin
+  "A004", # TODO: Import `ConnectionError` is shadowing a Python builtin
+  "ERA001", # TODO: Found commented-out code
+  "EM101", # TODO: Exception must not use a string literal, assign to variable first
+  "EM102", # TODO: Exception must not use an f-string literal, assign to variable first
+  "TRY003", # TODO: Avoid specifying long messages outside the exception class
+  "S101", # TODO: Use of `assert` detected
+  "DTZ001", # TODO: `datetime.datetime()` called without a `tzinfo` argument
+  "DTZ005", # TODO: `datetime.datetime.now()` called without a `tz` argument
+  "B006", # TODO: Do not use mutable data structures for argument defaults
+  "B026", # TODO: Star-arg unpacking after a keyword argument is strongly discouraged
+  "S311", # TODO: Standard pseudo-random generators are not suitable for cryptographic purposes
+  "S301", # TODO: `pickle` and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue
+  "S324", # TODO: Probable use of insecure hash functions in `hashlib`
+  "S318", # TODO: Using `xml` to parse untrusted data is known to be vulnerable to XML attacks; use `defusedxml` equivalents
+  "PLR1704", # TODO: Redefining argument with the local name 
+  "PERF203",  # WONTFIX: This rule is only enforced for Python versions prior to 3.11
+  "ISC003", # TODO: Explicitly concatenated string should be implicitly concatenated
+  "B028", # TODO: No explicit `stacklevel` keyword argument found
+  "UP031", # TODO: Use format specifiers instead of percent format
+  "SIM910", # TODO [*] Use `fields.get("email")` instead of `fields.get("email", None)`
+  "RUF021", # TODO [*] Parenthesize `a and b` expressions when chaining `and` and `or` together, to make the precedence clear
+  "PLW0603", # TODO: Using the global statement to update `BACKENDSCACHE` is discouraged
+  "TRY301", # TODO: Abstract `raise` to an inner function
+  "SIM401", # TODO: [*] Use `attributes.get(key, None)` instead of an `if` block
+  "BLE001", # TODO: Do not catch blind exception: `Exception`
+  "S110", # TODO: `try`-`except`-`pass` detected, consider logging the exception
+  "RUF010", # TODO: [*] Use explicit conversion flag
+  "TRY300", # TODO: Consider moving this statement to an `else` block
+  "PIE804", # TODO: [*] Unnecessary `dict` kwargs
+  "G004", # TODO: Logging statement uses f-string
+]
+
+[tool.ruff.lint.per-file-ignores]
+"social_core/pipeline/debug.py" = ["T201", "T203"]
+
+[tool.ruff.lint.pylint]
+# TODO: all these should be lower (or use defaults)
+max-args = 7
+max-branches = 15
+
+[tool.ruff.lint.mccabe]
+max-complexity = 11  # TODO: should be lower
+
 [project.urls]
 Homepage = "https://github.com/python-social-auth/social-core"
 

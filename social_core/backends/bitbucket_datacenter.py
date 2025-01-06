@@ -20,7 +20,7 @@ class BitbucketDataCenterOAuth2(BaseOAuth2PKCE):
     REFRESH_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
     STATE_PARAMETER = True
-    # ref: https://confluence.atlassian.com/bitbucketserver/bitbucket-oauth-2-0-provider-api-1108483661.html#BitbucketOAuth2.0providerAPI-scopes # noqa
+    # ref: https://confluence.atlassian.com/bitbucketserver/bitbucket-oauth-2-0-provider-api-1108483661.html#BitbucketOAuth2.0providerAPI-scopes
     DEFAULT_SCOPE = ["PUBLIC_REPOS"]
     USE_BASIC_AUTH = False
     EXTRA_DATA = [
@@ -87,14 +87,14 @@ class BitbucketDataCenterOAuth2(BaseOAuth2PKCE):
         # At this point, we don't know the current user's username
         # and Bitbucket doesn't provide any API to do so.
         # However, the current user's username is sent in every response header.
-        # ref: https://community.developer.atlassian.com/t/obtain-authorised-users-username-from-api/24422/2 # noqa
+        # ref: https://community.developer.atlassian.com/t/obtain-authorised-users-username-from-api/24422/2
         headers = {"Authorization": f"Bearer {access_token}"}
         response = self.request(
             url=f"{self.server_base_rest_api_url}/application-properties",
             method="GET",
             headers=headers,
         )
-        # ref: https://developer.atlassian.com/server/bitbucket/rest/v815/api-group-system-maintenance/#api-api-latest-users-userslug-get # noqa
+        # ref: https://developer.atlassian.com/server/bitbucket/rest/v815/api-group-system-maintenance/#api-api-latest-users-userslug-get
         username = response.headers["x-ausername"]
         return self.get_json(
             url=f"{self.server_base_rest_api_url}/users/{username}",
