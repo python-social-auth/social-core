@@ -146,7 +146,7 @@ class PartialPipelineData(unittest.TestCase):
         backend = self._backend({"uid": email})
         backend.strategy.request_data.return_value = {backend.ID_KEY: email}
         key, val = ("foo", "bar")
-        partial = partial_pipeline_data(backend, None, *(), **dict([(key, val)]))
+        partial = partial_pipeline_data(backend, None, *(), **{key: val})
         self.assertTrue(key in partial.kwargs)
         self.assertEqual(partial.kwargs[key], val)
         self.assertEqual(backend.strategy.clean_partial_pipeline.call_count, 0)
@@ -155,14 +155,14 @@ class PartialPipelineData(unittest.TestCase):
         backend = self._backend({"uid": "foo@example.com"})
         backend.strategy.request_data.return_value = {backend.ID_KEY: "bar@example.com"}
         key, val = ("foo", "bar")
-        partial = partial_pipeline_data(backend, None, *(), **dict([(key, val)]))
+        partial = partial_pipeline_data(backend, None, *(), **{key: val})
         self.assertIsNone(partial)
         self.assertEqual(backend.strategy.clean_partial_pipeline.call_count, 1)
 
     def test_kwargs_included_in_result(self):
         backend = self._backend()
         key, val = ("foo", "bar")
-        partial = partial_pipeline_data(backend, None, *(), **dict([(key, val)]))
+        partial = partial_pipeline_data(backend, None, *(), **{key: val})
         self.assertTrue(key in partial.kwargs)
         self.assertEqual(partial.kwargs[key], val)
         self.assertEqual(backend.strategy.clean_partial_pipeline.call_count, 0)
