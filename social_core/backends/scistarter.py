@@ -1,4 +1,4 @@
-""" SciStarter OAuth2 Auth """
+"""SciStarter OAuth2 Auth"""
 
 from .oauth import BaseOAuth2
 
