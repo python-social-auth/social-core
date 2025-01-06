@@ -28,9 +28,7 @@ class LastFmAuth(BaseAuth):
         token = self.data["token"]
 
         signature = hashlib.md5(
-            "".join(
-                ("api_key", key, "methodauth.getSession", "token", token, secret)
-            ).encode()
+            f"api_key{key}methodauth.getSessiontoken{token}{secret}".encode()
         ).hexdigest()
 
         response = self.get_json(
