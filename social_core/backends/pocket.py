@@ -33,7 +33,7 @@ class PocketAuth(BaseAuth):
         token = self.get_json(self.REQUEST_TOKEN_URL, data=data)["code"]
         self.strategy.session_set("pocket_request_token", token)
         bits = (self.AUTHORIZATION_URL, token, self.redirect_uri)
-        return "%s?request_token=%s&redirect_uri=%s" % bits
+        return "{}?request_token={}&redirect_uri={}".format(*bits)
 
     @handle_http_errors
     def auth_complete(self, *args, **kwargs):

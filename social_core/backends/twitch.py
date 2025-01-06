@@ -63,7 +63,7 @@ class TwitchOAuth2(BaseOAuth2):
     def user_data(self, access_token, *args, **kwargs):
         client_id, _ = self.get_key_and_secret()
         auth_headers = {
-            "Authorization": "Bearer %s" % access_token,
+            "Authorization": f"Bearer {access_token}",
             "Client-Id": client_id,
         }
         url = "https://api.twitch.tv/helix/users"

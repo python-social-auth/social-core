@@ -28,7 +28,7 @@ class PodioOAuth2(BaseOAuth2):
             response["profile"]["name"]
         )
         return {
-            "username": "user_%d" % response["user"]["user_id"],
+            "username": f"user_{response['user']['user_id']}",
             "email": response["user"]["mail"],
             "fullname": fullname,
             "first_name": first_name,

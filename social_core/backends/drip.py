@@ -25,5 +25,5 @@ class DripOAuth(BaseOAuth2):
     def user_data(self, access_token, *args, **kwargs):
         return self.get_json(
             "https://api.getdrip.com/v2/user",
-            headers={"Authorization": "Bearer %s" % access_token},
+            headers={"Authorization": f"Bearer {access_token}"},
         )

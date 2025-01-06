@@ -22,7 +22,7 @@ class PayPalOAuth2(BaseOAuth2):
     REDIRECT_STATE = False
 
     def user_data(self, access_token, *args, **kwargs):
-        auth_header = {"Authorization": "Bearer %s" % access_token}
+        auth_header = {"Authorization": f"Bearer {access_token}"}
         return self.get_json(self.USER_DATA_URL, headers=auth_header)
 
     def get_user_details(self, response):
@@ -49,7 +49,7 @@ class PayPalOAuth2(BaseOAuth2):
         }
 
     def auth_headers(self):
-        auth = ("%s:%s" % self.get_key_and_secret()).encode()
+        auth = ("{}:{}".format(*self.get_key_and_secret())).encode()
         return {"Authorization": b"Basic " + base64.urlsafe_b64encode(auth)}
 
     def refresh_token_params(self, token, *args, **kwargs):
