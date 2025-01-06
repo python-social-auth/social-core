@@ -97,12 +97,11 @@ class OAuthAuth(BaseAuth):
         request_state = self.get_request_state()
         if not request_state:
             raise AuthMissingParameter(self, "state")
-        elif not state:
+        if not state:
             raise AuthStateMissing(self, "state")
-        elif not constant_time_compare(request_state, state):
+        if not constant_time_compare(request_state, state):
             raise AuthStateForbidden(self)
-        else:
-            return state
+        return state
 
     def get_redirect_uri(self, state=None):
         """Build redirect with redirect_state parameter."""
@@ -401,7 +400,7 @@ class BaseOAuth2(OAuthAuth):
             if "denied" in data["error"] or "cancelled" in data["error"]:
                 raise AuthCanceled(self, data.get("error_description", ""))
             raise AuthFailed(self, data.get("error_description") or data["error"])
-        elif "denied" in data:
+        if "denied" in data:
             raise AuthCanceled(self, data["denied"])
 
     @handle_http_errors

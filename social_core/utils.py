@@ -256,12 +256,11 @@ def handle_http_errors(func):
         except requests.HTTPError as err:
             if err.response.status_code == 400:
                 raise AuthCanceled(args[0], response=err.response)
-            elif err.response.status_code == 401:
+            if err.response.status_code == 401:
                 raise AuthForbidden(args[0])
-            elif err.response.status_code == 503:
+            if err.response.status_code == 503:
                 raise AuthUnreachableProvider(args[0])
-            else:
-                raise
+            raise
 
     return wrapper
 

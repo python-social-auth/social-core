@@ -20,7 +20,7 @@ def social_user(backend, uid, user=None, *args, **kwargs):
     if social:
         if user and social.user != user:
             raise AuthAlreadyAssociated(backend)
-        elif not user:
+        if not user:
             user = social.user
     return {
         "social": social,
