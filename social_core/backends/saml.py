@@ -386,4 +386,3 @@ class SAMLAuth(BaseAuth):
         be authenticated, or do nothing to allow the login pipeline to
         continue.
         """
-        pass

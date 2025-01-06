@@ -1,8 +1,6 @@
 class SocialAuthBaseException(ValueError):
     """Base class for pipeline exceptions."""
 
-    pass
-
 
 class WrongBackend(SocialAuthBaseException):
     def __init__(self, backend_name):
