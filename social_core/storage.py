@@ -115,8 +115,7 @@ class UserMixin:
     def clean_username(cls, value):
         """Clean username removing any unsupported character"""
         value = NO_ASCII_REGEX.sub("", value)
-        value = NO_SPECIAL_REGEX.sub("", value)
-        return value
+        return NO_SPECIAL_REGEX.sub("", value)
 
     @classmethod
     def changed(cls, user):

@@ -43,11 +43,9 @@ class CognitoOAuth2(BaseOAuth2):
             headers={"Authorization": f"Bearer {access_token}"},
         )
 
-        user_data = {
+        return {
             "given_name": response.get("given_name"),
             "family_name": response.get("family_name"),
             "username": response.get("username"),
             "email": response.get("email"),
         }
-
-        return user_data

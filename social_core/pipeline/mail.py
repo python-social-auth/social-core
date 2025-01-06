@@ -19,13 +19,12 @@ def mail_validation(backend, details, is_new=False, *args, **kwargs):
             ):
                 raise InvalidEmail(backend)
             return None
-        else:
-            current_partial = kwargs.get("current_partial")
-            backend.strategy.send_email_validation(
-                backend, details["email"], current_partial.token
-            )
-            backend.strategy.session_set("email_validation_address", details["email"])
-            return backend.strategy.redirect(
-                backend.strategy.setting("EMAIL_VALIDATION_URL")
-            )
+        current_partial = kwargs.get("current_partial")
+        backend.strategy.send_email_validation(
+            backend, details["email"], current_partial.token
+        )
+        backend.strategy.session_set("email_validation_address", details["email"])
+        return backend.strategy.redirect(
+            backend.strategy.setting("EMAIL_VALIDATION_URL")
+        )
     return None

@@ -115,12 +115,11 @@ class OpenIdConnectAuth(BaseOAuth2):
 
     @cache(ttl=86400)
     def get_jwks_keys(self):
-        keys = self.get_remote_jwks_keys()
+        return self.get_remote_jwks_keys()
 
         # Add client secret as oct key so it can be used for HMAC signatures
         # client_id, client_secret = self.get_key_and_secret()
         # keys.append({'key': client_secret, 'kty': 'oct'})
-        return keys
 
     def get_remote_jwks_keys(self):
         response = self.request(self.jwks_uri())

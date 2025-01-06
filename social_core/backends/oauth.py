@@ -489,16 +489,14 @@ class BaseOAuth2PKCE(BaseOAuth2):
 
     def get_code_verifier(self):
         name = f"{self.name}_code_verifier"
-        code_verifier = self.strategy.session_get(name)
-        return code_verifier
+        return self.strategy.session_get(name)
 
     def generate_code_challenge(self, code_verifier, challenge_method):
         method = challenge_method.lower()
         if method == "s256":
             hashed = hashlib.sha256(code_verifier.encode()).digest()
             encoded = base64.urlsafe_b64encode(hashed)
-            code_challenge = encoded.decode().replace("=", "")  # remove padding
-            return code_challenge
+            return encoded.decode().replace("=", "")  # remove padding
         if method == "plain":
             return code_verifier
         raise AuthException("Unsupported code challenge method.")

@@ -79,8 +79,7 @@ def associate_by_email(backend, details, user=None, *args, **kwargs):
             raise AuthException(
                 backend, "The given email address is associated with another account"
             )
-        else:
-            return {"user": users[0], "is_new": False}
+        return {"user": users[0], "is_new": False}
     return None
 
 

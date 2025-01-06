@@ -20,11 +20,10 @@ class ZoomOAuth2(BaseOAuth2):
     EXTRA_DATA = [("expires_in", "expires")]
 
     def user_data(self, access_token, *args, **kwargs):
-        response = self.get_json(
+        return self.get_json(
             self.USER_DETAILS_URL,
             headers={"Authorization": f"Bearer {access_token}"},
         )
-        return response
 
     def get_user_details(self, response):
         username = response.get("id", "")

@@ -32,8 +32,7 @@ def set_user_from_kwargs(strategy, *args, **kwargs):
     if strategy.session_get("attribute"):
         kwargs["user"].id
         return None
-    else:
-        return strategy.redirect(strategy.build_absolute_uri("/attribute"))
+    return strategy.redirect(strategy.build_absolute_uri("/attribute"))
 
 
 @partial
@@ -41,5 +40,4 @@ def set_user_from_args(strategy, user, *args, **kwargs):
     if strategy.session_get("attribute"):
         user.id
         return None
-    else:
-        return strategy.redirect(strategy.build_absolute_uri("/attribute"))
+    return strategy.redirect(strategy.build_absolute_uri("/attribute"))
