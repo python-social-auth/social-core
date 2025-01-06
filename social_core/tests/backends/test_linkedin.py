@@ -56,7 +56,7 @@ class BaseLinkedinTest:
             "name": "FooBar",
             "given_name": "Foo",
             "family_name": "Bar",
-            "picture": "https://media.licdn-ei.com/dms/image/C5F03AQHqK8v7tB1HCQ/profile-displayphoto-shrink_100_100/0/",  # noqa: E501
+            "picture": "https://media.licdn-ei.com/dms/image/C5F03AQHqK8v7tB1HCQ/profile-displayphoto-shrink_100_100/0/",
             "locale": "en-US",
             "email": "doe@email.com",
             "email_verified": True,
