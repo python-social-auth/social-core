@@ -52,7 +52,6 @@ class BaseAuth:
     def process_error(self, data):
         """Process data for errors, raise exception if needed.
         Call this method on any override of auth_complete."""
-        pass
 
     def authenticate(self, *args, **kwargs):
         """Authenticate user using social credentials
