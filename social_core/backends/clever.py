@@ -21,7 +21,7 @@ class CleverOAuth2(BaseOAuth2):
         return response.get("data", {}).get("id")
 
     def get_user_type(self, data):
-        return list(data.get("data", {}).get("roles", {}).keys())[0]
+        return next(iter(data.get("data", {}).get("roles", {}).keys()))
 
     def get_user_details(self, response):
         """Return user details from Classlink account"""

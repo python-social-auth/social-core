@@ -118,7 +118,7 @@ class OAuth2Test(BaseOAuthTest):
             status=200,
             body=self.refresh_token_body,
         )
-        user = list(User.cache.values())[0]
+        user = next(iter(User.cache.values()))
         social = user.social[0]
         social.refresh_token(strategy=self.strategy, **self.refresh_token_arguments())
         return user, social
@@ -136,17 +136,17 @@ class OAuth2PkcePlainTest(OAuth2Test):
         user = super().do_login()
 
         requests = latest_requests()
-        auth_request = [
+        auth_request = next(
             r for r in requests if self.backend.authorization_url() in r.url
-        ][0]
+        )
         code_challenge = auth_request.querystring.get("code_challenge")[0]
         code_challenge_method = auth_request.querystring.get("code_challenge_method")[0]
         self.assertIsNotNone(code_challenge)
         self.assertEqual(code_challenge_method, "plain")
 
-        auth_complete = [
+        auth_complete = next(
             r for r in requests if self.backend.access_token_url() in r.url
-        ][0]
+        )
         code_verifier = auth_complete.parsed_body.get("code_verifier")[0]
         self.assertEqual(code_challenge, code_verifier)
 
@@ -159,17 +159,17 @@ class OAuth2PkceS256Test(OAuth2Test):
         user = super().do_login()
 
         requests = latest_requests()
-        auth_request = [
+        auth_request = next(
             r for r in requests if self.backend.authorization_url() in r.url
-        ][0]
+        )
         code_challenge = auth_request.querystring.get("code_challenge")[0]
         code_challenge_method = auth_request.querystring.get("code_challenge_method")[0]
         self.assertIsNotNone(code_challenge)
         self.assertTrue(code_challenge_method in ["s256", "S256"])
 
-        auth_complete = [
+        auth_complete = next(
             r for r in requests if self.backend.access_token_url() in r.url
-        ][0]
+        )
         code_verifier = auth_complete.parsed_body.get("code_verifier")[0]
         self.assertEqual(
             self.backend.generate_code_challenge(code_verifier, code_challenge_method),
