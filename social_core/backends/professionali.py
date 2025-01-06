@@ -35,8 +35,13 @@ class ProfessionaliOAuth2(BaseOAuth2):
         url = "https://api.professionali.ru/v6/users/get.json"
         fields = list(
             set(
-                ["firstname", "lastname", "avatar_big", "link"]
-                + self.setting("EXTRA_DATA", [])
+                [
+                    "firstname",
+                    "lastname",
+                    "avatar_big",
+                    "link",
+                    *self.setting("EXTRA_DATA", []),
+                ]
             )
         )
         params = {
