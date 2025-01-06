@@ -84,7 +84,7 @@ class TestStrategy(BaseStrategy):
     def build_absolute_uri(self, path=None):
         """Build absolute URI with given (optional) path"""
         path = path or ""
-        if path.startswith("http://") or path.startswith("https://"):
+        if path.startswith(("http://", "https://")):
             return path
         return TEST_URI + path
 

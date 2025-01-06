@@ -214,7 +214,7 @@ def partial_pipeline_data(backend, user=None, partial_token=None, *args, **kwarg
 def build_absolute_uri(host_url, path=None):
     """Build absolute URI with given (optional) path"""
     path = path or ""
-    if path.startswith("http://") or path.startswith("https://"):
+    if path.startswith(("http://", "https://")):
         return path
     if host_url.endswith("/") and path.startswith("/"):
         path = path[1:]
@@ -231,11 +231,7 @@ def constant_time_compare(val1, val2):
 
 
 def is_url(value):
-    return value and (
-        value.startswith("http://")
-        or value.startswith("https://")
-        or value.startswith("/")
-    )
+    return value and (value.startswith(("http://", "https://", "/")))
 
 
 def setting_url(backend, *names):
