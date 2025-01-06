@@ -95,16 +95,11 @@ ignore = [
   "ISC003", # TODO: Explicitly concatenated string should be implicitly concatenated
   "B028", # TODO: No explicit `stacklevel` keyword argument found
   "UP031", # TODO: Use format specifiers instead of percent format
-  "SIM910", # TODO [*] Use `fields.get("email")` instead of `fields.get("email", None)`
-  "RUF021", # TODO [*] Parenthesize `a and b` expressions when chaining `and` and `or` together, to make the precedence clear
   "PLW0603", # TODO: Using the global statement to update `BACKENDSCACHE` is discouraged
   "TRY301", # TODO: Abstract `raise` to an inner function
-  "SIM401", # TODO: [*] Use `attributes.get(key, None)` instead of an `if` block
   "BLE001", # TODO: Do not catch blind exception: `Exception`
   "S110", # TODO: `try`-`except`-`pass` detected, consider logging the exception
-  "RUF010", # TODO: [*] Use explicit conversion flag
   "TRY300", # TODO: Consider moving this statement to an `else` block
-  "PIE804", # TODO: [*] Unnecessary `dict` kwargs
   "G004", # TODO: Logging statement uses f-string
 ]
 
