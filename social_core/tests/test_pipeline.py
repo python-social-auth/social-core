@@ -19,7 +19,7 @@ class UnknownError(Exception):
 class IntegrityErrorUserSocialAuth(TestUserSocialAuth):
     @classmethod
     def create_social_auth(cls, user, uid, provider):
-        raise IntegrityError()
+        raise IntegrityError
 
     @classmethod
     def get_social_auth(cls, provider, uid):
@@ -44,7 +44,7 @@ class IntegrityErrorStorage(TestStorage):
 class UnknownErrorUserSocialAuth(TestUserSocialAuth):
     @classmethod
     def create_social_auth(cls, user, uid, provider):
-        raise UnknownError()
+        raise UnknownError
 
 
 class UnknownErrorStorage(IntegrityErrorStorage):
