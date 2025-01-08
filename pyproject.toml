@@ -155,4 +155,5 @@ dev = [
     "pytest-cov>=2.7.1",
     # pinned because of https://github.com/gabrielfalcao/HTTPretty/issues/484
     "urllib3~=2.2.0",
+    "pyright>=1.1.391",
 ]
