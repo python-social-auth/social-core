@@ -1,3 +1,5 @@
+# pyright: reportAttributeAccessIssue=false
+
 import json
 
 from .oauth import OAuth2PkceS256Test

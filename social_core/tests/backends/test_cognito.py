@@ -1,3 +1,5 @@
+# pyright: reportAttributeAccessIssue=false
+
 import json
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
@@ -23,6 +25,7 @@ class CognitoAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
 
     def extra_settings(self):
         settings = super().extra_settings()
+        assert self.name, "subclasses must set the name attribute"
         settings.update(
             {
                 "SOCIAL_AUTH_" + self.name + "_POOL_DOMAIN": self.pool_domain,

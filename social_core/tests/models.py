@@ -1,4 +1,7 @@
+# pyright: reportAttributeAccessIssue=false
+
 import base64
+from typing import Optional, TypeVar
 
 from ..storage import (
     AssociationMixin,
@@ -9,6 +12,8 @@ from ..storage import (
     UserMixin,
 )
 
+ModelT = TypeVar("ModelT", bound="BaseModel")
+
 
 class BaseModel:
     @classmethod
@@ -17,7 +22,7 @@ class BaseModel:
         return cls.NEXT_ID - 1
 
     @classmethod
-    def get(cls, key):
+    def get(cls: type[ModelT], key) -> Optional[ModelT]:  # noqa: FA100
         return cls.cache.get(key)
 
     @classmethod
@@ -57,6 +62,8 @@ class User(BaseModel):
 
 
 class TestUserSocialAuth(UserMixin, BaseModel):
+    __test__ = False
+
     NEXT_ID = 1
     cache = {}
     cache_by_uid = {}
@@ -143,6 +150,8 @@ class TestUserSocialAuth(UserMixin, BaseModel):
 
 
 class TestNonce(NonceMixin, BaseModel):
+    __test__ = False
+
     NEXT_ID = 1
     cache = {}
 
@@ -159,7 +168,7 @@ class TestNonce(NonceMixin, BaseModel):
         return nonce
 
     @classmethod
-    def get(cls, server_url, salt):
+    def get(cls, server_url):  # pyright: ignore[reportIncompatibleMethodOverride]
         return TestNonce.cache[server_url]
 
     @classmethod
@@ -169,6 +178,8 @@ class TestNonce(NonceMixin, BaseModel):
 
 
 class TestAssociation(AssociationMixin, BaseModel):
+    __test__ = False
+
     NEXT_ID = 1
     cache = {}
 
@@ -192,7 +203,11 @@ class TestAssociation(AssociationMixin, BaseModel):
         assoc.save()
 
     @classmethod
-    def get(cls, server_url=None, handle=None):
+    def get(  # pyright: ignore[reportIncompatibleMethodOverride]
+        cls: type["TestAssociation"],
+        server_url=None,
+        handle=None,
+    ) -> "TestAssociation":
         result = []
         for assoc in TestAssociation.cache.values():
             if server_url and assoc.server_url != server_url:
@@ -210,6 +225,8 @@ class TestAssociation(AssociationMixin, BaseModel):
 
 
 class TestCode(CodeMixin, BaseModel):
+    __test__ = False
+
     NEXT_ID = 1
     cache = {}
 
@@ -222,6 +239,8 @@ class TestCode(CodeMixin, BaseModel):
 
 
 class TestPartial(PartialMixin, BaseModel):
+    __test__ = False
+
     NEXT_ID = 1
     cache = {}
 
@@ -238,6 +257,8 @@ class TestPartial(PartialMixin, BaseModel):
 
 
 class TestStorage(BaseStorage):
+    __test__ = False
+
     user = TestUserSocialAuth
     nonce = TestNonce
     association = TestAssociation
@@ -245,5 +266,5 @@ class TestStorage(BaseStorage):
     partial = TestPartial
 
     @classmethod
-    def is_integrity_error(cls, exception):
+    def is_integrity_error(cls, exception) -> Optional[bool]:  # noqa: FA100
         pass

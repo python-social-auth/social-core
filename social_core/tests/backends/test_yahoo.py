@@ -1,3 +1,5 @@
+# pyright: reportAttributeAccessIssue=false
+
 import json
 from urllib.parse import urlencode
 

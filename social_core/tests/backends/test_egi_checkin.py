@@ -1,3 +1,5 @@
+# pyright: reportAttributeAccessIssue=false
+
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 from .test_open_id_connect import OpenIdConnectTestMixin
 

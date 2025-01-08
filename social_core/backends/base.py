@@ -1,4 +1,5 @@
 import time
+from typing import Any
 
 from requests import ConnectionError, request
 
@@ -119,7 +120,9 @@ class BaseAuth:
             out.update(result)
         return out
 
-    def extra_data(self, user, uid, response, details=None, *args, **kwargs):
+    def extra_data(
+        self, user, uid, response, details=None, *args, **kwargs
+    ) -> dict[str, Any]:
         """Return default extra data to store in extra_data field"""
         data = {
             # store the last time authentication toke place
@@ -138,9 +141,9 @@ class BaseAuth:
             size = len(entry)
             if size >= 1 and size <= 3:
                 if size == 3:
-                    name, alias, discard = entry
+                    name, alias, discard = entry  # type: ignore[reportAssignmentType]
                 elif size == 2:
-                    (name, alias), discard = entry, False
+                    (name, alias), discard = entry, False  # type: ignore[reportAssignmentType]
                 elif size == 1:
                     name = alias = entry[0]
                     discard = False

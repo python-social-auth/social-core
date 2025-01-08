@@ -1,3 +1,5 @@
+# pyright: reportAttributeAccessIssue=false
+
 from unittest.mock import patch
 from urllib.parse import urlparse
 
@@ -21,6 +23,7 @@ class BaseOAuthTest(BaseBackendTest):
     expected_username = ""
 
     def extra_settings(self):
+        assert self.name, "Subclasses must set the name attribute"
         return {
             "SOCIAL_AUTH_" + self.name + "_KEY": "a-key",
             "SOCIAL_AUTH_" + self.name + "_SECRET": "a-secret-key",
@@ -91,6 +94,7 @@ class OAuth1Test(BaseOAuthTest):
     raw_complete_url = "/complete/{0}/?oauth_verifier=bazqux&" "oauth_token=foobar"
 
     def request_token_handler(self):
+        assert self.request_token_body, "Subclasses must set request_token_body"
         HTTPretty.register_uri(
             self._method(self.backend.REQUEST_TOKEN_METHOD),
             self.backend.REQUEST_TOKEN_URL,

@@ -1,3 +1,5 @@
+# pyright: reportAttributeAccessIssue=false
+
 import sys
 from html.parser import HTMLParser
 
@@ -92,10 +94,12 @@ class OpenIdTest(BaseBackendTest):
         start = self.backend.start()
         self.post_start()
         form, inputs = self.get_form_data(start)
+        action = form.get("action")
+        assert action, "The form action must be set in the test"
         HTTPretty.register_uri(
-            HTTPretty.POST, form.get("action"), status=200, body=self.server_response
+            HTTPretty.POST, action, status=200, body=self.server_response
         )
-        response = requests.post(form.get("action"), data=inputs)
+        response = requests.post(action, data=inputs)
         self.strategy.set_request_data(parse_qs(response.content), self.backend)
         HTTPretty.register_uri(
             HTTPretty.POST, form.get("action"), status=200, body="is_valid:true\n"
