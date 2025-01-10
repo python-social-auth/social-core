@@ -73,7 +73,7 @@ ignore = [
   "FBT",  # TODO: Boolean in function definition
   "S105",  # TODO: Possible hardcoded password assigned
   "S113",  # TODO: Probable use of `requests` call without timeout
-  "B018", # TODO: Found useless expression. 
+  "B018", # TODO: Found useless expression.
   "A001", # TODO: Variable is shadowing a Python builtin
   "A002", # TODO: Function argument is shadowing a Python builtin
   "A004", # TODO: Import `ConnectionError` is shadowing a Python builtin
@@ -90,7 +90,7 @@ ignore = [
   "S301", # TODO: `pickle` and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue
   "S324", # TODO: Probable use of insecure hash functions in `hashlib`
   "S318", # TODO: Using `xml` to parse untrusted data is known to be vulnerable to XML attacks; use `defusedxml` equivalents
-  "PLR1704", # TODO: Redefining argument with the local name 
+  "PLR1704", # TODO: Redefining argument with the local name
   "PERF203",  # WONTFIX: This rule is only enforced for Python versions prior to 3.11
   "ISC003", # TODO: Explicitly concatenated string should be implicitly concatenated
   "B028", # TODO: No explicit `stacklevel` keyword argument found
