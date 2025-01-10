@@ -119,6 +119,8 @@ Homepage = "https://github.com/python-social-auth/social-core"
 [project.optional-dependencies]
 saml = [
    "python3-saml>=1.5.0",
+   # pinned to 5.2 until a new wheel of xmlsec is released
+   "lxml~=5.2.1",
 ]
 azuread = [
     "cryptography>=2.1.1",
