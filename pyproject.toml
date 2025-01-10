@@ -10,7 +10,7 @@ dev = [
   "coverage>=3.6",
   "pytest-cov>=2.7.1",
   # pinned because of https://github.com/gabrielfalcao/HTTPretty/issues/484
-  "urllib3~=2.2.0",
+  "urllib3>=2.2,<2.4",
   "pyright>=1.1.391",
   "pytest-xdist>=3.6.1"
 ]
@@ -70,7 +70,7 @@ dev = [
   "coverage>=3.6",
   "pytest-cov>=2.7.1",
   # pinned because of https://github.com/gabrielfalcao/HTTPretty/issues/484
-  "urllib3~=2.2.0",
+  "urllib3>=2.2,<2.4",
   "pyright>=1.1.391"
 ]
 saml = [
