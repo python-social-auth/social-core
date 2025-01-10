@@ -1,40 +1,86 @@
-[project]
-name = "social-auth-core"
-version = "4.5.4"
-description = "Python social authentication made simple."
-authors = [
-    {name = "Matias Aguirre", email = "matiasaguirre@gmail.com"},
-]
-dependencies = [
-    "PyJWT>=2.7.0",
-    "cryptography>=1.4",
-    "defusedxml>=0.5.0",
-    "oauthlib>=1.0.3",
-    "python3-openid>=3.0.10",
-    "requests-oauthlib>=0.6.1",
-    "requests>=2.9.1",
-]
-requires-python = ">=3.9"
-readme = "README.md"
-license = {text = "BSD"}
-keywords = ["openid", "oauth", "saml", "social auth"]
-classifiers = [
-    "Development Status :: 4 - Beta",
-    "Environment :: Web Environment",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: BSD License",
-    "Programming Language :: Python",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
-    "Programming Language :: Python :: 3.9",
-    "Topic :: Internet",
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools"]
+
+[dependency-groups]
+dev = [
+  "flake8>=5.0.4",
+  "pytest>=4.5",
+  "httpretty~=1.1.0",
+  "coverage>=3.6",
+  "pytest-cov>=2.7.1",
+  # pinned because of https://github.com/gabrielfalcao/HTTPretty/issues/484
+  "urllib3~=2.2.0",
+  "pyright>=1.1.391",
+  "pytest-xdist>=3.6.1"
 ]
 
-[tool.setuptools]
-packages = ["social_core"]
+[project]
+authors = [
+  {name = "Matias Aguirre", email = "matiasaguirre@gmail.com"}
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Web Environment",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: BSD License",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.9",
+  "Topic :: Internet"
+]
+dependencies = [
+  "PyJWT>=2.7.0",
+  "cryptography>=1.4",
+  "defusedxml>=0.5.0",
+  "oauthlib>=1.0.3",
+  "python3-openid>=3.0.10",
+  "requests-oauthlib>=0.6.1",
+  "requests>=2.9.1"
+]
+description = "Python social authentication made simple."
+keywords = ["openid", "oauth", "saml", "social auth"]
+license = {text = "BSD"}
+name = "social-auth-core"
+readme = "README.md"
+requires-python = ">=3.9"
+version = "4.5.4"
+
+[project.optional-dependencies]
+all = [
+  "social-auth-core[saml]",
+  "social-auth-core[azuread]"
+]
+allpy3 = [
+  "social-auth-core[all]"
+]
+azuread = [
+  "cryptography>=2.1.1"
+]
+# This is present until pip implements supports for PEP 735
+# see https://github.com/pypa/pip/issues/12963
+dev = [
+  "flake8>=5.0.4",
+  "pytest>=4.5",
+  "httpretty~=1.1.0",
+  "coverage>=3.6",
+  "pytest-cov>=2.7.1",
+  # pinned because of https://github.com/gabrielfalcao/HTTPretty/issues/484
+  "urllib3~=2.2.0",
+  "pyright>=1.1.391"
+]
+saml = [
+  "python3-saml>=1.5.0",
+  # pinned to 5.2 until a new wheel of xmlsec is released
+  "lxml~=5.2.1"
+]
+
+[project.urls]
+Homepage = "https://github.com/python-social-auth/social-core"
 
 [tool.ruff.lint]
 extend-safe-fixes = [
@@ -46,7 +92,6 @@ extend-safe-fixes = [
   "FA102",
   "UP"
 ]
-select = ["ALL"]
 ignore = [
   "COM",  # CONFIG: No trailing commas
   "D203",  # CONFIG: incompatible with D211
@@ -59,48 +104,52 @@ ignore = [
   "TD003",  # CONFIG: no detailed TODO documentation is required
   "ANN",  # TODO: Missing type annotations
   "D",  # TODO: Missing documentation
-  "B904", # TODO: use raise from
-  "PLR2004", # TODO: Magic value used in comparison
-  "PLW2901", # TODO: loop variable overwritten by assignment target
-  "N", # TODO: Naming issues
+  "B904",  # TODO: use raise from
+  "PLR2004",  # TODO: Magic value used in comparison
+  "PLW2901",  # TODO: loop variable overwritten by assignment target
+  "N",  # TODO: Naming issues
   "PTH",  # TODO: Not using pathlib
-  "RUF012", # TODO: Type annotations
+  "RUF012",  # TODO: Type annotations
   "ARG001",  # TODO: Unused function argument (mostly for API compatibility)
   "ARG002",  # TODO: Unused method argument (mostly for API compatibility)
   "ARG003",  # TODO: Unused class method argument
-  "ARG005", # TODO: Unused lambda argument
-  "TID252", # TODO: Prefer absolute imports over relative imports from parent modules
+  "ARG005",  # TODO: Unused lambda argument
+  "TID252",  # TODO: Prefer absolute imports over relative imports from parent modules
   "FBT",  # TODO: Boolean in function definition
   "S105",  # TODO: Possible hardcoded password assigned
   "S113",  # TODO: Probable use of `requests` call without timeout
-  "B018", # TODO: Found useless expression.
-  "A001", # TODO: Variable is shadowing a Python builtin
-  "A002", # TODO: Function argument is shadowing a Python builtin
-  "A004", # TODO: Import `ConnectionError` is shadowing a Python builtin
-  "ERA001", # TODO: Found commented-out code
-  "EM101", # TODO: Exception must not use a string literal, assign to variable first
-  "EM102", # TODO: Exception must not use an f-string literal, assign to variable first
-  "TRY003", # TODO: Avoid specifying long messages outside the exception class
-  "S101", # TODO: Use of `assert` detected
-  "DTZ001", # TODO: `datetime.datetime()` called without a `tzinfo` argument
-  "DTZ005", # TODO: `datetime.datetime.now()` called without a `tz` argument
-  "B006", # TODO: Do not use mutable data structures for argument defaults
-  "B026", # TODO: Star-arg unpacking after a keyword argument is strongly discouraged
-  "S311", # TODO: Standard pseudo-random generators are not suitable for cryptographic purposes
-  "S301", # TODO: `pickle` and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue
-  "S324", # TODO: Probable use of insecure hash functions in `hashlib`
-  "S318", # TODO: Using `xml` to parse untrusted data is known to be vulnerable to XML attacks; use `defusedxml` equivalents
-  "PLR1704", # TODO: Redefining argument with the local name
+  "B018",  # TODO: Found useless expression.
+  "A001",  # TODO: Variable is shadowing a Python builtin
+  "A002",  # TODO: Function argument is shadowing a Python builtin
+  "A004",  # TODO: Import `ConnectionError` is shadowing a Python builtin
+  "ERA001",  # TODO: Found commented-out code
+  "EM101",  # TODO: Exception must not use a string literal, assign to variable first
+  "EM102",  # TODO: Exception must not use an f-string literal, assign to variable first
+  "TRY003",  # TODO: Avoid specifying long messages outside the exception class
+  "S101",  # TODO: Use of `assert` detected
+  "DTZ001",  # TODO: `datetime.datetime()` called without a `tzinfo` argument
+  "DTZ005",  # TODO: `datetime.datetime.now()` called without a `tz` argument
+  "B006",  # TODO: Do not use mutable data structures for argument defaults
+  "B026",  # TODO: Star-arg unpacking after a keyword argument is strongly discouraged
+  "S311",  # TODO: Standard pseudo-random generators are not suitable for cryptographic purposes
+  "S301",  # TODO: `pickle` and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue
+  "S324",  # TODO: Probable use of insecure hash functions in `hashlib`
+  "S318",  # TODO: Using `xml` to parse untrusted data is known to be vulnerable to XML attacks; use `defusedxml` equivalents
+  "PLR1704",  # TODO: Redefining argument with the local name
   "PERF203",  # WONTFIX: This rule is only enforced for Python versions prior to 3.11
-  "ISC003", # TODO: Explicitly concatenated string should be implicitly concatenated
-  "B028", # TODO: No explicit `stacklevel` keyword argument found
-  "PLW0603", # TODO: Using the global statement to update `BACKENDSCACHE` is discouraged
-  "TRY301", # TODO: Abstract `raise` to an inner function
-  "BLE001", # TODO: Do not catch blind exception: `Exception`
-  "S110", # TODO: `try`-`except`-`pass` detected, consider logging the exception
-  "TRY300", # TODO: Consider moving this statement to an `else` block
-  "G004", # TODO: Logging statement uses f-string
+  "ISC003",  # TODO: Explicitly concatenated string should be implicitly concatenated
+  "B028",  # TODO: No explicit `stacklevel` keyword argument found
+  "PLW0603",  # TODO: Using the global statement to update `BACKENDSCACHE` is discouraged
+  "TRY301",  # TODO: Abstract `raise` to an inner function
+  "BLE001",  # TODO: Do not catch blind exception: `Exception`
+  "S110",  # TODO: `try`-`except`-`pass` detected, consider logging the exception
+  "TRY300",  # TODO: Consider moving this statement to an `else` block
+  "G004"  # TODO: Logging statement uses f-string
 ]
+select = ["ALL"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 11  # TODO: should be lower
 
 [tool.ruff.lint.per-file-ignores]
 "social_core/pipeline/debug.py" = ["T201", "T203"]
@@ -110,54 +159,5 @@ ignore = [
 max-args = 7
 max-branches = 15
 
-[tool.ruff.lint.mccabe]
-max-complexity = 11  # TODO: should be lower
-
-[project.urls]
-Homepage = "https://github.com/python-social-auth/social-core"
-
-[project.optional-dependencies]
-saml = [
-   "python3-saml>=1.5.0",
-   # pinned to 5.2 until a new wheel of xmlsec is released
-   "lxml~=5.2.1",
-]
-azuread = [
-    "cryptography>=2.1.1",
-]
-all = [
-    "social-auth-core[saml]",
-    "social-auth-core[azuread]",
-]
-allpy3 = [
-    "social-auth-core[all]",
-]
-# This is present until pip implements supports for PEP 735
-# see https://github.com/pypa/pip/issues/12963
-dev = [
-    "flake8>=5.0.4",
-    "pytest>=4.5",
-    "httpretty~=1.1.0",
-    "coverage>=3.6",
-    "pytest-cov>=2.7.1",
-    # pinned because of https://github.com/gabrielfalcao/HTTPretty/issues/484
-    "urllib3~=2.2.0",
-    "pyright>=1.1.391",
-]
-
-[build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
-
-[dependency-groups]
-dev = [
-    "flake8>=5.0.4",
-    "pytest>=4.5",
-    "httpretty~=1.1.0",
-    "coverage>=3.6",
-    "pytest-cov>=2.7.1",
-    # pinned because of https://github.com/gabrielfalcao/HTTPretty/issues/484
-    "urllib3~=2.2.0",
-    "pyright>=1.1.391",
-    "pytest-xdist>=3.6.1",
-]
+[tool.setuptools]
+packages = ["social_core"]
