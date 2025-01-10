@@ -1,7 +1,7 @@
 """
-Professionaly OAuth 2.0 support.
+Professionali OAuth 2.0 support.
 
-This contribution adds support for professionaly.ru OAuth 2.0.
+This contribution adds support for professionali.ru OAuth 2.0.
 Username is retrieved from the identity returned by server.
 """
 

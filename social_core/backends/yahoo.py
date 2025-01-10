@@ -47,7 +47,7 @@ class YahooOAuth(BaseOAuth1):
 
     def _get_guid(self, access_token):
         """
-        Beause you have to provide GUID for every API request it's also
+        Because you have to provide GUID for every API request it's also
         returned during one of OAuth calls
         """
         return self.get_json(
