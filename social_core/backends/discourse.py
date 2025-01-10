@@ -53,7 +53,7 @@ class DiscourseAuth(BaseAuth):
         self.strategy.storage.nonce.use(self.setting("SERVER_URL"), time.time(), nonce)
 
     def get_nonce(self, nonce):
-        return self.strategy.storage.nonce.get(self.setting("SERVER_URL"), nonce)
+        return self.strategy.storage.nonce.get_nonce(self.setting("SERVER_URL"), nonce)
 
     def delete_nonce(self, nonce):
         self.strategy.storage.nonce.delete(nonce)

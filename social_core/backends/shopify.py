@@ -3,7 +3,7 @@ Shopify OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/shopify.html
 """
 
-import imp
+import imp  # type: ignore[reportMissingImports]
 
 from ..exceptions import AuthCanceled, AuthFailed
 from ..utils import handle_http_errors

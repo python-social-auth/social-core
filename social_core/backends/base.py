@@ -217,7 +217,7 @@ class BaseAuth:
         )
         return extra_arguments
 
-    def uses_redirect(self):
+    def uses_redirect(self) -> bool:
         """Return True if this provider uses redirect url method,
         otherwise return false."""
         return True

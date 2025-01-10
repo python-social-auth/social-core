@@ -141,7 +141,7 @@ class OpenIdConnectAuth(BaseOAuth2):
 
     def get_nonce(self, nonce):
         try:
-            return self.strategy.storage.association.get(
+            return self.strategy.storage.association.get_association(
                 server_url=self.authorization_url(), handle=nonce
             )[0]
         except IndexError:
@@ -184,7 +184,7 @@ class OpenIdConnectAuth(BaseOAuth2):
                 # In case the key id is not found in the cached keys, just
                 # reload the JWKS keys. Ideally this should be done by
                 # invalidating the cache.
-                self.get_jwks_keys.invalidate()
+                self.get_jwks_keys.invalidate()  # type: ignore[reportFunctionMemberAccess]
                 keys = self.get_jwks_keys()
 
         for key in keys:

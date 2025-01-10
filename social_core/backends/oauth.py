@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import base64
 import hashlib
+from typing import TYPE_CHECKING, Any
 from urllib.parse import urlencode
 
 from oauthlib.oauth1 import SIGNATURE_TYPE_AUTH_HEADER
@@ -22,6 +25,9 @@ from ..utils import (
     url_add_parameters,
 )
 from .base import BaseAuth
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping, MutableMapping
 
 
 class OAuthAuth(BaseAuth):
@@ -124,23 +130,23 @@ class OAuthAuth(BaseAuth):
             param[self.SCOPE_PARAMETER_NAME] = self.SCOPE_SEPARATOR.join(scope)
         return param
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service. Implement in subclass"""
         return {}
 
-    def authorization_url(self):
+    def authorization_url(self) -> str:
         return self.AUTHORIZATION_URL
 
-    def access_token_url(self):
+    def access_token_url(self) -> str:
         return self.ACCESS_TOKEN_URL
 
-    def revoke_token_url(self, token, uid):
+    def revoke_token_url(self, token, uid) -> str | None:
         return self.REVOKE_TOKEN_URL
 
-    def revoke_token_params(self, token, uid):
+    def revoke_token_params(self, token, uid) -> dict[str, Any]:
         return {}
 
-    def revoke_token_headers(self, token, uid):
+    def revoke_token_headers(self, token, uid) -> dict[str, Any]:
         return {}
 
     def process_revoke_token_response(self, response):
@@ -178,7 +184,7 @@ class BaseOAuth1(OAuthAuth):
     REDIRECT_URI_PARAMETER_NAME = "redirect_uri"
     UNATHORIZED_TOKEN_SUFIX = "unauthorized_token_name"
 
-    def auth_url(self):
+    def auth_url(self) -> str | bytes | None:
         """Return redirect url"""
         token = self.set_unauthorized_token()
         return self.oauth_authorization_request(token)
@@ -334,10 +340,10 @@ class BaseOAuth2(OAuthAuth):
     STATE_PARAMETER = True
     USE_BASIC_AUTH = False
 
-    def use_basic_auth(self):
+    def use_basic_auth(self) -> bool:
         return self.USE_BASIC_AUTH
 
-    def auth_params(self, state=None):
+    def auth_params(self, state=None) -> MutableMapping[str, Any]:
         client_id, client_secret = self.get_key_and_secret()
         params = {"client_id": client_id, "redirect_uri": self.get_redirect_uri(state)}
         if self.STATE_PARAMETER and state:
@@ -346,7 +352,7 @@ class BaseOAuth2(OAuthAuth):
             params["response_type"] = self.RESPONSE_TYPE
         return params
 
-    def auth_url(self):
+    def auth_url(self) -> str | bytes | None:
         """Return redirect url"""
         state = self.get_or_create_state()
         params = self.auth_params(state)
@@ -380,7 +386,7 @@ class BaseOAuth2(OAuthAuth):
             return self.get_key_and_secret()
         return None
 
-    def auth_headers(self):
+    def auth_headers(self) -> Mapping[str, str | bytes]:
         return {
             "Content-Type": "application/x-www-form-urlencoded",
             "Accept": "application/json",

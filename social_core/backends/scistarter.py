@@ -45,9 +45,11 @@ class SciStarterOAuth2(BaseOAuth2):
 
     def access_token(self, token):
         """Return request for access token value"""
+        # TODO: confirm if this should be OAuth2 or OAuth1; the `oauth_auth` method
+        # is for OAuth1, but this class inherits from OAuth2
         return self.get_querystring(
             self.access_token_url(),
-            auth=self.oauth_auth(token),
+            auth=self.oauth_auth(token),  # type: ignore[reportAttributeAccessIssue]
             method=self.ACCESS_TOKEN_METHOD,
         )
 

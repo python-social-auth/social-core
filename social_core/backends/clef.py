@@ -24,7 +24,7 @@ class ClefOAuth2(BaseOAuth2):
         params["redirect_url"] = params.pop("redirect_uri")
         return params
 
-    def get_user_id(self, response, details):
+    def get_user_id(self, response, details):  # type: ignore[reportIncompatibleMethodOverride]
         return details.get("info").get("id")
 
     def get_user_details(self, response):

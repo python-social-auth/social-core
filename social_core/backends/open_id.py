@@ -63,7 +63,9 @@ class OpenIdAuth(BaseAuth):
 
         # Use Simple Registration attributes if provided
         if sreg_names:
-            resp = sreg.SRegResponse.fromSuccessResponse(response)
+            # TODO: this is not, as far as I can tell, actually a classmethod,
+            # so this is not invokable this way.
+            resp = sreg.SRegResponse.fromSuccessResponse(response)  # type: ignore[reportCallIssue]
             if resp:
                 values.update(
                     (alias, resp.get(name) or "") for name, alias in sreg_names
@@ -71,7 +73,9 @@ class OpenIdAuth(BaseAuth):
 
         # Use Attribute Exchange attributes if provided
         if ax_names:
-            resp = ax.FetchResponse.fromSuccessResponse(response)
+            # TODO: this is not, as far as I can tell, actually a classmethod,
+            # so this is not invokable this way.
+            resp = ax.FetchResponse.fromSuccessResponse(response)  # type: ignore[reportCallIssue]
             if resp:
                 for src, alias in ax_names:
                     name = alias.replace("old_", "")

@@ -101,6 +101,8 @@ def do_complete(backend, login, user=None, redirect_name="next", *args, **kwargs
     else:
         url = setting_url(backend, "LOGIN_ERROR_URL", "LOGIN_URL")
 
+    assert url, "By this point URL has to have been set"
+
     if redirect_value and redirect_value != url:
         redirect_value = quote(redirect_value)
         url += ("&" if "?" in url else "?") + f"{redirect_name}={redirect_value}"

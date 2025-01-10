@@ -168,7 +168,7 @@ class TestNonce(NonceMixin, BaseModel):
         return nonce
 
     @classmethod
-    def get(cls, server_url):  # pyright: ignore[reportIncompatibleMethodOverride]
+    def get_nonce(cls, server_url, salt):
         return TestNonce.cache[server_url]
 
     @classmethod
@@ -203,11 +203,11 @@ class TestAssociation(AssociationMixin, BaseModel):
         assoc.save()
 
     @classmethod
-    def get(  # pyright: ignore[reportIncompatibleMethodOverride]
+    def get_association(
         cls: type["TestAssociation"],
         server_url=None,
         handle=None,
-    ) -> "TestAssociation":
+    ) -> list[AssociationMixin]:
         result = []
         for assoc in TestAssociation.cache.values():
             if server_url and assoc.server_url != server_url:

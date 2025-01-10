@@ -19,7 +19,7 @@ class DiscogsOAuth1(BaseOAuth1):
     REQUEST_TOKEN_URL = "https://api.discogs.com/oauth/request_token"
     ACCESS_TOKEN_URL = "https://api.discogs.com/oauth/access_token"
 
-    def get_user_details(self, user_data):
+    def get_user_details(self, user_data):  # type: ignore[reportIncompatibleMethodOverride]
         return {
             "username": user_data["username"],
             "id": user_data["id"],

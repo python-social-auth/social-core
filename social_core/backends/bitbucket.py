@@ -12,13 +12,13 @@ class BitbucketOAuthBase:
 
     def get_user_id(self, details, response):
         id_key = self.ID_KEY
-        if self.setting("USERNAME_AS_ID", False):
+        if self.setting("USERNAME_AS_ID", False):  # type: ignore[reportAttributeAccessIssue]
             id_key = "username"
         return response.get(id_key)
 
     def get_user_details(self, response):
         """Return user details from Bitbucket account"""
-        fullname, first_name, last_name = self.get_user_names(response["display_name"])
+        fullname, first_name, last_name = self.get_user_names(response["display_name"])  # type: ignore[reportAttributeAccessIssue]
 
         return {
             "username": response.get("username", ""),
@@ -38,7 +38,7 @@ class BitbucketOAuthBase:
             if address["is_primary"]:
                 break
 
-        if self.setting("VERIFIED_EMAILS_ONLY", False) and not address["is_confirmed"]:
+        if self.setting("VERIFIED_EMAILS_ONLY", False) and not address["is_confirmed"]:  # type: ignore[reportAttributeAccessIssue]
             raise AuthForbidden(self, "Bitbucket account has no verified email")
 
         user = self._get_user(access_token)

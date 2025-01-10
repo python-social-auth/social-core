@@ -3,7 +3,7 @@ Ping Auth OpenID Connect backend
 """
 
 from jose import jwk, jwt
-from jose.jwt import ExpiredSignatureError, JWTClaimsError, JWTError
+from jose.exceptions import ExpiredSignatureError, JWTClaimsError, JWTError
 from jose.utils import base64url_decode
 
 from social_core.backends.open_id_connect import OpenIdConnectAuth

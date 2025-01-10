@@ -10,7 +10,7 @@ from urllib.parse import unquote, urlencode, urlparse, urlunparse
 
 import requests
 from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.poolmanager import PoolManager
+from urllib3.poolmanager import PoolManager
 
 import social_core
 
@@ -34,7 +34,7 @@ class SSLHttpAdapter(HTTPAdapter):
         self.ssl_protocol = ssl_protocol
         super().__init__()
 
-    def init_poolmanager(self, connections, maxsize, block=False):
+    def init_poolmanager(self, connections, maxsize, block=False, **pool_kwargs):
         self.poolmanager = PoolManager(
             num_pools=connections,
             maxsize=maxsize,
@@ -302,7 +302,10 @@ class cache:
             cached_value = None
             if this.__class__ in self.cache:
                 last_updated, cached_value = self.cache[this.__class__]
-            if not cached_value or now - last_updated > self.ttl:
+
+            # ignoring this type issue is safe; if cached_value is returned, last_updated
+            # is also set, but the type checker doesn't know it.
+            if not cached_value or now - last_updated > self.ttl:  # type: ignore[reportOperatorIssue]
                 try:
                     cached_value = fn(this)
                     self.cache[this.__class__] = (now, cached_value)
@@ -312,7 +315,7 @@ class cache:
                         raise
             return cached_value
 
-        wrapped.invalidate = self._invalidate
+        wrapped.invalidate = self._invalidate  # type: ignore[reportFunctionMemberAccess]
         return wrapped
 
     def _invalidate(self):

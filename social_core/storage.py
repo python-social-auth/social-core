@@ -4,6 +4,7 @@ import base64
 import re
 import uuid
 import warnings
+from abc import abstractmethod
 from datetime import datetime, timedelta, timezone
 
 from openid.association import Association as OpenIdAssociation
@@ -22,6 +23,9 @@ class UserMixin:
     provider = ""
     uid = None
     extra_data = None
+
+    @abstractmethod
+    def save(self): ...
 
     def get_backend(self, strategy):
         return strategy.get_backend_class(self.provider)
@@ -200,7 +204,7 @@ class NonceMixin:
         raise NotImplementedError("Implement in subclass")
 
     @classmethod
-    def get(cls, server_url, salt):
+    def get_nonce(cls, server_url, salt):
         """Retrieve a Nonce instance"""
         raise NotImplementedError("Implement in subclass")
 
@@ -226,7 +230,10 @@ class AssociationMixin:
         if handle is not None:
             kwargs["handle"] = handle
         return sorted(
-            ((assoc.id, cls.openid_association(assoc)) for assoc in cls.get(**kwargs)),
+            (
+                (assoc.id, cls.openid_association(assoc))
+                for assoc in cls.get_association(**kwargs)
+            ),
             key=lambda x: x[1].issued,
             reverse=True,
         )
@@ -250,7 +257,7 @@ class AssociationMixin:
         raise NotImplementedError("Implement in subclass")
 
     @classmethod
-    def get(cls, *args, **kwargs):
+    def get_association(cls, *args, **kwargs):
         """Get an Association instance"""
         raise NotImplementedError("Implement in subclass")
 
@@ -264,6 +271,9 @@ class CodeMixin:
     email = ""
     code = ""
     verified = False
+
+    @abstractmethod
+    def save(self): ...
 
     def verify(self):
         self.verified = True
@@ -289,7 +299,7 @@ class CodeMixin:
 
 class PartialMixin:
     token = ""
-    data = ""
+    data = {}
     next_step = ""
     backend = ""
 

@@ -30,7 +30,7 @@ class GithubOAuth2(BaseOAuth2):
         ("refresh_token", "refresh_token"),
     ]
 
-    def api_url(self):
+    def api_url(self) -> str:
         return self.API_URL
 
     def get_user_details(self, response):
