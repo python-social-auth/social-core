@@ -33,6 +33,10 @@ repos:
     args: [--autofix, --indent, '2']
   - id: pretty-format-toml
     args: [--autofix]
+- repo: https://github.com/abravalheri/validate-pyproject
+  rev: v0.23
+  hooks:
+  - id: validate-pyproject
 - repo: https://github.com/executablebooks/mdformat
   rev: 0.7.21
   hooks:
