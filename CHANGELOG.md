@@ -8,16 +8,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 
 ### Changed
-- Handle case where user has not registered a `family-name`  with ORCID
+
+- Handle case where user has not registered a `family-name` with ORCID
 - Fix access token expiration and refresh token handling in GitHub backend
 - Allow overriding emails to always be fully lowercase with `SOCIAL_AUTH_FORCE_EMAIL_LOWERCASE`.
 
 ## [4.5.4](https://github.com/python-social-auth/social-core/releases/tag/4.5.4) - 2024-04-25
 
 ### Added
+
 - LinkedIn supports refresh token
 
 ### Changed
+
 - SteamOpenId validation of identify URL
 - Box state redirestion
 - The `uid` is automatically converted to string in the pipeline
@@ -26,23 +29,28 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [4.5.3](https://github.com/python-social-auth/social-core/releases/tag/4.5.3) - 2024-02-14
 
 ### Added
+
 - OpenStreetMap OAuth2
 
 ### Changed
+
 - Etsy backend fixes
 
 ## [4.5.2](https://github.com/python-social-auth/social-core/releases/tag/4.5.2) - 2024-01-26
 
 ### Added
+
 - Etsy backend
 
 ### Changed
+
 - Updated Facebook API version to 18.0
 - Make AppleID work with multiple identifiers
 
 ## [4.5.1](https://github.com/python-social-auth/social-core/releases/tag/4.5.1) - 2023-11-29
 
 ### Changed
+
 - OpenID Connect skips `at_hash` validation when missing
 - `redirect_name` is now passed to backend on `do_complete`
 - `next` is preserved through SAML RelayState
@@ -53,6 +61,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [4.5.0](https://github.com/python-social-auth/social-core/releases/tag/4.5.0) - 2023-10-31
 
 ### Changed
+
 - Add backend for LinkedIn OpenID Connect
 - Add backend for EGI Check-in
 - Support Python 3.12 (and 3.11)
@@ -67,6 +76,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [4.4.2](https://github.com/python-social-auth/social-core/releases/tag/4.4.2) - 2023-04-22
 
 ### Changed
+
 - Fixed Azure AD Tenant authentication with custom signing keys
 - Added CAS OIDC backend
 - Made Keycloak `ID_KEY` configurable
@@ -74,11 +84,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [4.4.1](https://github.com/python-social-auth/social-core/releases/tag/4.4.1) - 2023-03-30
 
 ### Changed
+
 - Moved Facebook Limited Login to a separate module to avoid extra dependency
 - Update Azure AD B2C base URL to match updated endpoints
 
 ## [4.4.0](https://github.com/python-social-auth/social-core/releases/tag/4.4.0) - 2023-03-15
-
 
 ### Added
 
@@ -87,6 +97,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Add support for Python 3.11
 
 ### Changed
+
 - Removed OpenStackDevOpenId backend
 - Updated `user_data` method in `StripeOAuth2` to return `email` in `get_user_details`
 - Removes fixed version of `lxml`
@@ -95,24 +106,25 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Dropped support for TLSv1
 - Coding style improvements
 
-
 ## [4.3.0](https://github.com/python-social-auth/social-core/releases/tag/4.3.0) - 2022-06-13
 
 ### Added
+
 - Add backend for Hashicorp Vault OIDC backend
 - Add generic OpenID Connect backend
 - Add Grafana OAuth2 backend
 - Add MusicBrainz OAuth2 backend
 
 ### Changed
+
 - Fixed redirect state for Keycloak backend
 - Add fallback to RSA256 in OpenID Connect when alg is not set
 - Fixed Azure backend so it can be used with all Azure authority hosts
 
-
 ## [4.2.0](https://github.com/python-social-auth/social-core/releases/tag/4.2.0) - 2022-01-17
 
 ### Added
+
 - Add fields that populate on create but not update `SOCIAL_AUTH_IMMUTABLE_USER_FIELDS`
 - Add Gitea oauth2 backend
 - Add Twitch OpenId backend
@@ -120,6 +132,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Add support for Python 3.10
 
 ### Changed
+
 - Fixed Slack user identity API call with Bearer headers
 - Fixed microsoft-graph login error
 - Fixed Twitch OAuth2 backend
@@ -131,47 +144,53 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fixed vkontakte API version
 - Restricted lxml to 4.6.x to avoid problems in SAML
 
-
 ## [4.1.0](https://github.com/python-social-auth/social-core/releases/tag/4.1.0) - 2021-03-01
 
 ### Added
+
 - Discourse backend
 - Osso backend
 - Add `get` and `delete` class methods for `NonceMixin`
 - Use strategies as interface to fetch backends
 
 ### Changed
+
 - Get Apple user first and last name from `self.data`
 - Instagram Legacy API has been replaced with Instagram Basic Display API since the first one was deprecated, [see](https://www.instagram.com/developer/).
 - Store `expires_in` for Zoom backend
 - Dropped support no longer working Dropbox v1 API
 - Several improvements to the ORCIDOAuth2 backend
-- Make WHITELIST_\* settings properly case insensitive
+- Make WHITELIST\_\* settings properly case insensitive
 - Fixed token validation in the AzureADV2TenantOAuth2 backend
 
 ## [4.0.3](https://github.com/python-social-auth/social-core/releases/tag/4.0.3) - 2021-01-12
 
 ### Changed
+
 - Updated PyJWT version to 2.0.0
 - Remove six dependency
 
 ## [4.0.2](https://github.com/python-social-auth/social-core/releases/tag/4.0.2) - 2021-01-10
 
 ### Changed
+
 - Fixes to Github-action release mechanism
 
 ## [4.0.1](https://github.com/python-social-auth/social-core/releases/tag/4.0.1) - 2021-01-10
 
 ### Changed
+
 - Fixes to Github-action release mechanism
 
 ## [4.0.0](https://github.com/python-social-auth/social-core/releases/tag/4.0.0) - 2021-01-10
 
 ### Added
+
 - PayPal backend
 - Fence OIDC-based backend
 
 ### Changed
+
 - Dropped Python 2 support from testing stack
 - Remove discontinued Google OpenId backend
 - Remove discontinued Yahoo OpenId backend
@@ -187,9 +206,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [3.4.0](https://github.com/python-social-auth/social-core/releases/tag/3.4.0) - 2020-06-21
 
 ### Added
+
 - Zoom backend
 
 ### Changed
+
 - Directly use `access_token` in Azure Tenant backend
 - Support Apple JWT audience
 - Update partial session cleanup to remove old token from session too
@@ -202,22 +223,26 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [3.3.3](https://github.com/python-social-auth/social-core/releases/tag/3.3.3) - 2020-04-16
 
 ### Changed
+
 - Updated list of default user protected fields to include admin flags and password
 
 ## [3.3.2](https://github.com/python-social-auth/social-core/releases/tag/3.3.2) - 2020-03-25
 
 ### Changed
+
 - Updated package upload method to use `twine`
 
 ## [3.3.1](https://github.com/python-social-auth/social-core/releases/tag/3.3.1) - 2020-03-25
 
 ### Changed
+
 - Reverted [PR #388](https://github.com/python-social-auth/social-core/pull/388/) due to
   dependency license incompatibility
 
 ## [3.3.0](https://github.com/python-social-auth/social-core/releases/tag/3.3.0) - 2020-03-17
 
 ### Added
+
 - Okta backend
 - Support for SAML Single Logout
 - SimpleLogin backend
@@ -230,6 +255,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added GithubAppAuth backend
 
 ### Changed
+
 - Add refresh token to Strava backend, change username and remove email
 - Update test runner to PyTest
 - Add python 3.7 CI target
@@ -250,10 +276,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [3.2.0](https://github.com/python-social-auth/social-core/releases/tag/3.2.0) - 2019-05-30
 
 ### Added
+
 - Cognito backend
 - OpenStack (openstackid and openstackid-dev) backends
 
 ### Changed
+
 - Updated Linkedin backend to v2 API
 - Facebook: Update to use the latest Graph API v3.2
 - Send User-Agent header on GitHub backend
@@ -273,10 +301,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [3.1.0](https://github.com/python-social-auth/social-core/releases/tag/3.1.0) - 2019-02-20
 
 ### Added
+
 - Universe Ticketing backend
 - Auth0.com authentication backend
 
 ### Changed
+
 - Update Bungie backend dropping any Django reference
 - Enable and fix JWT related tests
 - Remove PyPy support from Tox
@@ -289,6 +319,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [3.0.0](https://github.com/python-social-auth/social-core/releases/tag/3.0.0) - 2019-01-14
 
 ### Changed
+
 - Updated Azure B2C to extract first email from list if it's a list
 - Replace deprecated Google+ API usage with https://www.googleapis.com/oauth2/v3/userinfo
 - Updated Azure Tenant to fix Nonetype error
@@ -300,6 +331,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [2.0.0](https://github.com/python-social-auth/social-core/releases/tag/2.0.0) - 2018-10-28
 
 ### Added
+
 - Telegram authentication backend
 - Keycloak backend is added with preliminary OAuth2 support
 - Globus OpenId Connect backend
@@ -310,6 +342,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Atlassian OAuth2 backend
 
 ### Changed
+
 - GitHub backend now uses `state` parameter instead of `redirect_state`
 - Correct setting name on AzureAD Tenant backend
 - Introduce access token expired threshold of 5 seconds by default
@@ -332,6 +365,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [1.7.0](https://github.com/python-social-auth/social-core/releases/tag/1.7.0) - 2018-02-20
 
 ### Changed
+
 - Update EvenOnline token expiration key
 - Update OpenStreetMap URL to `https`
 - Fix LinkedIn backend to send the oauth_token as `Authorization` header
@@ -343,12 +377,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Use `extras_requrie` to specify python specific version dependencies
 
 ### Added
+
 - Added support for AzureAD B2C OAuth2
 - Added LinkedIn Mobile OAuth2 backend
 
 ## [1.6.0](https://github.com/python-social-auth/social-core/releases/tag/1.6.0) - 2017-12-22
 
 ### Changed
+
 - Fix coinbase backend to use api v2
 - Default `REDIRECT_STATE` to `False` in `FacebookOAuth2` backend.
 - Add revoke token url for Coinbase OAuth2 backend
@@ -356,11 +392,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Make partial step decorator handle arguments
 
 ### Added
+
 - Added support for ChatWork OAuth2 backend
 
 ## [1.5.0](https://github.com/python-social-auth/social-core/releases/tag/1.5.0) - 2017-10-28
 
 ### Changed
+
 - Fix using the entire SAML2 nameid string
 - Prevent timing attacks against state token
 - Updated GitLab API version to v4
@@ -369,6 +407,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Send authorization header on Reddit auth
 
 ### Added
+
 - Added support for tenant for Azure AD backend
 - Added JWT validation for Azure AD backend
 - Added support for Bungie.net OAuth2 backend
@@ -379,6 +418,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [1.4.0](https://github.com/python-social-auth/social-core/releases/tag/1.4.0) - 2017-06-09
 
 ### Changed
+
 - Fix path in import BaseOAuth2 for Monzo
 - Fix auth header formatting problem for Fitbit OAuth2
 - Raise AuthForbidden when provider returns 401.
@@ -388,6 +428,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Disable `redirect_state` usage on Disqus backend
 
 ### Added
+
 - Added Udata OAuth2 backend
 - Added ORCID backend
 - Added feature to get all extra data from backend through `GET_ALL_EXTRA_DATA` boolean flag.
@@ -396,6 +437,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [1.3.0](https://github.com/python-social-auth/social-core/releases/tag/1.3.0) - 2017-05-06
 
 ### Added
+
 - Use extra_data method when refreshing an `access_token`, ensure that
   auth-time is updated then
 - Added 500px OAuth1 backend
@@ -403,6 +445,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added `get_access_token` method that will refresh if expired
 
 ### Changed
+
 - Updated email validation to pass the partial pipeline token if given.
 - Prefer passed parameters in `authenticate` method
 - Properly discard already used verification codes
@@ -412,9 +455,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [1.2.0](https://github.com/python-social-auth/social-core/releases/tag/1.2.0) - 2017-02-10
 
 ### Added
+
 - Limit Slack by team through `SOCIAL_AUTH_SLACK_TEAM` setting
 
 ### Changed
+
 - Enable defining extra arguments for AzureAD backend.
 - Updated key `expires` to `expires_in` for Facebook OAuth2 backend
 - Updated Slack `id` fetch to default to user `id` if not present in response
@@ -422,11 +467,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [1.1.0](https://github.com/python-social-auth/social-core/releases/tag/1.1.0) - 2017-01-31
 
 ### Added
+
 - Mediawiki backend
 - Strategy method to let implementation cleanup arguments passed to
   the authenticate method
 
 ### Changed
+
 - Removed OneLogin SAML IDP dummy settings while generating metadata xml
 - Fixed Asana user details response handling
 - Enforce defusedxml version with support for Python 3.6
@@ -435,11 +482,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [1.0.1](https://github.com/python-social-auth/social-core/releases/tag/1.0.1) - 2017-01-23
 
 ### Changed
+
 - Fixed broken dependencies while building the package
 
 ## [1.0.0](https://github.com/python-social-auth/social-core/releases/tag/1.0.0) - 2017-01-22
 
 ### Added
+
 - Store partial pipeline data in an storage class
 - Store `auth_time` with the last time authentication toke place, use
   `auth_time` to determine if access token expired
@@ -447,27 +496,32 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added Asana OAuth2 backend
 
 ### Changed
+
 - Removed the old `save_status_to_session` to partialize a pipeline run
 
 ## [0.2.1](https://github.com/python-social-auth/social-core/releases/tag/0.2.1) - 2016-12-31
 
 ### Added
+
 - Defined `extras` for SAML, and "all" that will install SAML and OpenIdConnect
 - Added `auth_time` in extra data by default to store the time that the authentication toke place
 
 ### Changed
+
 - Remove set/get current strategy methods
 - Fixed the `extras` requirements defined in the setup.py script
 
 ## [0.2.0](https://github.com/python-social-auth/social-core/releases/tag/0.2.0) - 2016-12-31
 
 ### Changed
+
 - Reorganize requirements, make OpenIdConnect optional
 - Split OpenIdConnect from OpenId module, install with `social-core[openidconnect]`
 
 ## [0.1.0](https://github.com/python-social-auth/social-core/releases/tag/0.1.0) - 2016-12-28
 
 ### Added
+
 - Added support for GitLab OAuth2 backend.
   Refs [#2](https://github.com/python-social-auth/social-core/issues/2)
 - Added support for Facebook OAuth2 return_scopes parameter.
@@ -481,7 +535,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added better username characters clenup rules, support for a configurable
   cleanup function through SOCIAL_AUTH_CLEAN_USERNAME_FUNCTION (import path)
   setting.
-- Added configurable option SOCIAL_AUTH_FACEBOOK_*_API_VERSION to
+- Added configurable option SOCIAL_AUTH_FACEBOOK\_\*\_API_VERSION to
   override the default Facebook API version used.
 - Add Lyft OAuth2 implementation to Python Social Auth (port from [#1036](https://github.com/omab/python-social-auth/pull/1036/files)
   by iampark)
@@ -496,6 +550,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added Dockerfile to simplify the running of tests (`make docker-tox`)
 
 ### Changed
+
 - Changed Facebook refresh token processing. Refs [#866](https://github.com/omab/python-social-auth/issues/866)
 - Update Google+ Auth tokeninfo API version, drop support for deprecated API scopes.
   Refs [#791](https://github.com/omab/python-social-auth/issues/791).
@@ -532,5 +587,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [0.0.1](https://github.com/python-social-auth/social-core/releases/tag/0.0.1) - 2016-11-27
 
 ### Changed
+
 - Split from the monolitic [python-social-auth](https://github.com/omab/python-social-auth)
   codebase
