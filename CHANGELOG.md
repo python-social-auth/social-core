@@ -490,7 +490,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - Store partial pipeline data in an storage class
-- Store `auth_time` with the last time authentication toke place, use
+- Store `auth_time` with the last time authentication took place, use
   `auth_time` to determine if access token expired
 - Ensure that `testkey.pem` is distributed
 - Added Asana OAuth2 backend
@@ -504,7 +504,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - Defined `extras` for SAML, and "all" that will install SAML and OpenIdConnect
-- Added `auth_time` in extra data by default to store the time that the authentication toke place
+- Added `auth_time` in extra data by default to store the time that the authentication took place
 
 ### Changed
 
@@ -532,7 +532,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   Refs [#752](https://github.com/omab/python-social-auth/issues/752)
 - Enabled Python 3 SAML support through python3-saml package.
   Refs [#846](https://github.com/omab/python-social-auth/issues/846)
-- Added better username characters clenup rules, support for a configurable
+- Added better username characters cleanup rules, support for a configurable
   cleanup function through SOCIAL_AUTH_CLEAN_USERNAME_FUNCTION (import path)
   setting.
 - Added configurable option SOCIAL_AUTH_FACEBOOK\_\*\_API_VERSION to

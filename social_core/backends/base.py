@@ -124,7 +124,7 @@ class BaseAuth:
     ) -> dict[str, Any]:
         """Return default extra data to store in extra_data field"""
         data = {
-            # store the last time authentication toke place
+            # store the last time authentication took place
             "auth_time": int(time.time())
         }
         extra_data_entries = []

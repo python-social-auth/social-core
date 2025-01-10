@@ -82,6 +82,10 @@ saml = [
 [project.urls]
 Homepage = "https://github.com/python-social-auth/social-core"
 
+[tool.codespell]
+count = true
+ignore-words-list = "assertIn"
+
 [tool.ruff.lint]
 extend-safe-fixes = [
   "D",
