@@ -1,7 +1,8 @@
 # pyright: reportAttributeAccessIssue=false
+from __future__ import annotations
 
 import base64
-from typing import Optional, TypeVar
+from typing import TypeVar
 
 from ..storage import (
     AssociationMixin,
@@ -22,7 +23,7 @@ class BaseModel:
         return cls.NEXT_ID - 1
 
     @classmethod
-    def get(cls: type[ModelT], key) -> Optional[ModelT]:  # noqa: FA100
+    def get(cls: type[ModelT], key) -> ModelT | None:
         return cls.cache.get(key)
 
     @classmethod
@@ -204,7 +205,7 @@ class TestAssociation(AssociationMixin, BaseModel):
 
     @classmethod
     def get_association(
-        cls: type["TestAssociation"],
+        cls: type[TestAssociation],
         server_url=None,
         handle=None,
     ) -> list[AssociationMixin]:
@@ -266,5 +267,5 @@ class TestStorage(BaseStorage):
     partial = TestPartial
 
     @classmethod
-    def is_integrity_error(cls, exception) -> Optional[bool]:  # noqa: FA100
+    def is_integrity_error(cls, exception) -> bool | None:
         pass
