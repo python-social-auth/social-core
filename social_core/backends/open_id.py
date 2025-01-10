@@ -63,7 +63,8 @@ class OpenIdAuth(BaseAuth):
 
         # Use Simple Registration attributes if provided
         if sreg_names:
-            resp = sreg.SRegResponse.fromSuccessResponse(response)
+            # pyright does not detect the classmethod correctly
+            resp = sreg.SRegResponse.fromSuccessResponse(response)  # type: ignore[reportCallIssue]
             if resp:
                 values.update(
                     (alias, resp.get(name) or "") for name, alias in sreg_names
@@ -71,11 +72,13 @@ class OpenIdAuth(BaseAuth):
 
         # Use Attribute Exchange attributes if provided
         if ax_names:
-            resp = ax.FetchResponse.fromSuccessResponse(response)
+            # pyright does not detect the classmethod correctly
+            resp = ax.FetchResponse.fromSuccessResponse(response)  # type: ignore[reportCallIssue]
             if resp:
                 for src, alias in ax_names:
                     name = alias.replace("old_", "")
                     values[name] = resp.getSingle(src, "") or values.get(name)
+
         return values
 
     def get_user_details(self, response):

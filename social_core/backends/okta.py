@@ -9,7 +9,7 @@ from ..utils import append_slash
 from .oauth import BaseOAuth2
 
 
-class OktaMixin:
+class OktaMixin(BaseOAuth2):
     def api_url(self):
         return append_slash(self.setting("API_URL"))
 

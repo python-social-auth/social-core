@@ -21,8 +21,11 @@ Settings:
                                                    login
 """
 
+from __future__ import annotations
+
 import json
 import time
+from typing import TYPE_CHECKING
 
 import jwt
 from jwt.algorithms import RSAAlgorithm
@@ -30,6 +33,9 @@ from jwt.exceptions import PyJWTError
 
 from social_core.backends.oauth import BaseOAuth2
 from social_core.exceptions import AuthFailed
+
+if TYPE_CHECKING:
+    from jwt.types import JWKDict
 
 
 class AppleIdAuth(BaseOAuth2):
@@ -96,7 +102,7 @@ class AppleIdAuth(BaseOAuth2):
         client_secret = self.generate_client_secret()
         return client_id, client_secret
 
-    def get_apple_jwk(self, kid=None):
+    def get_apple_jwk(self, kid=None) -> str | JWKDict:
         """
         Return requested Apple public key or all available.
         """
@@ -107,7 +113,9 @@ class AppleIdAuth(BaseOAuth2):
 
         if kid:
             return json.dumps(next(key for key in keys if key["kid"] == kid))
-        return (json.dumps(key) for key in keys)
+        # TODO: this should actually return a JWKDict; the caller expects it.
+        # I suspect this code path is never hit in practice
+        return (json.dumps(key) for key in keys)  # type:ignore[reportReturnType]
 
     def decode_id_token(self, id_token):
         """
@@ -120,9 +128,10 @@ class AppleIdAuth(BaseOAuth2):
         try:
             kid = jwt.get_unverified_header(id_token).get("kid")
             public_key = RSAAlgorithm.from_jwk(self.get_apple_jwk(kid))
+
             decoded = jwt.decode(
                 id_token,
-                key=public_key,
+                key=public_key,  # type: ignore[reportArgumentType]
                 audience=self.get_audience(),
                 algorithms=["RS256"],
             )

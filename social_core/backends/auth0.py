@@ -61,6 +61,7 @@ class Auth0OAuth2(BaseOAuth2):
             else:
                 break
         else:
+            assert signature_error is not None
             # raise last esception found during iteration
             raise signature_error
 

@@ -275,7 +275,10 @@ class cache:
             cached_value = None
             if this.__class__ in self.cache:
                 last_updated, cached_value = self.cache[this.__class__]
-            if not cached_value or now - last_updated > self.ttl:
+
+            # ignoring this type issue is safe; if cached_value is returned, last_updated
+            # is also set, but the type checker doesn't know it.
+            if not cached_value or now - last_updated > self.ttl:  # type: ignore[reportOperatorIssue]
                 try:
                     cached_value = fn(this)
                     self.cache[this.__class__] = (now, cached_value)
@@ -285,7 +288,7 @@ class cache:
                         raise
             return cached_value
 
-        wrapped.invalidate = self._invalidate
+        wrapped.invalidate = self._invalidate  # type: ignore[reportFunctionMemberAccess]
         return wrapped
 
     def _invalidate(self):

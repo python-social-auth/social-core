@@ -24,21 +24,24 @@ class BaseLegacyTest(BaseBackendTest):
 
     def do_start(self):
         start_url = self.strategy.build_absolute_uri(self.backend.start().url)
+        complete_url = self.complete_url
+        assert complete_url, "Subclasses must set the complete_url attribute"
+
         HTTPretty.register_uri(
             HTTPretty.GET,
             start_url,
             status=200,
-            body=self.form.format(self.complete_url),
+            body=self.form.format(complete_url),
         )
         HTTPretty.register_uri(
             HTTPretty.POST,
-            self.complete_url,
+            complete_url,
             status=200,
             body=self.response_body,
             content_type="application/x-www-form-urlencoded",
         )
         response = requests.get(start_url)
-        self.assertEqual(response.text, self.form.format(self.complete_url))
-        response = requests.post(self.complete_url, data=parse_qs(self.response_body))
+        self.assertEqual(response.text, self.form.format(complete_url))
+        response = requests.post(complete_url, data=parse_qs(self.response_body))
         self.strategy.set_request_data(parse_qs(response.text), self.backend)
         return self.backend.complete()

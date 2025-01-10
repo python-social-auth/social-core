@@ -10,6 +10,8 @@ class Redirect:
 
 
 class TestTemplateStrategy(BaseTemplateStrategy):
+    __test__ = False
+
     def render_template(self, tpl, context):
         return tpl
 
@@ -18,6 +20,8 @@ class TestTemplateStrategy(BaseTemplateStrategy):
 
 
 class TestStrategy(BaseStrategy):
+    __test__ = False
+
     DEFAULT_TEMPLATE_STRATEGY = TestTemplateStrategy
 
     def __init__(self, storage, tpl=None):

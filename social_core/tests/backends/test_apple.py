@@ -30,6 +30,7 @@ class AppleIdTest(OAuth2Test, BaseAuthUrlTestMixin):
     expected_username = token_data["sub"]
 
     def extra_settings(self):
+        assert self.name, "Name must be set in subclasses"
         return {
             "SOCIAL_AUTH_" + self.name + "_TEAM": "a-team-id",
             "SOCIAL_AUTH_" + self.name + "_KEY": "a-key-id",

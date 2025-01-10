@@ -107,7 +107,7 @@ class AzureADB2COAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
             "access_token": "foobar",
             "token_type": "bearer",
             "id_token": jwt.encode(
-                key=RSAAlgorithm.from_jwk(json.dumps(RSA_PRIVATE_JWT_KEY)),
+                key=RSAAlgorithm.from_jwk(json.dumps(RSA_PRIVATE_JWT_KEY)),  # type: ignore reportOperatorIssue
                 headers={
                     "kid": RSA_PRIVATE_JWT_KEY["kid"],
                 },
@@ -139,6 +139,7 @@ class AzureADB2COAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
 
     def extra_settings(self):
         settings = super().extra_settings()
+        assert self.name, "Name must be set in subclasses"
         settings.update(
             {
                 "SOCIAL_AUTH_" + self.name + "_POLICY": "b2c_1_signin",

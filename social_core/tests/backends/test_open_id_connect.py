@@ -1,3 +1,5 @@
+# pyright: reportAttributeAccessIssue=false
+
 import base64
 import datetime
 import json
@@ -64,6 +66,8 @@ class OpenIdConnectTestMixin:
         super().setUp()
         self.key = JWK_KEY.copy()
         self.public_key = JWK_PUBLIC_KEY.copy()
+
+        assert self.openid_config_body, "openid_config_body must be set"
 
         HTTPretty.register_uri(
             HTTPretty.GET,
@@ -156,7 +160,7 @@ class OpenIdConnectTestMixin:
         body["id_token"] = jwt.encode(
             id_token,
             key=jwt.PyJWK(
-                dict(self.key, iat=timegm(issue_datetime.timetuple()), nonce=nonce)
+                dict(self.key, iat=timegm(issue_datetime.timetuple()), nonce=nonce)  # type: ignore reportCallIssue
             ).key,
             algorithm="RS256",
             headers={"kid": kid} if kid else None,

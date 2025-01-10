@@ -44,13 +44,13 @@ class BrowserBasedOAuth1(BaseOAuth1):
             callback_uri=self.get_redirect_uri(state),
             signature_method=SIGNATURE_HMAC,
             signature_type=SIGNATURE_TYPE_QUERY,
-            decoding=None,
+            decoding=None,  # type: ignore[reportArgumentType]
         )
         url = self.REQUEST_TOKEN_URL + "?" + urlencode(params)
         url, _, _ = auth.client.sign(url)
         return url
 
-    def oauth_auth(self, token=None, oauth_verifier=None):
+    def oauth_auth(self, token=None, oauth_verifier=None):  # type: ignore[reportIncompatibleMethodOverride]
         key, secret = self.get_key_and_secret()
         oauth_verifier = oauth_verifier or self.data.get("oauth_verifier")
         token = token or {}
@@ -64,7 +64,7 @@ class BrowserBasedOAuth1(BaseOAuth1):
             verifier=oauth_verifier,
             signature_method=SIGNATURE_HMAC,
             signature_type=SIGNATURE_TYPE_QUERY,
-            decoding=None,
+            decoding=None,  # type: ignore[reportArgumentType]
         )
 
 

@@ -3,12 +3,14 @@ Google OpenId, OAuth2, OAuth1, Google+ Sign-in backends, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/google.html
 """
 
+from social_core.backends.base import BaseAuth
+
 from ..exceptions import AuthMissingParameter
 from ..utils import handle_http_errors
 from .oauth import BaseOAuth1, BaseOAuth2
 
 
-class BaseGoogleAuth:
+class BaseGoogleAuth(BaseAuth):
     def get_user_id(self, details, response):
         """Use google email as unique id"""
         if self.setting("USE_UNIQUE_USER_ID", False):

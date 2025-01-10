@@ -90,7 +90,7 @@ class BrokenAssociationTests(unittest.TestCase):
 
     def test_get(self):
         with self.assertRaisesRegex(NotImplementedError, NOT_IMPLEMENTED_MSG):
-            self.association.get()
+            self.association.get_association()
 
     def test_remove(self):
         with self.assertRaisesRegex(NotImplementedError, NOT_IMPLEMENTED_MSG):

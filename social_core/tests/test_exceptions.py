@@ -28,6 +28,9 @@ class BaseExceptionTestCase(unittest.TestCase):
     def test_exception_message(self):
         if self.exception is None and self.expected_message == "":
             return
+
+        if self.exception is None:
+            assert self.exception, "exception is not defined"
         try:
             raise self.exception
         except SocialAuthBaseException as err:

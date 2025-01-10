@@ -97,7 +97,7 @@ class AzureADTenantOAuth2(AzureADOAuth2):
 
             return jwt_decode(
                 id_token,
-                key=certificate.public_key(),
+                key=certificate.public_key(),  # type: ignore[reportArgumentType]
                 algorithms=["RS256"],
                 audience=self.setting("KEY"),
             )

@@ -25,6 +25,8 @@ class TwitchOpenIdConnect(OpenIdConnectAuth):
         return params
 
     def get_user_details(self, response):
+        assert self.id_token, "No id_token to parse"
+
         return {
             "username": self.id_token["preferred_username"],
             "email": self.id_token["email"],

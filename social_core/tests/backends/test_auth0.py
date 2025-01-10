@@ -56,6 +56,7 @@ class Auth0OAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     jwks_url = "https://foobar.auth0.com/.well-known/jwks.json"
 
     def extra_settings(self):
+        assert self.name, "Subclasses must set the name attribute"
         settings = super().extra_settings()
         settings["SOCIAL_AUTH_" + self.name + "_DOMAIN"] = DOMAIN
         return settings

@@ -1,3 +1,5 @@
+# pyright: reportAttributeAccessIssue=false
+
 import unittest
 
 import requests

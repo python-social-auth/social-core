@@ -128,7 +128,10 @@ class AzureADB2COAuth2(AzureADOAuth2):
         Builds a PEM formatted key string from a JWT public key dict.
         """
         pub_key = RSAAlgorithm.from_jwk(json.dumps(key_json_dict))
-        return pub_key.public_bytes(
+
+        # TODO: clarify the types of this; JWKs can apparently include both public and private,
+        # but this code assumes public.
+        return pub_key.public_bytes(  # type: ignore[reportAttributeAccessIssue]
             encoding=serialization.Encoding.PEM,
             format=serialization.PublicFormat.SubjectPublicKeyInfo,
         )
