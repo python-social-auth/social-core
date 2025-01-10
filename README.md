@@ -1,12 +1,3 @@
-> ## THIS PROJECT IS OPEN FOR MAINTAINERS
-> Development on the python-social-auth projects has been stagnated for a while,
-> #445 was open a long time ago to discuss this matter and a plan (failed) was
-> presented to fix the situation. For that reason, I'm opening the organization to
-> new maintainers that will have the proper permissions to unstuck development.
->
-> Those willing to join, contact me by email with the subject `[PSA Maintainer]
-> <your name>` and please let me know what motivates you to join in such role.
-
 # Python Social Auth - Core
 ![Build Status](https://github.com/python-social-auth/social-core/workflows/Flake8/badge.svg)
 ![Build Status](https://github.com/python-social-auth/social-core/workflows/Tests/badge.svg)
