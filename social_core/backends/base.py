@@ -4,7 +4,7 @@ from typing import Any
 from requests import ConnectionError, request
 
 from ..exceptions import AuthFailed
-from ..utils import SSLHttpAdapter, module_member, parse_qs, user_agent
+from ..utils import module_member, parse_qs, user_agent
 
 
 class BaseAuth:
@@ -18,7 +18,6 @@ class BaseAuth:
     GET_ALL_EXTRA_DATA = False
     REQUIRES_EMAIL_VALIDATION = False
     SEND_USER_AGENT = False
-    SSL_PROTOCOL = None
 
     def __init__(self, strategy, redirect_uri=None):
         self.strategy = strategy
@@ -237,11 +236,7 @@ class BaseAuth:
             kwargs["headers"]["User-Agent"] = self.setting("USER_AGENT") or user_agent()
 
         try:
-            if self.SSL_PROTOCOL:
-                session = SSLHttpAdapter.ssl_adapter_session(self.SSL_PROTOCOL)
-                response = session.request(method, url, *args, **kwargs)
-            else:
-                response = request(method, url, *args, **kwargs)
+            response = request(method, url, *args, **kwargs)
         except ConnectionError as err:
             raise AuthFailed(self, str(err))
         response.raise_for_status()

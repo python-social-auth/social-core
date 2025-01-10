@@ -9,8 +9,6 @@ from urllib.parse import parse_qs as battery_parse_qs
 from urllib.parse import unquote, urlencode, urlparse, urlunparse
 
 import requests
-from requests.adapters import HTTPAdapter
-from urllib3.poolmanager import PoolManager
 
 import social_core
 
@@ -22,31 +20,6 @@ PARTIAL_TOKEN_SESSION_NAME = "partial_pipeline_token"
 
 
 social_logger = logging.getLogger("social")
-
-
-class SSLHttpAdapter(HTTPAdapter):
-    """ "
-    Transport adapter that allows to use any SSL protocol. Based on:
-    http://requests.rtfd.org/latest/user/advanced/#example-specific-ssl-version
-    """
-
-    def __init__(self, ssl_protocol):
-        self.ssl_protocol = ssl_protocol
-        super().__init__()
-
-    def init_poolmanager(self, connections, maxsize, block=False, **pool_kwargs):
-        self.poolmanager = PoolManager(
-            num_pools=connections,
-            maxsize=maxsize,
-            block=block,
-            ssl_version=self.ssl_protocol,
-        )
-
-    @classmethod
-    def ssl_adapter_session(cls, ssl_protocol):
-        session = requests.Session()
-        session.mount("https://", SSLHttpAdapter(ssl_protocol))
-        return session
 
 
 def import_module(name):

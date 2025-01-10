@@ -151,7 +151,7 @@ class VKAppOAuth2(VKOAuth2):
                 "_".join([key, self.data.get("viewer_id"), secret]).encode("utf-8")
             ).hexdigest()
             if check_key != auth_key:
-                raise ValueError("VK.com authentication failed: invalid " "auth key")
+                raise ValueError("VK.com authentication failed: invalid auth key")
 
         user_check = self.setting("USERMODE")
         user_id = self.data.get("viewer_id")
