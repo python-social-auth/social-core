@@ -142,7 +142,6 @@ ignore = [
   "PLR1704",  # TODO: Redefining argument with the local name
   "PERF203",  # WONTFIX: This rule is only enforced for Python versions prior to 3.11
   "ISC003",  # TODO: Explicitly concatenated string should be implicitly concatenated
-  "B028",  # TODO: No explicit `stacklevel` keyword argument found
   "PLW0603",  # TODO: Using the global statement to update `BACKENDSCACHE` is discouraged
   "TRY301",  # TODO: Abstract `raise` to an inner function
   "BLE001",  # TODO: Do not catch blind exception: `Exception`

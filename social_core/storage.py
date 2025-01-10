@@ -3,7 +3,6 @@
 import base64
 import re
 import uuid
-import warnings
 from abc import abstractmethod
 from datetime import datetime, timedelta, timezone
 
@@ -40,11 +39,6 @@ class UserMixin:
     def access_token(self):
         """Return access_token stored in extra_data or None"""
         return self.extra_data.get("access_token")
-
-    @property
-    def tokens(self):
-        warnings.warn("tokens is deprecated, use access_token instead")
-        return self.access_token
 
     def refresh_token(self, strategy, *args, **kwargs):
         token = self.extra_data.get("refresh_token") or self.extra_data.get(

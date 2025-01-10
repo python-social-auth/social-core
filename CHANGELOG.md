@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Handle case where user has not registered a `family-name` with ORCID
 - Fix access token expiration and refresh token handling in GitHub backend
 - Allow overriding emails to always be fully lowercase with `SOCIAL_AUTH_FORCE_EMAIL_LOWERCASE`.
+- Dropped `tokens` alias for `access_token` on `UserMixin` which has been deprecated for 10 years now.
 
 ## [4.5.4](https://github.com/python-social-auth/social-core/releases/tag/4.5.4) - 2024-04-25
 
