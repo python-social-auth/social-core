@@ -1,4 +1,5 @@
 # Python Social Auth - Core
+
 ![Build Status](https://github.com/python-social-auth/social-core/workflows/Flake8/badge.svg)
 ![Build Status](https://github.com/python-social-auth/social-core/workflows/Tests/badge.svg)
 [![Build Status](https://travis-ci.org/python-social-auth/social-core.svg?branch=master)](https://travis-ci.org/python-social-auth/social-core)
