@@ -1,3 +1,4 @@
+# noqa: A005
 """
 Legacy Email backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/email.html

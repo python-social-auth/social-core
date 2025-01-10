@@ -28,8 +28,7 @@ class DisqusOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
                 "reputation": 1.231755,
                 "avatar": {
                     "small": {
-                        "permalink": "https://disqus.com/api/users/avatars/"
-                        "foobar.jpg",
+                        "permalink": "https://disqus.com/api/users/avatars/foobar.jpg",
                         "cache": "https://securecdn.disqus.com/uploads/"
                         "users/453/4556/avatar32.jpg?1285535379",
                     },
@@ -38,8 +37,7 @@ class DisqusOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
                     "cache": "https://securecdn.disqus.com/uploads/users/453/"
                     "4556/avatar92.jpg?1285535379",
                     "large": {
-                        "permalink": "https://disqus.com/api/users/avatars/"
-                        "foobar.jpg",
+                        "permalink": "https://disqus.com/api/users/avatars/foobar.jpg",
                         "cache": "https://securecdn.disqus.com/uploads/users/"
                         "453/4556/avatar92.jpg?1285535379",
                     },

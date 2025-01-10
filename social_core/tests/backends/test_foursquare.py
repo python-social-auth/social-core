@@ -19,8 +19,7 @@ class FoursquareOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
             },
             "response": {
                 "user": {
-                    "photo": "https://is0.4sqi.net/userpix_thumbs/"
-                    "BYKIT01VN4T4BISN.jpg",
+                    "photo": "https://is0.4sqi.net/userpix_thumbs/BYKIT01VN4T4BISN.jpg",
                     "pings": False,
                     "homeCity": "Foo, Bar",
                     "id": "1010101",

@@ -62,9 +62,9 @@ class NGPVANActionIDOpenIDTest(OpenIdTest):
             "openid.alias3.type.alias2": "http://openid.net/schema/contact/interne"
             "t/email",
             "openid.alias3.value.alias2": "testuser@user.local",
-            "openid.alias3.type.alias3": "http://openid.net/schema/namePerson/firs" "t",
+            "openid.alias3.type.alias3": "http://openid.net/schema/namePerson/first",
             "openid.alias3.value.alias3": "John",
-            "openid.alias3.type.alias4": "http://openid.net/schema/namePerson/las" "t",
+            "openid.alias3.type.alias4": "http://openid.net/schema/namePerson/last",
             "openid.alias3.value.alias4": "Smith",
             "openid.alias3.type.alias5": "http://axschema.org/namePerson/first",
             "openid.alias3.value.alias5": "John",

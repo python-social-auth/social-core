@@ -88,7 +88,7 @@ class BaseOAuthTest(BaseBackendTest):
 
 class OAuth1Test(BaseOAuthTest):
     request_token_body = None
-    raw_complete_url = "/complete/{0}/?oauth_verifier=bazqux&" "oauth_token=foobar"
+    raw_complete_url = "/complete/{0}/?oauth_verifier=bazqux&oauth_token=foobar"
 
     def request_token_handler(self):
         HTTPretty.register_uri(
