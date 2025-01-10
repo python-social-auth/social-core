@@ -1,4 +1,4 @@
 {
-    "reportOptionalMemberAccess": "none",
-    "reportPossiblyUnboundVariable": "none"
+  "reportOptionalMemberAccess": "none",
+  "reportPossiblyUnboundVariable": "none"
 }
