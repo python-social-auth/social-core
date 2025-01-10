@@ -1,0 +1,56 @@
+name: Release
+
+on:
+  workflow_call:
+    inputs:
+      github_event_name:
+        required: true
+        type: string
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+    - uses: actions/checkout@v4
+    - uses: astral-sh/setup-uv@v5
+
+    - name: Verify tag is documented
+      if: inputs.github_event_name == 'release'
+      run: |
+        CURRENT_TAG=${GITHUB_REF#refs/tags/}
+        CURRENT_VERSION=$(sed -n 's/version = "\(.*\)"/\1/p'  pyproject.toml)
+        if [ "${CURRENT_VERSION}" != "${CURRENT_TAG}" ]; then
+            echo "========================================================================"
+            echo "Error: tag '${CURRENT_TAG}' and version '${CURRENT_VERSION}' don't match"
+            echo "========================================================================"
+            exit 1;
+        fi
+
+    - run: uv build
+
+    - name: Verify wheel install
+      run: |
+        uv venv venv-install-whl
+        source venv-install-whl/bin/activate
+        uv pip install dist/*.whl
+
+    - name: Verify source install
+      run: |
+        uv venv venv-install-tar
+        source venv-install-tar/bin/activate
+        uv pip install dist/*.tar.gz
+
+    - uses: actions/upload-artifact@v4
+      if: inputs.github_event_name == 'release'
+      with:
+        name: dist
+        path: |
+          dist/*.tar.gz
+          dist/*.whl
+
+    - run: uvx twine check dist/*
+
+    - if: inputs.github_event_name == 'release'
+      run: uv publish --trusted-publishing always
