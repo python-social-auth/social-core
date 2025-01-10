@@ -6,7 +6,7 @@ from .oauth import OAuth1AuthUrlTestMixin, OAuth1Test
 
 class TwitterOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
     backend_path = "social_core.backends.twitter.TwitterOAuth"
-    user_data_url = "https://api.twitter.com/1.1/account/" "verify_credentials.json"
+    user_data_url = "https://api.twitter.com/1.1/account/verify_credentials.json"
     expected_username = "foobar"
     access_token_body = json.dumps({"access_token": "foobar", "token_type": "bearer"})
     request_token_body = urlencode(
@@ -128,8 +128,7 @@ class TwitterOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
 class TwitterOAuth1IncludeEmailTest(OAuth1Test, OAuth1AuthUrlTestMixin):
     backend_path = "social_core.backends.twitter.TwitterOAuth"
     user_data_url = (
-        "https://api.twitter.com/1.1/account/"
-        "verify_credentials.json?include_email=true"
+        "https://api.twitter.com/1.1/account/verify_credentials.json?include_email=true"
     )
     expected_username = "foobar"
     access_token_body = json.dumps({"access_token": "foobar", "token_type": "bearer"})

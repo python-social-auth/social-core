@@ -86,7 +86,7 @@ class AuthCanceledWithExtraMessageTest(BaseExceptionTestCase):
 
 class AuthUnknownErrorTest(BaseExceptionTestCase):
     exception = AuthUnknownError("foobar", "some error")
-    expected_message = "An unknown error happened while " "authenticating some error"
+    expected_message = "An unknown error happened while authenticating some error"
 
 
 class AuthStateForbiddenTest(BaseExceptionTestCase):

@@ -22,18 +22,15 @@ class BehanceOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
                 "state": "",
                 "fields": ["Programming", "Web Design", "Web Development"],
                 "images": {
-                    "32": "https://www.behance.net/assets/img/profile/"
-                    "no-image-32.jpg",
-                    "50": "https://www.behance.net/assets/img/profile/"
-                    "no-image-50.jpg",
+                    "32": "https://www.behance.net/assets/img/profile/no-image-32.jpg",
+                    "50": "https://www.behance.net/assets/img/profile/no-image-50.jpg",
                     "115": "https://www.behance.net/assets/img/profile/"
                     "no-image-138.jpg",
                     "129": "https://www.behance.net/assets/img/profile/"
                     "no-image-138.jpg",
                     "138": "https://www.behance.net/assets/img/profile/"
                     "no-image-138.jpg",
-                    "78": "https://www.behance.net/assets/img/profile/"
-                    "no-image-78.jpg",
+                    "78": "https://www.behance.net/assets/img/profile/no-image-78.jpg",
                 },
                 "id": 1010101,
                 "occupation": "Software Developer",

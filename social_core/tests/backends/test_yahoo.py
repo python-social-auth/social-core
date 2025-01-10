@@ -9,7 +9,7 @@ from .oauth import OAuth1AuthUrlTestMixin, OAuth1Test
 
 class YahooOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
     backend_path = "social_core.backends.yahoo.YahooOAuth"
-    user_data_url = "https://social.yahooapis.com/v1/user/a-guid/profile?" "format=json"
+    user_data_url = "https://social.yahooapis.com/v1/user/a-guid/profile?format=json"
     expected_username = "foobar"
     access_token_body = json.dumps({"access_token": "foobar", "token_type": "bearer"})
     request_token_body = urlencode(

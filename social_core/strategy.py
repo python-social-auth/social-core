@@ -29,9 +29,7 @@ class BaseTemplateStrategy:
 
 
 class BaseStrategy:
-    ALLOWED_CHARS = (
-        "abcdefghijklmnopqrstuvwxyz" "ABCDEFGHIJKLMNOPQRSTUVWXYZ" "0123456789"
-    )
+    ALLOWED_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     DEFAULT_TEMPLATE_STRATEGY = BaseTemplateStrategy
 
     def __init__(self, storage=None, tpl=None):
