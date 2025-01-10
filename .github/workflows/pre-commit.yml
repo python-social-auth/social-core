@@ -7,7 +7,7 @@ on:
 jobs:
   pre-commit-local:
     uses: ./.github/workflows/pre-commit-shared.yml
-    if: github.repository == 'python-social-auth/core'
+    if: github.repository == 'python-social-auth/social-core'
   pre-commit:
     uses: python-social-auth/social-core/.github/workflows/pre-commit-shared.yml@master
-    if: github.repository != 'python-social-auth/core'
+    if: github.repository != 'python-social-auth/social-core'
