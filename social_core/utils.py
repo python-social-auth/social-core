@@ -225,6 +225,8 @@ def handle_http_errors(func):
         try:
             return func(*args, **kwargs)
         except requests.HTTPError as err:
+            social_logger.exception(err.response.text)
+
             if err.response.status_code == 400:
                 raise AuthCanceled(args[0], response=err.response)
             if err.response.status_code == 401:
