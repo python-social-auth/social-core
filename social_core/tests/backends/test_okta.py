@@ -165,6 +165,7 @@ class OktaOpenIdConnectTest(OpenIdConnectTest):
             body=self.openid_config_body,
             content_type="application/json",
         )
+<<<<<<< HEAD
         oidc_config = json.loads(self.openid_config_body)
 
 <<<<<<< HEAD
@@ -192,6 +193,8 @@ class OktaOpenIdConnectTest(OpenIdConnectTest):
         def jwks(_request, _uri, headers):
             return 200, headers, json.dumps({"keys": [self.key]})
 >>>>>>> d4aa4719 (rebase)
+=======
+>>>>>>> 63d91f13 (removed unused items)
 
     def test_okta_oidc_config(self):
         # With no custom authorization server
