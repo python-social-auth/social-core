@@ -2,6 +2,7 @@
 Okta OAuth2 and OpenIdConnect:
     https://python-social-auth.readthedocs.io/en/latest/backends/okta.html
 """
+
 from urllib.parse import urljoin, urlparse, urlunparse
 
 from ..utils import append_slash
