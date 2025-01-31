@@ -53,7 +53,8 @@ version = "4.5.4"
 [project.optional-dependencies]
 all = [
   "social-auth-core[saml]",
-  "social-auth-core[azuread]"
+  "social-auth-core[azuread]",
+  "social-auth-core[shopify]"
 ]
 allpy3 = [
   "social-auth-core[all]"
@@ -77,6 +78,9 @@ saml = [
   "python3-saml>=1.5.0",
   # pinned to 5.2 until a new wheel of xmlsec is released
   "lxml~=5.2.1"
+]
+shopify = [
+  "ShopifyAPI"
 ]
 
 [project.urls]
