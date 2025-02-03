@@ -41,7 +41,7 @@ from .azuread import AzureADOAuth2
 class AzureADB2COAuth2(AzureADOAuth2):
     name = "azuread-b2c-oauth2"
 
-    BASE_URL = "https://{tenant_name}.{authority_host}/{tenant_name}.onmicrosoft.com"
+    BASE_URL = "https://{authority_host}/{tenant_name}.onmicrosoft.com"
     AUTHORIZATION_URL = "{base_url}/oauth2/v2.0/authorize"
     OPENID_CONFIGURATION_URL = (
         "{base_url}/v2.0/.well-known/openid-configuration?p={policy}"
@@ -64,7 +64,7 @@ class AzureADB2COAuth2(AzureADOAuth2):
 
     @property
     def authority_host(self):
-        return self.setting("AUTHORITY_HOST", "b2clogin.com")
+        return self.setting("AUTHORITY_HOST", f"{tenant_name}.b2clogin.com")
 
     @property
     def tenant_name(self):
