@@ -64,7 +64,7 @@ class AzureADB2COAuth2(AzureADOAuth2):
 
     @property
     def authority_host(self):
-        return self.setting("AUTHORITY_HOST", f"{tenant_name}.b2clogin.com")
+        return self.setting("AUTHORITY_HOST", f"{self.tenant_name}.b2clogin.com")
 
     @property
     def tenant_name(self):
