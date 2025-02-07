@@ -75,6 +75,10 @@ dev = [
   "urllib3~=2.2.0",
   "pyright>=1.1.391"
 ]
+google-onetap = [
+  "google-auth~=2.38.0",
+  "packaging"
+]
 saml = [
   "python3-saml>=1.5.0",
   # pinned to 5.2 until a new wheel of xmlsec is released
@@ -82,10 +86,6 @@ saml = [
 ]
 shopify = [
   "ShopifyAPI"
-]
-google-onetap = [
-   "google-auth~=2.38.0",
-   "packaging"
 ]
 
 [project.urls]
