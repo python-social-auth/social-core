@@ -10,6 +10,7 @@ from httpretty import HTTPretty
 from ...actions import do_disconnect
 from ...exceptions import AuthException, AuthTokenError
 from ..models import User
+from .base import BaseBackendTest
 from .oauth import BaseAuthUrlTestMixin, OAuth1AuthUrlTestMixin, OAuth1Test, OAuth2Test
 from .test_open_id_connect import OpenIdConnectTestMixin
 
@@ -170,7 +171,7 @@ class GoogleOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
     )
 
 
-class GoogleOneTapTest(OAuth2Test):
+class GoogleOneTapTest(BaseBackendTest):
     backend_path = "social_core.backends.google_onetap.GoogleOneTap"
     private_key = """-----BEGIN RSA PRIVATE KEY-----
 MIICXQIBAAKBgQC6lDOJ0zKiNKJM3p0nTOJgaaHhxPoIJARcRzNSkzG0vC4QnXbB
