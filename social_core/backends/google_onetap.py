@@ -1,5 +1,4 @@
-import urllib3
-from google.auth.transport.urllib3 import Request
+from google.auth.transport import requests as transport_requests
 from google.oauth2 import id_token
 
 from social_core.backends.base import BaseAuth
@@ -22,9 +21,8 @@ class GoogleOneTap(BaseGoogleAuth, BaseAuth):
         if not csrf_token_body:
             raise AuthTokenError(self, "Missing csrf token from response")
 
-        if not csrf_token_cookie:
-            # csrf_token_cookie can be missing due to
-            # https://issuetracker.google.com/issues/226157137
+        # csrf_token_cookie can be missing due to https://issuetracker.google.com/issues/226157137
+        if not csrf_token_cookie and self.setting("IGNORE_MISSING_CSRF_COOKIE", False):
             return
 
         if csrf_token_body != csrf_token_cookie:
@@ -36,7 +34,7 @@ class GoogleOneTap(BaseGoogleAuth, BaseAuth):
         try:
             idinfo = id_token.verify_oauth2_token(
                 self.data.get(self.CREDENTIAL_KEY),
-                Request(http=urllib3.PoolManager()),
+                transport_requests.Request(),
                 self.setting("KEY"),
             )
         except ValueError:

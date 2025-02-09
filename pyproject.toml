@@ -77,7 +77,6 @@ dev = [
 ]
 google-onetap = [
   "google-auth~=2.38.0",
-  "packaging"
 ]
 saml = [
   "python3-saml>=1.5.0",
