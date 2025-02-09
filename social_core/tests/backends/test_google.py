@@ -8,10 +8,10 @@ import jwt
 from httpretty import HTTPretty
 
 from ...actions import do_disconnect
+from ...exceptions import AuthException, AuthTokenError
 from ..models import User
 from .oauth import BaseAuthUrlTestMixin, OAuth1AuthUrlTestMixin, OAuth1Test, OAuth2Test
 from .test_open_id_connect import OpenIdConnectTestMixin
-from ...exceptions import AuthException, AuthTokenError
 
 
 class GoogleOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
