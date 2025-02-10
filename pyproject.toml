@@ -54,7 +54,8 @@ version = "4.5.4"
 all = [
   "social-auth-core[saml]",
   "social-auth-core[azuread]",
-  "social-auth-core[shopify]"
+  "social-auth-core[shopify]",
+  "social-auth-core[google-onetap]"
 ]
 allpy3 = [
   "social-auth-core[all]"
@@ -73,6 +74,9 @@ dev = [
   # pinned because of https://github.com/gabrielfalcao/HTTPretty/issues/484
   "urllib3~=2.2.0",
   "pyright>=1.1.391"
+]
+google-onetap = [
+  "google-auth~=2.38.0"
 ]
 saml = [
   "python3-saml>=1.5.0",
