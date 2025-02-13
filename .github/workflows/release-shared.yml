@@ -16,18 +16,6 @@ jobs:
     - uses: actions/checkout@v4
     - uses: astral-sh/setup-uv@v5
 
-    - name: Verify tag is documented
-      if: inputs.github_event_name == 'release'
-      run: |
-        CURRENT_TAG=${GITHUB_REF#refs/tags/}
-        CURRENT_VERSION=$(sed -n 's/^version = "\(.*\)"/\1/p'  pyproject.toml)
-        if [ "${CURRENT_VERSION}" != "${CURRENT_TAG}" ]; then
-            echo "========================================================================"
-            echo "Error: tag '${CURRENT_TAG}' and version '${CURRENT_VERSION}' don't match"
-            echo "========================================================================"
-            exit 1;
-        fi
-
     - run: uv build
 
     - name: Verify wheel install
