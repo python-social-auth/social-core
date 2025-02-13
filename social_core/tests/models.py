@@ -169,7 +169,9 @@ class TestNonce(NonceMixin, BaseModel):
         return nonce
 
     @classmethod
-    def get_nonce(cls, server_url, salt):
+    def get(  # type: ignore[override]
+        cls, server_url, salt
+    ):
         return TestNonce.cache[server_url]
 
     @classmethod
@@ -204,10 +206,10 @@ class TestAssociation(AssociationMixin, BaseModel):
         assoc.save()
 
     @classmethod
-    def get_association(
+    def get(  # type: ignore[override]
         cls: type[TestAssociation],
-        server_url=None,
-        handle=None,
+        server_url: str | None = None,
+        handle: str | None = None,
     ) -> list[AssociationMixin]:
         result = []
         for assoc in TestAssociation.cache.values():
