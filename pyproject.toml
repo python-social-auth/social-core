@@ -170,4 +170,5 @@ max-args = 7
 max-branches = 15
 
 [tool.setuptools]
+license-files = []
 packages = ["social_core"]
