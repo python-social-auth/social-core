@@ -5,7 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [4.5.5](https://github.com/python-social-auth/social-core/releases/tag/4.5.5) - 2025-02-13
+
+### Added
+
+- Allow per-backend user pipeline settings.
+- Add AzureADOauth2 backend using the v2.0 API.
+- Google One Tap implementation.
 
 ### Changed
 
@@ -13,6 +19,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fix access token expiration and refresh token handling in GitHub backend
 - Allow overriding emails to always be fully lowercase with `SOCIAL_AUTH_FORCE_EMAIL_LOWERCASE`.
 - Dropped `tokens` alias for `access_token` on `UserMixin` which has been deprecated for 10 years now.
+- LinkedIn OAuth API updates.
+- Modernize release process.
+- Code cleanups.
+- Initial type annotations.
 
 ## [4.5.4](https://github.com/python-social-auth/social-core/releases/tag/4.5.4) - 2024-04-25
 
