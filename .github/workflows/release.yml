@@ -38,4 +38,4 @@ jobs:
     - run: uvx twine check dist/*
 
     - if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')
-      run: uv publish --verbose --verbose  --trusted-publishing always
+      run: uv publish --trusted-publishing always
