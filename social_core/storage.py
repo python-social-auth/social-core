@@ -1,5 +1,7 @@
 """Models mixins for Social Auth"""
 
+from __future__ import annotations
+
 import base64
 import re
 import uuid
@@ -198,7 +200,7 @@ class NonceMixin:
         raise NotImplementedError("Implement in subclass")
 
     @classmethod
-    def get_nonce(cls, server_url, salt):
+    def get(cls, server_url, salt):
         """Retrieve a Nonce instance"""
         raise NotImplementedError("Implement in subclass")
 
@@ -224,10 +226,7 @@ class AssociationMixin:
         if handle is not None:
             kwargs["handle"] = handle
         return sorted(
-            (
-                (assoc.id, cls.openid_association(assoc))
-                for assoc in cls.get_association(**kwargs)
-            ),
+            ((assoc.id, cls.openid_association(assoc)) for assoc in cls.get(**kwargs)),
             key=lambda x: x[1].issued,
             reverse=True,
         )
@@ -251,7 +250,7 @@ class AssociationMixin:
         raise NotImplementedError("Implement in subclass")
 
     @classmethod
-    def get_association(cls, *args, **kwargs):
+    def get(cls, server_url: str | None = None, handle: str | None = None):
         """Get an Association instance"""
         raise NotImplementedError("Implement in subclass")
 
