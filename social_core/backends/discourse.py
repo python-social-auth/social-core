@@ -52,7 +52,7 @@ class DiscourseAuth(BaseAuth):
     def add_nonce(self, nonce):
         self.strategy.storage.nonce.use(self.setting("SERVER_URL"), time.time(), nonce)
 
-    def get(self, nonce):
+    def get_nonce(self, nonce):
         return self.strategy.storage.nonce.get(self.setting("SERVER_URL"), nonce)
 
     def delete_nonce(self, nonce):
@@ -79,7 +79,7 @@ class DiscourseAuth(BaseAuth):
 
         # Validate the nonce to ensure the request was not modified
         response = parse_qs(decoded_params)
-        nonce_obj = self.get(response.get("nonce"))
+        nonce_obj = self.get_nonce(response.get("nonce"))
         if nonce_obj:
             self.delete_nonce(nonce_obj)
         else:

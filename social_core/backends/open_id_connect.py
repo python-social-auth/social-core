@@ -139,7 +139,7 @@ class OpenIdConnectAuth(BaseOAuth2):
         self.strategy.storage.association.store(url, association)
         return nonce
 
-    def get(self, nonce):
+    def get_nonce(self, nonce):
         try:
             return self.strategy.storage.association.get(
                 server_url=self.authorization_url(), handle=nonce
@@ -166,7 +166,7 @@ class OpenIdConnectAuth(BaseOAuth2):
         if not nonce:
             raise AuthTokenError(self, "Incorrect id_token: nonce")
 
-        nonce_obj = self.get(nonce)
+        nonce_obj = self.get_nonce(nonce)
         if nonce_obj:
             self.remove_nonce(nonce_obj.id)
         else:
