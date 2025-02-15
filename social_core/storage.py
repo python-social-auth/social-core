@@ -7,6 +7,7 @@ import re
 import uuid
 from abc import abstractmethod
 from datetime import datetime, timedelta, timezone
+from typing import Any
 
 from openid.association import Association as OpenIdAssociation
 
@@ -20,7 +21,6 @@ class UserMixin:
     # Consider tokens that expire in 5 seconds as already expired
     ACCESS_TOKEN_EXPIRED_THRESHOLD = 5
 
-    user = ""
     provider = ""
     uid = None
     extra_data = None
@@ -292,8 +292,8 @@ class CodeMixin:
 
 class PartialMixin:
     token = ""
-    data = {}
-    next_step = ""
+    data: dict[str, Any] = {}
+    next_step: int
     backend = ""
 
     @property
@@ -328,7 +328,7 @@ class PartialMixin:
         raise NotImplementedError("Implement in subclass")
 
     @classmethod
-    def prepare(cls, backend, next_step, data):
+    def prepare(cls, backend, next_step: int, data: dict[str, Any]):
         partial = cls()
         partial.backend = backend
         partial.next_step = next_step
