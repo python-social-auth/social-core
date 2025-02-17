@@ -27,21 +27,18 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
-        cache: pip
-        cache-dependency-path: pyproject.toml
+
+    - uses: astral-sh/setup-uv@v5
+      with:
+        cache-suffix: ${{ matrix.python-version }}
 
     - name: Install System dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -qq -y --no-install-recommends libxmlsec1-dev swig
 
-    - name: Install Python dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install tox
-
     - name: Type check with tox
-      run: tox -e "py${PYTHON_VERSION/\./}-pyright"
+      run: uvx tox -e "py${PYTHON_VERSION/\./}-pyright"
 
   test:
     runs-on: ubuntu-24.04
@@ -65,21 +62,18 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
-        cache: pip
-        cache-dependency-path: requirements*.txt
+
+    - uses: astral-sh/setup-uv@v5
+      with:
+        cache-suffix: ${{ matrix.python-version }}
 
     - name: Install System dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -qq -y --no-install-recommends libxmlsec1-dev swig
 
-    - name: Install Python dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install coverage tox
-
     - name: Test with tox
-      run: tox -e "py${PYTHON_VERSION/\./}"
+      run: uvx tox -e "py${PYTHON_VERSION/\./}"
 
     - uses: codecov/codecov-action@v5
       with:
