@@ -79,9 +79,7 @@ google-onetap = [
   "google-auth~=2.38.0"
 ]
 saml = [
-  "python3-saml>=1.5.0",
-  # pinned to 5.2 until a new wheel of xmlsec is released
-  "lxml~=5.2.1"
+  "python3-saml>=1.5.0"
 ]
 shopify = [
   "ShopifyAPI"
