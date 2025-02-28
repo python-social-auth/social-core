@@ -144,30 +144,24 @@ class OktaOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
             status=200,
             body=self.openid_config_body,
         )
-        oidc_config = json.loads(self.openid_config_body)
 
-        def jwks(_request, _uri, headers):
-            return 200, headers, json.dumps({"keys": [self.key]})
-
-        HTTPretty.register_uri(
-            HTTPretty.GET,
-            oidc_config.get("jwks_uri"),
-            status=200,
-            body=json.dumps({"keys": [self.public_key]}),
+    def test_okta_oidc_config(self):
+        # With no custom authorization server
+        self.strategy.set_settings(
+            {
+                "SOCIAL_AUTH_OKTA_OPENIDCONNECT_API_URL": "https://dev-000000.oktapreview.com/oauth2",
+            }
         )
-
-        self.backend.JWKS_URI = oidc_config.get("jwks_uri")
-        self.backend.ID_TOKEN_ISSUER = oidc_config.get("issuer")
-
-    def pre_complete_callback(self, start_url):
-        super().pre_complete_callback(start_url)
-        HTTPretty.register_uri(
-            "GET",
-            uri=self.backend.userinfo_url(),
-            status=200,
-            body=json.dumps({"preferred_username": self.expected_username}),
-            content_type="text/json",
+        self.assertEqual(
+            self.backend.oidc_config_url(),
+            "https://dev-000000.oktapreview.com/.well-known/openid-configuration?client_id=a-key",
         )
-
-    def test_everything_works(self):
-        self.do_login()
+        self.strategy.set_settings(
+            {
+                "SOCIAL_AUTH_OKTA_OPENIDCONNECT_API_URL": "https://dev-000000.oktapreview.com/oauth2/id-123456",
+            }
+        )
+        self.assertEqual(
+            self.backend.oidc_config_url(),
+            "https://dev-000000.oktapreview.com/oauth2/id-123456/.well-known/openid-configuration?client_id=a-key",
+        )
