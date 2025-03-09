@@ -14,7 +14,7 @@ NFDI_ENDPOINTS = {
     # didmos
     "mardi":                "https://auth.didmos.nfdi-aai.de",
     "objects":              "https://auth.didmos.nfdi-aai.de",
-    "culture":              "https://auth.didmos.nfdi-aai.de",
+    "culture":              "https://auth.aai.nfdi4culture.de",
     # regapp
     "cat":                  "https://regapp.nfdi-aai.de/oidc/realms/nfdi",
     "chem":                 "https://regapp.nfdi-aai.de/oidc/realms/nfdi",
