@@ -4,6 +4,8 @@ from __future__ import annotations
 import base64
 from typing import TypeVar
 
+from typing_extensions import Self
+
 from ..storage import (
     AssociationMixin,
     BaseStorage,
@@ -23,7 +25,7 @@ class BaseModel:
         return cls.NEXT_ID - 1
 
     @classmethod
-    def get(cls: type[ModelT], key) -> ModelT | None:
+    def get(cls, key) -> Self | None:
         return cls.cache.get(key)
 
     @classmethod
