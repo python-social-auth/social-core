@@ -47,7 +47,6 @@ class MendeleyOAuth2(MendeleyMixin, BaseOAuth2):
     name = "mendeley-oauth2"
     AUTHORIZATION_URL = "https://api-oauth2.mendeley.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://api-oauth2.mendeley.com/oauth/token"
-    ACCESS_TOKEN_METHOD = "POST"
     DEFAULT_SCOPE = ["all"]
     REDIRECT_STATE = False
     EXTRA_DATA = [

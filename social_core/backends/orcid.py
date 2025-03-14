@@ -16,7 +16,6 @@ class ORCIDOAuth2(BaseOAuth2):
     USER_ID_URL = "https://orcid.org/oauth/userinfo"
     USER_DATA_URL = "https://pub.orcid.org/v2.0/{}"
     DEFAULT_SCOPE = ["/authenticate"]
-    ACCESS_TOKEN_METHOD = "POST"
     EXTRA_DATA = [
         ("orcid", "id"),
         ("expires_in", "expires"),

@@ -32,6 +32,7 @@ class EvernoteOAuth(BaseOAuth1):
     AUTHORIZATION_URL = "https://www.evernote.com/OAuth.action"
     REQUEST_TOKEN_URL = "https://www.evernote.com/oauth"
     ACCESS_TOKEN_URL = "https://www.evernote.com/oauth"
+    ACCESS_TOKEN_METHOD = "GET"
     EXTRA_DATA = [
         ("access_token", "access_token"),
         ("oauth_token", "oauth_token"),

@@ -7,7 +7,6 @@ class MineIDOAuth2(BaseOAuth2):
     name = "mineid"
     _AUTHORIZATION_URL = "%(scheme)s://%(host)s/oauth/authorize"
     _ACCESS_TOKEN_URL = "%(scheme)s://%(host)s/oauth/access_token"
-    ACCESS_TOKEN_METHOD = "POST"
     SCOPE_SEPARATOR = ","
     EXTRA_DATA = []
 
