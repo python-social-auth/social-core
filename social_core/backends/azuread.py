@@ -43,7 +43,6 @@ class AzureADOAuth2(BaseOAuth2):
     BASE_URL = "https://{authority_host}/{tenant_id}"
     AUTHORIZATION_URL = "{base_url}/oauth2/authorize"
     ACCESS_TOKEN_URL = "{base_url}/oauth2/token"
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
     DEFAULT_SCOPE = ["openid", "profile", "user_impersonation", "email"]
     EXTRA_DATA = [

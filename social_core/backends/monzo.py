@@ -10,7 +10,6 @@ class MonzoOAuth2(BaseOAuth2):
 
     AUTHORIZATION_URL = "https://auth.getmondo.co.uk/"
     ACCESS_TOKEN_URL = "https://api.monzo.com/oauth2/token"
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
 
     def get_user_details(self, response):

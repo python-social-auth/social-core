@@ -16,7 +16,6 @@ class MailruOAuth2(BaseOAuth2):
     ID_KEY = "uid"
     AUTHORIZATION_URL = "https://connect.mail.ru/oauth/authorize"
     ACCESS_TOKEN_URL = "https://connect.mail.ru/oauth/token"
-    ACCESS_TOKEN_METHOD = "POST"
     EXTRA_DATA = [("refresh_token", "refresh_token"), ("expires_in", "expires")]
 
     def get_user_details(self, response):
@@ -52,7 +51,6 @@ class MRGOAuth2(BaseOAuth2):
     ID_KEY = "email"
     AUTHORIZATION_URL = "https://oauth.mail.ru/login"
     ACCESS_TOKEN_URL = "https://oauth.mail.ru/token"
-    ACCESS_TOKEN_METHOD = "POST"
     EXTRA_DATA = [("refresh_token", "refresh_token"), ("expires_in", "expires")]
     REDIRECT_STATE = False
 

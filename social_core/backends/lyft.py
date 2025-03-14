@@ -12,7 +12,6 @@ class LyftOAuth2(BaseOAuth2):
     SCOPE_SEPARATOR = " "
     AUTHORIZATION_URL = "https://api.lyft.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://api.lyft.com/oauth/token"
-    ACCESS_TOKEN_METHOD = "POST"
     REFRESH_TOKEN_URL = "https://api.lyft.com/oauth/token"
     USER_DATA_URL = "https://api.lyft.com/v1/profile"
     DEFAULT_SCOPE = ["public", "profile", "rides.read", "rides.request"]

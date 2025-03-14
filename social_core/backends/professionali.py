@@ -16,7 +16,6 @@ class ProfessionaliOAuth2(BaseOAuth2):
     ID_KEY = "user_id"
     AUTHORIZATION_URL = "https://api.professionali.ru/oauth/authorize.html"
     ACCESS_TOKEN_URL = "https://api.professionali.ru/oauth/getToken.json"
-    ACCESS_TOKEN_METHOD = "POST"
     EXTRA_DATA = [("avatar_big", "avatar_big"), ("link", "link")]
 
     def get_user_details(self, response):

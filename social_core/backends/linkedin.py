@@ -53,7 +53,6 @@ class LinkedinOAuth2(BaseOAuth2):
         "https://api.linkedin.com/v2/emailAddress"
         "?q=members&projection=(elements*(handle~))"
     )
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
     DEFAULT_SCOPE = ["email", "profile", "openid"]
     EXTRA_DATA = [

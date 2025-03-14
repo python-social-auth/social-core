@@ -13,7 +13,6 @@ class TwitterOAuth2(BaseOAuth2PKCE):
     name = "twitter-oauth2"
     AUTHORIZATION_URL = "https://twitter.com/i/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://api.twitter.com/2/oauth2/token"
-    ACCESS_TOKEN_METHOD = "POST"
     DEFAULT_SCOPE = ["users.read", "tweet.read"]
     SCOPE_SEPARATOR = " "
     REDIRECT_STATE = False

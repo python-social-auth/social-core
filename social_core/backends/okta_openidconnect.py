@@ -12,5 +12,4 @@ class OktaOpenIdConnect(OktaOAuth2, OpenIdConnectAuth):
 
     name = "okta-openidconnect"
     REDIRECT_STATE = False
-    ACCESS_TOKEN_METHOD = "POST"
     RESPONSE_TYPE = "code"

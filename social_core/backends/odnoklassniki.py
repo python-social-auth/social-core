@@ -16,7 +16,6 @@ class OdnoklassnikiOAuth2(BaseOAuth2):
 
     name = "odnoklassniki-oauth2"
     ID_KEY = "uid"
-    ACCESS_TOKEN_METHOD = "POST"
     SCOPE_SEPARATOR = ";"
     AUTHORIZATION_URL = "https://connect.ok.ru/oauth/authorize"
     ACCESS_TOKEN_URL = "https://api.ok.ru/oauth/token.do"
