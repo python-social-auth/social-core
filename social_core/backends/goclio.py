@@ -4,7 +4,6 @@ from .oauth import BaseOAuth2
 class GoClioOAuth2(BaseOAuth2):
     name = "goclio"
     AUTHORIZATION_URL = "https://app.goclio.com/oauth/authorize/"
-    ACCESS_TOKEN_METHOD = "POST"
     ACCESS_TOKEN_URL = "https://app.goclio.com/oauth/token/"
     REDIRECT_STATE = False
     STATE_PARAMETER = False

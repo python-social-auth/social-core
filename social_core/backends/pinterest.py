@@ -12,7 +12,6 @@ class PinterestOAuth2(BaseOAuth2):
     AUTHORIZATION_URL = "https://api.pinterest.com/oauth/"
     ACCESS_TOKEN_URL = "https://api.pinterest.com/v1/oauth/token"
     REDIRECT_STATE = False
-    ACCESS_TOKEN_METHOD = "POST"
 
     def user_data(self, access_token, *args, **kwargs):
         response = self.get_json(

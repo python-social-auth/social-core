@@ -18,7 +18,6 @@ class OpenStreetMapOAuth2(BaseOAuth2PKCE):
     name = "openstreetmap-oauth2"
     AUTHORIZATION_URL = "https://www.openstreetmap.org/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://www.openstreetmap.org/oauth2/token"
-    ACCESS_TOKEN_METHOD = "POST"
     SCOPE_SEPARATOR = " "
     STATE_PARAMETER = True
     DEFAULT_SCOPE = ["read_prefs"]

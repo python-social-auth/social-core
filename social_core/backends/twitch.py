@@ -44,7 +44,6 @@ class TwitchOAuth2(BaseOAuth2):
     ID_KEY = "_id"
     AUTHORIZATION_URL = "https://id.twitch.tv/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://id.twitch.tv/oauth2/token"
-    ACCESS_TOKEN_METHOD = "POST"
     DEFAULT_SCOPE = ["user:read:email"]
     REDIRECT_STATE = False
 

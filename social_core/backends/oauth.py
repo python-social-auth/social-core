@@ -46,7 +46,7 @@ class OAuthAuth(BaseAuth):
 
     AUTHORIZATION_URL = ""
     ACCESS_TOKEN_URL = ""
-    ACCESS_TOKEN_METHOD = "GET"
+    ACCESS_TOKEN_METHOD = "POST"
     REVOKE_TOKEN_URL = None
     REVOKE_TOKEN_METHOD = "POST"
     ID_KEY = "id"

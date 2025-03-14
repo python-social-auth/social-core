@@ -12,7 +12,6 @@ class NKOAuth2(BaseOAuth2):
     AUTHORIZATION_URL = "https://nk.pl/oauth2/login"
     ACCESS_TOKEN_URL = "https://nk.pl/oauth2/token"
     SCOPE_SEPARATOR = ","
-    ACCESS_TOKEN_METHOD = "POST"
     SIGNATURE_TYPE_AUTH_HEADER = "AUTH_HEADER"
     EXTRA_DATA = [
         ("id", "id"),

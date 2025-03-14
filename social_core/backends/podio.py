@@ -12,7 +12,6 @@ class PodioOAuth2(BaseOAuth2):
     name = "podio"
     AUTHORIZATION_URL = "https://podio.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://podio.com/oauth/token"
-    ACCESS_TOKEN_METHOD = "POST"
     EXTRA_DATA = [
         ("access_token", "access_token"),
         ("token_type", "token_type"),

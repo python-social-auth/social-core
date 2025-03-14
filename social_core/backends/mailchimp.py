@@ -8,7 +8,6 @@ class MailChimpOAuth2(BaseOAuth2):
     AUTHORIZATION_URL = "https://login.mailchimp.com/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://login.mailchimp.com/oauth2/token"
     METADATA_URL = "https://login.mailchimp.com/oauth2/metadata"
-    ACCESS_TOKEN_METHOD = "POST"
     STATE_PARAMETER = False
     REDIRECT_STATE = False
     ID_KEY = "user_id"

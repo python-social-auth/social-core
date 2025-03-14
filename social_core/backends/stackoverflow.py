@@ -13,7 +13,6 @@ class StackoverflowOAuth2(BaseOAuth2):
     ID_KEY = "user_id"
     AUTHORIZATION_URL = "https://stackexchange.com/oauth"
     ACCESS_TOKEN_URL = "https://stackexchange.com/oauth/access_token"
-    ACCESS_TOKEN_METHOD = "POST"
     SCOPE_SEPARATOR = ","
     EXTRA_DATA = [("id", "id"), ("expires", "expires")]
 

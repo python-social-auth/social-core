@@ -10,7 +10,6 @@ class DripOAuth(BaseOAuth2):
     name = "drip"
     AUTHORIZATION_URL = "https://www.getdrip.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://www.getdrip.com/oauth/token"
-    ACCESS_TOKEN_METHOD = "POST"
 
     def get_user_id(self, details, response):
         return details["email"]

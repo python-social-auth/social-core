@@ -82,7 +82,6 @@ class VKOAuth2(BaseOAuth2):
     ID_KEY = "id"
     AUTHORIZATION_URL = "https://oauth.vk.com/authorize"
     ACCESS_TOKEN_URL = "https://oauth.vk.com/access_token"
-    ACCESS_TOKEN_METHOD = "POST"
     EXTRA_DATA = [("id", "id"), ("expires_in", "expires")]
 
     def get_user_details(self, response):

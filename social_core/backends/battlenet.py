@@ -14,7 +14,6 @@ class BattleNetOAuth2(BaseOAuth2):
     REDIRECT_STATE = False
     AUTHORIZATION_URL = "https://eu.battle.net/oauth/authorize"
     ACCESS_TOKEN_URL = "https://eu.battle.net/oauth/token"
-    ACCESS_TOKEN_METHOD = "POST"
     REVOKE_TOKEN_METHOD = "GET"
     DEFAULT_SCOPE = ["wow.profile"]
     EXTRA_DATA = [

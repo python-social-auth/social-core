@@ -16,7 +16,6 @@ class MovesOAuth2(BaseOAuth2):
     ID_KEY = "user_id"
     AUTHORIZATION_URL = "https://api.moves-app.com/oauth/v1/authorize"
     ACCESS_TOKEN_URL = "https://api.moves-app.com/oauth/v1/access_token"
-    ACCESS_TOKEN_METHOD = "POST"
     EXTRA_DATA = [
         ("refresh_token", "refresh_token", True),
         ("expires_in", "expires"),

@@ -18,7 +18,6 @@ class LineOAuth2(BaseOAuth2):
     ACCESS_TOKEN_URL = "https://api.line.me/oauth2/v2.1/token"
     BASE_API_URL = "https://api.line.me"
     USER_INFO_URL = BASE_API_URL + "/v2/profile"
-    ACCESS_TOKEN_METHOD = "POST"
     STATE_PARAMETER = True
     DEFAULT_SCOPE = ["profile"]
     REDIRECT_STATE = True

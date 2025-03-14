@@ -13,7 +13,6 @@ class AmazonOAuth2(BaseOAuth2):
     ACCESS_TOKEN_URL = "https://api.amazon.com/auth/o2/token"
     DEFAULT_SCOPE = ["profile"]
     REDIRECT_STATE = False
-    ACCESS_TOKEN_METHOD = "POST"
     EXTRA_DATA = [
         ("refresh_token", "refresh_token", True),
         ("user_id", "user_id"),

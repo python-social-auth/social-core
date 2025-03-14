@@ -15,7 +15,6 @@ class BeatsOAuth2(BaseOAuth2):
     ID_KEY = "user_context"
     AUTHORIZATION_URL = "https://partner.api.beatsmusic.com/v1/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://partner.api.beatsmusic.com/oauth2/token"
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
 
     def get_user_id(self, details, response):

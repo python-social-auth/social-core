@@ -17,7 +17,6 @@ class PayPalOAuth2(BaseOAuth2):
         "https://api.paypal.com/v1/identity/oauth2/userinfo?schema=paypalv1.1"
     )
     DEFAULT_SCOPE = ["openid", "profile"]
-    ACCESS_TOKEN_METHOD = "POST"
     REFRESH_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
 
