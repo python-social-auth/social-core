@@ -10,7 +10,6 @@ class PixelPinOpenIDConnect(OpenIdConnectAuth):
     ACCESS_TOKEN_URL = "https://login.pixelpin.io/connect/token"
     OIDC_ENDPOINT = "https://login.pixelpin.io"
     JWKS_URI = "https://login.pixelpin.io/.well-known/jwks"
-    ACCESS_TOKEN_METHOD = "POST"
     REQUIRES_EMAIL_VALIDATION = False
 
     def get_user_details(self, response):

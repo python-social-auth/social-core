@@ -14,7 +14,6 @@ class ChatworkOAuth2(BaseOAuth2):
     API_URL = "https://api.chatwork.com/v2"
     AUTHORIZATION_URL = "https://www.chatwork.com/packages/oauth2/login.php"
     ACCESS_TOKEN_URL = "https://oauth.chatwork.com/token"
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = True
     DEFAULT_SCOPE = ["users.profile.me:read"]
     ID_KEY = "account_id"

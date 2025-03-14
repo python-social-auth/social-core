@@ -8,7 +8,6 @@ class EtsyOAuth2(BaseOAuth2PKCE):
     ACCESS_TOKEN_URL = "https://api.etsy.com/v3/public/oauth/token"
     REFRESH_TOKEN_URL = "https://api.etsy.com/v3/public/oauth/token"
     PKCE_DEFAULT_CODE_CHALLENGE_METHOD = "S256"
-    ACCESS_TOKEN_METHOD = "POST"
     REQUEST_TOKEN_METHOD = "POST"
     SCOPE_SEPARATOR = " "
     REDIRECT_STATE = False

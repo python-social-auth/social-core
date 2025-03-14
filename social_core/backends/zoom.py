@@ -14,7 +14,6 @@ class ZoomOAuth2(BaseOAuth2):
     ACCESS_TOKEN_URL = "https://zoom.us/oauth/token"
     USER_DETAILS_URL = "https://api.zoom.us/v2/users/me"
     DEFAULT_SCOPE = ["user:read"]
-    ACCESS_TOKEN_METHOD = "POST"
     REFRESH_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
     EXTRA_DATA = [("expires_in", "expires")]

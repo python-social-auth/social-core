@@ -57,7 +57,6 @@ class RdioOAuth2(BaseRdio, BaseOAuth2):
     name = "rdio-oauth2"
     AUTHORIZATION_URL = "https://www.rdio.com/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://www.rdio.com/oauth2/token"
-    ACCESS_TOKEN_METHOD = "POST"
     EXTRA_DATA = [
         ("key", "rdio_id"),
         ("icon", "rdio_icon_url"),

@@ -12,7 +12,6 @@ class SketchfabOAuth2(BaseOAuth2):
     ID_KEY = "uid"
     AUTHORIZATION_URL = "https://sketchfab.com/oauth2/authorize/"
     ACCESS_TOKEN_URL = "https://sketchfab.com/oauth2/token/"
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
     REQUIRES_EMAIL_VALIDATION = False
     EXTRA_DATA = [("username", "username"), ("apiToken", "apiToken")]

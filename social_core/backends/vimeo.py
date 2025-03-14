@@ -42,7 +42,6 @@ class VimeoOAuth2(BaseOAuth2):
     AUTHORIZATION_URL = "https://api.vimeo.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://api.vimeo.com/oauth/access_token"
     REFRESH_TOKEN_URL = "https://api.vimeo.com/oauth/request_token"
-    ACCESS_TOKEN_METHOD = "POST"
     SCOPE_SEPARATOR = ","
     API_ACCEPT_HEADER = {"Accept": "application/vnd.vimeo.*+json;version=3.0"}
 

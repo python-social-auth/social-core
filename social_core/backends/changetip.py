@@ -9,7 +9,6 @@ class ChangeTipOAuth2(BaseOAuth2):
     name = "changetip"
     AUTHORIZATION_URL = "https://www.changetip.com/o/authorize/"
     ACCESS_TOKEN_URL = "https://www.changetip.com/o/token/"
-    ACCESS_TOKEN_METHOD = "POST"
     SCOPE_SEPARATOR = " "
 
     def get_user_details(self, response):

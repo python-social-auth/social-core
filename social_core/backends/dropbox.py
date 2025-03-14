@@ -11,7 +11,6 @@ class DropboxOAuth2V2(BaseOAuth2):
     ID_KEY = "uid"
     AUTHORIZATION_URL = "https://www.dropbox.com/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://api.dropboxapi.com/oauth2/token"
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
 
     def get_user_details(self, response):

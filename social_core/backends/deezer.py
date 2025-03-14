@@ -16,7 +16,6 @@ class DeezerOAuth2(BaseOAuth2):
     ID_KEY = "name"
     AUTHORIZATION_URL = "https://connect.deezer.com/oauth/auth.php"
     ACCESS_TOKEN_URL = "https://connect.deezer.com/oauth/access_token.php"
-    ACCESS_TOKEN_METHOD = "POST"
     SCOPE_SEPARATOR = ","
     REDIRECT_STATE = False
 

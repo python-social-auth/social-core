@@ -18,7 +18,6 @@ class GitLabOAuth2(BaseOAuth2):
     API_URL = "https://gitlab.com"
     AUTHORIZATION_URL = "https://gitlab.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://gitlab.com/oauth/token"
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
     DEFAULT_SCOPE = ["read_user"]
     EXTRA_DATA = [

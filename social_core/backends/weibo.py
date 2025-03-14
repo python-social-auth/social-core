@@ -15,7 +15,6 @@ class WeiboOAuth2(BaseOAuth2):
     AUTHORIZATION_URL = "https://api.weibo.com/oauth2/authorize"
     REQUEST_TOKEN_URL = "https://api.weibo.com/oauth2/request_token"
     ACCESS_TOKEN_URL = "https://api.weibo.com/oauth2/access_token"
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
     EXTRA_DATA = [
         ("id", "id"),

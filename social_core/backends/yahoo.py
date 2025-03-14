@@ -63,7 +63,6 @@ class YahooOAuth2(BaseOAuth2):
     ID_KEY = "sub"
     AUTHORIZATION_URL = "https://api.login.yahoo.com/oauth2/request_auth"
     ACCESS_TOKEN_URL = "https://api.login.yahoo.com/oauth2/get_token"
-    ACCESS_TOKEN_METHOD = "POST"
     EXTRA_DATA = [
         ("sub", "id"),
         ("access_token", "access_token"),

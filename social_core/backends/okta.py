@@ -37,7 +37,6 @@ class OktaOAuth2(OktaMixin, BaseOAuth2):
 
     name = "okta-oauth2"
     REDIRECT_STATE = False
-    ACCESS_TOKEN_METHOD = "POST"
     SCOPE_SEPARATOR = " "
     ID_KEY = "preferred_username"
 

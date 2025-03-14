@@ -16,7 +16,6 @@ class BitbucketDataCenterOAuth2(BaseOAuth2PKCE):
     name = "bitbucket-datacenter-oauth2"
     ID_KEY = "id"
     SCOPE_SEPARATOR = " "
-    ACCESS_TOKEN_METHOD = "POST"
     REFRESH_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
     STATE_PARAMETER = True

@@ -12,7 +12,6 @@ class SurveyMonkeyOAuth2(BaseOAuth2):
     name = "surveymonkey"
     AUTHORIZATION_URL = "https://api.surveymonkey.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://api.surveymonkey.com/oauth/token"
-    ACCESS_TOKEN_METHOD = "POST"
     USER_DATA_URL = "/v3/users/me"
     STATE_PARAMETER = False
     REDIRECT_STATE = False

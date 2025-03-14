@@ -12,7 +12,6 @@ class ShimmeringOAuth2(BaseOAuth2):
     ID_KEY = "id"
     AUTHORIZATION_URL = "http://developers.shimmeringverify.com/o/authorize/"
     ACCESS_TOKEN_URL = "http://developers.shimmeringverify.com/o/token/"
-    ACCESS_TOKEN_METHOD = "POST"
 
     def get_user_details(self, response):
         """Return user details from Shimmering"""

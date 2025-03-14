@@ -7,7 +7,6 @@ class WunderlistOAuth2(BaseOAuth2):
     name = "wunderlist"
     AUTHORIZATION_URL = "https://www.wunderlist.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://www.wunderlist.com/oauth/access_token"
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
 
     def get_user_details(self, response):

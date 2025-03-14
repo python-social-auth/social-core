@@ -11,7 +11,6 @@ class DigitalOceanOAuth(BaseOAuth2):
     name = "digitalocean"
     AUTHORIZATION_URL = "https://cloud.digitalocean.com/v1/oauth/authorize"
     ACCESS_TOKEN_URL = "https://cloud.digitalocean.com/v1/oauth/token"
-    ACCESS_TOKEN_METHOD = "POST"
     SCOPE_SEPARATOR = " "
     EXTRA_DATA = [("expires_in", "expires_in")]
 

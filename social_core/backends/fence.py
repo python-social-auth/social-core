@@ -10,7 +10,6 @@ class Fence(OpenIdConnectAuth):
     name = "fence"
     OIDC_ENDPOINT = "https://nci-crdc.datacommons.io"
     ID_KEY = "username"
-    ACCESS_TOKEN_METHOD = "POST"
     DEFAULT_SCOPE = ["openid", "user"]
     JWT_DECODE_OPTIONS = {"verify_at_hash": False}
 

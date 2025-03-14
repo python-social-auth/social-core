@@ -13,7 +13,6 @@ class SeznamOAuth2(BaseOAuth2):
     API_URL = "https://login.szn.cz/api/v1/user"
     AUTHORIZATION_URL = "https://login.szn.cz/api/v1/oauth/auth"
     ACCESS_TOKEN_URL = "https://login.szn.cz/api/v1/oauth/token"
-    ACCESS_TOKEN_METHOD = "POST"
     ID_KEY = "oauth_user_id"
     STATE_PARAMETER = True
     DEFAULT_SCOPE = ["identity"]

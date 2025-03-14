@@ -9,7 +9,6 @@ class UniverseOAuth2(BaseOAuth2):
     ACCESS_TOKEN_URL = "https://www.universe.com/oauth/token"
     BASE_API_URL = "https://www.universe.com/api"
     USER_INFO_URL = BASE_API_URL + "/v2/current_user"
-    ACCESS_TOKEN_METHOD = "POST"
     STATE_PARAMETER = True
     REDIRECT_STATE = True
     EXTRA_DATA = [

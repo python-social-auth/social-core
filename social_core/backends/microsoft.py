@@ -13,7 +13,6 @@ class MicrosoftOAuth2(BaseOAuth2):
     AUTHORIZATION_URL = "https://login.microsoftonline.com/common/oauth2/v2.0/authorize"
     ACCESS_TOKEN_URL = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
 
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
     DEFAULT_SCOPE = ["User.Read"]
 

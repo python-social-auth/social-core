@@ -7,7 +7,6 @@ class NaverOAuth2(BaseOAuth2):
     name = "naver"
     AUTHORIZATION_URL = "https://nid.naver.com/oauth2.0/authorize"
     ACCESS_TOKEN_URL = "https://nid.naver.com/oauth2.0/token"
-    ACCESS_TOKEN_METHOD = "POST"
     EXTRA_DATA = [
         ("id", "id"),
     ]
