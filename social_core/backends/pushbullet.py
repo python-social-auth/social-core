@@ -12,7 +12,6 @@ class PushbulletOAuth2(BaseOAuth2):
     AUTHORIZATION_URL = "https://www.pushbullet.com/authorize"
     REQUEST_TOKEN_URL = "https://api.pushbullet.com/oauth2/token"
     ACCESS_TOKEN_URL = "https://api.pushbullet.com/oauth2/token"
-    ACCESS_TOKEN_METHOD = "POST"
     STATE_PARAMETER = False
 
     def get_user_details(self, response):

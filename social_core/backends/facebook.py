@@ -30,6 +30,7 @@ class FacebookOAuth2(BaseOAuth2):
     SCOPE_SEPARATOR = ","
     AUTHORIZATION_URL = "https://www.facebook.com/v{version}/dialog/oauth"
     ACCESS_TOKEN_URL = "https://graph.facebook.com/v{version}/oauth/access_token"
+    ACCESS_TOKEN_METHOD = "GET"
     REVOKE_TOKEN_URL = "https://graph.facebook.com/v{version}/{uid}/permissions"
     REVOKE_TOKEN_METHOD = "DELETE"
     USER_DATA_URL = "https://graph.facebook.com/v{version}/me"
@@ -107,6 +108,7 @@ class FacebookOAuth2(BaseOAuth2):
                 "client_secret": secret,
                 "code": self.data["code"],
             },
+            method=self.ACCESS_TOKEN_METHOD,
         )
         # API v2.3 returns a JSON, according to the documents linked at issue
         # #592, but it seems that this needs to be enabled(?), otherwise the

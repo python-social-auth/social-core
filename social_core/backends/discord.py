@@ -11,7 +11,6 @@ class DiscordOAuth2(BaseOAuth2):
     HOSTNAME = "discord.com"
     AUTHORIZATION_URL = f"https://{HOSTNAME}/api/oauth2/authorize"
     ACCESS_TOKEN_URL = f"https://{HOSTNAME}/api/oauth2/token"
-    ACCESS_TOKEN_METHOD = "POST"
     REVOKE_TOKEN_URL = f"https://{HOSTNAME}/api/oauth2/token/revoke"
     REVOKE_TOKEN_METHOD = "GET"
     DEFAULT_SCOPE = ["identify"]

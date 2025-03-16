@@ -4,7 +4,6 @@ from .oauth import BaseOAuth2
 class EchosignOAuth2(BaseOAuth2):
     name = "echosign"
     REDIRECT_STATE = False
-    ACCESS_TOKEN_METHOD = "POST"
     REFRESH_TOKEN_METHOD = "POST"
     REVOKE_TOKEN_METHOD = "POST"
     AUTHORIZATION_URL = "https://secure.echosign.com/public/oauth"

@@ -13,7 +13,6 @@ class LoginRadiusAuth(BaseOAuth2):
     ID_KEY = "ID"
     ACCESS_TOKEN_URL = "https://api.loginradius.com/api/v2/access_token"
     PROFILE_URL = "https://api.loginradius.com/api/v2/userprofile"
-    ACCESS_TOKEN_METHOD = "GET"
     REDIRECT_STATE = False
     STATE_PARAMETER = False
 
@@ -47,7 +46,7 @@ class LoginRadiusAuth(BaseOAuth2):
             params={"access_token": access_token},
             data=self.auth_complete_params(self.validate_state()),
             headers=self.auth_headers(),
-            method=self.ACCESS_TOKEN_METHOD,
+            method="GET",
         )
 
     def get_user_details(self, response):

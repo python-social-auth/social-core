@@ -11,7 +11,6 @@ class OssoOAuth2(BaseOAuth2):
     STATE_PARAMETER = True
     AUTHORIZATION_URL = "{osso_base_url}/oauth/authorize"
     ACCESS_TOKEN_URL = "{osso_base_url}/oauth/token"
-    ACCESS_TOKEN_METHOD = "POST"
 
     @property
     def osso_base_url(self):

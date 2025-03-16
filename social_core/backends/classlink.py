@@ -11,7 +11,6 @@ class ClasslinkOAuth(BaseOAuth2):
     name = "classlink"
     AUTHORIZATION_URL = "https://launchpad.classlink.com/oauth2/v2/auth"
     ACCESS_TOKEN_URL = "https://launchpad.classlink.com/oauth2/v2/token"
-    ACCESS_TOKEN_METHOD = "POST"
     DEFAULT_SCOPE = ["profile"]
     REDIRECT_STATE = False
     SCOPE_SEPARATOR = " "

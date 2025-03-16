@@ -13,7 +13,6 @@ class GiteaOAuth2(BaseOAuth2):
     API_URL = "https://gitea.com"
     AUTHORIZATION_URL = "https://gitea.com/login/oauth/authorize"
     ACCESS_TOKEN_URL = "https://gitea.com/login/oauth/access_token"
-    ACCESS_TOKEN_METHOD = "POST"
     SCOPE_SEPARATOR = ","
     REDIRECT_STATE = False
     STATE_PARAMETER = True

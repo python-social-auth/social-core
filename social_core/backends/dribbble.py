@@ -13,7 +13,6 @@ class DribbbleOAuth2(BaseOAuth2):
     name = "dribbble"
     AUTHORIZATION_URL = "https://dribbble.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://dribbble.com/oauth/token"
-    ACCESS_TOKEN_METHOD = "POST"
     SCOPE_SEPARATOR = ","
     EXTRA_DATA = [
         ("id", "id"),

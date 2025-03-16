@@ -15,7 +15,6 @@ class PingOpenIdConnect(OpenIdConnectAuth):
     # OIDC_ENDPOINT has the form 'https://auth.pingone.com/<APP ID>/as'
     OIDC_ENDPOINT = ""
     REDIRECT_STATE = False
-    ACCESS_TOKEN_METHOD = "POST"
     RESPONSE_TYPE = "code"
     USERNAME_KEY = "preferred_username"
 

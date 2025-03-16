@@ -58,7 +58,6 @@ class BitbucketOAuth2(BitbucketOAuthBase, BaseOAuth2):
     SCOPE_SEPARATOR = " "
     AUTHORIZATION_URL = "https://bitbucket.org/site/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://bitbucket.org/site/oauth2/access_token"
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
     EXTRA_DATA = [
         ("scopes", "scopes"),

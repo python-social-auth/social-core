@@ -11,7 +11,6 @@ class SciStarterOAuth2(BaseOAuth2):
     SCOPE_SEPARATOR = " "
     AUTHORIZATION_URL = "https://scistarter.com/authorize"
     ACCESS_TOKEN_URL = "https://scistarter.com/token?key={key}"
-    ACCESS_TOKEN_METHOD = "POST"
     USER_ACCESS_URL = (
         "https://scistarter.com/api/user_info?client_id={clientid}&key={key}"
     )

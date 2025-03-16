@@ -8,7 +8,6 @@ class EventbriteOAuth2(BaseOAuth2):
     AUTHORIZATION_URL = "https://www.eventbrite.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://www.eventbrite.com/oauth/token"
     METADATA_URL = "https://www.eventbriteapi.com/v3/users/me"
-    ACCESS_TOKEN_METHOD = "POST"
     STATE_PARAMETER = False
     REDIRECT_STATE = False
 

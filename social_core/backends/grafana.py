@@ -7,7 +7,6 @@ class GrafanaOAuth2(BaseOAuth2):
     name = "grafana"
     AUTHORIZATION_URL = "https://grafana.com/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://grafana.com/api/oauth2/token"
-    ACCESS_TOKEN_METHOD = "POST"
     DEFAULT_SCOPE = ["profile", "email"]
     SCOPE_SEPARATOR = ","
     USER_DETAILS_URL = "https://grafana.com/api/oauth2/user"

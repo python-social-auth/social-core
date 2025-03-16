@@ -12,7 +12,6 @@ from .oauth import BaseOAuth2
 
 class OpenshiftOAuth2(BaseOAuth2):
     name = "openshift"
-    ACCESS_TOKEN_METHOD = "POST"
 
     def access_token_url(self):
         return urljoin(append_slash(self.setting("URL")), "oauth/token")

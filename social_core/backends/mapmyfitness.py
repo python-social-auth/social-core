@@ -13,7 +13,6 @@ class MapMyFitnessOAuth2(BaseOAuth2):
     AUTHORIZATION_URL = "https://www.mapmyfitness.com/v7.0/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://oauth2-api.mapmyapi.com/v7.0/oauth2/access_token"
     REQUEST_TOKEN_METHOD = "POST"
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
     EXTRA_DATA = [
         ("refresh_token", "refresh_token"),

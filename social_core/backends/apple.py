@@ -44,7 +44,6 @@ class AppleIdAuth(BaseOAuth2):
     JWK_URL = "https://appleid.apple.com/auth/keys"
     AUTHORIZATION_URL = "https://appleid.apple.com/auth/authorize"
     ACCESS_TOKEN_URL = "https://appleid.apple.com/auth/token"
-    ACCESS_TOKEN_METHOD = "POST"
     RESPONSE_MODE = None
 
     ID_KEY = "sub"

@@ -48,7 +48,6 @@ class OpenIdConnectAuth(BaseOAuth2):
     DEFAULT_SCOPE = ["openid", "profile", "email"]
     EXTRA_DATA = ["id_token", "refresh_token", ("sub", "id")]
     REDIRECT_STATE = False
-    ACCESS_TOKEN_METHOD = "POST"
     REVOKE_TOKEN_METHOD = "GET"
     ID_KEY = "sub"
     USERNAME_KEY = "preferred_username"

@@ -12,7 +12,6 @@ class SimpleLoginOAuth2(BaseOAuth2):
     name = "simplelogin"
     AUTHORIZATION_URL = "https://app.simplelogin.io/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://app.simplelogin.io/oauth2/token"
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
     STATE_PARAMETER = True
     SEND_USER_AGENT = True

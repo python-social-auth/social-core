@@ -15,7 +15,6 @@ class ClefOAuth2(BaseOAuth2):
     name = "clef"
     AUTHORIZATION_URL = "https://clef.io/iframes/qr"
     ACCESS_TOKEN_URL = "https://clef.io/api/v1/authorize"
-    ACCESS_TOKEN_METHOD = "POST"
     SCOPE_SEPARATOR = ","
 
     def auth_params(self, *args, **kwargs):

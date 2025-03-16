@@ -11,7 +11,6 @@ class AppsfuelOAuth2(BaseOAuth2):
     ID_KEY = "user_id"
     AUTHORIZATION_URL = "http://app.appsfuel.com/content/permission"
     ACCESS_TOKEN_URL = "https://api.appsfuel.com/v1/live/oauth/token"
-    ACCESS_TOKEN_METHOD = "POST"
     USER_DETAILS_URL = "https://api.appsfuel.com/v1/live/user"
 
     def get_user_details(self, response):

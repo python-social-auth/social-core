@@ -65,7 +65,6 @@ class GoogleOAuth2(BaseGoogleOAuth2API, BaseOAuth2):
     REDIRECT_STATE = False
     AUTHORIZATION_URL = "https://accounts.google.com/o/oauth2/auth"
     ACCESS_TOKEN_URL = "https://accounts.google.com/o/oauth2/token"
-    ACCESS_TOKEN_METHOD = "POST"
     REVOKE_TOKEN_URL = "https://accounts.google.com/o/oauth2/revoke"
     REVOKE_TOKEN_METHOD = "GET"
     # The order of the default scope is important
@@ -83,7 +82,6 @@ class GooglePlusAuth(BaseGoogleOAuth2API, BaseOAuth2):
     STATE_PARAMETER = False
     AUTHORIZATION_URL = "https://accounts.google.com/o/oauth2/auth"
     ACCESS_TOKEN_URL = "https://accounts.google.com/o/oauth2/token"
-    ACCESS_TOKEN_METHOD = "POST"
     REVOKE_TOKEN_URL = "https://accounts.google.com/o/oauth2/revoke"
     REVOKE_TOKEN_METHOD = "GET"
     DEFAULT_SCOPE = [

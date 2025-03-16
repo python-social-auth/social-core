@@ -12,7 +12,6 @@ class DockerOAuth2(BaseOAuth2):
     AUTHORIZATION_URL = "https://hub.docker.com/api/v1.1/o/authorize/"
     ACCESS_TOKEN_URL = "https://hub.docker.com/api/v1.1/o/token/"
     REFRESH_TOKEN_URL = "https://hub.docker.com/api/v1.1/o/token/"
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
     EXTRA_DATA = [
         ("refresh_token", "refresh_token", True),

@@ -11,7 +11,6 @@ class CILogonOAuth2(BaseOAuth2):
     name = "cilogon-oauth2"
     AUTHORIZATION_URL = "https://cilogon.org/authorize"
     ACCESS_TOKEN_URL = "https://cilogon.org/oauth2/token"
-    ACCESS_TOKEN_METHOD = "POST"
     DEFAULT_SCOPE = ["openid", "email", "profile", "org.cilogon.userinfo"]
     REDIRECT_STATE = False
     SCOPE_SEPARATOR = "+"
