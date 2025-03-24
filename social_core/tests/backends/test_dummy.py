@@ -1,9 +1,8 @@
 # pyright: reportAttributeAccessIssue=false
-
 import datetime
 import json
 
-from httpretty import HTTPretty
+import responses
 
 from ...actions import do_disconnect
 from ...backends.oauth import BaseOAuth2
@@ -72,7 +71,7 @@ class DummyOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         self.do_login()
         user = User.get(self.expected_username)
         user.password = "password"
-        HTTPretty.register_uri(
+        responses.add(
             self._method(self.backend.REVOKE_TOKEN_METHOD),
             self.backend.REVOKE_TOKEN_URL,
             status=200,

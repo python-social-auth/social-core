@@ -3,7 +3,7 @@
 import unittest
 
 import requests
-from httpretty import HTTPretty
+import responses
 
 from ...backends.utils import load_backends, user_backends_data
 from ...utils import PARTIAL_TOKEN_SESSION_NAME, module_member, parse_qs
@@ -26,7 +26,7 @@ class BaseBackendTest(unittest.TestCase):
     raw_complete_url = "/complete/{0}"
 
     def setUp(self):
-        HTTPretty.enable(allow_net_connect=False)
+        responses.start()
         Backend = module_member(self.backend_path)
         self.strategy = TestStrategy(TestStorage)
         self.backend = Backend(self.strategy, redirect_uri=self.complete_url)
@@ -49,8 +49,6 @@ class BaseBackendTest(unittest.TestCase):
         TestCode.reset_cache()
 
     def tearDown(self):
-        HTTPretty.disable()
-        HTTPretty.reset()
         self.backend = None
         self.strategy = None
         self.name = None
@@ -60,6 +58,8 @@ class BaseBackendTest(unittest.TestCase):
         TestNonce.reset_cache()
         TestAssociation.reset_cache()
         TestCode.reset_cache()
+        responses.stop()
+        responses.reset()
 
     def extra_settings(self):
         return {}
@@ -111,15 +111,15 @@ class BaseBackendTest(unittest.TestCase):
         )
 
     def pipeline_handlers(self, url):
-        HTTPretty.register_uri(HTTPretty.GET, url, status=200, body="foobar")
-        HTTPretty.register_uri(HTTPretty.POST, url, status=200)
+        responses.add(responses.GET, url, status=200, body="foobar")
+        responses.add(responses.POST, url, status=200)
 
     def pipeline_password_handling(self, url):
         password = "foobar"
         requests.get(url)
         requests.post(url, data={"password": password})
 
-        data = parse_qs(HTTPretty.last_request.body)
+        data = parse_qs(responses.calls[-1].request.body)
         self.assertEqual(data["password"], password)
         self.strategy.session_set("password", data["password"])
         return password
@@ -129,7 +129,7 @@ class BaseBackendTest(unittest.TestCase):
         requests.get(url)
         requests.post(url, data={"slug": slug})
 
-        data = parse_qs(HTTPretty.last_request.body)
+        data = parse_qs(responses.calls[-1].request.body)
         self.assertEqual(data["slug"], slug)
         self.strategy.session_set("slug", data["slug"])
         return slug

@@ -1,5 +1,5 @@
 import requests
-from httpretty import HTTPretty
+import responses
 
 from ...utils import parse_qs
 from .base import BaseBackendTest
@@ -27,14 +27,14 @@ class BaseLegacyTest(BaseBackendTest):
         complete_url = self.complete_url
         assert complete_url, "Subclasses must set the complete_url attribute"
 
-        HTTPretty.register_uri(
-            HTTPretty.GET,
+        responses.add(
+            responses.GET,
             start_url,
             status=200,
             body=self.form.format(complete_url),
         )
-        HTTPretty.register_uri(
-            HTTPretty.POST,
+        responses.add(
+            responses.POST,
             complete_url,
             status=200,
             body=self.response_body,

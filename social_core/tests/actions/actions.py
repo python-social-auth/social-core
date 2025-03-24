@@ -3,7 +3,7 @@ import unittest
 from urllib.parse import urlparse
 
 import requests
-from httpretty import HTTPretty
+import responses
 
 from ...actions import do_auth, do_complete
 from ...utils import module_member, parse_qs
@@ -57,7 +57,7 @@ class BaseActionTest(unittest.TestCase):
         super().__init__(*args, **kwargs)
 
     def setUp(self):
-        HTTPretty.enable()
+        responses.start()
         User.reset_cache()
         TestUserSocialAuth.reset_cache()
         TestNonce.reset_cache()
@@ -78,7 +78,8 @@ class BaseActionTest(unittest.TestCase):
         TestUserSocialAuth.reset_cache()
         TestNonce.reset_cache()
         TestAssociation.reset_cache()
-        HTTPretty.disable()
+        responses.stop()
+        responses.reset()
 
     def do_login(
         self, after_complete_checks=True, user_data_body=None, expected_username=None
@@ -105,18 +106,21 @@ class BaseActionTest(unittest.TestCase):
         )
         location_query = parse_qs(urlparse(location_url).query)
 
-        HTTPretty.register_uri(
-            HTTPretty.GET, start_url, status=301, location=location_url
+        responses.add(
+            responses.GET,
+            start_url,
+            status=301,
+            headers={"Location": location_url},
         )
-        HTTPretty.register_uri(HTTPretty.GET, location_url, status=200, body="foobar")
+        responses.add(responses.GET, location_url, status=200, body="foobar")
 
         response = requests.get(start_url)
         self.assertEqual(response.url, location_url)
         self.assertEqual(response.text, "foobar")
 
-        HTTPretty.register_uri(
-            HTTPretty.POST,
-            uri=self.backend.ACCESS_TOKEN_URL,
+        responses.add(
+            responses.POST,
+            url=self.backend.ACCESS_TOKEN_URL,
             status=200,
             body=self.access_token_body or "",
             content_type="text/json",
@@ -124,8 +128,8 @@ class BaseActionTest(unittest.TestCase):
 
         if self.user_data_url:
             user_data_body = user_data_body or self.user_data_body or ""
-            HTTPretty.register_uri(
-                HTTPretty.GET,
+            responses.add(
+                responses.GET,
                 self.user_data_url,
                 body=user_data_body,
                 content_type="text/json",
@@ -184,26 +188,29 @@ class BaseActionTest(unittest.TestCase):
         )
         location_query = parse_qs(urlparse(location_url).query)
 
-        HTTPretty.register_uri(
-            HTTPretty.GET, start_url, status=301, location=location_url
+        responses.add(
+            responses.GET,
+            start_url,
+            status=301,
+            headers={"Location": location_url},
         )
-        HTTPretty.register_uri(HTTPretty.GET, location_url, status=200, body="foobar")
+        responses.add(responses.GET, location_url, status=200, body="foobar")
 
         response = requests.get(start_url)
         self.assertEqual(response.url, location_url)
         self.assertEqual(response.text, "foobar")
 
-        HTTPretty.register_uri(
-            HTTPretty.GET,
-            uri=self.backend.ACCESS_TOKEN_URL,
+        responses.add(
+            responses.POST,
+            url=self.backend.ACCESS_TOKEN_URL,
             status=200,
             body=self.access_token_body or "",
             content_type="text/json",
         )
 
         if self.user_data_url:
-            HTTPretty.register_uri(
-                HTTPretty.GET,
+            responses.add(
+                responses.GET,
                 self.user_data_url,
                 body=self.user_data_body or "",
                 content_type="text/json",
@@ -219,13 +226,13 @@ class BaseActionTest(unittest.TestCase):
         redirect = do_complete(self.backend, user=self.user, login=_login)
         url = self.strategy.build_absolute_uri("/password")
         self.assertEqual(redirect.url, url)
-        HTTPretty.register_uri(HTTPretty.GET, redirect.url, status=200, body="foobar")
-        HTTPretty.register_uri(HTTPretty.POST, redirect.url, status=200)
+        responses.add(responses.GET, redirect.url, status=200, body="foobar")
+        responses.add(responses.POST, redirect.url, status=200)
 
         password = "foobar"
         requests.get(url)
         requests.post(url, data={"password": password})
-        data = parse_qs(HTTPretty.last_request.body)
+        data = parse_qs(responses.calls[-1].request.body)
         self.assertEqual(data["password"], password)
         self.strategy.session_set("password", data["password"])
 

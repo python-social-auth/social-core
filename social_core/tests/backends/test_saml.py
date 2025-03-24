@@ -7,7 +7,7 @@ from unittest.mock import patch
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 import requests
-from httpretty import HTTPretty
+import responses
 
 try:
     from onelogin.saml2.utils import (  # type: ignore reportMissingImports
@@ -61,10 +61,13 @@ class SAMLTest(BaseBackendTest):
         name = path.join(DATA_DIR, self.response_fixture)
         with open(name) as response_file:
             response_url = response_file.read()
-        HTTPretty.register_uri(
-            HTTPretty.GET, start_url, status=301, location=response_url
+        responses.add(
+            responses.GET,
+            start_url,
+            status=301,
+            headers={"Location": response_url},
         )
-        HTTPretty.register_uri(HTTPretty.GET, return_url, status=200, body="foobar")
+        responses.add(responses.GET, return_url, status=200, body="foobar")
 
     def do_start(self):
         start_url = self.backend.start().url

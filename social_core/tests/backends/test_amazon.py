@@ -1,6 +1,6 @@
 import json
 
-from httpretty import HTTPretty
+import responses
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
@@ -43,8 +43,8 @@ class AmazonOAuth2BrokenServerResponseTest(OAuth2Test, BaseAuthUrlTestMixin):
 
     def setUp(self):
         super().setUp()
-        HTTPretty.register_uri(
-            HTTPretty.GET,
+        responses.add(
+            responses.GET,
             "https://api.amazon.com/user/profile",
             status=200,
             body=self.user_data_body,

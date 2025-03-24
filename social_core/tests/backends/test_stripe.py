@@ -1,9 +1,8 @@
 # pyright: reportAttributeAccessIssue=false
-
 import json
 
 import requests
-from httpretty import HTTPretty
+import responses
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
@@ -38,8 +37,8 @@ class StripeOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
 
     def setUp(self):
         super().setUp()
-        HTTPretty.register_uri(
-            HTTPretty.GET, self.account_data_url, status=200, body=self.user_data_body
+        responses.add(
+            responses.GET, self.account_data_url, status=200, body=self.user_data_body
         )
 
     def test_login(self):

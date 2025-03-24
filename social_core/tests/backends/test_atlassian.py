@@ -1,6 +1,6 @@
 import json
 
-from httpretty import HTTPretty
+import responses
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
@@ -43,8 +43,8 @@ class AtlassianOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
 
     def auth_handlers(self, start_url):
         target_url = super().auth_handlers(start_url)
-        HTTPretty.register_uri(
-            HTTPretty.GET,
+        responses.add(
+            responses.GET,
             self.tenant_url,
             body=self.tenant_data_body,
             content_type="application/json",

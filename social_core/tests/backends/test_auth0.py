@@ -1,7 +1,7 @@
 import json
 
 import jwt
-from httpretty import HTTPretty
+import responses
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
@@ -62,8 +62,8 @@ class Auth0OAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         return settings
 
     def auth_handlers(self, start_url):
-        HTTPretty.register_uri(
-            HTTPretty.GET,
+        responses.add(
+            responses.GET,
             self.jwks_url,
             body=json.dumps({"keys": [JWK_PUBLIC_KEY]}),
             content_type="application/json",
