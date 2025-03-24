@@ -98,6 +98,7 @@ class LineOAuth2(BaseOAuth2):
                 self.USER_INFO_URL, headers={"Authorization": f"Bearer {access_token}"}
             )
             self.process_error(response)
-            return response
         except requests.HTTPError as err:
             self.process_error(err.response.json())
+            return None
+        return response
