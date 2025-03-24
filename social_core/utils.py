@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import functools
 import hmac
 import logging
@@ -38,7 +40,9 @@ def user_agent():
     return "social-auth-" + social_core.__version__
 
 
-def url_add_parameters(url, params, _unquote_query=False):
+def url_add_parameters(
+    url: str, params: dict[str, str] | None, _unquote_query: bool = False
+) -> str:
     """Adds parameters to URL, parameter will be repeated if already present"""
     if params:
         fragments = list(urlparse(url))
@@ -132,6 +136,10 @@ def first(func, items):
 def parse_qs(value):
     """Like urlparse.parse_qs but transform list values to single items"""
     return drop_lists(battery_parse_qs(value))
+
+
+def get_querystring(url: str):
+    return parse_qs(urlparse(url).query)
 
 
 def drop_lists(value):

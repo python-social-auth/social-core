@@ -28,7 +28,7 @@ import json
 from time import time
 
 import jwt
-from httpretty import HTTPretty
+import responses
 from jwt.algorithms import RSAAlgorithm
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
@@ -173,7 +173,7 @@ class AzureADB2COAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
                 ],
             }
         )
-        HTTPretty.register_uri(HTTPretty.GET, keys_url, status=200, body=keys_body)
+        responses.add(responses.GET, keys_url, status=200, body=keys_body)
 
     def test_login(self):
         self.do_login()

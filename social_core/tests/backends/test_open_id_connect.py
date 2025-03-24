@@ -1,5 +1,4 @@
 # pyright: reportAttributeAccessIssue=false
-
 import base64
 import datetime
 import json
@@ -9,7 +8,7 @@ from calendar import timegm
 from urllib.parse import urlparse
 
 import jwt
-from httpretty import HTTPretty
+import responses
 
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 
@@ -69,8 +68,8 @@ class OpenIdConnectTestMixin:
 
         assert self.openid_config_body, "openid_config_body must be set"
 
-        HTTPretty.register_uri(
-            HTTPretty.GET,
+        responses.add(
+            responses.GET,
             self.backend.oidc_endpoint() + "/.well-known/openid-configuration",
             status=200,
             body=self.openid_config_body,
@@ -80,8 +79,8 @@ class OpenIdConnectTestMixin:
         def jwks(_request, _uri, headers):
             return 200, headers, json.dumps({"keys": [self.key]})
 
-        HTTPretty.register_uri(
-            HTTPretty.GET,
+        responses.add(
+            responses.GET,
             oidc_config.get("jwks_uri"),
             status=200,
             body=json.dumps({"keys": [self.public_key]}),
@@ -258,9 +257,9 @@ class BaseOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test, BaseAuthUrlTestM
 
     def pre_complete_callback(self, start_url):
         super().pre_complete_callback(start_url)
-        HTTPretty.register_uri(
+        responses.add(
             "GET",
-            uri=self.backend.userinfo_url(),
+            url=self.backend.userinfo_url(),
             status=200,
             body=json.dumps({"preferred_username": self.expected_username}),
             content_type="text/json",
@@ -295,9 +294,9 @@ class ExampleOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
 
     def pre_complete_callback(self, start_url):
         super().pre_complete_callback(start_url)
-        HTTPretty.register_uri(
-            "GET",
-            uri=self.backend.userinfo_url(),
+        responses.add(
+            responses.GET,
+            url=self.backend.userinfo_url(),
             status=200,
             body=json.dumps({"preferred_username": self.expected_username}),
             content_type="text/json",
