@@ -13,6 +13,15 @@ from .base import BaseAuth
 from .oauth import BaseOAuth2
 
 
+def vk_sig(payload: str) -> str:
+    """
+    Calculates signature using md5.
+
+    https://dev.vk.com/en/api/open-api/getting-started#Authorization%20on%20the%20Remote%20Side
+    """
+    return md5(payload.encode("utf-8")).hexdigest()
+
+
 class VKontakteOpenAPI(BaseAuth):
     """VK.COM OpenAPI authentication backend"""
 
@@ -61,7 +70,7 @@ class VKontakteOpenAPI(BaseAuth):
         )
 
         key, secret = self.get_key_and_secret()
-        hash = md5((check_str + secret).encode("utf-8")).hexdigest()
+        hash = vk_sig(check_str + secret)
         if hash != mapping["sig"] or int(mapping["expire"]) < time():
             raise ValueError("VK.com authentication failed: Invalid Hash")
 
@@ -146,9 +155,7 @@ class VKAppOAuth2(VKOAuth2):
         # Verify signature, if present
         key, secret = self.get_key_and_secret()
         if auth_key:
-            check_key = md5(
-                "_".join([key, self.data.get("viewer_id"), secret]).encode("utf-8")
-            ).hexdigest()
+            check_key = vk_sig("_".join([key, self.data.get("viewer_id"), secret]))
             if check_key != auth_key:
                 raise ValueError("VK.com authentication failed: invalid auth key")
 
@@ -196,7 +203,7 @@ def vk_api(backend, method, data):
         data["format"] = "json"
         url = "https://api.vk.com/api.php"
         param_list = sorted(item + "=" + data[item] for item in data)
-        data["sig"] = md5(("".join(param_list) + secret).encode("utf-8")).hexdigest()
+        data["sig"] = vk_sig("".join(param_list) + secret)
     else:
         url = "https://api.vk.com/method/" + method
 
