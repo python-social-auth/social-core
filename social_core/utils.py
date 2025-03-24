@@ -51,11 +51,11 @@ def url_add_parameters(url, params, _unquote_query=False):
     return url
 
 
-def to_setting_name(*names):
+def to_setting_name(*names: str) -> str:
     return "_".join([name.upper().replace("-", "_") for name in names if name])
 
 
-def setting_name(*names):
+def setting_name(*names: str) -> str:
     return to_setting_name(*((SETTING_PREFIX, *names)))
 
 
