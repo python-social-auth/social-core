@@ -1,6 +1,4 @@
-import hashlib
-import random
-import time
+import secrets
 
 from .backends.utils import get_backend
 from .pipeline import DEFAULT_AUTH_PIPELINE, DEFAULT_DISCONNECT_PIPELINE
@@ -103,15 +101,8 @@ class BaseStrategy:
     def get_disconnect_pipeline(self, backend=None):
         return self.setting("DISCONNECT_PIPELINE", DEFAULT_DISCONNECT_PIPELINE, backend)
 
-    def random_string(self, length=12, chars=ALLOWED_CHARS):
-        # Implementation borrowed from django 1.4
-        try:
-            random.SystemRandom()
-        except NotImplementedError:
-            key = self.setting("SECRET_KEY", "")
-            seed = f"{random.getstate()}{time.time()}{key}"
-            random.seed(hashlib.sha256(seed.encode()).digest())
-        return "".join([random.choice(chars) for i in range(length)])
+    def random_string(self, length: int = 12, chars: str = ALLOWED_CHARS) -> str:
+        return "".join([secrets.choice(chars) for i in range(length)])
 
     def absolute_uri(self, path=None):
         uri = self.build_absolute_uri(path)
