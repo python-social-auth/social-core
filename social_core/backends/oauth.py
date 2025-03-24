@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import base64
 import hashlib
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 from urllib.parse import urlencode
 
 from oauthlib.oauth1 import SIGNATURE_TYPE_AUTH_HEADER
@@ -27,7 +27,7 @@ from ..utils import (
 from .base import BaseAuth
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping, MutableMapping
+    from collections.abc import Mapping
 
 
 class OAuthAuth(BaseAuth):
@@ -69,7 +69,7 @@ class OAuthAuth(BaseAuth):
         """Generate csrf token to include as state parameter."""
         return self.strategy.random_string(32)
 
-    def get_or_create_state(self):
+    def get_or_create_state(self) -> str | None:
         if self.STATE_PARAMETER or self.REDIRECT_STATE:
             # Store state in session for further request validation. The state
             # value is passed as state parameter (as specified in OAuth2 spec),
@@ -109,9 +109,9 @@ class OAuthAuth(BaseAuth):
             raise AuthStateForbidden(self)
         return state
 
-    def get_redirect_uri(self, state=None):
+    def get_redirect_uri(self, state: str | None = None) -> str:
         """Build redirect with redirect_state parameter."""
-        uri = self.redirect_uri
+        uri = cast("str", self.redirect_uri)
         if self.REDIRECT_STATE and state:
             uri = url_add_parameters(uri, {"redirect_state": state})
         return uri
@@ -343,7 +343,7 @@ class BaseOAuth2(OAuthAuth):
     def use_basic_auth(self) -> bool:
         return self.USE_BASIC_AUTH
 
-    def auth_params(self, state=None) -> MutableMapping[str, Any]:
+    def auth_params(self, state: str | None = None) -> dict[str, str]:
         client_id, client_secret = self.get_key_and_secret()
         params = {"client_id": client_id, "redirect_uri": self.get_redirect_uri(state)}
         if self.STATE_PARAMETER and state:

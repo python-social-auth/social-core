@@ -1,7 +1,7 @@
 import json
 from urllib.parse import urlencode
 
-from httpretty import HTTPretty
+import responses
 
 from .oauth import OAuth1AuthUrlTestMixin, OAuth1Test
 
@@ -65,9 +65,9 @@ class DiscsogsOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
     )
 
     def _mock(self):
-        HTTPretty.register_uri(
-            HTTPretty.GET,
-            uri="https://api.discogs.com/oauth/identity",
+        responses.add(
+            responses.GET,
+            url="https://api.discogs.com/oauth/identity",
             status=200,
             body=json.dumps(
                 {
@@ -78,8 +78,8 @@ class DiscsogsOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
                 }
             ),
         )
-        HTTPretty.register_uri(
-            HTTPretty.GET,
+        responses.add(
+            responses.GET,
             f"https://api.discogs.com/users/{self.expected_username}",
             status=200,
             body=self.user_data_body,

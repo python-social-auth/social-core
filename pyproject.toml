@@ -6,11 +6,9 @@ requires = ["setuptools>=78.0.2"]
 dev = [
   "flake8>=5.0.4",
   "pytest>=4.5",
-  "httpretty~=1.1.0",
+  "responses==0.25.7",
   "coverage>=3.6",
   "pytest-cov>=2.7.1",
-  # pinned because of https://github.com/gabrielfalcao/HTTPretty/issues/484
-  "urllib3~=2.2.0",
   "pyright==1.1.397",
   "pytest-xdist>=3.6.1"
 ]
@@ -68,11 +66,9 @@ azuread = [
 dev = [
   "flake8>=5.0.4",
   "pytest>=4.5",
-  "httpretty~=1.1.0",
+  "responses==0.25.7",
   "coverage>=3.6",
   "pytest-cov>=2.7.1",
-  # pinned because of https://github.com/gabrielfalcao/HTTPretty/issues/484
-  "urllib3~=2.2.0",
   "pyright==1.1.397"
 ]
 google-onetap = [

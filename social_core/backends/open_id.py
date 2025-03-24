@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from openid.consumer.consumer import CANCEL, FAILURE, SUCCESS, Consumer
 from openid.consumer.discover import DiscoveryFailure
 from openid.extensions import ax, pape, sreg
@@ -243,7 +245,7 @@ class OpenIdAuth(BaseAuth):
         """
         return self.openid_request().shouldSendRedirect()
 
-    def openid_request(self, params=None):
+    def openid_request(self, params: dict[str, str] | None = None):
         """Return openid request"""
         try:
             return self.consumer().begin(url_add_parameters(self.openid_url(), params))
