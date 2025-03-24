@@ -19,16 +19,16 @@ jobs:
       PYTHONUNBUFFERED: 1
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       with:
         persist-credentials: false
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
       with:
         python-version: ${{ matrix.python-version }}
 
-    - uses: astral-sh/setup-uv@v5
+    - uses: astral-sh/setup-uv@22695119d769bdb6f7032ad67b9bca0ef8c4a174 # v5
       with:
         cache-suffix: ${{ matrix.python-version }}
 
@@ -56,14 +56,14 @@ jobs:
       PYTHONUNBUFFERED: 1
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
       with:
         python-version: ${{ matrix.python-version }}
 
-    - uses: astral-sh/setup-uv@v5
+    - uses: astral-sh/setup-uv@22695119d769bdb6f7032ad67b9bca0ef8c4a174 # v5
       with:
         cache-suffix: ${{ matrix.python-version }}
 
@@ -75,7 +75,7 @@ jobs:
     - name: Test with tox
       run: uvx tox -e "py${PYTHON_VERSION/\./}"
 
-    - uses: codecov/codecov-action@v5
+    - uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574 # v5
       with:
         flags: unittests
         name: Python ${{ matrix.python-version }}
