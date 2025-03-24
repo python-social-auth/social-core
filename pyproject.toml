@@ -151,8 +151,7 @@ ignore = [
   "PLW0603",  # TODO: Using the global statement to update `BACKENDSCACHE` is discouraged
   "TRY301",  # TODO: Abstract `raise` to an inner function
   "BLE001",  # TODO: Do not catch blind exception: `Exception`
-  "S110",  # TODO: `try`-`except`-`pass` detected, consider logging the exception
-  "TRY300"  # TODO: Consider moving this statement to an `else` block
+  "S110"  # TODO: `try`-`except`-`pass` detected, consider logging the exception
 ]
 select = ["ALL"]
 
