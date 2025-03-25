@@ -1,6 +1,6 @@
 [build-system]
 build-backend = "setuptools.build_meta"
-requires = ["setuptools"]
+requires = ["setuptools>=78.0.2"]
 
 [dependency-groups]
 dev = [
@@ -23,7 +23,6 @@ classifiers = [
   "Development Status :: 4 - Beta",
   "Environment :: Web Environment",
   "Intended Audience :: Developers",
-  "License :: OSI Approved :: BSD License",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.10",
@@ -44,7 +43,8 @@ dependencies = [
 ]
 description = "Python social authentication made simple."
 keywords = ["openid", "oauth", "saml", "social auth"]
-license = {text = "BSD"}
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
 name = "social-auth-core"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -165,5 +165,4 @@ max-args = 7
 max-branches = 15
 
 [tool.setuptools]
-license-files = []
 packages = ["social_core"]
