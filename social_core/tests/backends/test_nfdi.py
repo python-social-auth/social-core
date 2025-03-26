@@ -598,9 +598,8 @@ OIDC_CONFIG_UNITY_PUNCH = """
     }
 """
 
-class NFDIOpenIdConnectTest(
-    OpenIdConnectTestMixin, OAuth2Test, BaseAuthUrlTestMixin
-):
+
+class NFDIOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.nfdi.HelmholtzOpenIdConnect"
     issuer = "https://login.helmholtz.de/oauth2"
     openid_config_body = OIDC_CONFIG_UNITY

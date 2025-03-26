@@ -9,32 +9,31 @@ from social_core.backends.open_id_connect import OpenIdConnectAuth
 
 NFDI_ENDPOINTS = {
     # AcademicID
-    "xcs":                  "https://keycloak.sso.gwdg.de/auth/realms/academiccloud",
-    "textplus":             "https://keycloak.sso.gwdg.de/auth/realms/academiccloud",
+    "xcs": "https://keycloak.sso.gwdg.de/auth/realms/academiccloud",
+    "textplus": "https://keycloak.sso.gwdg.de/auth/realms/academiccloud",
     # didmos
-    "mardi":                "https://auth.didmos.nfdi-aai.de",
-    "objects":              "https://auth.didmos.nfdi-aai.de",
-    "culture":              "https://auth.aai.nfdi4culture.de",
+    "mardi": "https://auth.didmos.nfdi-aai.de",
+    "objects": "https://auth.didmos.nfdi-aai.de",
+    "culture": "https://auth.aai.nfdi4culture.de",
     # regapp
-    "cat":                  "https://regapp.nfdi-aai.de/oidc/realms/nfdi",
-    "chem":                 "https://regapp.nfdi-aai.de/oidc/realms/nfdi",
-    "datascience":          "https://regapp.nfdi-aai.de/oidc/realms/nfdi",
-    "energy":               "https://regapp.nfdi-aai.de/oidc/realms/nfdi",
-    "ing":                  "https://regapp.nfdi-aai.de/oidc/realms/nfdi",
-    "matWerk":              "https://regapp.nfdi-aai.de/oidc/realms/nfdi",
+    "cat": "https://regapp.nfdi-aai.de/oidc/realms/nfdi",
+    "chem": "https://regapp.nfdi-aai.de/oidc/realms/nfdi",
+    "datascience": "https://regapp.nfdi-aai.de/oidc/realms/nfdi",
+    "energy": "https://regapp.nfdi-aai.de/oidc/realms/nfdi",
+    "ing": "https://regapp.nfdi-aai.de/oidc/realms/nfdi",
+    "matWerk": "https://regapp.nfdi-aai.de/oidc/realms/nfdi",
     # unity
-    "daphne":               "https://login.helmholtz.de/oauth2",
-    "fairmat":              "https://login.helmholtz.de/oauth2",
-    "immuno":               "https://login.helmholtz.de/oauth2",
-    "punch":                "https://login.helmholtz.de/punch-oauth2",
-    "helmholtz":            "https://login.helmholtz.de/oauth2",
+    "daphne": "https://login.helmholtz.de/oauth2",
+    "fairmat": "https://login.helmholtz.de/oauth2",
+    "immuno": "https://login.helmholtz.de/oauth2",
+    "punch": "https://login.helmholtz.de/punch-oauth2",
+    "helmholtz": "https://login.helmholtz.de/oauth2",
     # infraproxy
-    "infraproxy-staging":   "https://infraproxy-staging.nfdi-aai.dfn.de",
-    "infraproxy":           "https://infraproxy.nfdi-aai.dfn.de",
+    "infraproxy-staging": "https://infraproxy-staging.nfdi-aai.dfn.de",
+    "infraproxy": "https://infraproxy.nfdi-aai.dfn.de",
     # eduid
-    "eduid":                "https://proxy.edu-id.dfn.de",
-    "eduid-staging":        "",
-
+    "eduid": "https://proxy.edu-id.dfn.de",
+    "eduid-staging": "",
     # other
     # DataPLANT
     # GHGA
@@ -50,8 +49,9 @@ NFDI_ENDPOINTS = {
     # NFDI4Microbiota
 }
 
+
 class NFDIOpenIdConnect(OpenIdConnectAuth):
-    name="helmholtz"
+    name = "helmholtz"
     OIDC_ENDPOINT = "https://login.helmholtz.de/oauth2"
     # In order to get any scopes, you have to register your service with
     # the OP
@@ -72,6 +72,7 @@ class NFDIOpenIdConnect(OpenIdConnectAuth):
     # service. A user with any of these will be allowed. If empty, all
     # users will be allowed
     ALLOWED_ENTITLEMENTS = []
+
     def get_user_details(self, response):
         username_key = self.setting("USERNAME_KEY", default=self.USERNAME_KEY)
         fullname, first_name, last_name = self.get_user_names(
@@ -106,87 +107,106 @@ class NFDIOpenIdConnect(OpenIdConnectAuth):
 
 # AcademicID
 class XcsOpenIdConnect(NFDIOpenIdConnect):
-    name="xcs"
+    name = "xcs"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
+
 class TextplusOpenIdConnect(NFDIOpenIdConnect):
-    name="textplus"
+    name = "textplus"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
+
 
 # didmos
 class MardiOpenIdConnect(NFDIOpenIdConnect):
-    name="mardi"
+    name = "mardi"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
+
 
 class ObjectsOpenIdConnect(NFDIOpenIdConnect):
-    name="objects"
+    name = "objects"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
+
 class CultureOpenIdConnect(NFDIOpenIdConnect):
-    name="culture"
+    name = "culture"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
     # regapp
+
+
 class CatOpenIdConnect(NFDIOpenIdConnect):
-    name="cat"
+    name = "cat"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
+
 
 class ChemOpenIdConnect(NFDIOpenIdConnect):
-    name="chem"
+    name = "chem"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
+
 
 class DatascienceOpenIdConnect(NFDIOpenIdConnect):
-    name="datascience"
+    name = "datascience"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
+
 
 class EnergyOpenIdConnect(NFDIOpenIdConnect):
-    name="energy"
+    name = "energy"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
+
 
 class IngOpenIdConnect(NFDIOpenIdConnect):
-    name="ing"
+    name = "ing"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
+
 class MatWerkOpenIdConnect(NFDIOpenIdConnect):
-    name="matWerk"
+    name = "matWerk"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
+
 
 # unity
 class DaphneOpenIdConnect(NFDIOpenIdConnect):
-    name="daphne"
+    name = "daphne"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
+
 
 class FairmatOpenIdConnect(NFDIOpenIdConnect):
-    name="fairmat"
+    name = "fairmat"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
+
 
 class ImmunoOpenIdConnect(NFDIOpenIdConnect):
-    name="immuno"
+    name = "immuno"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
+
 
 class PunchOpenIdConnect(NFDIOpenIdConnect):
-    name="punch"
+    name = "punch"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
+
 class HelmholtzOpenIdConnect(NFDIOpenIdConnect):
-    name="helmholtz"
+    name = "helmholtz"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
+
 
 # infraproxy
 class InfraproxyStagingOpenIdConnect(NFDIOpenIdConnect):
-    name="infraproxy-staging"
+    name = "infraproxy-staging"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
+
 class InfraproxyOpenIdConnect(NFDIOpenIdConnect):
-    name="infraproxy"
+    name = "infraproxy"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
+
 
 # eduid
 class EduidOpenIdConnect(NFDIOpenIdConnect):
-    name="eduid"
+    name = "eduid"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
+
 
 class EduidStagingOpenIdConnect(NFDIOpenIdConnect):
-    name="eduid-staging"
+    name = "eduid-staging"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
-
