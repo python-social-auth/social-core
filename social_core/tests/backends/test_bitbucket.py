@@ -1,7 +1,7 @@
 import json
 from urllib.parse import urlencode
 
-from httpretty import HTTPretty
+import responses
 
 from ...exceptions import AuthForbidden
 from .oauth import BaseAuthUrlTestMixin, OAuth1AuthUrlTestMixin, OAuth1Test, OAuth2Test
@@ -86,14 +86,14 @@ class BitbucketOAuth1Test(BitbucketOAuthMixin, OAuth1Test, OAuth1AuthUrlTestMixi
     access_token_body = json.dumps({"access_token": "foobar", "token_type": "bearer"})
 
     def test_login(self):
-        HTTPretty.register_uri(
-            HTTPretty.GET, self.bb_api_user_emails, status=200, body=self.emails_body
+        responses.add(
+            responses.GET, self.bb_api_user_emails, status=200, body=self.emails_body
         )
         self.do_login()
 
     def test_partial_pipeline(self):
-        HTTPretty.register_uri(
-            HTTPretty.GET, self.bb_api_user_emails, status=200, body=self.emails_body
+        responses.add(
+            responses.GET, self.bb_api_user_emails, status=200, body=self.emails_body
         )
         self.do_partial_pipeline()
 
@@ -145,14 +145,14 @@ class BitbucketOAuth2Test(BitbucketOAuthMixin, OAuth2Test, BaseAuthUrlTestMixin)
     )
 
     def test_login(self):
-        HTTPretty.register_uri(
-            HTTPretty.GET, self.bb_api_user_emails, status=200, body=self.emails_body
+        responses.add(
+            responses.GET, self.bb_api_user_emails, status=200, body=self.emails_body
         )
         self.do_login()
 
     def test_partial_pipeline(self):
-        HTTPretty.register_uri(
-            HTTPretty.GET, self.bb_api_user_emails, status=200, body=self.emails_body
+        responses.add(
+            responses.GET, self.bb_api_user_emails, status=200, body=self.emails_body
         )
         self.do_partial_pipeline()
 

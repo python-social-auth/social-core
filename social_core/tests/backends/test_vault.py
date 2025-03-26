@@ -1,8 +1,7 @@
 # pyright: reportAttributeAccessIssue=false
-
 import json
 
-from httpretty import HTTPretty
+import responses
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 from .test_open_id_connect import OpenIdConnectTestMixin
@@ -39,9 +38,9 @@ class VaultOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test, BaseAuthUrlTest
 
     def pre_complete_callback(self, start_url):
         super().pre_complete_callback(start_url)
-        HTTPretty.register_uri(
-            "GET",
-            uri=self.backend.userinfo_url(),
+        responses.add(
+            responses.GET,
+            url=self.backend.userinfo_url(),
             status=200,
             body=json.dumps({"preferred_username": self.expected_username}),
             content_type="text/json",

@@ -1,6 +1,6 @@
 import json
 
-from httpretty import HTTPretty
+import responses
 
 from ...exceptions import AuthFailed
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
@@ -121,8 +121,8 @@ class GithubOAuth2NoEmailTest(GithubOAuth2Test):
 
     def test_login(self):
         url = "https://api.github.com/user/emails"
-        HTTPretty.register_uri(
-            HTTPretty.GET,
+        responses.add(
+            responses.GET,
             url,
             status=200,
             body=json.dumps(["foo@bar.com"]),
@@ -132,8 +132,8 @@ class GithubOAuth2NoEmailTest(GithubOAuth2Test):
 
     def test_login_next_format(self):
         url = "https://api.github.com/user/emails"
-        HTTPretty.register_uri(
-            HTTPretty.GET,
+        responses.add(
+            responses.GET,
             url,
             status=200,
             body=json.dumps([{"email": "foo@bar.com"}]),
@@ -143,8 +143,8 @@ class GithubOAuth2NoEmailTest(GithubOAuth2Test):
 
     def test_partial_pipeline(self):
         url = "https://api.github.com/user/emails"
-        HTTPretty.register_uri(
-            HTTPretty.GET,
+        responses.add(
+            responses.GET,
             url,
             status=200,
             body=json.dumps([{"email": "foo@bar.com"}]),
@@ -154,8 +154,8 @@ class GithubOAuth2NoEmailTest(GithubOAuth2Test):
 
     def test_refresh_token(self):
         url = "https://api.github.com/user/emails"
-        HTTPretty.register_uri(
-            HTTPretty.GET,
+        responses.add(
+            responses.GET,
             url,
             status=200,
             body=json.dumps([{"email": "foo@bar.com"}]),
@@ -169,7 +169,7 @@ class GithubOrganizationOAuth2Test(GithubOAuth2Test):
 
     def auth_handlers(self, start_url):
         url = "https://api.github.com/orgs/foobar/members/foobar"
-        HTTPretty.register_uri(HTTPretty.GET, url, status=204, body="")
+        responses.add(responses.GET, url, status=204, body="")
         return super().auth_handlers(start_url)
 
     def test_login(self):
@@ -190,8 +190,8 @@ class GithubOrganizationOAuth2FailTest(GithubOAuth2Test):
 
     def auth_handlers(self, start_url):
         url = "https://api.github.com/orgs/foobar/members/foobar"
-        HTTPretty.register_uri(
-            HTTPretty.GET,
+        responses.add(
+            responses.GET,
             url,
             status=404,
             body='{"message": "Not Found"}',
@@ -220,7 +220,7 @@ class GithubTeamOAuth2Test(GithubOAuth2Test):
 
     def auth_handlers(self, start_url):
         url = "https://api.github.com/teams/123/members/foobar"
-        HTTPretty.register_uri(HTTPretty.GET, url, status=204, body="")
+        responses.add(responses.GET, url, status=204, body="")
         return super().auth_handlers(start_url)
 
     def test_login(self):
@@ -241,8 +241,8 @@ class GithubTeamOAuth2FailTest(GithubOAuth2Test):
 
     def auth_handlers(self, start_url):
         url = "https://api.github.com/teams/123/members/foobar"
-        HTTPretty.register_uri(
-            HTTPretty.GET,
+        responses.add(
+            responses.GET,
             url,
             status=404,
             body='{"message": "Not Found"}',
