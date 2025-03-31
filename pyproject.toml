@@ -11,7 +11,7 @@ dev = [
   "pytest-cov>=2.7.1",
   # pinned because of https://github.com/gabrielfalcao/HTTPretty/issues/484
   "urllib3~=2.2.0",
-  "pyright>=1.1.391",
+  "pyright==1.1.397",
   "pytest-xdist>=3.6.1"
 ]
 
@@ -73,7 +73,7 @@ dev = [
   "pytest-cov>=2.7.1",
   # pinned because of https://github.com/gabrielfalcao/HTTPretty/issues/484
   "urllib3~=2.2.0",
-  "pyright>=1.1.391"
+  "pyright==1.1.397"
 ]
 google-onetap = [
   "google-auth~=2.38.0"
