@@ -5,7 +5,7 @@ from unittest import mock
 from urllib.parse import urlencode
 
 import jwt
-from httpretty import HTTPretty
+import responses
 
 from ...actions import do_disconnect
 from ...exceptions import AuthException, AuthTokenError
@@ -37,14 +37,13 @@ class GoogleOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
 
     def test_login(self):
         self.do_login()
-        last_request = HTTPretty.last_request
+        last_request = responses.calls[-1].request
         self.assertEqual(last_request.method, "GET")
-        self.assertTrue(self.user_data_url.endswith(last_request.path))
+        self.assertEqual(self.user_data_url, last_request.url)
         self.assertEqual(
             last_request.headers["Authorization"],
             "Bearer foobar",
         )
-        self.assertEqual(last_request.querystring, {})
 
     def test_partial_pipeline(self):
         self.do_partial_pipeline()
@@ -108,7 +107,7 @@ class GoogleRevokeTokenTest(GoogleOAuth2Test):
         self.do_login()
         user = User.get(self.expected_username)
         user.password = "password"
-        HTTPretty.register_uri(
+        responses.add(
             self._method(self.backend.REVOKE_TOKEN_METHOD),
             self.backend.REVOKE_TOKEN_URL,
             status=200,
@@ -198,8 +197,8 @@ cshMNkjyNDP+MvGORQIDAQAB
 
     def setUp(self):
         super().setUp()
-        HTTPretty.register_uri(
-            HTTPretty.GET,
+        responses.add(
+            responses.GET,
             "https://www.googleapis.com/oauth2/v1/certs",
             status=200,
             body=json.dumps({"test_key": self.public_key}),
