@@ -126,3 +126,11 @@ class AuthUnreachableProvider(AuthException):
 class InvalidEmail(AuthException):
     def __str__(self):
         return "Email couldn't be validated"
+
+
+class AuthConnectionError(AuthException):
+    """Connection error duing authentication."""
+
+    def __str__(self):
+        msg = super().__str__()
+        return f"Connection error: {msg}"
