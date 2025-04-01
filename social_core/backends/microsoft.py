@@ -4,6 +4,7 @@ OAuth2 Backend to work with microsoft graph.
 
 import time
 
+from ..exceptions import AuthMissingParameter
 from .oauth import BaseOAuth2
 
 
@@ -42,6 +43,9 @@ class MicrosoftOAuth2(BaseOAuth2):
         """Return user details from Microsoft online account"""
         email = response.get("mail")
         username = response.get("userPrincipalName")
+
+        if not username:
+            raise AuthMissingParameter(self, "userPrincipalName")
 
         if "@" in username:
             if not email:
