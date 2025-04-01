@@ -1,10 +1,3 @@
-import time
-
-import jwt
-
-from ..exceptions import AuthTokenError
-from .oauth import BaseOAuth2
-
 """
 Copyright (c) 2015 Microsoft Open Technologies, Inc.
 
@@ -29,12 +22,17 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-"""
 
-"""
 Azure AD OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/azuread.html
 """
+
+import time
+
+import jwt
+
+from ..exceptions import AuthMissingParameter, AuthTokenError
+from .oauth import BaseOAuth2
 
 
 class AzureADOAuth2(BaseOAuth2):
@@ -79,7 +77,10 @@ class AzureADOAuth2(BaseOAuth2):
 
     def get_user_id(self, details, response):
         """Use upn as unique id"""
-        return response.get("upn")
+        upn = response.get("upn")
+        if upn is None:
+            raise AuthMissingParameter(self, "upn")
+        return upn
 
     def get_user_details(self, response):
         """Return user details from Azure AD account"""
