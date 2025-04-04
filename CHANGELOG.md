@@ -5,7 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.5.7](https://github.com/python-social-auth/social-core/releases/tag/4.5.7) - 2025-04-04
+
+### Added
+
+- Kick OAuth2 backend implementation
+
 ## [4.5.6](https://github.com/python-social-auth/social-core/releases/tag/4.5.6) - 2025-02-13
+
+### Added
+
+- Kick OAuth2 backend implementation
 
 ### Changed
 
