@@ -15,7 +15,7 @@ class KickOAuth2(BaseOAuth2PKCE):
     ACCESS_TOKEN_URL = f'https://{HOSTNAME}/oauth/token'
     REFRESH_TOKEN_URL = f'https://{HOSTNAME}/oauth/token'
     REVOKE_TOKEN_URL = f'https://{HOSTNAME}/oauth/revoke'
-    DEFAULT_SCOPE = ['user.read']
+    DEFAULT_SCOPE = ['user:read']
     SCOPE_SEPARATOR = ' '
     PKCE_DEFAULT_CODE_CHALLENGE_METHOD = 'S256'
     EXTRA_DATA = [

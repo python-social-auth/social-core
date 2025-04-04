@@ -12,7 +12,7 @@ class KickOAuth2Test(OAuth2Test):
         'token_type': 'bearer',
         'refresh_token': 'refresh_foobar',
         'expires_in': 3600,
-        'scope': 'user.read'
+        'scope': 'user:read'
     })
     user_data_body = json.dumps({
         'id': '123456',
