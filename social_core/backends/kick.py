@@ -10,7 +10,7 @@ class KickOAuth2(BaseOAuth2PKCE):
     """Kick OAuth2 authentication backend"""
     name = 'kick'
     HOSTNAME = 'id.kick.com'
-    API_HOSTNAME = 'kick.com'
+    API_HOSTNAME = 'api.kick.com'
     AUTHORIZATION_URL = f'https://{HOSTNAME}/oauth/authorize'
     ACCESS_TOKEN_URL = f'https://{HOSTNAME}/oauth/token'
     REFRESH_TOKEN_URL = f'https://{HOSTNAME}/oauth/token'
@@ -40,7 +40,7 @@ class KickOAuth2(BaseOAuth2PKCE):
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        url = f'https://api.{self.API_HOSTNAME}/public/v1/users'
+        url = f'https://{self.API_HOSTNAME}/public/v1/users'
         auth_header = {'Authorization': f'Bearer {access_token}'}
         response = self.get_json(url, headers=auth_header)
         # The API returns data in a 'data' field with an array of users
