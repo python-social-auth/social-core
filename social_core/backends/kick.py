@@ -7,9 +7,7 @@ from .oauth import BaseOAuth2PKCE
 
 
 class KickOAuth2(BaseOAuth2PKCE):
-    """Kick OAuth2 authentication backend
-    API docs at: https://docs.kick.com/apis/users
-    """
+    """Kick OAuth2 authentication backend"""
     name = 'kick'
     HOSTNAME = 'id.kick.com'
     API_HOSTNAME = 'kick.com'
