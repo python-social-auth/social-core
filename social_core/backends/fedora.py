@@ -32,6 +32,7 @@ class FedoraOpenId(OpenIdAuth):
     """
     Fedora OpenID backend. DEPRECATED, please use the OpenID Connect backend.
     """
+
     name = "fedora"
     URL = "https://id.fedoraproject.org"
     USERNAME_KEY = "nickname"
