@@ -32,7 +32,7 @@ class KickOAuth2(BaseOAuth2PKCE):
         Use Kick user id as unique id
         """
         return response.get("user_id")
-    
+
     def get_user_details(self, response):
         """Return user details from Kick account"""
         return {
