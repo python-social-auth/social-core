@@ -27,6 +27,12 @@ class KickOAuth2(BaseOAuth2PKCE):
         ("scope", "scope"),
     ]
 
+    def get_user_id(self, details, response):
+        """
+        Use Kick user id as unique id
+        """
+        return response.get("user_id")
+
     def get_user_details(self, response):
         """Return user details from Kick account"""
         return {
