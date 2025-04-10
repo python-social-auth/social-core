@@ -1,5 +1,6 @@
 # pyright: reportAttributeAccessIssue=false
 
+import json
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 from .test_open_id_connect import OpenIdConnectTestMixin
 
@@ -601,8 +602,71 @@ OIDC_CONFIG_UNITY_PUNCH = """
 
 class NFDIOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.nfdi.HelmholtzOpenIdConnect"
-    issuer = "https://login.helmholtz.de/oauth2"
+    issuer = "https://login.mouseton.edu/oauth2"
     openid_config_body = OIDC_CONFIG_UNITY
+    user_data_url = "https://login.mouseton.edu/oauth2/userinfo"
+    user_data_body = \
+        {
+            "display_name": "Donald Duck",
+            "eduperson_assurance": [
+                "https://refeds.org/assurance",
+                "https://refeds.org/assurance/ID/unique",
+                "https://refeds.org/assurance/ID/eppn-unique-no-reassign",
+                "https://refeds.org/assurance/ATP/ePA-1d",
+                "https://refeds.org/assurance/ATP/ePA-1m",
+                "https://refeds.org/assurance/IAP/local-enterprise",
+                "https://refeds.org/assurance/IAP/low",
+                "https://refeds.org/assurance/IAP/medium",
+                "https://refeds.org/assurance/profile/cappuccino",
+                "https://aarc-project.eu/policy/authn-assurance/assam"
+            ],
+            "eduperson_entitlement": [
+                "urn:mace:dir:entitlement:common-lib-terms",
+                "http://bwidm.de/entitlement/bwLSDF-SyncShare",
+                "urn:canard:mouseton.edu:group:KIT#login.mouseton.edu",
+                "urn:canard:h-df.de:group:m-team:feudal-developers#login.mouseton.edu",
+                "urn:canard:mouseton.edu:group:Arbeitskreise#login.mouseton.edu",
+                "urn:canard:mouseton.edu:group:HIFIS:Associates#login.mouseton.edu",
+                "urn:canard:mouseton.edu:group:Arbeitskreise:AG IT Services#login.mouseton.edu",
+                "urn:canard:mouseton.edu:group:Helmholtz-member#login.mouseton.edu",
+                "urn:canard:h-df.de:group:m-team#login.mouseton.edu",
+                "urn:canard:mouseton.edu:group:Helmholtz-all#login.mouseton.edu",
+                "urn:canard:mouseton.edu:group:HIFIS#login.mouseton.edu"
+            ],
+            "eduperson_principal_name": "lo0018@duckburg.edu",
+            "eduperson_scoped_affiliation": [
+                "employee@login.mouseton.edu",
+                "member@login.mouseton.edu"
+            ],
+            "eduperson_unique_id": "42234223422342234223422342234223@login.mouseton.edu",
+            "email": "donald.hardt@duckburg.edu",
+            "email_verified": True,
+            "entitlements": [
+                "urn:mace:dir:entitlement:common-lib-terms",
+                "http://duckburg.edu/entitlement/sync-and-share",
+                "urn:canard:mouseton.edu:group:KIT#login.mouseton.edu",
+                "urn:canard:duckburg.edu:group:m-team:developers#login.mouseton.edu",
+                "urn:canard:mouseton.edu:group:Workgroup:IT Services#login.mouseton.edu",
+                "urn:canard:mouseton.edu:group:mouseton-member#login.mouseton.edu",
+                "urn:canard:mouseton.edu:group:m-team#login.mouseton.edu",
+                "urn:canard:mouseton.edu:group:mouseton-all#login.mouseton.edu",
+            ],
+            "family_name": "Duck",
+            "given_name": "Donald",
+            "iss": "https://login.mouseton.edu/oauth2",
+            "name": "Donald Duck",
+            "org_domain": "duckburg.edu",
+            "preferred_username": "donald",
+            "sn": "Duck",
+            "ssh_public_key": "ssh-ed25519 AAAAC3N4224224224224224224224224224224224224224224224224224224223ym/ donald@home\n",
+            "sub": "42234223-4223-4223-4223-422342234223",
+            "voperson_external_affiliation": [
+                "employee@duckburg.edu",
+                "faculty@duckburg.edu",
+                "member@duckburg.edu"
+            ],
+            "voperson_id": "42234223422342234223422342234223@login.mouseton.edu"
+        }
 
     def test_do_not_override_endpoint(self):
         self.backend.OIDC_ENDPOINT = self.issuer
@@ -618,3 +682,17 @@ class NFDIOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test, BaseAuthUrlTestM
     def test_entitlements_not_allowed(self):
         self.backend.ALLOWED_ENTITLEMENTS = ["baz"]
         self.assertEqual(self.backend.entitlement_allowed(["foo"]), False)
+
+    def test_get_user_details(self):
+
+        testdata = self.backend.get_user_details(self.user_data_body)
+        # print(F"{testdata=}")
+        self.assertEqual(testdata["username"], "donald")
+        self.assertEqual(testdata["email"],
+                         "donald.hardt@duckburg.edu")
+        self.assertEqual(testdata["fullname"],
+                         "Donald Duck")
+        self.assertEqual(testdata["first_name"],
+                         "Donald")
+        self.assertEqual(testdata["last_name"],
+                         "Duck")
