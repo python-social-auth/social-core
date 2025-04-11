@@ -8,7 +8,6 @@ import time
 from urllib.parse import parse_qs, urlencode, urlparse
 
 import jwt
-import requests
 from requests_oauthlib import OAuth1
 
 from ..exceptions import AuthException
@@ -84,8 +83,9 @@ class MediaWiki(BaseOAuth1):
         """
         auth_token = self.oauth_auth(token)
 
-        response = requests.post(
-            url=self.setting("MEDIAWIKI_URL"),
+        response = self.request(
+            self.setting("MEDIAWIKI_URL"),
+            method="POST",
             params={"title": "Special:Oauth/token"},
             auth=auth_token,
         )
@@ -116,8 +116,9 @@ class MediaWiki(BaseOAuth1):
             resource_owner_secret=access_token["oauth_token_secret"],
         )
 
-        req_resp = requests.post(
-            url=self.setting("MEDIAWIKI_URL"),
+        req_resp = self.request(
+            self.setting("MEDIAWIKI_URL"),
+            method="POST",
             params={"title": "Special:OAuth/identify"},
             auth=auth,
         )
