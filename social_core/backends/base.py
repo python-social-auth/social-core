@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import time
-from typing import Any
+from typing import Any, Literal
 
 import requests
 
@@ -221,7 +223,9 @@ class BaseAuth:
         otherwise return false."""
         return True
 
-    def request(self, url, method="GET", *args, **kwargs):
+    def request(
+        self, url: str, method: Literal["GET", "POST"] = "GET", *args, **kwargs
+    ):
         kwargs.setdefault("headers", {})
         if self.setting("PROXIES") is not None:
             kwargs.setdefault("proxies", self.setting("PROXIES"))

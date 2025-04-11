@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import base64
 import hashlib
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, Literal, cast
 from urllib.parse import urlencode
 
 from oauthlib.oauth1 import SIGNATURE_TYPE_AUTH_HEADER
@@ -153,13 +153,12 @@ class OAuthAuth(BaseAuth):
         return response.status_code == 200
 
     def revoke_token(self, token, uid):
-        if self.REVOKE_TOKEN_URL:
-            url = self.revoke_token_url(token, uid)
+        if revoke_token_url := self.revoke_token_url(token, uid):
             params = self.revoke_token_params(token, uid)
             headers = self.revoke_token_headers(token, uid)
             data = urlencode(params) if self.REVOKE_TOKEN_METHOD != "GET" else None
             response = self.request(
-                url,
+                revoke_token_url,
                 params=params,
                 headers=headers,
                 data=data,
@@ -311,7 +310,9 @@ class BaseOAuth1(OAuthAuth):
             signature_type=signature_type,
         )
 
-    def oauth_request(self, token, url, params=None, method="GET"):
+    def oauth_request(
+        self, token: str, url: str, params=None, method: Literal["GET", "POST"] = "GET"
+    ):
         """Generate OAuth request, setups callback url"""
         return self.request(
             url, method=method, params=params, auth=self.oauth_auth(token)
