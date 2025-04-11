@@ -9,7 +9,7 @@ dev = [
   "responses==0.25.7",
   "coverage>=3.6",
   "pytest-cov>=2.7.1",
-  "pyright==1.1.397",
+  "pyright==1.1.399",
   "pytest-xdist>=3.6.1"
 ]
 
@@ -69,7 +69,7 @@ dev = [
   "responses==0.25.7",
   "coverage>=3.6",
   "pytest-cov>=2.7.1",
-  "pyright==1.1.397"
+  "pyright==1.1.399"
 ]
 google-onetap = [
   "google-auth~=2.38.0"
