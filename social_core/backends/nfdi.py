@@ -55,6 +55,12 @@ class NFDIOpenIdConnect(OpenIdConnectAuth):
     OIDC_ENDPOINT = "https://login.helmholtz.de/oauth2"
     # In order to get any scopes, you have to register your service with
     # the OP
+    USERNAME_KEY = "preferred_username"
+    EXTRA_DATA = [
+        ("expires_in", "expires_in", True),
+        ("refresh_token", "refresh_token", True),
+        ("id_token", "id_token", True),
+    ]
     DEFAULT_SCOPE = [
         "openid",
         "profile",
@@ -95,6 +101,14 @@ class NFDIOpenIdConnect(OpenIdConnectAuth):
             allowed = any(e in user_entitlements for e in allowed_ent)
         return allowed
 
+    def auth_allowed(self, response, details):
+        """Check-in promotes the use of eduperson_entitlements for AuthZ, if
+        ALLOWED_ENTITLEMENTS is defined then use them to allow or not users"""
+        allowed = super().auth_allowed(response, details)
+        if allowed:
+            user_entitlements = response.get("eduperson_entitlement") or []
+            allowed = self.entitlement_allowed(user_entitlements)
+        return allowed
 
 # AcademicID
 class XcsOpenIdConnect(NFDIOpenIdConnect):
