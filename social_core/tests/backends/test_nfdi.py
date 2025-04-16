@@ -601,7 +601,7 @@ OIDC_CONFIG_UNITY_PUNCH = """
 
 class NFDIOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.nfdi.HelmholtzOpenIdConnect"
-    issuer = "https://login.mouseton.edu/oauth2"
+    issuer = "https://login.helmholtz.de/oauth2"
     openid_config_body = OIDC_CONFIG_UNITY
     user_data_url = "https://login.mouseton.edu/oauth2/userinfo"
     user_data_body = {
