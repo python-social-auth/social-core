@@ -110,6 +110,7 @@ class NFDIOpenIdConnect(OpenIdConnectAuth):
             allowed = self.entitlement_allowed(user_entitlements)
         return allowed
 
+
 # AcademicID
 class XcsOpenIdConnect(NFDIOpenIdConnect):
     name = "xcs"
