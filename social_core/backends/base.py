@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import time
-from typing import Any
+from typing import Any, Literal
 
-from requests import ConnectionError, request
+import requests
 
-from ..exceptions import AuthFailed
+from ..exceptions import AuthConnectionError
 from ..utils import module_member, parse_qs, user_agent
 
 
@@ -221,7 +223,9 @@ class BaseAuth:
         otherwise return false."""
         return True
 
-    def request(self, url, method="GET", *args, **kwargs):
+    def request(
+        self, url: str, method: Literal["GET", "POST"] = "GET", *args, **kwargs
+    ):
         kwargs.setdefault("headers", {})
         if self.setting("PROXIES") is not None:
             kwargs.setdefault("proxies", self.setting("PROXIES"))
@@ -236,9 +240,9 @@ class BaseAuth:
             kwargs["headers"]["User-Agent"] = self.setting("USER_AGENT") or user_agent()
 
         try:
-            response = request(method, url, *args, **kwargs)
-        except ConnectionError as err:
-            raise AuthFailed(self, str(err))
+            response = requests.request(method, url, *args, **kwargs)
+        except requests.ConnectionError as err:
+            raise AuthConnectionError(self, str(err)) from err
         response.raise_for_status()
         return response
 

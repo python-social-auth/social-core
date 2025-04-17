@@ -72,7 +72,7 @@ dev = [
   "pyright==1.1.397"
 ]
 google-onetap = [
-  "google-auth~=2.38.0"
+  "google-auth~=2.39.0"
 ]
 saml = [
   "python3-saml>=1.5.0"
@@ -127,7 +127,6 @@ ignore = [
   "B018",  # TODO: Found useless expression.
   "A001",  # TODO: Variable is shadowing a Python builtin
   "A002",  # TODO: Function argument is shadowing a Python builtin
-  "A004",  # TODO: Import `ConnectionError` is shadowing a Python builtin
   "ERA001",  # TODO: Found commented-out code
   "EM101",  # TODO: Exception must not use a string literal, assign to variable first
   "EM102",  # TODO: Exception must not use an f-string literal, assign to variable first
