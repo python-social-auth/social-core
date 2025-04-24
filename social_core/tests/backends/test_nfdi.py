@@ -1,10 +1,8 @@
-# pyright: reportAttributeAccessIssue=false
-
 import json
 from typing import cast
 
-from .oauth import BaseAuthUrlTestMixin, OAuth2Test
-from .test_open_id_connect import OpenIdConnectTestMixin
+from .oauth import BaseAuthUrlTestMixin
+from .open_id_connect import OpenIdConnectTest
 
 OIDC_CONFIG_ACADEMIC_ID = """
     {
@@ -602,7 +600,7 @@ OIDC_CONFIG_UNITY_PUNCH = """
 """
 
 
-class NFDIOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test, BaseAuthUrlTestMixin):
+class NFDIOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.nfdi.HelmholtzOpenIdConnect"
     issuer = "https://login.helmholtz.de/oauth2"
     openid_config_body = OIDC_CONFIG_UNITY

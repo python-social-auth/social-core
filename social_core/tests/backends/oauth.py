@@ -1,28 +1,27 @@
-# pyright: reportAttributeAccessIssue=false
-
 from __future__ import annotations
 
-from typing import cast
+from typing import Generic, TypeVar, cast
 from unittest.mock import patch
 from urllib.parse import urlparse
 
 import requests
 import responses
 
-from ...backends.oauth import OAuthAuth
+from ...backends.oauth import BaseOAuth1, BaseOAuth2, OAuthAuth
 from ...utils import get_querystring, parse_qs, url_add_parameters
 from ..models import User
 from .base import BaseBackendTest
 
+OAuthBackendT = TypeVar("OAuthBackendT", bound=OAuthAuth)
 
-class BaseOAuthTest(BaseBackendTest[OAuthAuth]):
+
+class BaseOAuthTest(BaseBackendTest[OAuthBackendT], Generic[OAuthBackendT]):
     user_data_body: str | None = None
     user_data_url: str = ""
     user_data_url_post: bool = False
     user_data_content_type: str = "application/json"
     access_token_body: str | None = None
     access_token_status: int = 200
-    expected_username: str = ""
 
     def extra_settings(self):
         assert self.name, "Subclasses must set the name attribute"
@@ -94,7 +93,10 @@ class BaseOAuthTest(BaseBackendTest[OAuthAuth]):
         return self.backend.complete()
 
 
-class OAuth1Test(BaseOAuthTest):
+BaseOAuth1BackendT = TypeVar("BaseOAuth1BackendT", bound=BaseOAuth1)
+
+
+class OAuth1Test(BaseOAuthTest[BaseOAuth1BackendT], Generic[BaseOAuth1BackendT]):
     request_token_body: str
     raw_complete_url = "/complete/{0}/?oauth_verifier=bazqux&oauth_token=foobar"
 
@@ -112,7 +114,10 @@ class OAuth1Test(BaseOAuthTest):
         return super().do_start()
 
 
-class OAuth2Test(BaseOAuthTest):
+BaseOAuth2BackendT = TypeVar("BaseOAuth2BackendT", bound=BaseOAuth2)
+
+
+class OAuth2Test(BaseOAuthTest[BaseOAuth2BackendT], Generic[BaseOAuth2BackendT]):
     raw_complete_url = "/complete/{0}/?code=foobar"
     refresh_token_body = ""
 
@@ -202,7 +207,9 @@ class OAuth2PkceS256Test(OAuth2Test):
         return user
 
 
-class BaseAuthUrlTestMixin:
+class BaseAuthUrlTestMixin(Generic[OAuthBackendT]):
+    backend: OAuthBackendT
+
     def check_parameters_in_authorization_url(self, auth_url_key="AUTHORIZATION_URL"):
         """
         Check the parameters in authorization url
@@ -234,5 +241,5 @@ class BaseAuthUrlTestMixin:
 
 class OAuth1AuthUrlTestMixin(BaseAuthUrlTestMixin):
     def test_auth_url_parameters(self):
-        self.request_token_handler()
+        self.request_token_handler()  # type: ignore[attr-defined]
         self.check_parameters_in_authorization_url()
