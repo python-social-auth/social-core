@@ -5,6 +5,8 @@ Beats backend, docs at:
 
 import base64
 
+from social_core.exceptions import AuthUnknownError
+
 from ..utils import handle_http_errors
 from .oauth import BaseOAuth2
 
@@ -43,6 +45,8 @@ class BeatsOAuth2(BaseOAuth2):
         # mashery wraps in jsonrpc
         if response.get("jsonrpc", None):
             response = response.get("result", None)
+            if response is None:
+                raise AuthUnknownError(self, "Invalid authentication response")
         return self.do_auth(
             response["access_token"], response=response, *args, **kwargs
         )
