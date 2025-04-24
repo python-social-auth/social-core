@@ -1,10 +1,14 @@
 # pyright: reportAttributeAccessIssue=false
 
+from __future__ import annotations
+
 import unittest
+from typing import Generic, TypeVar
 
 import requests
 import responses
 
+from ...backends.base import BaseAuth
 from ...backends.utils import load_backends, user_backends_data
 from ...utils import PARTIAL_TOKEN_SESSION_NAME, module_member, parse_qs
 from ..models import (
@@ -17,11 +21,13 @@ from ..models import (
 )
 from ..strategy import TestStrategy
 
+BackendT = TypeVar("BackendT", bound=BaseAuth)
 
-class BaseBackendTest(unittest.TestCase):
-    backend = None
-    backend_path = None
-    name = None
+
+class BaseBackendTest(unittest.TestCase, Generic[BackendT]):
+    backend: BackendT
+    backend_path: str = ""
+    name: str = ""
     complete_url = ""
     raw_complete_url = "/complete/{0}"
 

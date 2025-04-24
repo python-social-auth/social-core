@@ -33,16 +33,6 @@ class FormHTMLParser(HTMLParser):
 
 
 class OpenIdTest(BaseBackendTest):
-    backend_path = None
-    backend = None
-    access_token_body = None
-    user_data_body = None
-    user_data_url = ""
-    expected_username = ""
-    settings = None
-    partial_login_settings = None
-    raw_complete_url = "/complete/{0}/"
-
     def setUp(self):
         responses.start()
         Backend = module_member(self.backend_path)

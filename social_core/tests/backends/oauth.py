@@ -9,21 +9,20 @@ from urllib.parse import urlparse
 import requests
 import responses
 
+from ...backends.oauth import OAuthAuth
 from ...utils import get_querystring, parse_qs, url_add_parameters
 from ..models import User
 from .base import BaseBackendTest
 
 
-class BaseOAuthTest(BaseBackendTest):
-    backend = None
-    backend_path = None
-    user_data_body = None
-    user_data_url = ""
-    user_data_url_post = False
-    user_data_content_type = "application/json"
-    access_token_body = None
-    access_token_status = 200
-    expected_username = ""
+class BaseOAuthTest(BaseBackendTest[OAuthAuth]):
+    user_data_body: str | None = None
+    user_data_url: str = ""
+    user_data_url_post: bool = False
+    user_data_content_type: str = "application/json"
+    access_token_body: str | None = None
+    access_token_status: int = 200
+    expected_username: str = ""
 
     def extra_settings(self):
         assert self.name, "Subclasses must set the name attribute"
@@ -96,7 +95,7 @@ class BaseOAuthTest(BaseBackendTest):
 
 
 class OAuth1Test(BaseOAuthTest):
-    request_token_body = None
+    request_token_body: str
     raw_complete_url = "/complete/{0}/?oauth_verifier=bazqux&oauth_token=foobar"
 
     def request_token_handler(self):
