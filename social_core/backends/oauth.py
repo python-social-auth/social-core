@@ -47,11 +47,11 @@ class OAuthAuth(BaseAuth):
     AUTHORIZATION_URL = ""
     ACCESS_TOKEN_URL = ""
     ACCESS_TOKEN_METHOD = "POST"
-    REVOKE_TOKEN_URL = None
+    REVOKE_TOKEN_URL: str | None = None
     REVOKE_TOKEN_METHOD = "POST"
     ID_KEY = "id"
     SCOPE_PARAMETER_NAME = "scope"
-    DEFAULT_SCOPE = None
+    DEFAULT_SCOPE: list[str] | None = None
     SCOPE_SEPARATOR = " "
     REDIRECT_STATE = False
     STATE_PARAMETER = False
@@ -334,7 +334,7 @@ class BaseOAuth2(OAuthAuth):
         https://datatracker.ietf.org/doc/html/rfc6749
     """
 
-    REFRESH_TOKEN_URL = None
+    REFRESH_TOKEN_URL: str | None = None
     REFRESH_TOKEN_METHOD = "POST"
     RESPONSE_TYPE = "code"
     REDIRECT_STATE = True

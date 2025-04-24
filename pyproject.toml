@@ -12,6 +12,7 @@ dev = [
   "pyright==1.1.397",
   "pytest-xdist>=3.6.1",
   "types-requests==2.32.0.20250328",
+  "types-python-jose==3.4.0.20250224",
   "types-oauthlib==3.2.0.20250408",
   "types-requests-oauthlib==2.0.0.20250306",
   "mypy==1.15.0"
@@ -73,10 +74,19 @@ dev = [
   "responses==0.25.7",
   "coverage>=3.6",
   "pytest-cov>=2.7.1",
-  "pyright==1.1.397"
+  "pyright==1.1.397",
+  "pytest-xdist>=3.6.1",
+  "types-requests==2.32.0.20250328",
+  "types-python-jose==3.4.0.20250224",
+  "types-oauthlib==3.2.0.20250408",
+  "types-requests-oauthlib==2.0.0.20250306",
+  "mypy==1.15.0"
 ]
 google-onetap = [
   "google-auth~=2.39.0"
+]
+ping = [
+  "python-jose>=3.4.0,<4.0"
 ]
 saml = [
   "python3-saml>=1.5.0"

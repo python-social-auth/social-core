@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+from typing import cast
 from urllib.parse import urljoin
 
 from social_core.utils import cache
@@ -14,7 +17,7 @@ class Fence(OpenIdConnectAuth):
     JWT_DECODE_OPTIONS = {"verify_at_hash": False}
 
     def _url(self, path):
-        return urljoin(append_slash(self.OIDC_ENDPOINT), path)
+        return urljoin(append_slash(cast("str", self.OIDC_ENDPOINT)), path)
 
     def authorization_url(self):
         return self._url("user/oauth2/authorize")

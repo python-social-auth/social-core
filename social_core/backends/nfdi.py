@@ -77,7 +77,7 @@ class NFDIOpenIdConnect(OpenIdConnectAuth):
     # This is the list of entitlements that are allowed to login into the
     # service. A user with any of these will be allowed. If empty, all
     # users will be allowed
-    ALLOWED_ENTITLEMENTS = []
+    ALLOWED_ENTITLEMENTS: list[str] = []
 
     def get_user_details(self, response):
         username_key = self.setting("USERNAME_KEY", default=self.USERNAME_KEY)

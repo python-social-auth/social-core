@@ -38,7 +38,7 @@ class OpenIdAuth(BaseAuth):
     """Generic OpenID authentication backend"""
 
     name = "openid"
-    URL = None
+    URL: str | None = None
     USERNAME_KEY = "username"
 
     def get_user_id(self, details, response):
