@@ -10,7 +10,11 @@ dev = [
   "coverage>=3.6",
   "pytest-cov>=2.7.1",
   "pyright==1.1.397",
-  "pytest-xdist>=3.6.1"
+  "pytest-xdist>=3.6.1",
+  "types-requests==2.32.0.20250328",
+  "types-oauthlib==3.2.0.20250408",
+  "types-requests-oauthlib==2.0.0.20250306",
+  "mypy==1.15.0"
 ]
 
 [project]
