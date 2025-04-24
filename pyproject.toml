@@ -105,7 +105,6 @@ ignore = [
   ".coveragerc",
   ".pre-commit-config.yaml",
   ".well-known/funding-manifest-urls",
-  "pyrightconfig.json",
   "tox.ini"
 ]
 
