@@ -80,7 +80,7 @@ class BaseOAuthTest(BaseBackendTest[OAuthBackendT], Generic[OAuthBackendT]):
     def do_start(self):
         start_url = self.backend.start().url
         target_url = self.auth_handlers(start_url)
-        response = requests.get(start_url)
+        response = requests.get(start_url, timeout=1)
         self.assertEqual(response.url, target_url)
         self.assertEqual(response.text, "foobar")
         self.strategy.set_request_data(

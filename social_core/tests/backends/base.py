@@ -121,8 +121,8 @@ class BaseBackendTest(unittest.TestCase, Generic[BackendT]):
 
     def pipeline_password_handling(self, url):
         password = "foobar"
-        requests.get(url)
-        requests.post(url, data={"password": password})
+        requests.get(url, timeout=1)
+        requests.post(url, data={"password": password}, timeout=1)
 
         data = parse_qs(responses.calls[-1].request.body)
         self.assertEqual(data["password"], password)
@@ -131,8 +131,8 @@ class BaseBackendTest(unittest.TestCase, Generic[BackendT]):
 
     def pipeline_slug_handling(self, url):
         slug = "foo-bar"
-        requests.get(url)
-        requests.post(url, data={"slug": slug})
+        requests.get(url, timeout=1)
+        requests.post(url, data={"slug": slug}, timeout=1)
 
         data = parse_qs(responses.calls[-1].request.body)
         self.assertEqual(data["slug"], slug)

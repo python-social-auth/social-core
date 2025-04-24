@@ -76,7 +76,7 @@ class SAMLTest(BaseBackendTest):
         # be redirected back to:
         return_url = self.backend.redirect_uri
         self.install_http_intercepts(start_url, return_url)
-        response = requests.get(start_url)
+        response = requests.get(start_url, timeout=1)
         self.assertTrue(response.url.startswith(return_url))
         self.assertEqual(response.text, "foobar")
         query_values = {

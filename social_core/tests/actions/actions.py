@@ -114,7 +114,7 @@ class BaseActionTest(unittest.TestCase):
         )
         responses.add(responses.GET, location_url, status=200, body="foobar")
 
-        response = requests.get(start_url)
+        response = requests.get(start_url, timeout=1)
         self.assertEqual(response.url, location_url)
         self.assertEqual(response.text, "foobar")
 
@@ -196,7 +196,7 @@ class BaseActionTest(unittest.TestCase):
         )
         responses.add(responses.GET, location_url, status=200, body="foobar")
 
-        response = requests.get(start_url)
+        response = requests.get(start_url, timeout=1)
         self.assertEqual(response.url, location_url)
         self.assertEqual(response.text, "foobar")
 
@@ -230,8 +230,8 @@ class BaseActionTest(unittest.TestCase):
         responses.add(responses.POST, redirect.url, status=200)
 
         password = "foobar"
-        requests.get(url)
-        requests.post(url, data={"password": password})
+        requests.get(url, timeout=1)
+        requests.post(url, data={"password": password}, timeout=1)
         data = parse_qs(responses.calls[-1].request.body)
         self.assertEqual(data["password"], password)
         self.strategy.session_set("password", data["password"])
