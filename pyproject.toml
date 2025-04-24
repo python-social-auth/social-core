@@ -162,7 +162,6 @@ ignore = [
   "PLR2004",  # TODO: Magic value used in comparison
   "PLW2901",  # TODO: loop variable overwritten by assignment target
   "N",  # TODO: Naming issues
-  "PTH",  # TODO: Not using pathlib
   "RUF012",  # TODO: Type annotations
   "ARG001",  # TODO: Unused function argument (mostly for API compatibility)
   "ARG002",  # TODO: Unused method argument (mostly for API compatibility)
