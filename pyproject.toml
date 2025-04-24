@@ -182,7 +182,6 @@ ignore = [
   "S101",  # TODO: Use of `assert` detected
   "DTZ001",  # TODO: `datetime.datetime()` called without a `tzinfo` argument
   "DTZ005",  # TODO: `datetime.datetime.now()` called without a `tz` argument
-  "B006",  # TODO: Do not use mutable data structures for argument defaults
   "B026",  # TODO: Star-arg unpacking after a keyword argument is strongly discouraged
   "S301",  # TODO: `pickle` and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue
   "S324",  # TODO: Probable use of insecure hash functions in `hashlib`
