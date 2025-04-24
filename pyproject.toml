@@ -88,6 +88,15 @@ shopify = [
 [project.urls]
 Homepage = "https://github.com/python-social-auth/social-core"
 
+[tool.check-manifest]
+ignore = [
+  ".coveragerc",
+  ".pre-commit-config.yaml",
+  ".well-known/funding-manifest-urls",
+  "pyrightconfig.json",
+  "tox.ini"
+]
+
 [tool.codespell]
 count = true
 ignore-words-list = "assertIn"
