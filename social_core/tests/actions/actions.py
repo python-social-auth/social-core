@@ -6,6 +6,7 @@ import requests
 import responses
 
 from ...actions import do_auth, do_complete
+from ...backends.oauth import BaseOAuth2
 from ...utils import module_member, parse_qs
 from ..models import TestAssociation, TestNonce, TestStorage, TestUserSocialAuth, User
 from ..strategy import TestStrategy
@@ -51,10 +52,8 @@ class BaseActionTest(unittest.TestCase):
         }
     )
 
-    def __init__(self, *args, **kwargs):
-        self.strategy = None
-        self.backend = None
-        super().__init__(*args, **kwargs)
+    strategy: TestStrategy
+    backend: BaseOAuth2
 
     def setUp(self):
         responses.start()
@@ -63,15 +62,15 @@ class BaseActionTest(unittest.TestCase):
         TestNonce.reset_cache()
         TestAssociation.reset_cache()
         Backend = module_member("social_core.backends.github.GithubOAuth2")
-        self.strategy = self.strategy or TestStrategy(TestStorage)
-        self.backend = self.backend or Backend(
-            self.strategy, redirect_uri="/complete/github"
-        )
+        if not hasattr(self, "strategy"):
+            self.strategy = TestStrategy(TestStorage)
+        if not hasattr(self, "backend"):
+            self.backend = Backend(self.strategy, redirect_uri="/complete/github")
         self.user = None
 
     def tearDown(self):
-        self.backend = None
-        self.strategy = None
+        del self.backend
+        del self.strategy
         self.user = None
         User.reset_cache()
         User.set_active(True)
