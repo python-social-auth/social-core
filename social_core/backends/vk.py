@@ -19,7 +19,7 @@ def vk_sig(payload: str) -> str:
 
     https://dev.vk.com/en/api/open-api/getting-started#Authorization%20on%20the%20Remote%20Side
     """
-    return md5(payload.encode("utf-8")).hexdigest()
+    return md5(payload.encode("utf-8")).hexdigest()  # noqa: S324
 
 
 class VKontakteOpenAPI(BaseAuth):
