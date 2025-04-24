@@ -29,6 +29,8 @@ from .base import BaseAuth
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
+    from requests import Response
+
 
 class OAuthAuth(BaseAuth):
     """OAuth authentication backend base class.
@@ -46,9 +48,9 @@ class OAuthAuth(BaseAuth):
 
     AUTHORIZATION_URL = ""
     ACCESS_TOKEN_URL = ""
-    ACCESS_TOKEN_METHOD = "POST"
+    ACCESS_TOKEN_METHOD: Literal["GET", "POST"] = "POST"
     REVOKE_TOKEN_URL: str | None = None
-    REVOKE_TOKEN_METHOD = "POST"
+    REVOKE_TOKEN_METHOD: Literal["GET", "POST", "DELETE"] = "POST"
     ID_KEY = "id"
     SCOPE_PARAMETER_NAME = "scope"
     DEFAULT_SCOPE: list[str] | None = None
@@ -178,7 +180,7 @@ class BaseOAuth1(OAuthAuth):
     """
 
     REQUEST_TOKEN_URL = ""
-    REQUEST_TOKEN_METHOD = "GET"
+    REQUEST_TOKEN_METHOD: Literal["GET", "POST"] = "GET"
     OAUTH_TOKEN_PARAMETER_NAME = "oauth_token"
     REDIRECT_URI_PARAMETER_NAME = "redirect_uri"
     UNATHORIZED_TOKEN_SUFIX = "unauthorized_token_name"
@@ -285,7 +287,10 @@ class BaseOAuth1(OAuthAuth):
         return url_add_parameters(self.authorization_url(), params)
 
     def oauth_auth(
-        self, token=None, oauth_verifier=None, signature_type=SIGNATURE_TYPE_AUTH_HEADER
+        self,
+        token: dict | None = None,
+        oauth_verifier=None,
+        signature_type=SIGNATURE_TYPE_AUTH_HEADER,
     ):
         key, secret = self.get_key_and_secret()
         oauth_verifier = oauth_verifier or self.data.get("oauth_verifier")
@@ -311,14 +316,14 @@ class BaseOAuth1(OAuthAuth):
         )
 
     def oauth_request(
-        self, token: str, url: str, params=None, method: Literal["GET", "POST"] = "GET"
-    ):
+        self, token: dict, url: str, params=None, method: Literal["GET", "POST"] = "GET"
+    ) -> Response:
         """Generate OAuth request, setups callback url"""
         return self.request(
             url, method=method, params=params, auth=self.oauth_auth(token)
         )
 
-    def access_token(self, token):
+    def access_token(self, token: dict) -> dict[str, str]:
         """Return request for access token value"""
         return self.get_querystring(
             self.access_token_url(),

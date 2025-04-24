@@ -112,6 +112,9 @@ ignore = [
 count = true
 ignore-words-list = "assertIn"
 
+[tool.mypy]
+check_untyped_defs = true
+
 [[tool.mypy.overrides]]
 disallow_untyped_defs = true
 ignore_missing_imports = true

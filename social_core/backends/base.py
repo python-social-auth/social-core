@@ -4,6 +4,7 @@ import time
 from typing import Any, Literal
 
 import requests
+from requests import Response
 
 from ..exceptions import AuthConnectionError
 from ..utils import module_member, parse_qs, user_agent
@@ -224,8 +225,12 @@ class BaseAuth:
         return True
 
     def request(
-        self, url: str, method: Literal["GET", "POST"] = "GET", *args, **kwargs
-    ):
+        self,
+        url: str,
+        method: Literal["GET", "POST", "DELETE"] = "GET",
+        *args,
+        **kwargs,
+    ) -> Response:
         kwargs.setdefault("headers", {})
         if self.setting("PROXIES") is not None:
             kwargs.setdefault("proxies", self.setting("PROXIES"))
@@ -249,7 +254,7 @@ class BaseAuth:
     def get_json(self, url, *args, **kwargs):
         return self.request(url, *args, **kwargs).json()
 
-    def get_querystring(self, url, *args, **kwargs):
+    def get_querystring(self, url, *args, **kwargs) -> dict[str, str]:
         return parse_qs(self.request(url, *args, **kwargs).text)
 
     def get_key_and_secret(self):

@@ -7,6 +7,7 @@ import re
 import sys
 import time
 import unicodedata
+from typing import Any
 from urllib.parse import parse_qs as battery_parse_qs
 from urllib.parse import unquote, urlencode, urlparse, urlunparse
 
@@ -278,9 +279,9 @@ class cache:
     Does not work for methods with arguments.
     """
 
-    def __init__(self, ttl):
+    def __init__(self, ttl: int):
         self.ttl = ttl
-        self.cache = {}
+        self.cache: dict[type, Any] = {}
 
     def __call__(self, fn):
         def wrapped(this):
@@ -292,7 +293,7 @@ class cache:
 
             # ignoring this type issue is safe; if cached_value is returned, last_updated
             # is also set, but the type checker doesn't know it.
-            if not cached_value or now - last_updated > self.ttl:  # type: ignore[reportOperatorIssue]
+            if not cached_value or not last_updated or now - last_updated > self.ttl:
                 try:
                     cached_value = fn(this)
                     self.cache[this.__class__] = (now, cached_value)
@@ -302,7 +303,7 @@ class cache:
                         raise
             return cached_value
 
-        wrapped.invalidate = self._invalidate  # type: ignore[reportFunctionMemberAccess]
+        wrapped.invalidate = self._invalidate  # type: ignore[attr-defined]
         return wrapped
 
     def _invalidate(self):

@@ -30,11 +30,10 @@ class TripItOAuth(BaseOAuth1):
 
     def user_data(self, access_token, *args, **kwargs):
         """Return user data provided"""
-        dom = minidom.parseString(
-            self.oauth_request(
-                access_token, "https://api.tripit.com/v1/get/profile"
-            ).content
-        )
+        content: str = self.oauth_request(
+            access_token, "https://api.tripit.com/v1/get/profile"
+        ).text
+        dom = minidom.parseString(content)
         return {
             "id": dom.getElementsByTagName("Profile")[0].getAttribute("ref"),
             "name": dom.getElementsByTagName("public_display_name")[0]
