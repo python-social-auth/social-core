@@ -54,3 +54,4 @@ changelog.sh
 .pytest_cache/
 
 .env
+.venv*
