@@ -64,6 +64,8 @@ class OpenIdConnectAuth(BaseOAuth2):
     USERINFO_URL = ""
     JWKS_URI = ""
     TOKEN_ENDPOINT_AUTH_METHOD = ""
+    # Optional parameters for Authentication Request
+    PROMPT = ""
 
     def __init__(self, *args, **kwargs):
         self.id_token = None
@@ -131,6 +133,18 @@ class OpenIdConnectAuth(BaseOAuth2):
         """Return extra arguments needed on auth process."""
         params = super().auth_params(state)
         params["nonce"] = self.get_and_store_nonce(self.authorization_url(), state)
+
+        prompt = self.setting(
+            "PROMPT", default=self.PROMPT
+        )
+        is_prompt_valid = True
+        for prompt_token in prompt.split():
+            if prompt_token not in ("none", "login", "consent", "select_account"):
+                is_prompt_valid = False
+                break
+        if is_prompt_valid:
+            params["prompt"] = prompt
+
         return params
 
     def get_and_store_nonce(self, url, state):
