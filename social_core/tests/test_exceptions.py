@@ -22,15 +22,10 @@ from ..exceptions import (
 
 
 class BaseExceptionTestCase(unittest.TestCase):
-    exception = None
-    expected_message = ""
+    exception: SocialAuthBaseException = SocialAuthBaseException("base test")
+    expected_message: str = "base test"
 
     def test_exception_message(self):
-        if self.exception is None and self.expected_message == "":
-            return
-
-        if self.exception is None:
-            assert self.exception, "exception is not defined"
         try:
             raise self.exception
         except SocialAuthBaseException as err:

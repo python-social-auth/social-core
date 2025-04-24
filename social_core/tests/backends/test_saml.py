@@ -10,9 +10,7 @@ import requests
 import responses
 
 try:
-    from onelogin.saml2.utils import (  # type: ignore reportMissingImports
-        OneLogin_Saml2_Utils,
-    )
+    from onelogin.saml2.utils import OneLogin_Saml2_Utils
 
     SAML_MODULE_ENABLED = True
 except ImportError:

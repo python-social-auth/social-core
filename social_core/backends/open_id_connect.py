@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import base64
 import datetime
 import json
@@ -43,7 +45,7 @@ class OpenIdConnectAuth(BaseOAuth2):
 
     name = "oidc"
     # Override OIDC_ENDPOINT in your subclass to enable autoconfig of OIDC
-    OIDC_ENDPOINT = None
+    OIDC_ENDPOINT: str | None = None
     ID_TOKEN_MAX_AGE = 600
     DEFAULT_SCOPE = ["openid", "profile", "email"]
     EXTRA_DATA = ["id_token", "refresh_token", ("sub", "id")]

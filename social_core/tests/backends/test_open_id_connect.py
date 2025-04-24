@@ -1,4 +1,6 @@
 # pyright: reportAttributeAccessIssue=false
+from __future__ import annotations
+
 import base64
 import datetime
 import json
@@ -52,9 +54,9 @@ class OpenIdConnectTestMixin:
 
     client_key = "a-key"
     client_secret = "a-secret-key"
-    issuer = None  # id_token issuer
-    openid_config_body = None
-    key = None
+    issuer: str  # id_token issuer
+    openid_config_body: str
+    key: dict[str, str]
 
     # Avoid sharing access_token_kwargs between different subclasses
     def __init_subclass__(cls, **kwargs):
@@ -159,7 +161,7 @@ class OpenIdConnectTestMixin:
         body["id_token"] = jwt.encode(
             id_token,
             key=jwt.PyJWK(
-                dict(self.key, iat=timegm(issue_datetime.timetuple()), nonce=nonce)  # type: ignore reportCallIssue
+                dict(self.key, iat=timegm(issue_datetime.timetuple()), nonce=nonce)
             ).key,
             algorithm="RS256",
             headers={"kid": kid} if kid else None,
