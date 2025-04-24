@@ -2,7 +2,7 @@ import json
 import re
 import sys
 import unittest
-from os import path
+from pathlib import Path
 from unittest.mock import patch
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
@@ -19,7 +19,7 @@ except ImportError:
 from ...exceptions import AuthMissingParameter
 from .base import BaseBackendTest
 
-DATA_DIR = path.join(path.dirname(__file__), "data")
+DATA_DIR = Path(__file__).parent / "data"
 
 
 @unittest.skipIf(
@@ -32,9 +32,8 @@ class SAMLTest(BaseBackendTest):
     response_fixture = "saml_response.txt"
 
     def extra_settings(self):
-        name = path.join(DATA_DIR, "saml_config.json")
-        with open(name) as config_file:
-            config_str = config_file.read()
+        file = DATA_DIR / "saml_config.json"
+        config_str = file.read_text()
         return json.loads(config_str)
 
     def setUp(self):
@@ -56,9 +55,8 @@ class SAMLTest(BaseBackendTest):
         # we will eventually get a redirect back, with SAML assertion
         # data in the query string.  A pre-recorded correct response
         # is kept in this .txt file:
-        name = path.join(DATA_DIR, self.response_fixture)
-        with open(name) as response_file:
-            response_url = response_file.read()
+        file = DATA_DIR / self.response_fixture
+        response_url = file.read_text()
         responses.add(
             responses.GET,
             start_url,
