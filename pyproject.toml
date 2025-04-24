@@ -15,6 +15,7 @@ dev = [
   "types-python-jose==3.4.0.20250224",
   "types-oauthlib==3.2.0.20250408",
   "types-requests-oauthlib==2.0.0.20250306",
+  "google-auth-stubs==0.3.0",
   "mypy==1.15.0"
 ]
 
@@ -80,6 +81,7 @@ dev = [
   "types-python-jose==3.4.0.20250224",
   "types-oauthlib==3.2.0.20250408",
   "types-requests-oauthlib==2.0.0.20250306",
+  "google-auth-stubs==0.3.0",
   "mypy==1.15.0"
 ]
 google-onetap = [
@@ -110,6 +112,24 @@ ignore = [
 [tool.codespell]
 count = true
 ignore-words-list = "assertIn"
+
+[[tool.mypy.overrides]]
+disallow_untyped_defs = true
+ignore_missing_imports = true
+module = [
+  "openid.*",
+  "onelogin.*",
+  "shopify.*",
+  "google.appengine.*"
+]
+
+[tool.pyright]
+executionEnvironments = [
+  {root = "social_core/backends/gae.py", reportMissingImports = "none"}
+]
+pythonVersion = "3.9"
+reportOptionalMemberAccess = "none"
+reportPossiblyUnboundVariable = "none"
 
 [tool.ruff.lint]
 extend-safe-fixes = [
