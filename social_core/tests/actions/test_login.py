@@ -1,10 +1,10 @@
-from ...backends.base import BaseAuth
+from ...backends.oauth import BaseOAuth2
 from ...utils import PARTIAL_TOKEN_SESSION_NAME
 from ..models import TestUserSocialAuth, User
 from .actions import BaseActionTest
 
 
-class BackendThatControlsRedirect(BaseAuth):
+class BackendThatControlsRedirect(BaseOAuth2):
     """
     A fake backend that sets the URL to redirect to after login.
 
