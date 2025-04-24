@@ -5,6 +5,8 @@ Docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/udata.html
 """
 
+from __future__ import annotations
+
 from .oauth import BaseOAuth2
 
 
@@ -14,7 +16,7 @@ class UdataBaseOAuth2(BaseOAuth2):
     SCOPE_SEPARATOR = ","
     REDIRECT_STATE = False
     DEFAULT_SCOPE = ["default"]
-    USER_DATA_URL = None
+    USER_DATA_URL: str | None = None
 
     def get_user_details(self, response):
         """Return user details from Udata account."""

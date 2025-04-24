@@ -16,7 +16,7 @@ class LyftOAuth2(BaseOAuth2):
     USER_DATA_URL = "https://api.lyft.com/v1/profile"
     DEFAULT_SCOPE = ["public", "profile", "rides.read", "rides.request"]
     RESPONSE_TYPE = "code"
-    STATE_PARAMETER = "asdf"
+    STATE_PARAMETER = True
     EXTRA_DATA = [
         ("id", "id"),
         ("username", "username"),

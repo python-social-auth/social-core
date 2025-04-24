@@ -4,6 +4,7 @@ import base64
 import datetime
 import json
 from calendar import timegm
+from typing import Any
 
 import jwt
 from jwt import (
@@ -54,7 +55,7 @@ class OpenIdConnectAuth(BaseOAuth2):
     ID_KEY = "sub"
     USERNAME_KEY = "preferred_username"
     JWT_ALGORITHMS = ["RS256"]
-    JWT_DECODE_OPTIONS = {}
+    JWT_DECODE_OPTIONS: dict[str, Any] = {}
     # When these options are unspecified, server will choose via openid autoconfiguration
     ID_TOKEN_ISSUER = ""
     ACCESS_TOKEN_URL = ""

@@ -15,7 +15,7 @@ class MeetupOAuth2(BaseOAuth2):
     DEFAULT_SCOPE = ["basic"]
     SCOPE_SEPARATOR = ","
     REDIRECT_STATE = False
-    STATE_PARAMETER = "state"
+    STATE_PARAMETER = True
 
     def get_user_details(self, response):
         """Return user details from Meetup account"""
