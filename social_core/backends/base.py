@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import time
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 import requests
 from requests import Response
 
-from ..exceptions import AuthConnectionError
+from ..exceptions import AuthConnectionError, AuthUnknownError
 from ..utils import module_member, parse_qs, user_agent
 
 if TYPE_CHECKING:
@@ -128,36 +128,45 @@ class BaseAuth:
         return out
 
     def extra_data(
-        self, user, uid, response, details=None, *args, **kwargs
+        self,
+        user,
+        uid: str,
+        response: dict[str, Any],
+        details: dict[str, Any],
+        *args,
+        **kwargs,
     ) -> dict[str, Any]:
         """Return default extra data to store in extra_data field"""
-        data = {
+        data: dict[str, Any] = {
             # store the last time authentication took place
             "auth_time": int(time.time())
         }
-        extra_data_entries = []
+        extra_data_entries: list[str | tuple[str, str] | tuple[str, str, bool]] = []
         if self.GET_ALL_EXTRA_DATA or self.setting("GET_ALL_EXTRA_DATA", False):
-            extra_data_entries = response.keys()
+            extra_data_entries = list(response.keys())
         else:
-            extra_data_entries = (self.EXTRA_DATA or []) + self.setting(
-                "EXTRA_DATA", []
+            extra_data_entries = (self.EXTRA_DATA or []) + cast(
+                "list[str | tuple[str, str] | tuple[str, str, bool]]",
+                self.setting("EXTRA_DATA", []),
             )
         for entry in extra_data_entries:
-            if not isinstance(entry, (list, tuple)):
-                entry = (entry,)
-            size = len(entry)
-            if size >= 1 and size <= 3:
-                if size == 3:
-                    name, alias, discard = entry  # type: ignore[reportAssignmentType]
-                elif size == 2:
-                    (name, alias), discard = entry, False  # type: ignore[reportAssignmentType]
-                elif size == 1:
-                    name = alias = entry[0]
-                    discard = False
-                value = response.get(name, details.get(name, details.get(alias)))
-                if discard and not value:
-                    continue
-                data[alias] = value
+            if isinstance(entry, list):
+                entry = tuple(cast("list[str]", entry))
+            discard = False
+            if isinstance(entry, str):
+                name = alias = entry
+            elif len(entry) == 3:
+                name, alias, discard = entry
+            elif len(entry) == 2:
+                name, alias = entry
+            elif len(entry) == 1:
+                name = alias = entry[0]
+            else:
+                raise AuthUnknownError(self, f"Invalid EXTRA_DATA item: {entry!r}")
+            value = response.get(name, details.get(name, details.get(alias)))
+            if discard and not value:
+                continue
+            data[alias] = value
         return data
 
     def auth_allowed(self, response, details):

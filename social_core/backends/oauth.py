@@ -399,7 +399,7 @@ class BaseOAuth2(OAuthAuth):
             "Accept": "application/json",
         }
 
-    def extra_data(self, user, uid, response, details=None, *args, **kwargs):
+    def extra_data(self, user, uid, response, details, *args, **kwargs):
         """Return access_token, token_type, and extra defined names to store in
         extra_data field"""
         data = super().extra_data(user, uid, response, details=details, *args, **kwargs)
