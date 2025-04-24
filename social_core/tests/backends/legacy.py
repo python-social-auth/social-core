@@ -40,8 +40,10 @@ class BaseLegacyTest(BaseBackendTest):
             body=self.response_body,
             content_type="application/x-www-form-urlencoded",
         )
-        response = requests.get(start_url)
+        response = requests.get(start_url, timeout=1)
         self.assertEqual(response.text, self.form.format(complete_url))
-        response = requests.post(complete_url, data=parse_qs(self.response_body))
+        response = requests.post(
+            complete_url, data=parse_qs(self.response_body), timeout=1
+        )
         self.strategy.set_request_data(parse_qs(response.text), self.backend)
         return self.backend.complete()

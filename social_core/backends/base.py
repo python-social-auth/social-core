@@ -1,13 +1,18 @@
 from __future__ import annotations
 
 import time
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 import requests
 from requests import Response
 
 from ..exceptions import AuthConnectionError
 from ..utils import module_member, parse_qs, user_agent
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
+    from requests.auth import AuthBase
 
 
 class BaseAuth:
@@ -228,24 +233,33 @@ class BaseAuth:
         self,
         url: str,
         method: Literal["GET", "POST", "DELETE"] = "GET",
-        *args,
-        **kwargs,
+        *,
+        headers: Mapping[str, str | bytes] | None = None,
+        data: dict | bytes | str | None = None,
+        auth: tuple[str, str] | AuthBase | None = None,
+        params: dict | None = None,
     ) -> Response:
-        kwargs.setdefault("headers", {})
-        if self.setting("PROXIES") is not None:
-            kwargs.setdefault("proxies", self.setting("PROXIES"))
+        headers = {} if headers is None else dict(headers)
+        proxies = self.setting("PROXIES")
+        verify = self.setting("VERIFY_SSL", True)
+        #        if timeout is None:
+        timeout = self.setting("REQUESTS_TIMEOUT") or self.setting("URLOPEN_TIMEOUT")
 
-        if self.setting("VERIFY_SSL") is not None:
-            kwargs.setdefault("verify", self.setting("VERIFY_SSL"))
-        kwargs.setdefault(
-            "timeout",
-            self.setting("REQUESTS_TIMEOUT") or self.setting("URLOPEN_TIMEOUT"),
-        )
-        if self.SEND_USER_AGENT and "User-Agent" not in kwargs["headers"]:
-            kwargs["headers"]["User-Agent"] = self.setting("USER_AGENT") or user_agent()
+        if self.SEND_USER_AGENT and "User-Agent" not in headers:
+            headers["User-Agent"] = self.setting("USER_AGENT") or user_agent()
 
         try:
-            response = requests.request(method, url, *args, **kwargs)
+            response = requests.request(
+                method,
+                url,
+                headers=headers,
+                data=data,
+                auth=auth,
+                params=params,
+                timeout=timeout,
+                proxies=proxies,
+                verify=verify,
+            )
         except requests.ConnectionError as err:
             raise AuthConnectionError(self, str(err)) from err
         response.raise_for_status()

@@ -48,6 +48,6 @@ class StripeOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         self.do_partial_pipeline()
 
     def test_get_user_details(self):
-        response = requests.get(self.account_data_url)
+        response = requests.get(self.account_data_url, timeout=1)
         user_details = self.backend.get_user_details(response.json())
         self.assertEqual(user_details["email"], "foobar@yahoo.com")

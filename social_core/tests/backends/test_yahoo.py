@@ -80,6 +80,6 @@ class YahooOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
         responses.add(
             responses.GET, self.user_data_url, status=200, body=self.user_data_body
         )
-        response = requests.get(self.user_data_url)
+        response = requests.get(self.user_data_url, timeout=1)
         user_details = self.backend.get_user_details(response.json()["profile"])
         self.assertEqual(user_details["email"], "foobar@yahoo.com")

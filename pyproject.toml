@@ -171,7 +171,6 @@ ignore = [
   "TID252",  # TODO: Prefer absolute imports over relative imports from parent modules
   "FBT",  # TODO: Boolean in function definition
   "S105",  # TODO: Possible hardcoded password assigned
-  "S113",  # TODO: Probable use of `requests` call without timeout
   "B018",  # TODO: Found useless expression.
   "A001",  # TODO: Variable is shadowing a Python builtin
   "A002",  # TODO: Function argument is shadowing a Python builtin
