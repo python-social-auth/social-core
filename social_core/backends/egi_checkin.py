@@ -5,6 +5,8 @@ https://www.egi.eu/service/check-in/
 
 from __future__ import annotations
 
+from typing import Literal
+
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 
 CHECKIN_ENV_ENDPOINTS = {
@@ -18,7 +20,7 @@ class EGICheckinOpenIdConnect(OpenIdConnectAuth):
     name = "egi-checkin"
     # Check-in provides 3 environments: production, demo and development
     # Set the one to use as "prod", "demo" or "dev"
-    CHECKIN_ENV = "prod"
+    CHECKIN_ENV: Literal["prod", "demo", "dev"] = "prod"
     # This is a opaque and unique id for every user that looks like an email
     # see https://docs.egi.eu/providers/check-in/sp/#1-community-user-identifier
     USERNAME_KEY = "voperson_id"

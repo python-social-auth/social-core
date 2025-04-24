@@ -1,15 +1,14 @@
-# pyright: reportAttributeAccessIssue=false
 import json
 
 import responses
 
-from .oauth import BaseAuthUrlTestMixin, OAuth2Test
-from .test_open_id_connect import OpenIdConnectTestMixin
+from .oauth import BaseAuthUrlTestMixin
+from .open_id_connect import OpenIdConnectTest
 
 ROOT_URL = "https://vault.example.net:8200/"
 
 
-class VaultOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test, BaseAuthUrlTestMixin):
+class VaultOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.vault.VaultOpenIdConnect"
     issuer = f"{ROOT_URL}v1/identity/oidc/provider/default"
     openid_config_body = json.dumps(

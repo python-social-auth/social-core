@@ -1,4 +1,3 @@
-# pyright: reportAttributeAccessIssue=false
 import json
 import time
 from unittest import mock
@@ -12,7 +11,7 @@ from ...exceptions import AuthException, AuthTokenError
 from ..models import User
 from .base import BaseBackendTest
 from .oauth import BaseAuthUrlTestMixin, OAuth1AuthUrlTestMixin, OAuth1Test, OAuth2Test
-from .test_open_id_connect import OpenIdConnectTestMixin
+from .open_id_connect import OpenIdConnectTest
 
 
 class GoogleOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
@@ -115,7 +114,7 @@ class GoogleRevokeTokenTest(GoogleOAuth2Test):
         do_disconnect(self.backend, user)
 
 
-class GoogleOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
+class GoogleOpenIdConnectTest(OpenIdConnectTest):
     backend_path = "social_core.backends.google_openidconnect.GoogleOpenIdConnect"
     user_data_url = "https://www.googleapis.com/plus/v1/people/me/openIdConnect"
     issuer = "accounts.google.com"

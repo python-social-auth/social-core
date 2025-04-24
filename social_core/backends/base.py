@@ -257,7 +257,7 @@ class BaseAuth:
     def get_querystring(self, url, *args, **kwargs) -> dict[str, str]:
         return parse_qs(self.request(url, *args, **kwargs).text)
 
-    def get_key_and_secret(self):
+    def get_key_and_secret(self) -> tuple[str, str]:
         """Return tuple with Consumer Key and Consumer Secret for current
         service provider. Must return (key, secret), order *must* be respected.
         """

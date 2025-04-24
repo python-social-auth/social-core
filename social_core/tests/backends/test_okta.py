@@ -1,10 +1,10 @@
-# pyright: reportAttributeAccessIssue=false
 import json
 
 import responses
 
 from social_core.tests.backends.oauth import BaseAuthUrlTestMixin, OAuth2Test
-from social_core.tests.backends.test_open_id_connect import OpenIdConnectTestMixin
+
+from .open_id_connect import OpenIdConnectTest
 
 JWK_KEY = {
     "kty": "RSA",
@@ -69,7 +69,7 @@ class OktaOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         self.do_partial_pipeline()
 
 
-class OktaOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
+class OktaOpenIdConnectTest(OpenIdConnectTest):
     backend_path = "social_core.backends.okta_openidconnect.OktaOpenIdConnect"
     user_data_url = "https://dev-000000.oktapreview.com/oauth2/v1/userinfo"
     issuer = "https://dev-000000.oktapreview.com/oauth2"
@@ -140,19 +140,23 @@ class OktaOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
     )
     expected_username = "foo"
 
-    def setUp(self):
-        super(OpenIdConnectTestMixin, self).setUp()
+    def extra_settings(self):
+        settings = super().extra_settings()
         # Settings for Okta
-        self.strategy.set_settings(
+        oidc_config = json.loads(self.openid_config_body)
+        settings.update(
             {
-                "SOCIAL_AUTH_OKTA_OPENIDCONNECT_API_URL": "https://dev-000000.oktapreview.com/oauth2"
+                "SOCIAL_AUTH_OKTA_OPENIDCONNECT_API_URL": "https://dev-000000.oktapreview.com/oauth2",
+                "SOCIAL_AUTH_OKTA_OPENIDCONNECT_OIDC_ENDPOINT": "https://dev-000000.oktapreview.com/oauth2",
+                "SOCIAL_AUTH_OKTA_OPENIDCONNECT_JWKS_URI": oidc_config.get("jwks_uri"),
+                "SOCIAL_AUTH_OKTA_OPENIDCONNECT_ID_TOKEN_ISSUER": oidc_config.get(
+                    "issuer"
+                ),
             }
         )
-        self.backend.OIDC_ENDPOINT = "https://dev-000000.oktapreview.com/oauth2"
+        return settings
 
-        self.key = JWK_KEY.copy()
-        self.public_key = JWK_PUBLIC_KEY.copy()
-
+    def setUp(self):
         responses.add(
             responses.GET,
             # Note: okta.py strips the /oauth2 prefix using urljoin with absolute path
@@ -163,18 +167,14 @@ class OktaOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
         )
         oidc_config = json.loads(self.openid_config_body)
 
-        def jwks(_request, _uri, headers):
-            return 200, headers, json.dumps({"keys": [self.key]})
-
         responses.add(
             responses.GET,
             oidc_config.get("jwks_uri"),
             status=200,
-            json={"keys": [self.public_key]},
+            json={"keys": [JWK_PUBLIC_KEY]},
         )
 
-        self.backend.JWKS_URI = oidc_config.get("jwks_uri")
-        self.backend.ID_TOKEN_ISSUER = oidc_config.get("issuer")
+        super().setUp()
 
     def pre_complete_callback(self, start_url):
         super().pre_complete_callback(start_url)

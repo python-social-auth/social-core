@@ -1,16 +1,14 @@
-# pyright: reportAttributeAccessIssue=false
-
 import json
 
 import responses
 
-from .oauth import BaseAuthUrlTestMixin, OAuth2Test
-from .test_open_id_connect import OpenIdConnectTestMixin
+from .oauth import BaseAuthUrlTestMixin
+from .open_id_connect import OpenIdConnectTest
 
 ROOT_URL = "https://cas.example.net/"
 
 
-class CASOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test, BaseAuthUrlTestMixin):
+class CASOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.cas.CASOpenIdConnectAuth"
     issuer = f"{ROOT_URL}oidc"
     openid_config_body = json.dumps(
