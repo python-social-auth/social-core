@@ -73,7 +73,7 @@ class DiscourseAuth(BaseAuth):
         ).hexdigest()
 
         if not hmac.compare_digest(str(sso_signature), str(param_signature)):
-            raise AuthException("Could not verify discourse login")
+            raise AuthException(self, "Could not verify discourse login")
 
         decoded_params = urlsafe_b64decode(sso_params.encode("utf8")).decode("ascii")
 

@@ -75,8 +75,9 @@ class AzureADB2COAuth2(AzureADOAuth2):
         policy = self.setting("POLICY")
         if not policy or not policy.lower().startswith("b2c_"):
             raise AuthException(
+                self,
                 "SOCIAL_AUTH_AZUREAD_B2C_OAUTH2_POLICY is "
-                "required and should start with `b2c_`"
+                "required and should start with `b2c_`",
             )
         return policy
 

@@ -511,7 +511,7 @@ class BaseOAuth2PKCE(BaseOAuth2):
             return encoded.decode().replace("=", "")  # remove padding
         if method == "plain":
             return code_verifier
-        raise AuthException("Unsupported code challenge method.")
+        raise AuthException(self, "Unsupported code challenge method.")
 
     def auth_params(self, state=None):
         params = super().auth_params(state=state)
