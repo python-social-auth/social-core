@@ -232,8 +232,8 @@ class BaseAuth:
     def request(
         self,
         url: str,
-        method: Literal["GET", "POST", "DELETE"] = "GET",
         *,
+        method: Literal["GET", "POST", "DELETE"] = "GET",
         headers: Mapping[str, str | bytes] | None = None,
         data: dict | bytes | str | None = None,
         auth: tuple[str, str] | AuthBase | None = None,
@@ -265,8 +265,18 @@ class BaseAuth:
         response.raise_for_status()
         return response
 
-    def get_json(self, url, *args, **kwargs):
-        return self.request(url, *args, **kwargs).json()
+    def get_json(
+        self,
+        url: str,
+        method: Literal["GET", "POST", "DELETE"] = "GET",
+        headers: Mapping[str, str | bytes] | None = None,
+        data: dict | bytes | str | None = None,
+        auth: tuple[str, str] | AuthBase | None = None,
+        params: dict | None = None,
+    ) -> dict[Any, Any]:
+        return self.request(
+            url, method=method, headers=headers, data=data, auth=auth, params=params
+        ).json()
 
     def get_querystring(self, url, *args, **kwargs) -> dict[str, str]:
         return parse_qs(self.request(url, *args, **kwargs).text)
