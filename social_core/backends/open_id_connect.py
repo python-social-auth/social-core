@@ -65,7 +65,13 @@ class OpenIdConnectAuth(BaseOAuth2):
     JWKS_URI = ""
     TOKEN_ENDPOINT_AUTH_METHOD = ""
     # Optional parameters for Authentication Request
-    PROMPT = ""
+    DISPLAY = None
+    PROMPT = None
+    MAX_AGE = None
+    UI_LOCALES = None
+    ID_TOKEN_HINT = None
+    LOGIN_HINT = None
+    ACR_VALUES = None
 
     def __init__(self, *args, **kwargs):
         self.id_token = None
@@ -134,16 +140,51 @@ class OpenIdConnectAuth(BaseOAuth2):
         params = super().auth_params(state)
         params["nonce"] = self.get_and_store_nonce(self.authorization_url(), state)
 
-        prompt = self.setting(
-            "PROMPT", default=self.PROMPT
-        )
-        is_prompt_valid = True
-        for prompt_token in prompt.split():
-            if prompt_token not in ("none", "login", "consent", "select_account"):
-                is_prompt_valid = False
-                break
-        if is_prompt_valid:
+        display = self.setting("DISPLAY", default=self.DISPLAY)
+        if display is not None:
+            if not display:
+                raise ValueError("OpenID Connect display value cannot be empty string.")
+
+            if display not in ("page", "popup", "touch", "wap"):
+                raise ValueError(f"Invalid OpenID Connect display value: {display}")
+
+            params["display"] = display
+
+        prompt = self.setting("PROMPT", default=self.PROMPT)
+        if prompt is not None:
+            if not prompt:
+                raise ValueError("OpenID Connect prompt value cannot be empty string.")
+
+            for prompt_token in prompt.split():
+                if prompt_token not in ("none", "login", "consent", "select_account"):
+                    raise ValueError(
+                        f"Invalid OpenID Connect prompt value: {prompt_token}"
+                    )
+
             params["prompt"] = prompt
+
+        max_age = self.setting("MAX_AGE", default=self.MAX_AGE)
+        if max_age is not None:
+            if max_age < 0:
+                raise ValueError("OpenID Connect max_age cannot be negative.")
+
+            params["max_age"] = max_age
+
+        ui_locales = self.setting("UI_LOCALES", default=self.UI_LOCALES)
+        if ui_locales is not None:
+            raise ValueError("OpenID Connect ui_locales is not implemented.")
+
+        id_token_hint = self.setting("ID_TOKEN_HINT", default=self.ID_TOKEN_HINT)
+        if id_token_hint is not None:
+            raise ValueError("OpenID Connect id_token_hint is not implemented.")
+
+        login_hint = self.setting("LOGIN_HINT", default=self.LOGIN_HINT)
+        if login_hint is not None:
+            raise ValueError("OpenID Connect login_hint is not implemented.")
+
+        acr_values = self.setting("ACR_VALUES", default=self.ACR_VALUES)
+        if acr_values is not None:
+            raise ValueError("OpenID Connect acr_values is not implemented.")
 
         return params
 
