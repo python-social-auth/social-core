@@ -101,6 +101,8 @@ shopify = [
 ]
 
 [project.urls]
+Changelog = "https://github.com/python-social-auth/social-core/blob/master/CHANGELOG.md"
+Funding = "https://opencollective.com/python-social-auth"
 Homepage = "https://github.com/python-social-auth/social-core"
 
 [tool.check-manifest]
