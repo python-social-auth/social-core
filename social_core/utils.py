@@ -177,7 +177,7 @@ def partial_pipeline_data(backend, user=None, partial_token=None, *args, **kwarg
             # Normally when resuming a pipeline, request_data will be empty. We
             # only need to check for a uid match if new data was provided (i.e.
             # if current request specifies the ID_KEY).
-            if backend.ID_KEY in request_data:
+            if backend.ID_KEY and backend.ID_KEY in request_data:
                 id_from_partial = partial.kwargs.get("uid")
                 id_from_request = request_data.get(backend.ID_KEY)
 
