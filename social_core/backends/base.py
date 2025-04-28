@@ -21,7 +21,7 @@ class BaseAuth:
 
     name = ""  # provider name, it's stored in database
     supports_inactive_user = False  # Django auth
-    ID_KEY: str
+    ID_KEY: str = ""
     EXTRA_DATA: list[str | tuple[str, str] | tuple[str, str, bool]] | None = None
     GET_ALL_EXTRA_DATA = False
     REQUIRES_EMAIL_VALIDATION = False
