@@ -16,7 +16,7 @@ from jwt import (
 from jwt.utils import base64url_decode
 
 from social_core.backends.oauth import BaseOAuth2
-from social_core.exceptions import AuthTokenError
+from social_core.exceptions import AuthTokenError, AuthMissingParameter
 from social_core.utils import cache
 
 
@@ -143,48 +143,46 @@ class OpenIdConnectAuth(BaseOAuth2):
         display = self.setting("DISPLAY", default=self.DISPLAY)
         if display is not None:
             if not display:
-                raise ValueError("OpenID Connect display value cannot be empty string.")
+                raise AuthMissingParameter("OpenID Connect display value cannot be empty string.")
 
             if display not in ("page", "popup", "touch", "wap"):
-                raise ValueError(f"Invalid OpenID Connect display value: {display}")
+                raise AuthMissingParameter(f"Invalid OpenID Connect display value: {display}")
 
             params["display"] = display
 
         prompt = self.setting("PROMPT", default=self.PROMPT)
         if prompt is not None:
             if not prompt:
-                raise ValueError("OpenID Connect prompt value cannot be empty string.")
+                raise AuthInvalidParameter("prompt")
 
             for prompt_token in prompt.split():
                 if prompt_token not in ("none", "login", "consent", "select_account"):
-                    raise ValueError(
-                        f"Invalid OpenID Connect prompt value: {prompt_token}"
-                    )
+                    raise AuthInvalidParameter("prompt")
 
             params["prompt"] = prompt
 
         max_age = self.setting("MAX_AGE", default=self.MAX_AGE)
         if max_age is not None:
             if max_age < 0:
-                raise ValueError("OpenID Connect max_age cannot be negative.")
+                raise AuthInvalidParameter("max_age")
 
             params["max_age"] = max_age
 
         ui_locales = self.setting("UI_LOCALES", default=self.UI_LOCALES)
         if ui_locales is not None:
-            raise ValueError("OpenID Connect ui_locales is not implemented.")
+            raise AuthNotImplementedParameter("ui_locales")
 
         id_token_hint = self.setting("ID_TOKEN_HINT", default=self.ID_TOKEN_HINT)
         if id_token_hint is not None:
-            raise ValueError("OpenID Connect id_token_hint is not implemented.")
+            raise AuthNotImplementedParameter("id_token_hint")
 
         login_hint = self.setting("LOGIN_HINT", default=self.LOGIN_HINT)
         if login_hint is not None:
-            raise ValueError("OpenID Connect login_hint is not implemented.")
+            raise AuthNotImplementedParameter("login_hint")
 
         acr_values = self.setting("ACR_VALUES", default=self.ACR_VALUES)
         if acr_values is not None:
-            raise ValueError("OpenID Connect acr_values is not implemented.")
+            raise AuthNotImplementedParameter("acr_values")
 
         return params
 

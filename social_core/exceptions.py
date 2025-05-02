@@ -81,6 +81,28 @@ class AuthMissingParameter(AuthException):
         return f"Missing needed parameter {self.parameter}"
 
 
+class AuthInvalidParameter(AuthException):
+    """Invalid value for parameter to start or complete the process."""
+
+    def __init__(self, backend, parameter, *args, **kwargs):
+        self.parameter = parameter
+        super().__init__(backend, *args, **kwargs)
+
+    def __str__(self):
+        return f"Invalid value for parameter {self.parameter}"
+
+
+class AuthNotImplementedParameter(AuthException):
+    """Optional parameter not implemented to start or complete the process."""
+
+    def __init__(self, backend, parameter, *args, **kwargs):
+        self.parameter = parameter
+        super().__init__(backend, *args, **kwargs)
+
+    def __str__(self):
+        return f"Not implemented parameter {self.parameter}"
+
+
 class AuthStateMissing(AuthException):
     """State parameter is incorrect."""
 
