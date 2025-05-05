@@ -87,7 +87,7 @@ class OpenIdTest(BaseBackendTest):
         action = form.get("action")
         assert action, "The form action must be set in the test"
         responses.add(responses.POST, action, status=200, body=self.server_response)
-        response = requests.post(action, data=inputs)
+        response = requests.post(action, data=inputs, timeout=1)
         self.strategy.set_request_data(parse_qs(response.content), self.backend)
         responses.add(
             responses.POST, form.get("action"), status=200, body="is_valid:true\n"

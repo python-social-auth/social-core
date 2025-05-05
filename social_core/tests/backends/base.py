@@ -1,5 +1,3 @@
-# pyright: reportAttributeAccessIssue=false
-
 from __future__ import annotations
 
 import unittest
@@ -30,6 +28,7 @@ class BaseBackendTest(unittest.TestCase, Generic[BackendT]):
     name: str = ""
     complete_url = ""
     raw_complete_url = "/complete/{0}"
+    expected_username: str = ""
 
     def setUp(self):
         responses.start()
@@ -55,9 +54,9 @@ class BaseBackendTest(unittest.TestCase, Generic[BackendT]):
         TestCode.reset_cache()
 
     def tearDown(self):
-        self.backend = None
+        del self.backend
         self.strategy = None
-        self.name = None
+        self.name = ""
         self.complete_url = None
         User.reset_cache()
         TestUserSocialAuth.reset_cache()
@@ -67,7 +66,7 @@ class BaseBackendTest(unittest.TestCase, Generic[BackendT]):
         responses.stop()
         responses.reset()
 
-    def extra_settings(self):
+    def extra_settings(self) -> dict[str, str]:
         return {}
 
     def do_start(self):
@@ -122,8 +121,8 @@ class BaseBackendTest(unittest.TestCase, Generic[BackendT]):
 
     def pipeline_password_handling(self, url):
         password = "foobar"
-        requests.get(url)
-        requests.post(url, data={"password": password})
+        requests.get(url, timeout=1)
+        requests.post(url, data={"password": password}, timeout=1)
 
         data = parse_qs(responses.calls[-1].request.body)
         self.assertEqual(data["password"], password)
@@ -132,8 +131,8 @@ class BaseBackendTest(unittest.TestCase, Generic[BackendT]):
 
     def pipeline_slug_handling(self, url):
         slug = "foo-bar"
-        requests.get(url)
-        requests.post(url, data={"slug": slug})
+        requests.get(url, timeout=1)
+        requests.post(url, data={"slug": slug}, timeout=1)
 
         data = parse_qs(responses.calls[-1].request.body)
         self.assertEqual(data["slug"], slug)

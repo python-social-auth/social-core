@@ -1,9 +1,17 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .backends.base import BaseAuth
+
+
 class SocialAuthBaseException(ValueError):
     """Base class for pipeline exceptions."""
 
 
 class WrongBackend(SocialAuthBaseException):
-    def __init__(self, backend_name):
+    def __init__(self, backend_name: str):
         self.backend_name = backend_name
 
     def __str__(self):
@@ -25,7 +33,7 @@ class NotAllowedToDisconnect(SocialAuthBaseException):
 class AuthException(SocialAuthBaseException):
     """Auth process exception."""
 
-    def __init__(self, backend, *args, **kwargs):
+    def __init__(self, backend: BaseAuth, *args, **kwargs):
         self.backend = backend
         super().__init__(*args, **kwargs)
 
@@ -73,7 +81,7 @@ class AuthTokenError(AuthException):
 class AuthMissingParameter(AuthException):
     """Missing parameter needed to start or complete the process."""
 
-    def __init__(self, backend, parameter, *args, **kwargs):
+    def __init__(self, backend: BaseAuth, parameter: str, *args, **kwargs):
         self.parameter = parameter
         super().__init__(backend, *args, **kwargs)
 

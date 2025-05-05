@@ -6,6 +6,7 @@ import requests
 import responses
 
 from ...actions import do_auth, do_complete
+from ...backends.oauth import BaseOAuth2
 from ...utils import module_member, parse_qs
 from ..models import TestAssociation, TestNonce, TestStorage, TestUserSocialAuth, User
 from ..strategy import TestStrategy
@@ -51,10 +52,8 @@ class BaseActionTest(unittest.TestCase):
         }
     )
 
-    def __init__(self, *args, **kwargs):
-        self.strategy = None
-        self.backend = None
-        super().__init__(*args, **kwargs)
+    strategy: TestStrategy
+    backend: BaseOAuth2
 
     def setUp(self):
         responses.start()
@@ -63,15 +62,15 @@ class BaseActionTest(unittest.TestCase):
         TestNonce.reset_cache()
         TestAssociation.reset_cache()
         Backend = module_member("social_core.backends.github.GithubOAuth2")
-        self.strategy = self.strategy or TestStrategy(TestStorage)
-        self.backend = self.backend or Backend(
-            self.strategy, redirect_uri="/complete/github"
-        )
+        if not hasattr(self, "strategy"):
+            self.strategy = TestStrategy(TestStorage)
+        if not hasattr(self, "backend"):
+            self.backend = Backend(self.strategy, redirect_uri="/complete/github")
         self.user = None
 
     def tearDown(self):
-        self.backend = None
-        self.strategy = None
+        del self.backend
+        del self.strategy
         self.user = None
         User.reset_cache()
         User.set_active(True)
@@ -114,7 +113,7 @@ class BaseActionTest(unittest.TestCase):
         )
         responses.add(responses.GET, location_url, status=200, body="foobar")
 
-        response = requests.get(start_url)
+        response = requests.get(start_url, timeout=1)
         self.assertEqual(response.url, location_url)
         self.assertEqual(response.text, "foobar")
 
@@ -196,7 +195,7 @@ class BaseActionTest(unittest.TestCase):
         )
         responses.add(responses.GET, location_url, status=200, body="foobar")
 
-        response = requests.get(start_url)
+        response = requests.get(start_url, timeout=1)
         self.assertEqual(response.url, location_url)
         self.assertEqual(response.text, "foobar")
 
@@ -230,8 +229,8 @@ class BaseActionTest(unittest.TestCase):
         responses.add(responses.POST, redirect.url, status=200)
 
         password = "foobar"
-        requests.get(url)
-        requests.post(url, data={"password": password})
+        requests.get(url, timeout=1)
+        requests.post(url, data={"password": password}, timeout=1)
         data = parse_qs(responses.calls[-1].request.body)
         self.assertEqual(data["password"], password)
         self.strategy.session_set("password", data["password"])

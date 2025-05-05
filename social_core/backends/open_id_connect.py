@@ -16,7 +16,7 @@ from jwt import (
 from jwt.utils import base64url_decode
 
 from social_core.backends.oauth import BaseOAuth2
-from social_core.exceptions import AuthTokenError, AuthMissingParameter
+from social_core.exceptions import AuthMissingParameter, AuthTokenError
 from social_core.utils import cache
 
 
@@ -77,37 +77,46 @@ class OpenIdConnectAuth(BaseOAuth2):
         self.id_token = None
         super().__init__(*args, **kwargs)
 
-    def authorization_url(self):
-        return self.setting(
-            "AUTHORIZATION_URL", self.AUTHORIZATION_URL
-        ) or self.oidc_config().get("authorization_endpoint")
+    def get_setting_config(
+        self, setting_name: str, oidc_name: str, default: str
+    ) -> str:
+        value = self.setting(setting_name, default)
+        if not value:
+            value = self.oidc_config().get(oidc_name)
 
-    def access_token_url(self):
-        return self.setting(
-            "ACCESS_TOKEN_URL", self.ACCESS_TOKEN_URL
-        ) or self.oidc_config().get("token_endpoint")
+        if not isinstance(value, str):
+            raise AuthMissingParameter(self, setting_name)
+        return value
 
-    def revoke_token_url(self, token, uid):
-        return self.setting(
-            "REVOKE_TOKEN_URL", self.REVOKE_TOKEN_URL
-        ) or self.oidc_config().get("revocation_endpoint")
-
-    def id_token_issuer(self):
-        return self.setting(
-            "ID_TOKEN_ISSUER", self.ID_TOKEN_ISSUER
-        ) or self.oidc_config().get("issuer")
-
-    def userinfo_url(self):
-        return self.setting(
-            "USERINFO_URL", self.USERINFO_URL
-        ) or self.oidc_config().get("userinfo_endpoint")
-
-    def jwks_uri(self):
-        return self.setting("JWKS_URI", self.JWKS_URI) or self.oidc_config().get(
-            "jwks_uri"
+    def authorization_url(self) -> str:
+        return self.get_setting_config(
+            "AUTHORIZATION_URL", "authorization_endpoint", self.AUTHORIZATION_URL
         )
 
-    def use_basic_auth(self):
+    def access_token_url(self) -> str:
+        return self.get_setting_config(
+            "ACCESS_TOKEN_URL", "token_endpoint", self.ACCESS_TOKEN_URL
+        )
+
+    def revoke_token_url(self, token, uid) -> str:
+        return self.get_setting_config(
+            "REVOKE_TOKEN_URL", "revocation_endpoint", self.REVOKE_TOKEN_URL
+        )
+
+    def id_token_issuer(self) -> str:
+        return self.get_setting_config(
+            "ID_TOKEN_ISSUER", "issuer", self.ID_TOKEN_ISSUER
+        )
+
+    def userinfo_url(self) -> str:
+        return self.get_setting_config(
+            "USERINFO_URL", "userinfo_endpoint", self.USERINFO_URL
+        )
+
+    def jwks_uri(self) -> str:
+        return self.get_setting_config("JWKS_URI", "jwks_uri", self.JWKS_URI)
+
+    def use_basic_auth(self) -> bool:
         method = self.setting(
             "TOKEN_ENDPOINT_AUTH_METHOD", self.TOKEN_ENDPOINT_AUTH_METHOD
         )
@@ -116,11 +125,11 @@ class OpenIdConnectAuth(BaseOAuth2):
         methods = self.oidc_config().get("token_endpoint_auth_methods_supported", [])
         return not methods or "client_secret_basic" in methods
 
-    def oidc_endpoint(self):
+    def oidc_endpoint(self) -> str:
         return self.setting("OIDC_ENDPOINT", self.OIDC_ENDPOINT)
 
     @cache(ttl=86400)
-    def oidc_config(self):
+    def oidc_config(self) -> dict[Any, Any]:
         return self.get_json(self.oidc_endpoint() + "/.well-known/openid-configuration")
 
     @cache(ttl=86400)

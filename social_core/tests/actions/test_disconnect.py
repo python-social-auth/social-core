@@ -58,8 +58,8 @@ class DisconnectActionTest(BaseActionTest):
         responses.add(responses.POST, redirect.url, status=200)
 
         password = "foobar"
-        requests.get(url)
-        requests.post(url, data={"password": password})
+        requests.get(url, timeout=1)
+        requests.post(url, data={"password": password}, timeout=1)
         data = parse_qs(responses.calls[-1].request.body)
         self.assertEqual(data["password"], password)
         self.strategy.session_set("password", data["password"])

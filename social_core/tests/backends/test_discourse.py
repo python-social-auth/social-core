@@ -52,7 +52,7 @@ class DiscourseTest(BaseBackendTest):
             content_type="text/html",
         )
 
-        response = requests.get(start_url)
+        response = requests.get(start_url, timeout=1)
         query_values = {
             k: v[0] for k, v in parse_qs(urlparse(response.url).query).items()
         }

@@ -1,12 +1,10 @@
-# pyright: reportAttributeAccessIssue=false
-
 import json
 
-from .oauth import BaseAuthUrlTestMixin, OAuth2Test
-from .test_open_id_connect import OpenIdConnectTestMixin
+from .oauth import BaseAuthUrlTestMixin
+from .open_id_connect import OpenIdConnectTest
 
 
-class FedoraOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test, BaseAuthUrlTestMixin):
+class FedoraOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.fedora.FedoraOpenIdConnect"
     user_data_url = "https://id.fedoraproject.org/openidc/UserInfo"
     issuer = "https://id.fedoraproject.org/openidc/"

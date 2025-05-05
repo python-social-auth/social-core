@@ -30,6 +30,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
     from requests import Response
+    from requests.auth import AuthBase
 
 
 class OAuthAuth(BaseAuth):
@@ -49,7 +50,7 @@ class OAuthAuth(BaseAuth):
     AUTHORIZATION_URL = ""
     ACCESS_TOKEN_URL = ""
     ACCESS_TOKEN_METHOD: Literal["GET", "POST"] = "POST"
-    REVOKE_TOKEN_URL: str | None = None
+    REVOKE_TOKEN_URL: str = ""
     REVOKE_TOKEN_METHOD: Literal["GET", "POST", "DELETE"] = "POST"
     ID_KEY = "id"
     SCOPE_PARAMETER_NAME = "scope"
@@ -142,7 +143,7 @@ class OAuthAuth(BaseAuth):
     def access_token_url(self) -> str:
         return self.ACCESS_TOKEN_URL
 
-    def revoke_token_url(self, token, uid) -> str | None:
+    def revoke_token_url(self, token, uid) -> str:
         return self.REVOKE_TOKEN_URL
 
     def revoke_token_params(self, token, uid) -> dict[str, Any]:
@@ -398,15 +399,25 @@ class BaseOAuth2(OAuthAuth):
             "Accept": "application/json",
         }
 
-    def extra_data(self, user, uid, response, details=None, *args, **kwargs):
+    def extra_data(self, user, uid, response, details, *args, **kwargs):
         """Return access_token, token_type, and extra defined names to store in
         extra_data field"""
         data = super().extra_data(user, uid, response, details=details, *args, **kwargs)
         data["token_type"] = response.get("token_type") or kwargs.get("token_type")
         return data
 
-    def request_access_token(self, *args, **kwargs):
-        return self.get_json(*args, **kwargs)
+    def request_access_token(
+        self,
+        url: str,
+        method: Literal["GET", "POST", "DELETE"] = "GET",
+        headers: Mapping[str, str | bytes] | None = None,
+        data: dict | bytes | str | None = None,
+        auth: tuple[str, str] | AuthBase | None = None,
+        params: dict | None = None,
+    ) -> dict[Any, Any]:
+        return self.get_json(
+            url, method=method, headers=headers, data=data, auth=auth, params=params
+        )
 
     def process_error(self, data):
         if data.get("error"):
@@ -511,7 +522,7 @@ class BaseOAuth2PKCE(BaseOAuth2):
             return encoded.decode().replace("=", "")  # remove padding
         if method == "plain":
             return code_verifier
-        raise AuthException("Unsupported code challenge method.")
+        raise AuthException(self, "Unsupported code challenge method.")
 
     def auth_params(self, state=None):
         params = super().auth_params(state=state)

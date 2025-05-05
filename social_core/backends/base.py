@@ -1,13 +1,18 @@
 from __future__ import annotations
 
 import time
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 import requests
 from requests import Response
 
-from ..exceptions import AuthConnectionError
+from ..exceptions import AuthConnectionError, AuthUnknownError
 from ..utils import module_member, parse_qs, user_agent
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
+    from requests.auth import AuthBase
 
 
 class BaseAuth:
@@ -16,7 +21,7 @@ class BaseAuth:
 
     name = ""  # provider name, it's stored in database
     supports_inactive_user = False  # Django auth
-    ID_KEY: str
+    ID_KEY: str = ""
     EXTRA_DATA: list[str | tuple[str, str] | tuple[str, str, bool]] | None = None
     GET_ALL_EXTRA_DATA = False
     REQUIRES_EMAIL_VALIDATION = False
@@ -123,36 +128,45 @@ class BaseAuth:
         return out
 
     def extra_data(
-        self, user, uid, response, details=None, *args, **kwargs
+        self,
+        user,
+        uid: str,
+        response: dict[str, Any],
+        details: dict[str, Any],
+        *args,
+        **kwargs,
     ) -> dict[str, Any]:
         """Return default extra data to store in extra_data field"""
-        data = {
+        data: dict[str, Any] = {
             # store the last time authentication took place
             "auth_time": int(time.time())
         }
-        extra_data_entries = []
+        extra_data_entries: list[str | tuple[str, str] | tuple[str, str, bool]] = []
         if self.GET_ALL_EXTRA_DATA or self.setting("GET_ALL_EXTRA_DATA", False):
-            extra_data_entries = response.keys()
+            extra_data_entries = list(response.keys())
         else:
-            extra_data_entries = (self.EXTRA_DATA or []) + self.setting(
-                "EXTRA_DATA", []
+            extra_data_entries = (self.EXTRA_DATA or []) + cast(
+                "list[str | tuple[str, str] | tuple[str, str, bool]]",
+                self.setting("EXTRA_DATA", []),
             )
         for entry in extra_data_entries:
-            if not isinstance(entry, (list, tuple)):
-                entry = (entry,)
-            size = len(entry)
-            if size >= 1 and size <= 3:
-                if size == 3:
-                    name, alias, discard = entry  # type: ignore[reportAssignmentType]
-                elif size == 2:
-                    (name, alias), discard = entry, False  # type: ignore[reportAssignmentType]
-                elif size == 1:
-                    name = alias = entry[0]
-                    discard = False
-                value = response.get(name, details.get(name, details.get(alias)))
-                if discard and not value:
-                    continue
-                data[alias] = value
+            if isinstance(entry, list):
+                entry = tuple(cast("list[str]", entry))
+            discard = False
+            if isinstance(entry, str):
+                name = alias = entry
+            elif len(entry) == 3:
+                name, alias, discard = entry
+            elif len(entry) == 2:
+                name, alias = entry
+            elif len(entry) == 1:
+                name = alias = entry[0]
+            else:
+                raise AuthUnknownError(self, f"Invalid EXTRA_DATA item: {entry!r}")
+            value = response.get(name, details.get(name, details.get(alias)))
+            if discard and not value:
+                continue
+            data[alias] = value
         return data
 
     def auth_allowed(self, response, details):
@@ -227,37 +241,56 @@ class BaseAuth:
     def request(
         self,
         url: str,
+        *,
         method: Literal["GET", "POST", "DELETE"] = "GET",
-        *args,
-        **kwargs,
+        headers: Mapping[str, str | bytes] | None = None,
+        data: dict | bytes | str | None = None,
+        auth: tuple[str, str] | AuthBase | None = None,
+        params: dict | None = None,
     ) -> Response:
-        kwargs.setdefault("headers", {})
-        if self.setting("PROXIES") is not None:
-            kwargs.setdefault("proxies", self.setting("PROXIES"))
+        headers = {} if headers is None else dict(headers)
+        proxies = self.setting("PROXIES")
+        verify = self.setting("VERIFY_SSL", True)
+        #        if timeout is None:
+        timeout = self.setting("REQUESTS_TIMEOUT") or self.setting("URLOPEN_TIMEOUT")
 
-        if self.setting("VERIFY_SSL") is not None:
-            kwargs.setdefault("verify", self.setting("VERIFY_SSL"))
-        kwargs.setdefault(
-            "timeout",
-            self.setting("REQUESTS_TIMEOUT") or self.setting("URLOPEN_TIMEOUT"),
-        )
-        if self.SEND_USER_AGENT and "User-Agent" not in kwargs["headers"]:
-            kwargs["headers"]["User-Agent"] = self.setting("USER_AGENT") or user_agent()
+        if self.SEND_USER_AGENT and "User-Agent" not in headers:
+            headers["User-Agent"] = self.setting("USER_AGENT") or user_agent()
 
         try:
-            response = requests.request(method, url, *args, **kwargs)
+            response = requests.request(
+                method,
+                url,
+                headers=headers,
+                data=data,
+                auth=auth,
+                params=params,
+                timeout=timeout,
+                proxies=proxies,
+                verify=verify,
+            )
         except requests.ConnectionError as err:
             raise AuthConnectionError(self, str(err)) from err
         response.raise_for_status()
         return response
 
-    def get_json(self, url, *args, **kwargs):
-        return self.request(url, *args, **kwargs).json()
+    def get_json(
+        self,
+        url: str,
+        method: Literal["GET", "POST", "DELETE"] = "GET",
+        headers: Mapping[str, str | bytes] | None = None,
+        data: dict | bytes | str | None = None,
+        auth: tuple[str, str] | AuthBase | None = None,
+        params: dict | None = None,
+    ) -> dict[Any, Any]:
+        return self.request(
+            url, method=method, headers=headers, data=data, auth=auth, params=params
+        ).json()
 
     def get_querystring(self, url, *args, **kwargs) -> dict[str, str]:
         return parse_qs(self.request(url, *args, **kwargs).text)
 
-    def get_key_and_secret(self):
+    def get_key_and_secret(self) -> tuple[str, str]:
         """Return tuple with Consumer Key and Consumer Secret for current
         service provider. Must return (key, secret), order *must* be respected.
         """

@@ -5,11 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [4.5.7](https://github.com/python-social-auth/social-core/releases/tag/4.5.7) - 2025-04-04
+## [4.6.1](https://github.com/python-social-auth/social-core/releases/tag/4.6.1) - 2025-04-28
+
+### Changed
+
+- Fixed crash in partial pipelines for some backends
+
+## [4.6.0](https://github.com/python-social-auth/social-core/releases/tag/4.6.0) - 2025-04-25
+
+### Changed
+
+- Added type annotations
+- Modernized build system
+- OAuth2 backends now default to POST method
+- Code cleanups
+- Tests use responses instead of HTTPretty
+- Improved error handling in case of missing parameters
 
 ### Added
 
-- Kick OAuth2 backend implementation
+- Kick OAuth2 backend
+- OpenIdConnect-based backend for Fedora
+- Lifescience AAI backend
+- NFDI (OpenID Connect) backend
+
+### Removed
+
+- Removed no longer available backends: khanacademy, professionali.ru, BitBucket OAuth 1.0
 
 ## [4.5.6](https://github.com/python-social-auth/social-core/releases/tag/4.5.6) - 2025-02-13
 

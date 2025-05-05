@@ -1,11 +1,11 @@
-# pyright: reportAttributeAccessIssue=false
+from social_core.backends.egi_checkin import EGICheckinOpenIdConnect
 
-from .oauth import BaseAuthUrlTestMixin, OAuth2Test
-from .test_open_id_connect import OpenIdConnectTestMixin
+from .oauth import BaseAuthUrlTestMixin
+from .open_id_connect import OpenIdConnectTest
 
 
 class EGICheckinOpenIdConnectTest(
-    OpenIdConnectTestMixin, OAuth2Test, BaseAuthUrlTestMixin
+    OpenIdConnectTest[EGICheckinOpenIdConnect], BaseAuthUrlTestMixin
 ):
     backend_path = "social_core.backends.egi_checkin.EGICheckinOpenIdConnect"
     issuer = "https://aai.egi.eu/auth/realms/egi"
