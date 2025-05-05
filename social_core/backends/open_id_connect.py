@@ -152,10 +152,14 @@ class OpenIdConnectAuth(BaseOAuth2):
         display = self.setting("DISPLAY", default=self.DISPLAY)
         if display is not None:
             if not display:
-                raise AuthMissingParameter("OpenID Connect display value cannot be empty string.")
+                raise AuthMissingParameter(
+                    "OpenID Connect display value cannot be empty string."
+                )
 
             if display not in ("page", "popup", "touch", "wap"):
-                raise AuthMissingParameter(f"Invalid OpenID Connect display value: {display}")
+                raise AuthMissingParameter(
+                    f"Invalid OpenID Connect display value: {display}"
+                )
 
             params["display"] = display
 
