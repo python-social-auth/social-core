@@ -41,9 +41,7 @@ class LinkedinOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
 
 
 class BaseLinkedinTest:
-    user_data_url = (
-        "https://api.linkedin.com/v2/me" "?projection=(firstName,id,lastName)"
-    )
+    user_data_url = "https://api.linkedin.com/v2/me?projection=(firstName,id,lastName)"
     expected_username = "FooBar"
     access_token_body = json.dumps({"access_token": "foobar", "token_type": "bearer"})
 
