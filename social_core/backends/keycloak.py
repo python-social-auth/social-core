@@ -133,6 +133,7 @@ class KeycloakOAuth2(BaseOAuth2):  # pylint: disable=abstract-method
             key=self.public_key(),
             algorithms=self.algorithm(),
             audience=self.audience(),
+            leeway=self.setting("JWT_LEEWAY", default=0),
         )
 
     def get_user_details(self, response):
