@@ -67,7 +67,7 @@ class LinkedinOAuth2(BaseOAuth2):
     def user_details_url(self):
         # use set() since LinkedIn fails when values are duplicated
         fields_selectors = list(
-            set(["id", "firstName", "lastName"] + self.setting("FIELD_SELECTORS", []))
+            set(["id", "firstName", "lastName", *self.setting("FIELD_SELECTORS", [])])
         )
         # user sort to ease the tests URL mocking
         fields_selectors.sort()
