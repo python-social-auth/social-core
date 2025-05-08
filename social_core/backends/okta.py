@@ -28,18 +28,19 @@ class OktaMixin(BaseOAuth2):
         # If the URL path does not contain an authorizedServerId, we need
         # to truncate the path in order to generate a proper openid-configuration
         # URL.
-        if url.path == '/oauth2/':
-            url = url._replace(path='')
+        if url.path == "/oauth2/":
+            url = url._replace(path="")
 
         return urljoin(
             urlunparse(url),
-            './.well-known/openid-configuration?client_id={}'.format(
-                self.setting('KEY')
-            )
+            "./.well-known/openid-configuration?client_id={}".format(
+                self.setting("KEY")
+            ),
         )
 
     def oidc_config(self):
         return self.get_json(self.oidc_config_url())
+
 
 class OktaOAuth2(OktaMixin, BaseOAuth2):
     """Okta OAuth authentication backend"""
