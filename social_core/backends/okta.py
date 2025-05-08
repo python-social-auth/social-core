@@ -21,7 +21,7 @@ class OktaMixin(BaseOAuth2):
     def _url(self, path):
         return urljoin(append_slash(self.setting("API_URL")), path)
 
-    def oidc_config(self):
+    def oidc_config_url(self):
         # https://developer.okta.com/docs/reference/api/oidc/#well-known-openid-configuration
         url = urlparse(self.api_url())
 
@@ -31,15 +31,15 @@ class OktaMixin(BaseOAuth2):
         if url.path == "/oauth2/":
             url = url._replace(path='')
 
-        return self.get_json(
-            urljoin(
-                urlunparse(url),
-                './.well-known/openid-configuration?client_id={}'.format(
-                    self.setting('KEY')
-                )
+        return urljoin(
+            urlunparse(url),
+            './.well-known/openid-configuration?client_id={}'.format(
+                self.setting('KEY')
             )
         )
 
+    def oidc_config(self):
+        return self.get_json(self.oidc_config_url())
 
 class OktaOAuth2(OktaMixin, BaseOAuth2):
     """Okta OAuth authentication backend"""
