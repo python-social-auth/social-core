@@ -187,3 +187,24 @@ class OktaOpenIdConnectTest(OpenIdConnectTest):
 
     def test_everything_works(self):
         self.do_login()
+
+    def test_okta_oidc_config(self):
+        # With no custom authorization server
+        self.strategy.set_settings(
+            {
+                "SOCIAL_AUTH_OKTA_OPENIDCONNECT_API_URL": "https://dev-000000.oktapreview.com/oauth2",
+            }
+        )
+        self.assertEqual(
+            self.backend.oidc_config_url(),
+            "https://dev-000000.oktapreview.com/.well-known/openid-configuration?client_id=a-key",
+        )
+        self.strategy.set_settings(
+            {
+                "SOCIAL_AUTH_OKTA_OPENIDCONNECT_API_URL": "https://dev-000000.oktapreview.com/oauth2/id-123456",
+            }
+        )
+        self.assertEqual(
+            self.backend.oidc_config_url(),
+            "https://dev-000000.oktapreview.com/oauth2/id-123456/.well-known/openid-configuration?client_id=a-key",
+        )
