@@ -280,8 +280,8 @@ class BaseOAuth1(OAuthAuth):
             token = parse_qs(token)
         params = self.auth_extra_arguments() or {}
         params.update(self.get_scope_argument())
-        params[self.OAUTH_TOKEN_PARAMETER_NAME] = token.get(
-            self.OAUTH_TOKEN_PARAMETER_NAME
+        params[self.OAUTH_TOKEN_PARAMETER_NAME] = cast(
+            "str", token.get(self.OAUTH_TOKEN_PARAMETER_NAME)
         )
         state = self.get_or_create_state()
         params[self.REDIRECT_URI_PARAMETER_NAME] = self.get_redirect_uri(state)

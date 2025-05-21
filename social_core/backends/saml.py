@@ -286,6 +286,8 @@ class SAMLAuth(BaseAuth):
             "idp": idp_name,
             "next": self.data.get("next"),
         }
+        if session_id := self.strategy.get_session_id():
+            relay_state[self.strategy.SESSION_SAVE_KEY] = session_id
         return auth.login(return_to=json.dumps(relay_state))
 
     def get_user_details(self, response):
@@ -326,7 +328,9 @@ class SAMLAuth(BaseAuth):
             idp_name = relay_state_str
         else:
             idp_name = relay_state["idp"]
-            if next_url := relay_state.get("next"):
+            if session_id := relay_state.get(self.strategy.SESSION_SAVE_KEY):
+                self.strategy.restore_session(session_id, kwargs)
+            elif next_url := relay_state.get("next"):
                 # The do_complete action expects the "next" URL to be in session state or the request params.
                 self.strategy.session_set(kwargs.get("redirect_name", "next"), next_url)
 
