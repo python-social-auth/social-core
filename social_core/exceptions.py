@@ -10,9 +10,22 @@ class SocialAuthBaseException(ValueError):
     """Base class for pipeline exceptions."""
 
 
+class StrategyMissingFeatureError(SocialAuthBaseException):
+    """Strategy does not support this."""
+
+    def __init__(self, strategy_name: str, feature_name: str):
+        self.strategy_name = strategy_name
+        self.feature_name = feature_name
+        super().__init__()
+
+    def __str__(self):
+        return f"Strategy {self.strategy_name} does not support {self.feature_name}"
+
+
 class WrongBackend(SocialAuthBaseException):
     def __init__(self, backend_name: str):
         self.backend_name = backend_name
+        super().__init__()
 
     def __str__(self):
         return f'Incorrect authentication service "{self.backend_name}"'

@@ -224,7 +224,7 @@ class BaseAuth:
             self, pipeline_index=partial.next_step, *partial.args, **partial.kwargs
         )
 
-    def auth_extra_arguments(self):
+    def auth_extra_arguments(self) -> dict[str, str]:
         """Return extra arguments needed on auth process. The defaults can be
         overridden by GET parameters."""
         extra_arguments = self.setting("AUTH_EXTRA_ARGUMENTS", {}).copy()
