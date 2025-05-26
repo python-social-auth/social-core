@@ -32,6 +32,7 @@ class EvernoteOAuth(BaseOAuth1):
     AUTHORIZATION_URL = "https://www.evernote.com/OAuth.action"
     REQUEST_TOKEN_URL = "https://www.evernote.com/oauth"
     ACCESS_TOKEN_URL = "https://www.evernote.com/oauth"
+    ACCESS_TOKEN_METHOD = "GET"
     EXTRA_DATA = [
         ("access_token", "access_token"),
         ("oauth_token", "oauth_token"),
@@ -53,10 +54,9 @@ class EvernoteOAuth(BaseOAuth1):
             # Evernote returns a 401 error when AuthCanceled
             if err.response.status_code == 401:
                 raise AuthCanceled(self, response=err.response)
-            else:
-                raise
+            raise
 
-    def extra_data(self, user, uid, response, details=None, *args, **kwargs):
+    def extra_data(self, user, uid, response, details, *args, **kwargs):
         data = super().extra_data(user, uid, response, details, *args, **kwargs)
         # Evernote returns expiration timestamp in milliseconds, so it needs to
         # be normalized.

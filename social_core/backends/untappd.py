@@ -30,12 +30,11 @@ class UntappdOAuth2(BaseOAuth2):
 
     def auth_params(self, state=None):
         client_id, client_secret = self.get_key_and_secret()
-        params = {
+        return {
             "client_id": client_id,
             "redirect_url": self.get_redirect_uri(),
             "response_type": self.RESPONSE_TYPE,
         }
-        return params
 
     def process_error(self, data):
         """
@@ -76,7 +75,7 @@ class UntappdOAuth2(BaseOAuth2):
             response["response"]["access_token"],
             response=response["response"],
             *args,
-            **kwargs
+            **kwargs,
         )
 
     def get_user_details(self, response):

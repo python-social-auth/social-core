@@ -10,7 +10,6 @@ class SalesforceOAuth2(BaseOAuth2):
     AUTHORIZATION_URL = "https://login.salesforce.com/services/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://login.salesforce.com/services/oauth2/token"
     REVOKE_TOKEN_URL = "https://login.salesforce.com/services/oauth2/revoke"
-    ACCESS_TOKEN_METHOD = "POST"
     REFRESH_TOKEN_METHOD = "POST"
     SCOPE_SEPARATOR = " "
     EXTRA_DATA = [

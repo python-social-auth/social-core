@@ -39,7 +39,7 @@ class DiscourseAuth(BaseAuth):
         return response["email"]
 
     def get_user_details(self, response):
-        results = {
+        return {
             "username": response.get("username"),
             "email": response.get("email"),
             "name": response.get("name"),
@@ -48,7 +48,6 @@ class DiscourseAuth(BaseAuth):
             or response.get("moderator") == "true",
             "is_superuser": response.get("admin") == "true",
         }
-        return results
 
     def add_nonce(self, nonce):
         self.strategy.storage.nonce.use(self.setting("SERVER_URL"), time.time(), nonce)
@@ -74,7 +73,7 @@ class DiscourseAuth(BaseAuth):
         ).hexdigest()
 
         if not hmac.compare_digest(str(sso_signature), str(param_signature)):
-            raise AuthException("Could not verify discourse login")
+            raise AuthException(self, "Could not verify discourse login")
 
         decoded_params = urlsafe_b64decode(sso_params.encode("utf8")).decode("ascii")
 

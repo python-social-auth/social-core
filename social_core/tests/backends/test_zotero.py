@@ -1,9 +1,9 @@
 from urllib.parse import urlencode
 
-from .oauth import OAuth1Test
+from .oauth import OAuth1AuthUrlTestMixin, OAuth1Test
 
 
-class ZoteroOAuth1Test(OAuth1Test):
+class ZoteroOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
     backend_path = "social_core.backends.zotero.ZoteroOAuth"
     expected_username = "FooBar"
     access_token_body = urlencode(

@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class EventbriteAuth2Test(OAuth2Test):
+class EventbriteAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.eventbrite.EventbriteOAuth2"
     user_data_url = "https://www.eventbriteapi.com/v3/users/me"
     expected_username = "sean+awesome@eventbrite.com"

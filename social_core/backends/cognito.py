@@ -5,7 +5,6 @@ class CognitoOAuth2(BaseOAuth2):
     name = "cognito"
     ID_KEY = "username"
     DEFAULT_SCOPE = ["openid", "profile", "email"]
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
 
     def user_pool_domain(self):
@@ -43,11 +42,9 @@ class CognitoOAuth2(BaseOAuth2):
             headers={"Authorization": f"Bearer {access_token}"},
         )
 
-        user_data = {
+        return {
             "given_name": response.get("given_name"),
             "family_name": response.get("family_name"),
             "username": response.get("username"),
             "email": response.get("email"),
         }
-
-        return user_data

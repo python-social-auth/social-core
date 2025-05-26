@@ -14,7 +14,6 @@ class EVEOnlineOAuth2(BaseOAuth2):
     AUTHORIZATION_URL = BASE_URL + "/authorize"
     ACCESS_TOKEN_URL = BASE_URL + "/token"
     ID_KEY = "CharacterID"
-    ACCESS_TOKEN_METHOD = "POST"
     EXTRA_DATA = [
         ("CharacterID", "id"),
         ("expires_in", "expires"),

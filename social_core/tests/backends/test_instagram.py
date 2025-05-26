@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class InstagramOAuth2Test(OAuth2Test):
+class InstagramOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.instagram.InstagramOAuth2"
     user_data_url = "https://graph.instagram.com/me"
     expected_username = "foobar"

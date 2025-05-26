@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class DripOAuthTest(OAuth2Test):
+class DripOAuthTest(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.drip.DripOAuth"
     user_data_url = "https://api.getdrip.com/v2/user"
     expected_username = "other@example.com"

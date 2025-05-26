@@ -30,7 +30,7 @@ class BrokenStrategy(BaseStrategy):
 
 class BrokenStrategyWithSettings(BrokenStrategy):
     def get_setting(self, name):
-        raise AttributeError()
+        raise AttributeError
 
 
 class BrokenStorage(BaseStorage):
@@ -185,7 +185,7 @@ class BrokenStrategyTests(unittest.TestCase):
 
     def test_random_string_without_systemrandom(self):
         def SystemRandom():
-            raise NotImplementedError()
+            raise NotImplementedError
 
         orig_random = getattr(random, "SystemRandom", None)
         random.SystemRandom = SystemRandom

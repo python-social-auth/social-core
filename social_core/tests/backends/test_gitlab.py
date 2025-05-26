@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class GitLabOAuth2Test(OAuth2Test):
+class GitLabOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.gitlab.GitLabOAuth2"
     user_data_url = "https://gitlab.com/api/v4/user"
     expected_username = "foobar"
@@ -54,7 +54,7 @@ class GitLabOAuth2Test(OAuth2Test):
         self.do_partial_pipeline()
 
 
-class GitLabCustomDomainOAuth2Test(OAuth2Test):
+class GitLabCustomDomainOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.gitlab.GitLabOAuth2"
     user_data_url = "https://example.com/api/v4/user"
     expected_username = "foobar"

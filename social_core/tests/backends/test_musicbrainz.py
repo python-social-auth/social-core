@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class MusicBrainzAuth2Test(OAuth2Test):
+class MusicBrainzAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.musicbrainz.MusicBrainzOAuth2"
     user_data_url = "https://musicbrainz.org/oauth2/userinfo"
     expected_username = "foobar"

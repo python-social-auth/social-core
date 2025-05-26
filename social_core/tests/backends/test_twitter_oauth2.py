@@ -1,8 +1,15 @@
+# pyright: reportAttributeAccessIssue=false
+
 import json
 
 from social_core.exceptions import AuthException
 
-from .oauth import OAuth2PkcePlainTest, OAuth2PkceS256Test, OAuth2Test
+from .oauth import (
+    BaseAuthUrlTestMixin,
+    OAuth2PkcePlainTest,
+    OAuth2PkceS256Test,
+    OAuth2Test,
+)
 
 
 class TwitterOAuth2Mixin:
@@ -125,7 +132,7 @@ class TwitterOAuth2Mixin:
         self.assertEqual(social.extra_data["public_metrics"]["listed_count"], 7)
 
 
-class TwitterOAuth2TestMissingOptionalValue(OAuth2Test):
+class TwitterOAuth2TestMissingOptionalValue(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.twitter_oauth2.TwitterOAuth2"
     user_data_url = "https://api.twitter.com/2/users/me"
     access_token_body = json.dumps(

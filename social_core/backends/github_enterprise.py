@@ -11,7 +11,7 @@ from .github import GithubOAuth2, GithubOrganizationOAuth2, GithubTeamOAuth2
 
 class GithubEnterpriseMixin:
     def api_url(self):
-        return append_slash(self.setting("API_URL"))
+        return append_slash(self.setting("API_URL"))  # type: ignore[reportAttributeAccessIssue]
 
     def authorization_url(self):
         return self._url("login/oauth/authorize")
@@ -20,7 +20,7 @@ class GithubEnterpriseMixin:
         return self._url("login/oauth/access_token")
 
     def _url(self, path):
-        return urljoin(append_slash(self.setting("URL")), path)
+        return urljoin(append_slash(self.setting("URL")), path)  # type: ignore[reportAttributeAccessIssue]
 
 
 class GithubEnterpriseOAuth2(GithubEnterpriseMixin, GithubOAuth2):

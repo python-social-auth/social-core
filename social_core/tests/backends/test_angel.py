@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class AngelOAuth2Test(OAuth2Test):
+class AngelOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.angel.AngelOAuth2"
     user_data_url = "https://api.angel.co/1/me/"
     access_token_body = json.dumps({"access_token": "foobar", "token_type": "bearer"})

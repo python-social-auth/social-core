@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class ItembaseOAuth2Test(OAuth2Test):
+class ItembaseOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.itembase.ItembaseOAuth2"
     user_data_url = "https://users.itembase.com/v1/me"
     expected_username = "foobar"
@@ -46,6 +46,6 @@ class ItembaseOAuth2Test(OAuth2Test):
         self.do_partial_pipeline()
 
 
-class ItembaseOAuth2SandboxTest(OAuth2Test):
+class ItembaseOAuth2SandboxTest(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.itembase.ItembaseOAuth2Sandbox"
     user_data_url = "http://sandbox.users.itembase.io/v1/me"

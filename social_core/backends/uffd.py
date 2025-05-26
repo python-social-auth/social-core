@@ -1,3 +1,4 @@
+from typing import Any
 from urllib.parse import urlencode
 
 from .oauth import BaseOAuth2
@@ -13,7 +14,6 @@ class UffdOAuth2(BaseOAuth2):
     """
 
     name = "uffd"
-    ACCESS_TOKEN_METHOD = "POST"
     REFRESH_TOKEN_METHOD = "POST"
     SCOPE_SEPARATOR = " "
     STATE_PARAMETER = True
@@ -39,9 +39,10 @@ class UffdOAuth2(BaseOAuth2):
         """Loads user data from service"""
         url = self.userinfo_url() + "?" + urlencode({"access_token": access_token})
         try:
-            return self.get_json(url)
+            user_data: dict[str, Any] = self.get_json(url)
         except ValueError:
             return None
+        return user_data
 
     def authorization_url(self):
         return self.setting("BASE_URL") + "/oauth2/authorize"

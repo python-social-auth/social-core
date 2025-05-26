@@ -1,5 +1,6 @@
 import unittest
 
+from ..backends.base import BaseAuth
 from ..exceptions import (
     AuthAlreadyAssociated,
     AuthCanceled,
@@ -19,15 +20,15 @@ from ..exceptions import (
     SocialAuthBaseException,
     WrongBackend,
 )
+from .models import TestStorage
+from .strategy import TestStrategy
 
 
 class BaseExceptionTestCase(unittest.TestCase):
-    exception = None
-    expected_message = ""
+    exception: SocialAuthBaseException = SocialAuthBaseException("base test")
+    expected_message: str = "base test"
 
     def test_exception_message(self):
-        if self.exception is None and self.expected_message == "":
-            return
         try:
             raise self.exception
         except SocialAuthBaseException as err:
@@ -40,27 +41,27 @@ class WrongBackendTest(BaseExceptionTestCase):
 
 
 class AuthFailedTest(BaseExceptionTestCase):
-    exception = AuthFailed("foobar", "wrong_user")
+    exception = AuthFailed(BaseAuth(TestStrategy(TestStorage)), "wrong_user")
     expected_message = "Authentication failed: wrong_user"
 
 
 class AuthFailedDeniedTest(BaseExceptionTestCase):
-    exception = AuthFailed("foobar", "access_denied")
+    exception = AuthFailed(BaseAuth(TestStrategy(TestStorage)), "access_denied")
     expected_message = "Authentication process was canceled"
 
 
 class AuthTokenErrorTest(BaseExceptionTestCase):
-    exception = AuthTokenError("foobar", "Incorrect tokens")
+    exception = AuthTokenError(BaseAuth(TestStrategy(TestStorage)), "Incorrect tokens")
     expected_message = "Token error: Incorrect tokens"
 
 
 class AuthMissingParameterTest(BaseExceptionTestCase):
-    exception = AuthMissingParameter("foobar", "username")
+    exception = AuthMissingParameter(BaseAuth(TestStrategy(TestStorage)), "username")
     expected_message = "Missing needed parameter username"
 
 
 class AuthStateMissingTest(BaseExceptionTestCase):
-    exception = AuthStateMissing("foobar")
+    exception = AuthStateMissing(BaseAuth(TestStrategy(TestStorage)))
     expected_message = "Session value state missing."
 
 
@@ -70,52 +71,52 @@ class NotAllowedToDisconnectTest(BaseExceptionTestCase):
 
 
 class AuthExceptionTest(BaseExceptionTestCase):
-    exception = AuthException("foobar", "message")
+    exception = AuthException(BaseAuth(TestStrategy(TestStorage)), "message")
     expected_message = "message"
 
 
 class AuthCanceledTest(BaseExceptionTestCase):
-    exception = AuthCanceled("foobar")
+    exception = AuthCanceled(BaseAuth(TestStrategy(TestStorage)))
     expected_message = "Authentication process canceled"
 
 
 class AuthCanceledWithExtraMessageTest(BaseExceptionTestCase):
-    exception = AuthCanceled("foobar", "error_message")
+    exception = AuthCanceled(BaseAuth(TestStrategy(TestStorage)), "error_message")
     expected_message = "Authentication process canceled: error_message"
 
 
 class AuthUnknownErrorTest(BaseExceptionTestCase):
-    exception = AuthUnknownError("foobar", "some error")
-    expected_message = "An unknown error happened while " "authenticating some error"
+    exception = AuthUnknownError(BaseAuth(TestStrategy(TestStorage)), "some error")
+    expected_message = "An unknown error happened while authenticating some error"
 
 
 class AuthStateForbiddenTest(BaseExceptionTestCase):
-    exception = AuthStateForbidden("foobar")
+    exception = AuthStateForbidden(BaseAuth(TestStrategy(TestStorage)))
     expected_message = "Wrong state parameter given."
 
 
 class AuthAlreadyAssociatedTest(BaseExceptionTestCase):
-    exception = AuthAlreadyAssociated("foobar")
+    exception = AuthAlreadyAssociated(BaseAuth(TestStrategy(TestStorage)))
     expected_message = "This account is already in use."
 
 
 class AuthTokenRevokedTest(BaseExceptionTestCase):
-    exception = AuthTokenRevoked("foobar")
+    exception = AuthTokenRevoked(BaseAuth(TestStrategy(TestStorage)))
     expected_message = "User revoke access to the token"
 
 
 class AuthForbiddenTest(BaseExceptionTestCase):
-    exception = AuthForbidden("foobar")
+    exception = AuthForbidden(BaseAuth(TestStrategy(TestStorage)))
     expected_message = "Your credentials aren't allowed"
 
 
 class AuthUnreachableProviderTest(BaseExceptionTestCase):
-    exception = AuthUnreachableProvider("foobar")
+    exception = AuthUnreachableProvider(BaseAuth(TestStrategy(TestStorage)))
     expected_message = "The authentication provider could not be reached"
 
 
 class InvalidEmailTest(BaseExceptionTestCase):
-    exception = InvalidEmail("foobar")
+    exception = InvalidEmail(BaseAuth(TestStrategy(TestStorage)))
     expected_message = "Email couldn't be validated"
 
 

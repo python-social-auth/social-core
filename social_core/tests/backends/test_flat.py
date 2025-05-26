@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class FlatOAuth2Test(OAuth2Test):
+class FlatOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.flat.FlatOAuth2"
     user_data_url = "https://api.flat.io/v2/me"
     expected_username = "vincent"

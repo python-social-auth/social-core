@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class PodioOAuth2Test(OAuth2Test):
+class PodioOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.podio.PodioOAuth2"
     user_data_url = "https://api.podio.com/user/status"
     expected_username = "user_1010101010"

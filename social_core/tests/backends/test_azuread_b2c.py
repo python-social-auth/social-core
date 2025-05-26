@@ -24,14 +24,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from __future__ import annotations
+
 import json
 from time import time
+from typing import TYPE_CHECKING, cast
 
 import jwt
-from httpretty import HTTPretty
+import responses
 from jwt.algorithms import RSAAlgorithm
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
+
+if TYPE_CHECKING:
+    from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
 
 # Dummy private and private keys:
 RSA_PUBLIC_JWT_KEY = {
@@ -84,7 +90,7 @@ RSA_PRIVATE_JWT_KEY = {
 }
 
 
-class AzureADB2COAuth2Test(OAuth2Test):
+class AzureADB2COAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     AUTH_KEY = "abcdef12-1234-9876-0000-abcdef098765"
     EXPIRES_IN = 3600
     AUTH_TIME = int(time())
@@ -107,7 +113,10 @@ class AzureADB2COAuth2Test(OAuth2Test):
             "access_token": "foobar",
             "token_type": "bearer",
             "id_token": jwt.encode(
-                key=RSAAlgorithm.from_jwk(json.dumps(RSA_PRIVATE_JWT_KEY)),
+                key=cast(
+                    "RSAPrivateKey",
+                    RSAAlgorithm.from_jwk(json.dumps(RSA_PRIVATE_JWT_KEY)),
+                ),
                 headers={
                     "kid": RSA_PRIVATE_JWT_KEY["kid"],
                 },
@@ -139,6 +148,7 @@ class AzureADB2COAuth2Test(OAuth2Test):
 
     def extra_settings(self):
         settings = super().extra_settings()
+        assert self.name, "Name must be set in subclasses"
         settings.update(
             {
                 "SOCIAL_AUTH_" + self.name + "_POLICY": "b2c_1_signin",
@@ -172,7 +182,7 @@ class AzureADB2COAuth2Test(OAuth2Test):
                 ],
             }
         )
-        HTTPretty.register_uri(HTTPretty.GET, keys_url, status=200, body=keys_body)
+        responses.add(responses.GET, keys_url, status=200, body=keys_body)
 
     def test_login(self):
         self.do_login()

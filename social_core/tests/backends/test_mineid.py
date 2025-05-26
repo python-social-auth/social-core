@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class MineIDOAuth2Test(OAuth2Test):
+class MineIDOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.mineid.MineIDOAuth2"
     user_data_url = "https://www.mineid.org/api/user"
     expected_username = "foo@bar.com"
@@ -20,3 +20,6 @@ class MineIDOAuth2Test(OAuth2Test):
 
     def test_partial_pipeline(self):
         self.do_partial_pipeline()
+
+    def test_auth_url_parameters(self):
+        self.check_parameters_in_authorization_url("_AUTHORIZATION_URL")

@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class DailymotionOAuth2Test(OAuth2Test):
+class DailymotionOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.dailymotion.DailymotionOAuth2"
     user_data_url = "https://api.dailymotion.com/auth/"
     expected_username = "foobar"

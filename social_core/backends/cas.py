@@ -32,12 +32,12 @@ class CASOpenIdConnectAuth(OpenIdConnectAuth):
 
     def oidc_endpoint(self):
         endpoint = self.setting("OIDC_ENDPOINT", self.OIDC_ENDPOINT)
-        logger.debug(f"backend: CAS, endpoint: {endpoint}")
+        logger.debug("backend: CAS, endpoint: %s", endpoint)
         return endpoint
 
     def get_user_id(self, details, response):
         logger.debug(
-            f"backend: CAS, method: get_user_id, details: {details}, {response}"
+            "backend: CAS, method: get_user_id, details: %s, %s", details, response
         )
         return details.get("username")
 
@@ -45,12 +45,12 @@ class CASOpenIdConnectAuth(OpenIdConnectAuth):
         data = self.get_json(
             self.userinfo_url(), headers={"Authorization": f"Bearer {access_token}"}
         )
-        logger.debug(f"backend: CAS, user_data: {data}")
+        logger.debug("backend: CAS, user_data: %s", data)
         return data.get("attributes", {})
 
     def get_user_details(self, response):
         username_key = self.setting("USERNAME_KEY", self.USERNAME_KEY)
-        logger.debug(f"backend: CAS, username_key: {username_key}")
+        logger.debug("backend: CAS, username_key: %s", username_key)
         attributes = self.user_data(response.get("access_token"))
         return {
             "username": attributes.get(username_key),

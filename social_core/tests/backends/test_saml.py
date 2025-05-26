@@ -1,43 +1,39 @@
 import json
-import os
 import re
 import sys
 import unittest
-from os import path
+from pathlib import Path
 from unittest.mock import patch
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 import requests
-from httpretty import HTTPretty
+import responses
 
 try:
     from onelogin.saml2.utils import OneLogin_Saml2_Utils
+
+    SAML_MODULE_ENABLED = True
 except ImportError:
-    # Only available for python 2.7 at the moment, so don't worry if this fails
-    pass
+    SAML_MODULE_ENABLED = False
 
 from ...exceptions import AuthMissingParameter
 from .base import BaseBackendTest
 
-DATA_DIR = path.join(path.dirname(__file__), "data")
+DATA_DIR = Path(__file__).parent / "data"
 
 
-@unittest.skipIf(
-    "TRAVIS" in os.environ,
-    "Travis-ci segfaults probably due to a bad " "dependencies build",
-)
 @unittest.skipIf(
     "__pypy__" in sys.builtin_module_names, "dm.xmlsec not compatible with pypy"
 )
+@unittest.skipUnless(SAML_MODULE_ENABLED, "Only run if onelogin.saml2 is installed")
 class SAMLTest(BaseBackendTest):
     backend_path = "social_core.backends.saml.SAMLAuth"
     expected_username = "myself"
     response_fixture = "saml_response.txt"
 
     def extra_settings(self):
-        name = path.join(DATA_DIR, "saml_config.json")
-        with open(name) as config_file:
-            config_str = config_file.read()
+        file = DATA_DIR / "saml_config.json"
+        config_str = file.read_text()
         return json.loads(config_str)
 
     def setUp(self):
@@ -59,13 +55,15 @@ class SAMLTest(BaseBackendTest):
         # we will eventually get a redirect back, with SAML assertion
         # data in the query string.  A pre-recorded correct response
         # is kept in this .txt file:
-        name = path.join(DATA_DIR, self.response_fixture)
-        with open(name) as response_file:
-            response_url = response_file.read()
-        HTTPretty.register_uri(
-            HTTPretty.GET, start_url, status=301, location=response_url
+        file = DATA_DIR / self.response_fixture
+        response_url = file.read_text()
+        responses.add(
+            responses.GET,
+            start_url,
+            status=301,
+            headers={"Location": response_url},
         )
-        HTTPretty.register_uri(HTTPretty.GET, return_url, status=200, body="foobar")
+        responses.add(responses.GET, return_url, status=200, body="foobar")
 
     def do_start(self):
         start_url = self.backend.start().url
@@ -76,7 +74,7 @@ class SAMLTest(BaseBackendTest):
         # be redirected back to:
         return_url = self.backend.redirect_uri
         self.install_http_intercepts(start_url, return_url)
-        response = requests.get(start_url)
+        response = requests.get(start_url, timeout=1)
         self.assertTrue(response.url.startswith(return_url))
         self.assertEqual(response.text, "foobar")
         query_values = {

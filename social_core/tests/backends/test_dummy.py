@@ -1,14 +1,14 @@
+# pyright: reportAttributeAccessIssue=false
 import datetime
 import json
-import time
 
-from httpretty import HTTPretty
+import responses
 
 from ...actions import do_disconnect
 from ...backends.oauth import BaseOAuth2
 from ...exceptions import AuthForbidden
 from ..models import User
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
 class DummyOAuth2(BaseOAuth2):
@@ -40,7 +40,7 @@ class Dummy2OAuth2(DummyOAuth2):
     GET_ALL_EXTRA_DATA = True
 
 
-class DummyOAuth2Test(OAuth2Test):
+class DummyOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.tests.backends.test_dummy.DummyOAuth2"
     user_data_url = "http://dummy.com/user"
     expected_username = "foobar"
@@ -71,7 +71,7 @@ class DummyOAuth2Test(OAuth2Test):
         self.do_login()
         user = User.get(self.expected_username)
         user.password = "password"
-        HTTPretty.register_uri(
+        responses.add(
             self._method(self.backend.REVOKE_TOKEN_METHOD),
             self.backend.REVOKE_TOKEN_URL,
             status=200,
@@ -121,7 +121,7 @@ class ExpirationTimeTest(DummyOAuth2Test):
             "first_name": "Foo",
             "last_name": "Bar",
             "email": "foo@bar.com",
-            "expires": time.mktime((datetime.datetime.utcnow() + DELTA).timetuple()),
+            "expires": (datetime.datetime.now() + DELTA).timestamp(),
         }
     )
 

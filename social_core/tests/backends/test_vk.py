@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class VKOAuth2Test(OAuth2Test):
+class VKOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.vk.VKOAuth2"
     user_data_url = "https://api.vk.com/method/users.get"
     expected_username = "durov"

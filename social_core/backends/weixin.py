@@ -2,6 +2,7 @@
 """
 Weixin OAuth2 backend
 """
+
 from urllib.parse import urlencode
 
 from requests import HTTPError
@@ -17,7 +18,6 @@ class WeixinOAuth2(BaseOAuth2):
     ID_KEY = "openid"
     AUTHORIZATION_URL = "https://open.weixin.qq.com/connect/qrconnect"
     ACCESS_TOKEN_URL = "https://api.weixin.qq.com/sns/oauth2/access_token"
-    ACCESS_TOKEN_METHOD = "POST"
     DEFAULT_SCOPE = ["snsapi_login"]
     REDIRECT_STATE = False
     EXTRA_DATA = [
@@ -93,8 +93,7 @@ class WeixinOAuth2(BaseOAuth2):
         except HTTPError as err:
             if err.response.status_code == 400:
                 raise AuthCanceled(self, response=err.response)
-            else:
-                raise
+            raise
         except KeyError:
             raise AuthUnknownError(self)
         if "errcode" in response:
@@ -116,7 +115,6 @@ class WeixinOAuth2APP(WeixinOAuth2):
     ID_KEY = "openid"
     AUTHORIZATION_URL = "https://open.weixin.qq.com/connect/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://api.weixin.qq.com/sns/oauth2/access_token"
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
 
     def auth_url(self):
@@ -165,8 +163,7 @@ class WeixinOAuth2APP(WeixinOAuth2):
         except HTTPError as err:
             if err.response.status_code == 400:
                 raise AuthCanceled(self)
-            else:
-                raise
+            raise
         except KeyError:
             raise AuthUnknownError(self)
 

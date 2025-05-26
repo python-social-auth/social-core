@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class YammerOAuth2Test(OAuth2Test):
+class YammerOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.yammer.YammerOAuth2"
     expected_username = "foobar"
     access_token_body = json.dumps(

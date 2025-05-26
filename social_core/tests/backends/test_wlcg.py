@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class WLCGOAuth2Test(OAuth2Test):
+class WLCGOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.wlcg.WLCGOAuth2"
     user_data_url = "https://wlcg.cloud.cnaf.infn.it/userinfo"
     expected_username = "foo@bar.com"

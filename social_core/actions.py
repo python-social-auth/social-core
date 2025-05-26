@@ -24,8 +24,9 @@ def do_auth(backend, redirect_name="next"):
         # Check and sanitize a user-defined GET/POST next field value
         redirect_uri = data[redirect_name]
         if backend.setting("SANITIZE_REDIRECTS", True):
-            allowed_hosts = backend.setting("ALLOWED_REDIRECT_HOSTS", []) + [
-                backend.strategy.request_host()
+            allowed_hosts = [
+                *backend.setting("ALLOWED_REDIRECT_HOSTS", []),
+                backend.strategy.request_host(),
             ]
             redirect_uri = sanitize_redirect(allowed_hosts, redirect_uri)
         backend.strategy.session_set(
@@ -100,13 +101,16 @@ def do_complete(backend, login, user=None, redirect_name="next", *args, **kwargs
     else:
         url = setting_url(backend, "LOGIN_ERROR_URL", "LOGIN_URL")
 
+    assert url, "By this point URL has to have been set"
+
     if redirect_value and redirect_value != url:
         redirect_value = quote(redirect_value)
         url += ("&" if "?" in url else "?") + f"{redirect_name}={redirect_value}"
 
     if backend.setting("SANITIZE_REDIRECTS", True):
-        allowed_hosts = backend.setting("ALLOWED_REDIRECT_HOSTS", []) + [
-            backend.strategy.request_host()
+        allowed_hosts = [
+            *backend.setting("ALLOWED_REDIRECT_HOSTS", []),
+            backend.strategy.request_host(),
         ]
         url = sanitize_redirect(allowed_hosts, url) or backend.setting(
             "LOGIN_REDIRECT_URL"
@@ -136,8 +140,9 @@ def do_disconnect(
             or backend.setting("LOGIN_REDIRECT_URL")
         )
         if backend.setting("SANITIZE_REDIRECTS", True):
-            allowed_hosts = backend.setting("ALLOWED_REDIRECT_HOSTS", []) + [
-                backend.strategy.request_host()
+            allowed_hosts = [
+                *backend.setting("ALLOWED_REDIRECT_HOSTS", []),
+                backend.strategy.request_host(),
             ]
             url = (
                 sanitize_redirect(allowed_hosts, url)

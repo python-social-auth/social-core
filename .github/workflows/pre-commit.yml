@@ -1,0 +1,12 @@
+name: pre-commit check
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  pre-commit:
+    uses: ./.github/workflows/pre-commit-shared.yml

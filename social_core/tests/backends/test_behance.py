@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class BehanceOAuth2Test(OAuth2Test):
+class BehanceOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.behance.BehanceOAuth2"
     access_token_body = json.dumps(
         {
@@ -22,18 +22,15 @@ class BehanceOAuth2Test(OAuth2Test):
                 "state": "",
                 "fields": ["Programming", "Web Design", "Web Development"],
                 "images": {
-                    "32": "https://www.behance.net/assets/img/profile/"
-                    "no-image-32.jpg",
-                    "50": "https://www.behance.net/assets/img/profile/"
-                    "no-image-50.jpg",
+                    "32": "https://www.behance.net/assets/img/profile/no-image-32.jpg",
+                    "50": "https://www.behance.net/assets/img/profile/no-image-50.jpg",
                     "115": "https://www.behance.net/assets/img/profile/"
                     "no-image-138.jpg",
                     "129": "https://www.behance.net/assets/img/profile/"
                     "no-image-138.jpg",
                     "138": "https://www.behance.net/assets/img/profile/"
                     "no-image-138.jpg",
-                    "78": "https://www.behance.net/assets/img/profile/"
-                    "no-image-78.jpg",
+                    "78": "https://www.behance.net/assets/img/profile/no-image-78.jpg",
                 },
                 "id": 1010101,
                 "occupation": "Software Developer",

@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class DigitalOceanOAuthTest(OAuth2Test):
+class DigitalOceanOAuthTest(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.digitalocean.DigitalOceanOAuth"
     user_data_url = "https://api.digitalocean.com/v2/account"
     expected_username = "sammy@digitalocean.com"

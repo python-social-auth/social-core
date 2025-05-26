@@ -1,15 +1,11 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class PatreonOAuth2Test(OAuth2Test):
+class PatreonOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.patreon.PatreonOAuth2"
-    user_data_url = (
-        "https://www.patreon.com/api/oauth2/v2/identity?"
-        + "fields%5Buser%5D=about,created,email,first_name,full_name,"
-        + "image_url,last_name,social_connections,thumb_url,url,vanity"
-    )
+    user_data_url = "https://www.patreon.com/api/oauth2/v2/identity"
     expected_username = "JohnInterwebs"
     access_token_body = json.dumps(
         {

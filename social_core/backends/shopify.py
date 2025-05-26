@@ -3,7 +3,7 @@ Shopify OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/shopify.html
 """
 
-import imp
+import shopify
 
 from ..exceptions import AuthCanceled, AuthFailed
 from ..utils import handle_http_errors
@@ -22,13 +22,6 @@ class ShopifyOAuth2(BaseOAuth2):
     def shopify_api_version(self):
         return self.setting("API_VERSION", "2020-10")
 
-    @property
-    def shopify_api(self):
-        if not hasattr(self, "_shopify_api"):
-            fp, pathname, description = imp.find_module("shopify")
-            self._shopify_api = imp.load_module("shopify", fp, pathname, description)
-        return self._shopify_api
-
     def get_user_details(self, response):
         """Use the shopify store name as the username"""
         return {"username": str(response.get("shop", "")).replace(".myshopify.com", "")}
@@ -37,7 +30,7 @@ class ShopifyOAuth2(BaseOAuth2):
         """Return access_token and extra defined names to store in
         extra_data field"""
         data = super().extra_data(user, uid, response, details, *args, **kwargs)
-        session = self.shopify_api.Session(
+        session = shopify.Session(
             self.data.get("shop").strip(), version=self.shopify_api_version
         )
         # Get, and store the permanent token
@@ -47,12 +40,12 @@ class ShopifyOAuth2(BaseOAuth2):
 
     def auth_url(self):
         key, secret = self.get_key_and_secret()
-        self.shopify_api.Session.setup(api_key=key, secret=secret)
+        shopify.Session.setup(api_key=key, secret=secret)
         scope = self.get_scope()
         state = self.state_token()
         self.strategy.session_set(self.name + "_state", state)
         redirect_uri = self.get_redirect_uri(state)
-        session = self.shopify_api.Session(
+        session = shopify.Session(
             self.data.get("shop").strip(), version=self.shopify_api_version
         )
         return session.create_permission_url(scope=scope, redirect_uri=redirect_uri)
@@ -65,12 +58,12 @@ class ShopifyOAuth2(BaseOAuth2):
         key, secret = self.get_key_and_secret()
         try:
             shop_url = self.data.get("shop")
-            self.shopify_api.Session.setup(api_key=key, secret=secret)
-            shopify_session = self.shopify_api.Session(
+            shopify.Session.setup(api_key=key, secret=secret)
+            shopify_session = shopify.Session(
                 shop_url, version=self.shopify_api_version, token=self.data
             )
             access_token = shopify_session.token
-        except self.shopify_api.ValidationException:
+        except shopify.ValidationException:
             raise AuthCanceled(self)
         else:
             if not access_token:

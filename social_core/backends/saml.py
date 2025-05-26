@@ -34,9 +34,9 @@ class SAMLIdentityProvider:
         self.name = name
         # name should be a slug and must not contain a colon, which
         # could conflict with uid prefixing:
-        assert (
-            ":" not in self.name and " " not in self.name
-        ), 'IdP "name" should be a slug (short, no spaces)'
+        assert ":" not in self.name and " " not in self.name, (
+            'IdP "name" should be a slug (short, no spaces)'
+        )
         self.conf = kwargs
 
     def get_user_permanent_id(self, attributes):
@@ -74,7 +74,7 @@ class SAMLIdentityProvider:
         another attribute to use.
         """
         key = self.conf.get(conf_key, default_attribute)
-        value = attributes[key] if key in attributes else None
+        value = attributes.get(key, None)
         if isinstance(value, list):
             value = value[0] if value else None
         return value
@@ -286,6 +286,8 @@ class SAMLAuth(BaseAuth):
             "idp": idp_name,
             "next": self.data.get("next"),
         }
+        if session_id := self.strategy.get_session_id():
+            relay_state[self.strategy.SESSION_SAVE_KEY] = session_id
         return auth.login(return_to=json.dumps(relay_state))
 
     def get_user_details(self, response):
@@ -326,7 +328,9 @@ class SAMLAuth(BaseAuth):
             idp_name = relay_state_str
         else:
             idp_name = relay_state["idp"]
-            if next_url := relay_state.get("next"):
+            if session_id := relay_state.get(self.strategy.SESSION_SAVE_KEY):
+                self.strategy.restore_session(session_id, kwargs)
+            elif next_url := relay_state.get("next"):
                 # The do_complete action expects the "next" URL to be in session state or the request params.
                 self.strategy.session_set(kwargs.get("redirect_name", "next"), next_url)
 
@@ -386,4 +390,3 @@ class SAMLAuth(BaseAuth):
         be authenticated, or do nothing to allow the login pipeline to
         continue.
         """
-        pass

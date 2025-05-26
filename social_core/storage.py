@@ -1,11 +1,13 @@
 """Models mixins for Social Auth"""
 
+from __future__ import annotations
+
 import base64
 import re
-import time
 import uuid
-import warnings
-from datetime import datetime, timedelta
+from abc import abstractmethod
+from datetime import datetime, timedelta, timezone
+from typing import Any
 
 from openid.association import Association as OpenIdAssociation
 
@@ -19,10 +21,12 @@ class UserMixin:
     # Consider tokens that expire in 5 seconds as already expired
     ACCESS_TOKEN_EXPIRED_THRESHOLD = 5
 
-    user = ""
     provider = ""
     uid = None
     extra_data = None
+
+    @abstractmethod
+    def save(self): ...
 
     def get_backend(self, strategy):
         return strategy.get_backend_class(self.provider)
@@ -37,11 +41,6 @@ class UserMixin:
     def access_token(self):
         """Return access_token stored in extra_data or None"""
         return self.extra_data.get("access_token")
-
-    @property
-    def tokens(self):
-        warnings.warn("tokens is deprecated, use access_token instead")
-        return self.access_token
 
     def refresh_token(self, strategy, *args, **kwargs):
         token = self.extra_data.get("refresh_token") or self.extra_data.get(
@@ -68,22 +67,22 @@ class UserMixin:
             except (ValueError, TypeError):
                 return None
 
-            now = datetime.utcnow()
+            now = datetime.now(timezone.utc)
 
             # Detect if expires is a timestamp
-            if expires > time.mktime(now.timetuple()):
+            if expires > now.timestamp():
                 # expires is a datetime, return the remaining difference
-                return datetime.utcfromtimestamp(expires) - now
-            else:
-                # expires is the time to live seconds since creation,
-                # check against auth_time if present, otherwise return
-                # the value
-                auth_time = self.extra_data.get("auth_time")
-                if auth_time:
-                    reference = datetime.utcfromtimestamp(auth_time)
-                    return (reference + timedelta(seconds=expires)) - now
-                else:
-                    return timedelta(seconds=expires)
+                expiry_time = datetime.fromtimestamp(expires, tz=timezone.utc)
+                return expiry_time - now
+            # expires is the time to live seconds since creation,
+            # check against auth_time if present, otherwise return
+            # the value
+            auth_time = self.extra_data.get("auth_time")
+            if auth_time:
+                reference = datetime.fromtimestamp(auth_time, tz=timezone.utc)
+                return (reference + timedelta(seconds=expires)) - now
+            return timedelta(seconds=expires)
+        return None
 
     def expiration_datetime(self):
         # backward compatible alias
@@ -110,13 +109,13 @@ class UserMixin:
             else:
                 self.extra_data = extra_data
             return True
+        return None
 
     @classmethod
     def clean_username(cls, value):
         """Clean username removing any unsupported character"""
         value = NO_ASCII_REGEX.sub("", value)
-        value = NO_SPECIAL_REGEX.sub("", value)
-        return value
+        return NO_SPECIAL_REGEX.sub("", value)
 
     @classmethod
     def changed(cls, user):
@@ -251,7 +250,7 @@ class AssociationMixin:
         raise NotImplementedError("Implement in subclass")
 
     @classmethod
-    def get(cls, *args, **kwargs):
+    def get(cls, server_url: str | None = None, handle: str | None = None):
         """Get an Association instance"""
         raise NotImplementedError("Implement in subclass")
 
@@ -265,6 +264,9 @@ class CodeMixin:
     email = ""
     code = ""
     verified = False
+
+    @abstractmethod
+    def save(self): ...
 
     def verify(self):
         self.verified = True
@@ -290,8 +292,8 @@ class CodeMixin:
 
 class PartialMixin:
     token = ""
-    data = ""
-    next_step = ""
+    data: dict[str, Any] = {}
+    next_step: int
     backend = ""
 
     @property
@@ -326,7 +328,7 @@ class PartialMixin:
         raise NotImplementedError("Implement in subclass")
 
     @classmethod
-    def prepare(cls, backend, next_step, data):
+    def prepare(cls, backend, next_step: int, data: dict[str, Any]):
         partial = cls()
         partial.backend = backend
         partial.next_step = next_step

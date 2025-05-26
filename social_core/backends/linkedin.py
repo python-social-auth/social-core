@@ -30,7 +30,7 @@ class LinkedinOpenIdConnect(OpenIdConnectAuth):
     def validate_claims(self, id_token):
         """Copy of the regular validate_claims method without the nonce validation."""
 
-        utc_timestamp = timegm(datetime.datetime.utcnow().utctimetuple())
+        utc_timestamp = timegm(datetime.datetime.now(datetime.timezone.utc).timetuple())
 
         if "nbf" in id_token and utc_timestamp < id_token["nbf"]:
             raise AuthTokenError(self, "Incorrect id_token: nbf")
@@ -53,7 +53,6 @@ class LinkedinOAuth2(BaseOAuth2):
         "https://api.linkedin.com/v2/emailAddress"
         "?q=members&projection=(elements*(handle~))"
     )
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
     DEFAULT_SCOPE = ["r_liteprofile"]
     EXTRA_DATA = [
@@ -68,7 +67,7 @@ class LinkedinOAuth2(BaseOAuth2):
     def user_details_url(self):
         # use set() since LinkedIn fails when values are duplicated
         fields_selectors = list(
-            set(["id", "firstName", "lastName"] + self.setting("FIELD_SELECTORS", []))
+            {"id", "firstName", "lastName", *self.setting("FIELD_SELECTORS", [])}
         )
         # user sort to ease the tests URL mocking
         fields_selectors.sort()
@@ -142,9 +141,7 @@ class LinkedinOAuth2(BaseOAuth2):
             headers["Accept-Language"] = (
                 lang if lang is not True else self.strategy.get_language()
             )
-        headers["Authorization"] = "Bearer {access_token}".format(
-            access_token=access_token
-        )
+        headers["Authorization"] = f"Bearer {access_token}"
         return headers
 
     def request_access_token(self, *args, **kwargs):

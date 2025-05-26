@@ -1,6 +1,8 @@
+# pyright: reportAttributeAccessIssue=false
+
 import json
 
-from httpretty import HTTPretty
+import responses
 
 from .oauth import OAuth2PkcePlainTest, OAuth2PkceS256Test
 
@@ -68,8 +70,8 @@ class BitbucketDataCenterOAuth2Mixin:
 
     def auth_handlers(self, start_url):
         target_url = super().auth_handlers(start_url)
-        HTTPretty.register_uri(
-            HTTPretty.GET,
+        responses.add(
+            responses.GET,
             self.application_properties_url,
             body=self.application_properties_body,
             adding_headers=self.application_properties_headers,

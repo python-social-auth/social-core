@@ -10,6 +10,8 @@ class Redirect:
 
 
 class TestTemplateStrategy(BaseTemplateStrategy):
+    __test__ = False
+
     def render_template(self, tpl, context):
         return tpl
 
@@ -18,6 +20,8 @@ class TestTemplateStrategy(BaseTemplateStrategy):
 
 
 class TestStrategy(BaseStrategy):
+    __test__ = False
+
     DEFAULT_TEMPLATE_STRATEGY = TestTemplateStrategy
 
     def __init__(self, storage, tpl=None):
@@ -84,7 +88,7 @@ class TestStrategy(BaseStrategy):
     def build_absolute_uri(self, path=None):
         """Build absolute URI with given (optional) path"""
         path = path or ""
-        if path.startswith("http://") or path.startswith("https://"):
+        if path.startswith(("http://", "https://")):
             return path
         return TEST_URI + path
 

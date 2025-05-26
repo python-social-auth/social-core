@@ -1,4 +1,3 @@
-import sys
 import unittest
 from unittest.mock import Mock
 
@@ -11,8 +10,6 @@ from ..utils import (
     user_is_authenticated,
 )
 from .models import TestPartial
-
-PY3 = sys.version_info[0] == 3
 
 
 class SanitizeRedirectTest(unittest.TestCase):
@@ -104,14 +101,9 @@ class UserIsActiveTest(unittest.TestCase):
 
 class SlugifyTest(unittest.TestCase):
     def test_slugify_formats(self):
-        if PY3:
-            self.assertEqual(slugify("FooBar"), "foobar")
-            self.assertEqual(slugify("Foo Bar"), "foo-bar")
-            self.assertEqual(slugify("Foo (Bar)"), "foo-bar")
-        else:
-            self.assertEqual(slugify("FooBar".decode("utf-8")), "foobar")
-            self.assertEqual(slugify("Foo Bar".decode("utf-8")), "foo-bar")
-            self.assertEqual(slugify("Foo (Bar)".decode("utf-8")), "foo-bar")
+        self.assertEqual(slugify("FooBar"), "foobar")
+        self.assertEqual(slugify("Foo Bar"), "foo-bar")
+        self.assertEqual(slugify("Foo (Bar)"), "foo-bar")
 
 
 class BuildAbsoluteURITest(unittest.TestCase):
@@ -138,6 +130,7 @@ class BuildAbsoluteURITest(unittest.TestCase):
         )
 
     def test_host_ends_with_slash_and_path_starts_with_slash(self):
+        assert self.host, "Subclasses must set the host attribute"
         self.assertEqual(
             build_absolute_uri(self.host + "/", "/foo/bar"), "http://foobar.com/foo/bar"
         )
@@ -154,7 +147,7 @@ class PartialPipelineData(unittest.TestCase):
         backend = self._backend({"uid": email})
         backend.strategy.request_data.return_value = {backend.ID_KEY: email}
         key, val = ("foo", "bar")
-        partial = partial_pipeline_data(backend, None, *(), **dict([(key, val)]))
+        partial = partial_pipeline_data(backend, None, *(), **{key: val})
         self.assertTrue(key in partial.kwargs)
         self.assertEqual(partial.kwargs[key], val)
         self.assertEqual(backend.strategy.clean_partial_pipeline.call_count, 0)
@@ -163,14 +156,14 @@ class PartialPipelineData(unittest.TestCase):
         backend = self._backend({"uid": "foo@example.com"})
         backend.strategy.request_data.return_value = {backend.ID_KEY: "bar@example.com"}
         key, val = ("foo", "bar")
-        partial = partial_pipeline_data(backend, None, *(), **dict([(key, val)]))
+        partial = partial_pipeline_data(backend, None, *(), **{key: val})
         self.assertIsNone(partial)
         self.assertEqual(backend.strategy.clean_partial_pipeline.call_count, 1)
 
     def test_kwargs_included_in_result(self):
         backend = self._backend()
         key, val = ("foo", "bar")
-        partial = partial_pipeline_data(backend, None, *(), **dict([(key, val)]))
+        partial = partial_pipeline_data(backend, None, *(), **{key: val})
         self.assertTrue(key in partial.kwargs)
         self.assertEqual(partial.kwargs[key], val)
         self.assertEqual(backend.strategy.clean_partial_pipeline.call_count, 0)

@@ -1,8 +1,8 @@
-from .oauth import OAuth2Test
-from .test_open_id_connect import OpenIdConnectTestMixin
+from .oauth import BaseAuthUrlTestMixin
+from .open_id_connect import OpenIdConnectTest
 
 
-class EInfraCZOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
+class EInfraCZOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.einfracz.EInfraCZOpenIdConnect"
     issuer = "https://login.e-infra.cz/oidc/"
     openid_config_body = """

@@ -2,9 +2,8 @@ import base64
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.x509 import load_der_x509_certificate
-from jwt import DecodeError, ExpiredSignatureError
+from jwt import DecodeError, ExpiredSignatureError, get_unverified_header
 from jwt import decode as jwt_decode
-from jwt import get_unverified_header
 
 from ..exceptions import AuthTokenError
 from .azuread import AzureADOAuth2
@@ -87,7 +86,10 @@ class AzureADTenantOAuth2(AzureADOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         response = kwargs.get("response")
-        id_token = response.get("id_token")
+        if response and response.get("id_token"):
+            id_token = response.get("id_token")
+        else:
+            id_token = access_token
 
         # get key id and algorithm
         key_id = get_unverified_header(id_token)["kid"]
@@ -98,7 +100,7 @@ class AzureADTenantOAuth2(AzureADOAuth2):
 
             return jwt_decode(
                 id_token,
-                key=certificate.public_key(),
+                key=certificate.public_key(),  # type: ignore[reportArgumentType]
                 algorithms=["RS256"],
                 audience=self.setting("KEY"),
             )

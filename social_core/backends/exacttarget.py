@@ -4,7 +4,7 @@ Support Authentication from IMH using JWT token and pre-shared key.
 Requires package pyjwt
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import jwt
 
@@ -91,7 +91,7 @@ class ExactTargetOAuth2(BaseOAuth2):
         # The expiresIn value determines how long the tokens are valid for.
         # Take a bit off, then convert to an int timestamp
         expiresSeconds = details.get("expiresIn", 0) - 30
-        expires = datetime.utcnow() + timedelta(seconds=expiresSeconds)
+        expires = datetime.now(timezone.utc) + timedelta(seconds=expiresSeconds)
         data["expires"] = (expires - datetime(1970, 1, 1)).total_seconds()
 
         if response.get("token"):

@@ -47,7 +47,7 @@ class YahooOAuth(BaseOAuth1):
 
     def _get_guid(self, access_token):
         """
-        Beause you have to provide GUID for every API request it's also
+        Because you have to provide GUID for every API request it's also
         returned during one of OAuth calls
         """
         return self.get_json(
@@ -63,7 +63,6 @@ class YahooOAuth2(BaseOAuth2):
     ID_KEY = "sub"
     AUTHORIZATION_URL = "https://api.login.yahoo.com/oauth2/request_auth"
     ACCESS_TOKEN_URL = "https://api.login.yahoo.com/oauth2/get_token"
-    ACCESS_TOKEN_METHOD = "POST"
     EXTRA_DATA = [
         ("sub", "id"),
         ("access_token", "access_token"),
@@ -72,9 +71,9 @@ class YahooOAuth2(BaseOAuth2):
         ("token_type", "token_type"),
     ]
 
-    def get_user_names(self, first_name, last_name):
+    def get_user_names(self, first_name, last_name):  # type: ignore[reportIncompatibleMethodOverride]
         if first_name or last_name:
-            return " ".join((first_name, last_name)), first_name, last_name
+            return f"{first_name} {last_name}", first_name, last_name
         return None, None, None
 
     def get_user_details(self, response):

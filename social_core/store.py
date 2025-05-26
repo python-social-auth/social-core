@@ -30,8 +30,8 @@ class OpenIdStore(BaseOpenIDStore):
     def expiresIn(self, assoc):
         if hasattr(assoc, "getExpiresIn"):
             return assoc.getExpiresIn()
-        else:  # python3-openid 3.0.2
-            return assoc.expiresIn
+        # python3-openid 3.0.2
+        return assoc.expiresIn
 
     def getAssociation(self, server_url, handle=None):
         """Return stored association"""
@@ -48,6 +48,7 @@ class OpenIdStore(BaseOpenIDStore):
 
         if associations:  # return most recet association
             return associations[0]
+        return None
 
     def useNonce(self, server_url, timestamp, salt):
         """Generate one use number and return *if* it was created"""

@@ -1,14 +1,14 @@
 import json
 
-from httpretty import HTTPretty
+import responses
 
-from .oauth import OAuth2Test
-from .test_open_id_connect import OpenIdConnectTestMixin
+from .oauth import BaseAuthUrlTestMixin
+from .open_id_connect import OpenIdConnectTest
 
 ROOT_URL = "https://cas.example.net/"
 
 
-class CASOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
+class CASOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.cas.CASOpenIdConnectAuth"
     issuer = f"{ROOT_URL}oidc"
     openid_config_body = json.dumps(
@@ -53,9 +53,9 @@ class CASOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
 
     def pre_complete_callback(self, start_url):
         super().pre_complete_callback(start_url)
-        HTTPretty.register_uri(
-            "GET",
-            uri=self.backend.userinfo_url(),
+        responses.add(
+            responses.GET,
+            url=self.backend.userinfo_url(),
             status=200,
             body=self.user_data_body,
             content_type="text/json",

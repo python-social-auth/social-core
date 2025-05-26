@@ -13,7 +13,6 @@ class TwitterOAuth2(BaseOAuth2PKCE):
     name = "twitter-oauth2"
     AUTHORIZATION_URL = "https://twitter.com/i/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://api.twitter.com/2/oauth2/token"
-    ACCESS_TOKEN_METHOD = "POST"
     DEFAULT_SCOPE = ["users.read", "tweet.read"]
     SCOPE_SEPARATOR = " "
     REDIRECT_STATE = False
@@ -99,6 +98,6 @@ class TwitterOAuth2(BaseOAuth2PKCE):
         response = self.get_json(
             "https://api.twitter.com/2/users/me",
             params={"user.fields": ",".join(fields)},
-            headers={"Authorization": "Bearer %s" % access_token},
+            headers={"Authorization": f"Bearer {access_token}"},
         )
         return response["data"]

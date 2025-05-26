@@ -30,21 +30,9 @@ See https://nicksnettravels.builttoroam.com/post/2017/01/24/Verifying-Azure-Acti
 import json
 
 from cryptography.hazmat.primitives import serialization
-from jwt import DecodeError, ExpiredSignatureError
+from jwt import DecodeError, ExpiredSignatureError, get_unverified_header
 from jwt import decode as jwt_decode
-from jwt import get_unverified_header
-
-try:
-    from jwt.algorithms import RSAAlgorithm
-except ImportError:
-    raise Exception(
-        # Python 3.3 is not supported because of compatibility in
-        # Cryptography package in Python3.3 You are welcome to patch
-        # and open a pull request.
-        "Cryptography library is required for this backend "
-        "(AzureADB2COAuth2) to work. Note that this backend is only "
-        "supported on Python 2 and Python 3.4+."
-    )
+from jwt.algorithms import RSAAlgorithm
 
 from ..exceptions import AuthException, AuthTokenError
 from .azuread import AzureADOAuth2
@@ -53,7 +41,7 @@ from .azuread import AzureADOAuth2
 class AzureADB2COAuth2(AzureADOAuth2):
     name = "azuread-b2c-oauth2"
 
-    BASE_URL = "https://{tenant_name}.{authority_host}/{tenant_name}.onmicrosoft.com"
+    BASE_URL = "https://{authority_host}/{tenant_name}.onmicrosoft.com"
     AUTHORIZATION_URL = "{base_url}/oauth2/v2.0/authorize"
     OPENID_CONFIGURATION_URL = (
         "{base_url}/v2.0/.well-known/openid-configuration?p={policy}"
@@ -76,7 +64,7 @@ class AzureADB2COAuth2(AzureADOAuth2):
 
     @property
     def authority_host(self):
-        return self.setting("AUTHORITY_HOST", "b2clogin.com")
+        return self.setting("AUTHORITY_HOST", f"{self.tenant_name}.b2clogin.com")
 
     @property
     def tenant_name(self):
@@ -87,8 +75,9 @@ class AzureADB2COAuth2(AzureADOAuth2):
         policy = self.setting("POLICY")
         if not policy or not policy.lower().startswith("b2c_"):
             raise AuthException(
+                self,
                 "SOCIAL_AUTH_AZUREAD_B2C_OAUTH2_POLICY is "
-                "required and should start with `b2c_`"
+                "required and should start with `b2c_`",
             )
         return policy
 
@@ -140,7 +129,10 @@ class AzureADB2COAuth2(AzureADOAuth2):
         Builds a PEM formatted key string from a JWT public key dict.
         """
         pub_key = RSAAlgorithm.from_jwk(json.dumps(key_json_dict))
-        return pub_key.public_bytes(
+
+        # TODO: clarify the types of this; JWKs can apparently include both public and private,
+        # but this code assumes public.
+        return pub_key.public_bytes(  # type: ignore[reportAttributeAccessIssue]
             encoding=serialization.Encoding.PEM,
             format=serialization.PublicFormat.SubjectPublicKeyInfo,
         )

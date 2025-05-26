@@ -1,7 +1,7 @@
 import json
 from unittest.mock import patch
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 TEST_KEY = """
 -----BEGIN EC PRIVATE KEY-----
@@ -20,7 +20,7 @@ token_data = {
 }
 
 
-class AppleIdTest(OAuth2Test):
+class AppleIdTest(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.apple.AppleIdAuth"
     user_data_url = "https://appleid.apple.com/auth/authorize/"
     id_token = "a-id-token"
@@ -30,6 +30,7 @@ class AppleIdTest(OAuth2Test):
     expected_username = token_data["sub"]
 
     def extra_settings(self):
+        assert self.name, "Name must be set in subclasses"
         return {
             "SOCIAL_AUTH_" + self.name + "_TEAM": "a-team-id",
             "SOCIAL_AUTH_" + self.name + "_KEY": "a-key-id",

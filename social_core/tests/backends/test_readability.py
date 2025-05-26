@@ -1,10 +1,10 @@
 import json
 from urllib.parse import urlencode
 
-from .oauth import OAuth1Test
+from .oauth import OAuth1AuthUrlTestMixin, OAuth1Test
 
 
-class ReadabilityOAuth1Test(OAuth1Test):
+class ReadabilityOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
     backend_path = "social_core.backends.readability.ReadabilityOAuth"
     user_data_url = "https://www.readability.com/api/rest/v1/users/_current"
     expected_username = "foobar"

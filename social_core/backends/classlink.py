@@ -11,7 +11,6 @@ class ClasslinkOAuth(BaseOAuth2):
     name = "classlink"
     AUTHORIZATION_URL = "https://launchpad.classlink.com/oauth2/v2/auth"
     ACCESS_TOKEN_URL = "https://launchpad.classlink.com/oauth2/v2/token"
-    ACCESS_TOKEN_METHOD = "POST"
     DEFAULT_SCOPE = ["profile"]
     REDIRECT_STATE = False
     SCOPE_SEPARATOR = " "
@@ -37,7 +36,7 @@ class ClasslinkOAuth(BaseOAuth2):
     def user_data(self, token, *args, **kwargs):
         """Loads user data from service"""
         url = "https://nodeapi.classlink.com/v2/my/info"
-        auth_header = {"Authorization": "Bearer %s" % token}
+        auth_header = {"Authorization": f"Bearer {token}"}
         try:
             return self.get_json(url, headers=auth_header)
         except ValueError:

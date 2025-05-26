@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 import base64
 import datetime
 import json
 from calendar import timegm
+from typing import Any
 
 import jwt
 from jwt import (
@@ -13,7 +16,12 @@ from jwt import (
 from jwt.utils import base64url_decode
 
 from social_core.backends.oauth import BaseOAuth2
-from social_core.exceptions import AuthTokenError
+from social_core.exceptions import (
+    AuthInvalidParameter,
+    AuthMissingParameter,
+    AuthNotImplementedParameter,
+    AuthTokenError,
+)
 from social_core.utils import cache
 
 
@@ -43,17 +51,16 @@ class OpenIdConnectAuth(BaseOAuth2):
 
     name = "oidc"
     # Override OIDC_ENDPOINT in your subclass to enable autoconfig of OIDC
-    OIDC_ENDPOINT = None
+    OIDC_ENDPOINT: str | None = None
     ID_TOKEN_MAX_AGE = 600
     DEFAULT_SCOPE = ["openid", "profile", "email"]
     EXTRA_DATA = ["id_token", "refresh_token", ("sub", "id")]
     REDIRECT_STATE = False
-    ACCESS_TOKEN_METHOD = "POST"
     REVOKE_TOKEN_METHOD = "GET"
     ID_KEY = "sub"
     USERNAME_KEY = "preferred_username"
     JWT_ALGORITHMS = ["RS256"]
-    JWT_DECODE_OPTIONS = dict()
+    JWT_DECODE_OPTIONS: dict[str, Any] = {}
     # When these options are unspecified, server will choose via openid autoconfiguration
     ID_TOKEN_ISSUER = ""
     ACCESS_TOKEN_URL = ""
@@ -62,42 +69,59 @@ class OpenIdConnectAuth(BaseOAuth2):
     USERINFO_URL = ""
     JWKS_URI = ""
     TOKEN_ENDPOINT_AUTH_METHOD = ""
+    # Optional parameters for Authentication Request
+    DISPLAY = None
+    PROMPT = None
+    MAX_AGE = None
+    UI_LOCALES = None
+    ID_TOKEN_HINT = None
+    LOGIN_HINT = None
+    ACR_VALUES = None
 
     def __init__(self, *args, **kwargs):
         self.id_token = None
         super().__init__(*args, **kwargs)
 
-    def authorization_url(self):
-        return self.setting(
-            "AUTHORIZATION_URL", self.AUTHORIZATION_URL
-        ) or self.oidc_config().get("authorization_endpoint")
+    def get_setting_config(
+        self, setting_name: str, oidc_name: str, default: str
+    ) -> str:
+        value = self.setting(setting_name, default)
+        if not value:
+            value = self.oidc_config().get(oidc_name)
 
-    def access_token_url(self):
-        return self.setting(
-            "ACCESS_TOKEN_URL", self.ACCESS_TOKEN_URL
-        ) or self.oidc_config().get("token_endpoint")
+        if not isinstance(value, str):
+            raise AuthMissingParameter(self, setting_name)
+        return value
 
-    def revoke_token_url(self, token, uid):
-        return self.setting(
-            "REVOKE_TOKEN_URL", self.REVOKE_TOKEN_URL
-        ) or self.oidc_config().get("revocation_endpoint")
-
-    def id_token_issuer(self):
-        return self.setting(
-            "ID_TOKEN_ISSUER", self.ID_TOKEN_ISSUER
-        ) or self.oidc_config().get("issuer")
-
-    def userinfo_url(self):
-        return self.setting(
-            "USERINFO_URL", self.USERINFO_URL
-        ) or self.oidc_config().get("userinfo_endpoint")
-
-    def jwks_uri(self):
-        return self.setting("JWKS_URI", self.JWKS_URI) or self.oidc_config().get(
-            "jwks_uri"
+    def authorization_url(self) -> str:
+        return self.get_setting_config(
+            "AUTHORIZATION_URL", "authorization_endpoint", self.AUTHORIZATION_URL
         )
 
-    def use_basic_auth(self):
+    def access_token_url(self) -> str:
+        return self.get_setting_config(
+            "ACCESS_TOKEN_URL", "token_endpoint", self.ACCESS_TOKEN_URL
+        )
+
+    def revoke_token_url(self, token, uid) -> str:
+        return self.get_setting_config(
+            "REVOKE_TOKEN_URL", "revocation_endpoint", self.REVOKE_TOKEN_URL
+        )
+
+    def id_token_issuer(self) -> str:
+        return self.get_setting_config(
+            "ID_TOKEN_ISSUER", "issuer", self.ID_TOKEN_ISSUER
+        )
+
+    def userinfo_url(self) -> str:
+        return self.get_setting_config(
+            "USERINFO_URL", "userinfo_endpoint", self.USERINFO_URL
+        )
+
+    def jwks_uri(self) -> str:
+        return self.get_setting_config("JWKS_URI", "jwks_uri", self.JWKS_URI)
+
+    def use_basic_auth(self) -> bool:
         method = self.setting(
             "TOKEN_ENDPOINT_AUTH_METHOD", self.TOKEN_ENDPOINT_AUTH_METHOD
         )
@@ -106,30 +130,78 @@ class OpenIdConnectAuth(BaseOAuth2):
         methods = self.oidc_config().get("token_endpoint_auth_methods_supported", [])
         return not methods or "client_secret_basic" in methods
 
-    def oidc_endpoint(self):
+    def oidc_endpoint(self) -> str:
         return self.setting("OIDC_ENDPOINT", self.OIDC_ENDPOINT)
 
     @cache(ttl=86400)
-    def oidc_config(self):
+    def oidc_config(self) -> dict[Any, Any]:
         return self.get_json(self.oidc_endpoint() + "/.well-known/openid-configuration")
 
     @cache(ttl=86400)
     def get_jwks_keys(self):
-        keys = self.get_remote_jwks_keys()
+        return self.get_remote_jwks_keys()
 
         # Add client secret as oct key so it can be used for HMAC signatures
         # client_id, client_secret = self.get_key_and_secret()
         # keys.append({'key': client_secret, 'kty': 'oct'})
-        return keys
 
     def get_remote_jwks_keys(self):
         response = self.request(self.jwks_uri())
         return json.loads(response.text)["keys"]
 
-    def auth_params(self, state=None):
+    def auth_params(self, state=None):  # noqa: C901
         """Return extra arguments needed on auth process."""
         params = super().auth_params(state)
         params["nonce"] = self.get_and_store_nonce(self.authorization_url(), state)
+
+        display = self.setting("DISPLAY", default=self.DISPLAY)
+        if display is not None:
+            if not display:
+                raise AuthMissingParameter(
+                    self, "OpenID Connect display value cannot be empty string."
+                )
+
+            if display not in ("page", "popup", "touch", "wap"):
+                raise AuthMissingParameter(
+                    self, f"Invalid OpenID Connect display value: {display}"
+                )
+
+            params["display"] = display
+
+        prompt = self.setting("PROMPT", default=self.PROMPT)
+        if prompt is not None:
+            if not prompt:
+                raise AuthInvalidParameter(self, "prompt")
+
+            for prompt_token in prompt.split():
+                if prompt_token not in ("none", "login", "consent", "select_account"):
+                    raise AuthInvalidParameter(self, "prompt")
+
+            params["prompt"] = prompt
+
+        max_age = self.setting("MAX_AGE", default=self.MAX_AGE)
+        if max_age is not None:
+            if max_age < 0:
+                raise AuthInvalidParameter(self, "max_age")
+
+            params["max_age"] = max_age
+
+        ui_locales = self.setting("UI_LOCALES", default=self.UI_LOCALES)
+        if ui_locales is not None:
+            raise AuthNotImplementedParameter(self, "ui_locales")
+
+        id_token_hint = self.setting("ID_TOKEN_HINT", default=self.ID_TOKEN_HINT)
+        if id_token_hint is not None:
+            raise AuthNotImplementedParameter(self, "id_token_hint")
+
+        login_hint = self.setting("LOGIN_HINT", default=self.LOGIN_HINT)
+        if login_hint is not None:
+            raise AuthNotImplementedParameter(self, "login_hint")
+
+        acr_values = self.setting("ACR_VALUES", default=self.ACR_VALUES)
+        if acr_values is not None:
+            raise AuthNotImplementedParameter(self, "acr_values")
+
         return params
 
     def get_and_store_nonce(self, url, state):
@@ -152,7 +224,7 @@ class OpenIdConnectAuth(BaseOAuth2):
         self.strategy.storage.association.remove([nonce_id])
 
     def validate_claims(self, id_token):
-        utc_timestamp = timegm(datetime.datetime.utcnow().utctimetuple())
+        utc_timestamp = timegm(datetime.datetime.now(datetime.timezone.utc).timetuple())
 
         if "nbf" in id_token and utc_timestamp < id_token["nbf"]:
             raise AuthTokenError(self, "Incorrect id_token: nbf")
@@ -185,7 +257,7 @@ class OpenIdConnectAuth(BaseOAuth2):
                 # In case the key id is not found in the cached keys, just
                 # reload the JWKS keys. Ideally this should be done by
                 # invalidating the cache.
-                self.get_jwks_keys.invalidate()
+                self.get_jwks_keys.invalidate()  # type: ignore[reportFunctionMemberAccess]
                 keys = self.get_jwks_keys()
 
         for key in keys:

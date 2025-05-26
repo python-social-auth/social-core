@@ -10,7 +10,6 @@ class InstagramOAuth2(BaseOAuth2):
     name = "instagram"
     AUTHORIZATION_URL = "https://api.instagram.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://api.instagram.com/oauth/access_token"
-    ACCESS_TOKEN_METHOD = "POST"
 
     def get_user_id(self, details, response):
         user = response.get("user") or {}
