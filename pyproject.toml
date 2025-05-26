@@ -182,7 +182,6 @@ ignore = [
   "RUF012",  # TODO: Type annotations
   "S101",  # TODO: Use of `assert` detected
   "S105",  # TODO: Possible hardcoded password assigned
-  "S110",  # TODO: `try`-`except`-`pass` detected, consider logging the exception
   "S301",  # TODO: `pickle` and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue
   "S318",  # TODO: Using `xml` to parse untrusted data is known to be vulnerable to XML attacks; use `defusedxml` equivalents
   "TD002",  # CONFIG: no detailed TODO documentation is required
