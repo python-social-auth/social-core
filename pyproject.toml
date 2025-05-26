@@ -172,7 +172,6 @@ ignore = [
   "N",  # TODO: Naming issues
   "PERF203",  # WONTFIX: This rule is only enforced for Python versions prior to 3.11
   "PLR2004",  # TODO: Magic value used in comparison
-  "PLW0603",  # TODO: Using the global statement to update `BACKENDSCACHE` is discouraged
   "PLW2901",  # TODO: loop variable overwritten by assignment target
   "PT",  # CONFIG: Not using pytest
   "RUF012",  # TODO: Type annotations
