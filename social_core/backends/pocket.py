@@ -25,7 +25,7 @@ class PocketAuth(BaseAuth):
     def extra_data(self, user, uid, response, details=None, *args, **kwargs):
         return response
 
-    def auth_url(self):
+    def auth_url(self) -> str:
         data = {
             "consumer_key": self.setting("KEY"),
             "redirect_uri": self.redirect_uri,

@@ -28,7 +28,7 @@ from social_core.utils import cache
 class OpenIdConnectAssociation:
     """Use Association model to save the nonce by force."""
 
-    def __init__(self, handle, secret="", issued=0, lifetime=0, assoc_type=""):
+    def __init__(self, handle, secret="", issued=0, lifetime=0, assoc_type="") -> None:
         self.handle = handle  # as nonce
         self.secret = secret.encode()  # not use
         self.issued = issued  # not use
@@ -79,7 +79,7 @@ class OpenIdConnectAuth(BaseOAuth2):
     LOGIN_HINT = None
     ACR_VALUES = None
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         self.id_token = None
         super().__init__(*args, **kwargs)
 
@@ -221,10 +221,10 @@ class OpenIdConnectAuth(BaseOAuth2):
         except IndexError:
             pass
 
-    def remove_nonce(self, nonce_id):
+    def remove_nonce(self, nonce_id) -> None:
         self.strategy.storage.association.remove([nonce_id])
 
-    def validate_claims(self, id_token):
+    def validate_claims(self, id_token) -> None:
         utc_timestamp = timegm(datetime.datetime.now(datetime.timezone.utc).timetuple())
 
         if "nbf" in id_token and utc_timestamp < id_token["nbf"]:

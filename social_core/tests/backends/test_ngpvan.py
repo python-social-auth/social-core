@@ -80,7 +80,7 @@ class NGPVANActionIDOpenIDTest(OpenIdTest):
         }
     )
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Setup the test"""
         super().setUp()
 
@@ -105,16 +105,16 @@ class NGPVANActionIDOpenIDTest(OpenIdTest):
         )
 
     @pytest.mark.xfail(reason="responses mocking does not work for openid")
-    def test_login(self):
+    def test_login(self) -> None:
         """Test the login flow using python-social-auth's built in test"""
         self.do_login()
 
     @pytest.mark.xfail(reason="responses mocking does not work for openid")
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         """Test the partial flow using python-social-auth's built in test"""
         self.do_partial_pipeline()
 
-    def test_get_ax_attributes(self):
+    def test_get_ax_attributes(self) -> None:
         """Test that the AX attributes that NGP VAN responds with are present"""
         records = self.backend.get_ax_attributes()
 
@@ -130,7 +130,7 @@ class NGPVANActionIDOpenIDTest(OpenIdTest):
         )
 
     @pytest.mark.xfail(reason="responses mocking does not work for openid")
-    def test_setup_request(self):
+    def test_setup_request(self) -> None:
         """Test the setup_request functionality in the NGP VAN backend"""
         # We can grab the requested attributes by grabbing the HTML of the
         # OpenID auth form and pulling out the hidden fields
@@ -163,7 +163,7 @@ class NGPVANActionIDOpenIDTest(OpenIdTest):
         )
 
     @pytest.mark.xfail(reason="responses mocking does not work for openid")
-    def test_user_data(self):
+    def test_user_data(self) -> None:
         """Ensure that the correct user data is being passed to create_user"""
         self.strategy.set_settings(
             {
@@ -186,7 +186,7 @@ class NGPVANActionIDOpenIDTest(OpenIdTest):
         self.assertEqual(user.extra_user_fields["fullname"], "John Smith")
 
     @pytest.mark.xfail(reason="responses mocking does not work for openid")
-    def test_extra_data_phone(self):
+    def test_extra_data_phone(self) -> None:
         """Confirm that you can get a phone number via the relevant setting"""
         self.strategy.set_settings(
             {
@@ -199,7 +199,7 @@ class NGPVANActionIDOpenIDTest(OpenIdTest):
         self.assertEqual(user.social_user.extra_data["phone"], "+12015555555")
 
     @pytest.mark.xfail(reason="responses mocking does not work for openid")
-    def test_association_uid(self):
+    def test_association_uid(self) -> None:
         """Test that the correct association uid is stored in the database"""
         user = self.do_start()
         self.assertEqual(

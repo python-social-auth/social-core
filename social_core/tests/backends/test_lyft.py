@@ -19,8 +19,8 @@ class LyftOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     user_data_body = json.dumps({"id": "user_foobar"})
     expected_username = "user_foobar"
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()

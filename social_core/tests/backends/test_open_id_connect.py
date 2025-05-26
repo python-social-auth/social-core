@@ -35,7 +35,7 @@ class BaseOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
         )
         return settings
 
-    def pre_complete_callback(self, start_url):
+    def pre_complete_callback(self, start_url) -> None:
         super().pre_complete_callback(start_url)
         responses.add(
             "GET",
@@ -45,7 +45,7 @@ class BaseOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
             content_type="text/json",
         )
 
-    def test_everything_works(self):
+    def test_everything_works(self) -> None:
         self.do_login()
 
 
@@ -72,7 +72,7 @@ class ExampleOpenIdConnectTest(OpenIdConnectTest):
 
     expected_username = "cartman"
 
-    def pre_complete_callback(self, start_url):
+    def pre_complete_callback(self, start_url) -> None:
         super().pre_complete_callback(start_url)
         responses.add(
             responses.GET,
@@ -82,5 +82,5 @@ class ExampleOpenIdConnectTest(OpenIdConnectTest):
             content_type="text/json",
         )
 
-    def test_everything_works(self):
+    def test_everything_works(self) -> None:
         self.do_login()

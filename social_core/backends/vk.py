@@ -49,7 +49,7 @@ class VKontakteOpenAPI(BaseAuth):
     def user_data(self, access_token, *args, **kwargs):
         return self.data
 
-    def auth_html(self):
+    def auth_html(self) -> str:
         """Returns local VK authentication page, not necessary for
         VK to authenticate.
         """
@@ -80,7 +80,7 @@ class VKontakteOpenAPI(BaseAuth):
         kwargs.update({"backend": self, "response": self.user_data(mapping["mid"])})
         return self.strategy.authenticate(*args, **kwargs)
 
-    def uses_redirect(self):
+    def uses_redirect(self) -> bool:
         """VK.com does not require visiting server url in order
         to do authentication, so auth_xxx methods are not needed to be called.
         Their current implementation is just an example"""

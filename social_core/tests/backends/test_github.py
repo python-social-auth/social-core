@@ -72,13 +72,13 @@ class GithubOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
 
         return user
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
 
-    def test_refresh_token(self):
+    def test_refresh_token(self) -> None:
         user, social = self.do_refresh_token()
         self.assertEqual(social.extra_data["access_token"], "foobar-new-token")
 
@@ -119,7 +119,7 @@ class GithubOAuth2NoEmailTest(GithubOAuth2Test):
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         url = "https://api.github.com/user/emails"
         responses.add(
             responses.GET,
@@ -130,7 +130,7 @@ class GithubOAuth2NoEmailTest(GithubOAuth2Test):
         )
         self.do_login()
 
-    def test_login_next_format(self):
+    def test_login_next_format(self) -> None:
         url = "https://api.github.com/user/emails"
         responses.add(
             responses.GET,
@@ -141,7 +141,7 @@ class GithubOAuth2NoEmailTest(GithubOAuth2Test):
         )
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         url = "https://api.github.com/user/emails"
         responses.add(
             responses.GET,
@@ -152,7 +152,7 @@ class GithubOAuth2NoEmailTest(GithubOAuth2Test):
         )
         self.do_partial_pipeline()
 
-    def test_refresh_token(self):
+    def test_refresh_token(self) -> None:
         url = "https://api.github.com/user/emails"
         responses.add(
             responses.GET,
@@ -172,15 +172,15 @@ class GithubOrganizationOAuth2Test(GithubOAuth2Test):
         responses.add(responses.GET, url, status=204, body="")
         return super().auth_handlers(start_url)
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_GITHUB_ORG_NAME": "foobar"})
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_GITHUB_ORG_NAME": "foobar"})
         self.do_partial_pipeline()
 
-    def test_refresh_token(self):
+    def test_refresh_token(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_GITHUB_ORG_NAME": "foobar"})
         self.do_refresh_token()
 
@@ -199,17 +199,17 @@ class GithubOrganizationOAuth2FailTest(GithubOAuth2Test):
         )
         return super().auth_handlers(start_url)
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_GITHUB_ORG_NAME": "foobar"})
         with self.assertRaises(AuthFailed):
             self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_GITHUB_ORG_NAME": "foobar"})
         with self.assertRaises(AuthFailed):
             self.do_partial_pipeline()
 
-    def test_refresh_token(self):
+    def test_refresh_token(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_GITHUB_ORG_NAME": "foobar"})
         with self.assertRaises(AuthFailed):
             self.do_refresh_token()
@@ -223,15 +223,15 @@ class GithubTeamOAuth2Test(GithubOAuth2Test):
         responses.add(responses.GET, url, status=204, body="")
         return super().auth_handlers(start_url)
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_GITHUB_TEAM_ID": "123"})
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_GITHUB_TEAM_ID": "123"})
         self.do_partial_pipeline()
 
-    def test_refresh_token(self):
+    def test_refresh_token(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_GITHUB_TEAM_ID": "123"})
         self.do_refresh_token()
 
@@ -250,17 +250,17 @@ class GithubTeamOAuth2FailTest(GithubOAuth2Test):
         )
         return super().auth_handlers(start_url)
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_GITHUB_TEAM_ID": "123"})
         with self.assertRaises(AuthFailed):
             self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_GITHUB_TEAM_ID": "123"})
         with self.assertRaises(AuthFailed):
             self.do_partial_pipeline()
 
-    def test_refresh_token(self):
+    def test_refresh_token(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_GITHUB_TEAM_ID": "123"})
         with self.assertRaises(AuthFailed):
             self.do_refresh_token()

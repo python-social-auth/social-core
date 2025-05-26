@@ -36,7 +36,7 @@ class LinkedinOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
         }
     )
 
-    def test_invalid_nonce(self):
+    def test_invalid_nonce(self) -> None:
         """Skip the invalid nonce test as LinkedIn does not provide any nonce."""
 
 
@@ -62,10 +62,10 @@ class BaseLinkedinTest:
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()  # type: ignore[attr-defined]
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()  # type: ignore[attr-defined]
 
 

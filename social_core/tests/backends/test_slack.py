@@ -17,10 +17,10 @@ class SlackOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     )
     expected_username = "foobar"
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
 
 
@@ -52,10 +52,10 @@ class SlackOAuth2TestUnicodeTeamName(SlackOAuth2Test):
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_SLACK_USERNAME_WITH_TEAM": False})
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_SLACK_USERNAME_WITH_TEAM": False})
         self.do_partial_pipeline()

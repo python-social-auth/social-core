@@ -8,17 +8,17 @@ from .actions import BaseActionTest
 class AssociateActionTest(BaseActionTest):
     expected_username = "foobar"
 
-    def setUp(self):
+    def setUp(self) -> None:
         super().setUp()
         self.user = User(username="foobar", email="foo@bar.com")
         self.backend.strategy.session_set("username", self.user.username)
 
-    def test_associate(self):
+    def test_associate(self) -> None:
         self.do_login()
         self.assertTrue(len(self.user.social), 1)
         self.assertEqual(self.user.social[0].provider, "github")
 
-    def test_associate_with_partial_pipeline(self):
+    def test_associate_with_partial_pipeline(self) -> None:
         self.do_login_with_partial_pipeline()
         self.assertEqual(len(self.user.social), 1)
         self.assertEqual(self.user.social[0].provider, "github")
@@ -60,7 +60,7 @@ class MultipleAccountsTest(AssociateActionTest):
         }
     )
 
-    def test_multiple_social_accounts(self):
+    def test_multiple_social_accounts(self) -> None:
         self.do_login()
         self.do_login(user_data_body=self.alternative_user_data_body)
         self.assertEqual(len(self.user.social), 2)
@@ -69,17 +69,17 @@ class MultipleAccountsTest(AssociateActionTest):
 
 
 class AlreadyAssociatedErrorTest(BaseActionTest):
-    def setUp(self):
+    def setUp(self) -> None:
         super().setUp()
         self.user1 = User(username="foobar", email="foo@bar.com")
         self.user = None
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         super().tearDown()
         self.user1 = None
         self.user = None
 
-    def test_already_associated_error(self):
+    def test_already_associated_error(self) -> None:
         self.user = self.user1
         self.do_login()
         self.user = User(username="foobar2", email="foo2@bar2.com")

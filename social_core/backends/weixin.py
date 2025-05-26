@@ -147,7 +147,7 @@ class WeixinOAuth2APP(WeixinOAuth2):
             "secret": secret,
         }
 
-    def validate_state(self):
+    def validate_state(self) -> None:
         return None
 
     def auth_complete(self, *args, **kwargs):

@@ -46,23 +46,23 @@ class PayPalOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
 
-    def test_refresh_token(self):
+    def test_refresh_token(self) -> None:
         user, social = self.do_refresh_token()
         self.assertEqual(user.username, self.expected_username)
         self.assertEqual(social.extra_data["access_token"], "foobar-new-token")
 
-    def test_get_email_no_emails(self):
+    def test_get_email_no_emails(self) -> None:
         emails = []
         email = PayPalOAuth2.get_email(emails)
         self.assertEqual(email, "")
 
-    def test_get_email_multiple_emails(self):
+    def test_get_email_multiple_emails(self) -> None:
         expected_email = "mail2@example.com"
         emails = [
             {"value": "mail1@example.com", "primary": False},
@@ -71,7 +71,7 @@ class PayPalOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         email = PayPalOAuth2.get_email(emails)
         self.assertEqual(email, expected_email)
 
-    def test_get_email_multiple_emails_no_primary(self):
+    def test_get_email_multiple_emails_no_primary(self) -> None:
         expected_email = "mail1@example.com"
         emails = [
             {"value": expected_email, "primary": False},

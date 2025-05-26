@@ -121,12 +121,12 @@ class KeycloakOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
             "SOCIAL_AUTH_KEYCLOAK_ACCESS_TOKEN_URL": _ACCESS_TOKEN_URL,
         }
 
-    def test_encode_decode(self):
+    def test_encode_decode(self) -> None:
         token = _encode(_PAYLOAD)
         self.assertEqual(_PAYLOAD, _decode(token))
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()

@@ -58,7 +58,7 @@ class YahooOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         responses.add(
             responses.GET,
             "https://social.yahooapis.com/v1/me/guid?format=json",
@@ -67,7 +67,7 @@ class YahooOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
         )
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         responses.add(
             responses.GET,
             "https://social.yahooapis.com/v1/me/guid?format=json",
@@ -76,7 +76,7 @@ class YahooOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
         )
         self.do_partial_pipeline()
 
-    def test_get_user_details(self):
+    def test_get_user_details(self) -> None:
         responses.add(
             responses.GET, self.user_data_url, status=200, body=self.user_data_body
         )

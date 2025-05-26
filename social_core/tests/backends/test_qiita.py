@@ -36,7 +36,7 @@ class QiitaOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         user = self.do_login()
         self.assertEqual(len(user.social), 1)
 
@@ -44,7 +44,7 @@ class QiitaOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         self.assertEqual(social.uid, "foobar")
         self.assertEqual(social.extra_data["permanent_id"], 12345)
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         user = self.do_partial_pipeline()
         self.assertEqual(len(user.social), 1)
 
@@ -54,7 +54,7 @@ class QiitaOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
 
 
 class QiitaOAuth2TestIdentifiedByPermanentId(QiitaOAuth2Test):
-    def test_login(self):
+    def test_login(self) -> None:
         self.strategy.set_settings(
             {"SOCIAL_AUTH_QIITA_IDENTIFIED_BY_PERMANENT_ID": True}
         )
@@ -66,7 +66,7 @@ class QiitaOAuth2TestIdentifiedByPermanentId(QiitaOAuth2Test):
         self.assertEqual(social.uid, "12345")
         self.assertEqual(social.extra_data["permanent_id"], 12345)
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.strategy.set_settings(
             {"SOCIAL_AUTH_QIITA_IDENTIFIED_BY_PERMANENT_ID": True}
         )
@@ -87,7 +87,7 @@ class QiitaOAuth2TestIdentifiedByPermanentIdAuthException(QiitaOAuth2Test):
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.strategy.set_settings(
             {"SOCIAL_AUTH_QIITA_IDENTIFIED_BY_PERMANENT_ID": True}
         )
@@ -95,7 +95,7 @@ class QiitaOAuth2TestIdentifiedByPermanentIdAuthException(QiitaOAuth2Test):
         with self.assertRaises(AuthException):
             self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.strategy.set_settings(
             {"SOCIAL_AUTH_QIITA_IDENTIFIED_BY_PERMANENT_ID": True}
         )

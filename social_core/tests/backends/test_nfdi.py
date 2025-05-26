@@ -670,22 +670,22 @@ class NFDIOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
         }
     )
 
-    def test_do_not_override_endpoint(self):
+    def test_do_not_override_endpoint(self) -> None:
         self.backend.OIDC_ENDPOINT = self.issuer
         self.assertEqual(self.backend.oidc_endpoint(), self.issuer)
 
-    def test_entitlements_empty(self):
+    def test_entitlements_empty(self) -> None:
         self.assertEqual(self.backend.entitlement_allowed([]), True)
 
-    def test_entitlements_allowed(self):
+    def test_entitlements_allowed(self) -> None:
         self.backend.ALLOWED_ENTITLEMENTS = ["foo", "baz"]
         self.assertEqual(self.backend.entitlement_allowed(["foo", "bar"]), True)
 
-    def test_entitlements_not_allowed(self):
+    def test_entitlements_not_allowed(self) -> None:
         self.backend.ALLOWED_ENTITLEMENTS = ["baz"]
         self.assertEqual(self.backend.entitlement_allowed(["foo"]), False)
 
-    def test_get_user_details(self):
+    def test_get_user_details(self) -> None:
         testdata = self.backend.get_user_details(
             json.loads(cast("str", self.user_data_body))
         )
@@ -695,5 +695,5 @@ class NFDIOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
         self.assertEqual(testdata["first_name"], "Donald")
         self.assertEqual(testdata["last_name"], "Duck")
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()

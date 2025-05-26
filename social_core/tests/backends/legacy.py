@@ -9,7 +9,7 @@ class BaseLegacyTest(BaseBackendTest):
     form = ""
     response_body = ""
 
-    def setUp(self):
+    def setUp(self) -> None:
         super().setUp()
         self.strategy.set_settings(
             {

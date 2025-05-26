@@ -64,7 +64,7 @@ class DiscsogsOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
         }
     )
 
-    def _mock(self):
+    def _mock(self) -> None:
         responses.add(
             responses.GET,
             url="https://api.discogs.com/oauth/identity",
@@ -85,10 +85,10 @@ class DiscsogsOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
             body=self.user_data_body,
         )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self._mock()
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self._mock()
         self.do_partial_pipeline()

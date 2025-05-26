@@ -263,5 +263,5 @@ class LifeScienceOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()

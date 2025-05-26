@@ -56,17 +56,17 @@ class DummyOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
 
-    def test_tokens(self):
+    def test_tokens(self) -> None:
         user = self.do_login()
         self.assertEqual(user.social[0].access_token, "foobar")
 
-    def test_revoke_token(self):
+    def test_revoke_token(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_REVOKE_TOKENS_ON_DISCONNECT": True})
         self.do_login()
         user = User.get(self.expected_username)
@@ -80,30 +80,30 @@ class DummyOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
 
 
 class WhitelistEmailsTest(DummyOAuth2Test):
-    def test_valid_login(self):
+    def test_valid_login(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_WHITELISTED_EMAILS": ["foo@bar.com"]})
         self.do_login()
 
-    def test_invalid_login(self):
+    def test_invalid_login(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_WHITELISTED_EMAILS": ["foo2@bar.com"]})
         with self.assertRaises(AuthForbidden):
             self.do_login()
 
-    def test_login_case_sensitive_local_part(self):
+    def test_login_case_sensitive_local_part(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_WHITELISTED_EMAILS": ["fOo@bar.com"]})
         self.do_login()
 
-    def test_login_case_sensitive_domain(self):
+    def test_login_case_sensitive_domain(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_WHITELISTED_EMAILS": ["foo@bAR.com"]})
         self.do_login()
 
 
 class WhitelistDomainsTest(DummyOAuth2Test):
-    def test_valid_login(self):
+    def test_valid_login(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_WHITELISTED_DOMAINS": ["bar.com"]})
         self.do_login()
 
-    def test_invalid_login(self):
+    def test_invalid_login(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_WHITELISTED_EMAILS": ["bar2.com"]})
         with self.assertRaises(AuthForbidden):
             self.do_login()
@@ -125,7 +125,7 @@ class ExpirationTimeTest(DummyOAuth2Test):
         }
     )
 
-    def test_expires_time(self):
+    def test_expires_time(self) -> None:
         user = self.do_login()
         social = user.social[0]
         expiration = social.expiration_timedelta()
@@ -147,7 +147,7 @@ class AllExtraDataTest(DummyOAuth2Test):
         }
     )
 
-    def test_get_all_extra_data(self):
+    def test_get_all_extra_data(self) -> None:
         user = self.do_login()
         social = user.social[0]
         self.assertIn("not_normally_in_extra_data", social.extra_data)

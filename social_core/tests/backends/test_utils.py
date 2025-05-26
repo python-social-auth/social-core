@@ -8,15 +8,15 @@ from ..strategy import TestStrategy
 
 
 class BaseBackendUtilsTest(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.strategy = TestStrategy(storage=TestStorage)
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         self.strategy = None
 
 
 class LoadBackendsTest(BaseBackendUtilsTest):
-    def test_load_backends(self):
+    def test_load_backends(self) -> None:
         loaded_backends = load_backends(
             (
                 "social_core.backends.github.GithubOAuth2",
@@ -34,7 +34,7 @@ class LoadBackendsTest(BaseBackendUtilsTest):
 
 
 class GetBackendTest(BaseBackendUtilsTest):
-    def test_get_backend(self):
+    def test_get_backend(self) -> None:
         backend = get_backend(
             (
                 "social_core.backends.github.GithubOAuth2",
@@ -45,7 +45,7 @@ class GetBackendTest(BaseBackendUtilsTest):
         )
         self.assertEqual(backend, GithubOAuth2)
 
-    def test_get_missing_backend(self):
+    def test_get_missing_backend(self) -> None:
         with self.assertRaisesRegex(MissingBackend, 'Missing backend "foobar" entry'):
             get_backend(
                 (

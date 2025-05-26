@@ -60,7 +60,7 @@ class AzureADOAuth2(BaseOAuth2):
         return self.setting("AUTHORITY_HOST", "login.microsoftonline.com")
 
     @property
-    def tenant_id(self):
+    def tenant_id(self) -> str:
         return "common"
 
     @property

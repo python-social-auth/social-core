@@ -29,7 +29,7 @@ OID_USERID = "urn:oid:0.9.2342.19200300.100.1.1"
 class SAMLIdentityProvider:
     """Wrapper around configuration for a SAML Identity provider"""
 
-    def __init__(self, name, **kwargs):
+    def __init__(self, name, **kwargs) -> None:
         """Load and parse configuration"""
         self.name = name
         # name should be a slug and must not contain a colon, which
@@ -136,7 +136,7 @@ class DummySAMLIdentityProvider(SAMLIdentityProvider):
     config, this can be removed.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             "dummy",
             entity_id="https://dummy.none/saml2",
@@ -296,7 +296,7 @@ class SAMLAuth(BaseAuth):
         idp = self.get_idp(response["idp_name"])
         return idp.get_user_details(response["attributes"])
 
-    def get_user_id(self, details, response):
+    def get_user_id(self, details, response) -> str:
         """
         Get the permanent ID for this user from the response.
         We prefix each ID with the name of the IdP so that we can
@@ -377,7 +377,7 @@ class SAMLAuth(BaseAuth):
         errors = auth.get_errors()
         return url, errors
 
-    def _check_entitlements(self, idp, attributes):
+    def _check_entitlements(self, idp, attributes) -> None:
         """
         Additional verification of a SAML response before
         authenticating the user.
