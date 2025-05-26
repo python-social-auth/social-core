@@ -30,7 +30,7 @@ class BaseBackendTest(unittest.TestCase, Generic[BackendT]):
     raw_complete_url = "/complete/{0}"
     expected_username: str = ""
 
-    def setUp(self):
+    def setUp(self) -> None:
         responses.start()
         Backend = module_member(self.backend_path)
         self.strategy = TestStrategy(TestStorage)
@@ -53,7 +53,7 @@ class BaseBackendTest(unittest.TestCase, Generic[BackendT]):
         TestAssociation.reset_cache()
         TestCode.reset_cache()
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         del self.backend
         self.strategy = None
         self.name = ""
@@ -93,7 +93,7 @@ class BaseBackendTest(unittest.TestCase, Generic[BackendT]):
         self.assertEqual(len(user_backends["backends"]), 2)
         return user
 
-    def pipeline_settings(self):
+    def pipeline_settings(self) -> None:
         self.strategy.set_settings(
             {
                 "SOCIAL_AUTH_PIPELINE": (
@@ -115,7 +115,7 @@ class BaseBackendTest(unittest.TestCase, Generic[BackendT]):
             }
         )
 
-    def pipeline_handlers(self, url):
+    def pipeline_handlers(self, url) -> None:
         responses.add(responses.GET, url, status=200, body="foobar")
         responses.add(responses.POST, url, status=200)
 

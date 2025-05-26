@@ -150,7 +150,7 @@ class OdnoklassnikiApp(BaseAuth):
         )
         return {name: self.data[name] for name in fields if name in self.data}
 
-    def verify_auth_sig(self):
+    def verify_auth_sig(self) -> None:
         correct_key = self.get_auth_sig()
         key = self.data["auth_sig"].lower()
         if correct_key != key:

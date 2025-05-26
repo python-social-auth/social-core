@@ -16,7 +16,7 @@ class LoginRadiusAuth(BaseOAuth2):
     REDIRECT_STATE = False
     STATE_PARAMETER = False
 
-    def uses_redirect(self):
+    def uses_redirect(self) -> bool:
         """Return False because we return HTML instead."""
         return False
 

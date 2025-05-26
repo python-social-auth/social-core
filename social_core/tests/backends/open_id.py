@@ -16,7 +16,7 @@ class FormHTMLParser(HTMLParser):
     form = {}
     inputs = {}
 
-    def handle_starttag(self, tag, attrs):
+    def handle_starttag(self, tag, attrs) -> None:
         attrs = dict(attrs)
         if tag == "form":
             self.form.update(attrs)
@@ -25,7 +25,7 @@ class FormHTMLParser(HTMLParser):
 
 
 class OpenIdTest(BaseBackendTest):
-    def setUp(self):
+    def setUp(self) -> None:
         responses.start()
         Backend = module_member(self.backend_path)
         self.strategy = TestStrategy(TestStorage)
@@ -45,7 +45,7 @@ class OpenIdTest(BaseBackendTest):
             force_load=True,
         )
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         self.strategy = None
         User.reset_cache()
         TestUserSocialAuth.reset_cache()
@@ -62,7 +62,7 @@ class OpenIdTest(BaseBackendTest):
     def openid_url(self):
         return self.backend.openid_url()
 
-    def post_start(self):
+    def post_start(self) -> None:
         pass
 
     def do_start(self):

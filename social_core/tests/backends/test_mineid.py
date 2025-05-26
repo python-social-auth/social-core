@@ -15,11 +15,11 @@ class MineIDOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
 
-    def test_auth_url_parameters(self):
+    def test_auth_url_parameters(self) -> None:
         self.check_parameters_in_authorization_url("_AUTHORIZATION_URL")

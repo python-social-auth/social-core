@@ -158,7 +158,7 @@ class AzureADB2COAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         )
         return settings
 
-    def setUp(self):
+    def setUp(self) -> None:
         super().setUp()
 
         keys_url = "https://footenant.b2clogin.com/footenant.onmicrosoft.com/discovery/v2.0/keys?p=b2c_1_signin"
@@ -184,12 +184,12 @@ class AzureADB2COAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         )
         responses.add(responses.GET, keys_url, status=200, body=keys_body)
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
 
-    def test_refresh_token(self):
+    def test_refresh_token(self) -> None:
         user, social = self.do_refresh_token()
         self.assertEqual(social.extra_data["access_token"], "foobar-new-token")

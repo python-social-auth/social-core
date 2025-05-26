@@ -192,7 +192,7 @@ class OpenIdAuth(BaseAuth):
             self.strategy.restore_session(session_id, kwargs)
         return self.strategy.authenticate(self, response=response, *args, **kwargs)
 
-    def process_error(self, data):
+    def process_error(self, data) -> None:
         if not data:
             raise AuthException(self, "OpenID relying party endpoint")
         if data.status == FAILURE:

@@ -78,7 +78,7 @@ class SteamOpenIdTest(OpenIdTest):
         }
     )
 
-    def _login_setup(self, user_url=None):
+    def _login_setup(self, user_url=None) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_STEAM_API_KEY": "123abc"})
         responses.add(
             responses.POST,
@@ -95,12 +95,12 @@ class SteamOpenIdTest(OpenIdTest):
         responses.add(responses.GET, INFO_URL, status=200, body=self.player_details)
 
     @pytest.mark.xfail(reason="responses mocking does not work for openid")
-    def test_login(self):
+    def test_login(self) -> None:
         self._login_setup()
         self.do_login()
 
     @pytest.mark.xfail(reason="responses mocking does not work for openid")
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self._login_setup()
         self.do_partial_pipeline()
 
@@ -124,12 +124,12 @@ class SteamOpenIdMissingSteamIdTest(SteamOpenIdTest):
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self._login_setup(user_url="https://steamcommunity.com/openid/BROKEN")
         with self.assertRaises(AuthFailed):
             self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self._login_setup(user_url="https://steamcommunity.com/openid/BROKEN")
         with self.assertRaises(AuthFailed):
             self.do_partial_pipeline()
@@ -155,13 +155,13 @@ class SteamOpenIdFakeSteamIdTest(SteamOpenIdTest):
     )
 
     @pytest.mark.xfail(reason="responses mocking does not work for openid")
-    def test_login(self):
+    def test_login(self) -> None:
         self._login_setup(user_url="https://fakesteamcommunity.com/openid/123")
         with self.assertRaises(AuthFailed):
             self.do_login()
 
     @pytest.mark.xfail(reason="responses mocking does not work for openid")
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self._login_setup(user_url="https://fakesteamcommunity.com/openid/123")
         with self.assertRaises(AuthFailed):
             self.do_partial_pipeline()

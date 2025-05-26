@@ -55,7 +55,7 @@ class BaseActionTest(unittest.TestCase):
     strategy: TestStrategy
     backend: BaseOAuth2
 
-    def setUp(self):
+    def setUp(self) -> None:
         responses.start()
         User.reset_cache()
         TestUserSocialAuth.reset_cache()
@@ -68,7 +68,7 @@ class BaseActionTest(unittest.TestCase):
             self.backend = Backend(self.strategy, redirect_uri="/complete/github")
         self.user = None
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         del self.backend
         del self.strategy
         self.user = None
@@ -135,7 +135,7 @@ class BaseActionTest(unittest.TestCase):
             )
         self.strategy.set_request_data(location_query, self.backend)
 
-        def _login(backend, user, social_user):
+        def _login(backend, user, social_user) -> None:
             backend.strategy.session_set("username", user.username)
             user_email = getattr(user, "email", None)
             if user_email:
@@ -151,7 +151,7 @@ class BaseActionTest(unittest.TestCase):
             self.assertEqual(redirect.url, self.login_redirect_url)
         return redirect
 
-    def do_login_with_partial_pipeline(self, before_complete=None):
+    def do_login_with_partial_pipeline(self, before_complete=None) -> None:
         self.strategy.set_settings(
             {
                 "SOCIAL_AUTH_GITHUB_KEY": "a-key",
@@ -216,7 +216,7 @@ class BaseActionTest(unittest.TestCase):
             )
         self.strategy.set_request_data(location_query, self.backend)
 
-        def _login(backend, user, social_user):
+        def _login(backend, user, social_user) -> None:
             backend.strategy.session_set("username", user.username)
             user_email = getattr(user, "email", None)
             if user_email:
@@ -241,5 +241,5 @@ class BaseActionTest(unittest.TestCase):
         self.assertEqual(self.strategy.session_get("username"), self.expected_username)
         self.assertEqual(redirect.url, self.login_redirect_url)
 
-    def _logout(self, backend):
+    def _logout(self, backend) -> None:
         backend.strategy.session_set("username", None)

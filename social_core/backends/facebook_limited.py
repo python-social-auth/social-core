@@ -40,7 +40,7 @@ class FacebookLimitedLogin(OpenIdConnectAuth):
         # We don't have an access token to call any API for the user details.
         return {}
 
-    def validate_claims(self, id_token):
+    def validate_claims(self, id_token) -> None:
         try:
             super().validate_claims(id_token)
         except AuthTokenError as e:

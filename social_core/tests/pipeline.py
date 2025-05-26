@@ -15,11 +15,11 @@ def ask_for_slug(strategy, *args, **kwargs):
     return strategy.redirect(strategy.build_absolute_uri("/slug"))
 
 
-def set_password(strategy, user, *args, **kwargs):
+def set_password(strategy, user, *args, **kwargs) -> None:
     user.set_password(kwargs["password"])
 
 
-def set_slug(strategy, user, *args, **kwargs):
+def set_slug(strategy, user, *args, **kwargs) -> None:
     user.slug = kwargs["slug"]
 
 

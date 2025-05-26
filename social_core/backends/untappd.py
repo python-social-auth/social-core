@@ -36,7 +36,7 @@ class UntappdOAuth2(BaseOAuth2):
             "response_type": self.RESPONSE_TYPE,
         }
 
-    def process_error(self, data):
+    def process_error(self, data) -> None:
         """
         All errors from Untappd are contained in the 'meta' key of the
         response.

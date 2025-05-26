@@ -27,7 +27,7 @@ class BaseAuth:
     REQUIRES_EMAIL_VALIDATION = False
     SEND_USER_AGENT = False
 
-    def __init__(self, strategy, redirect_uri=None):
+    def __init__(self, strategy, redirect_uri=None) -> None:
         self.strategy = strategy
         self.redirect_uri = redirect_uri
         self.data = self.strategy.request_data()
@@ -45,19 +45,19 @@ class BaseAuth:
     def complete(self, *args, **kwargs):
         return self.auth_complete(*args, **kwargs)
 
-    def auth_url(self):
+    def auth_url(self) -> str:
         """Must return redirect URL to auth provider"""
         raise NotImplementedError("Implement in subclass")
 
-    def auth_html(self):
+    def auth_html(self) -> str:
         """Must return login HTML content returned by provider"""
-        raise NotImplementedError("Implement in subclass")
+        return "Implement in subclass"
 
     def auth_complete(self, *args, **kwargs):
         """Completes login process, must return user instance"""
         raise NotImplementedError("Implement in subclass")
 
-    def process_error(self, data):
+    def process_error(self, data) -> None:
         """Process data for errors, raise exception if needed.
         Call this method on any override of auth_complete."""
 
@@ -187,7 +187,7 @@ class BaseAuth:
         response."""
         return response.get(self.ID_KEY)
 
-    def get_user_details(self, response):
+    def get_user_details(self, response) -> dict[str, Any]:
         """Must return user details in a know internal struct:
         {'username': <username if any>,
          'email': <user email if any>,

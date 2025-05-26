@@ -39,7 +39,7 @@ class AppleIdTest(OAuth2Test, BaseAuthUrlTestMixin):
             "SOCIAL_AUTH_" + self.name + "_SCOPE": ["name", "email"],
         }
 
-    def test_login(self):
+    def test_login(self) -> None:
         with patch(
             "{}.{}".format(self.backend_path, "decode_id_token"),
             return_value=token_data,
@@ -48,7 +48,7 @@ class AppleIdTest(OAuth2Test, BaseAuthUrlTestMixin):
         assert decode_mock.called
         assert decode_mock.call_args[0] == (self.id_token,)
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         with patch(
             "{}.{}".format(self.backend_path, "decode_id_token"),
             return_value=token_data,

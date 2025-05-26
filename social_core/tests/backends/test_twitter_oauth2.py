@@ -80,7 +80,7 @@ class TwitterOAuth2Mixin:
 
     expected_username = "twitter_username"
 
-    def test_login(self):
+    def test_login(self) -> None:
         user = self.do_login()
 
         self.assertEqual(len(user.social), 1)
@@ -106,7 +106,7 @@ class TwitterOAuth2Mixin:
         self.assertEqual(social.extra_data["public_metrics"]["tweet_count"], 40)
         self.assertEqual(social.extra_data["public_metrics"]["listed_count"], 7)
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         user = self.do_partial_pipeline()
         self.assertEqual(len(user.social), 1)
 
@@ -155,7 +155,7 @@ class TwitterOAuth2TestMissingOptionalValue(OAuth2Test, BaseAuthUrlTestMixin):
 
     expected_username = "twitter_username"
 
-    def test_login(self):
+    def test_login(self) -> None:
         user = self.do_login()
 
         self.assertEqual(len(user.social), 1)
@@ -188,7 +188,7 @@ class TwitterOAuth2TestPkceS256(TwitterOAuth2Mixin, OAuth2PkceS256Test):
 class TwitterOAuth2TestInvalidCodeChallengeMethod(
     TwitterOAuth2Mixin, OAuth2PkcePlainTest
 ):
-    def test_login__error(self):
+    def test_login__error(self) -> None:
         self.strategy.set_settings(
             {
                 f"SOCIAL_AUTH_{self.name}_PKCE_CODE_CHALLENGE_METHOD": "invalidmethodname",

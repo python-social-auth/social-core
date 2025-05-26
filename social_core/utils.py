@@ -279,7 +279,7 @@ class cache:
     Does not work for methods with arguments.
     """
 
-    def __init__(self, ttl: int):
+    def __init__(self, ttl: int) -> None:
         self.ttl = ttl
         self.cache: dict[type, Any] = {}
 
@@ -306,5 +306,5 @@ class cache:
         wrapped.invalidate = self._invalidate  # type: ignore[attr-defined]
         return wrapped
 
-    def _invalidate(self):
+    def _invalidate(self) -> None:
         self.cache.clear()

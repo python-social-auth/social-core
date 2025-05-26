@@ -28,7 +28,7 @@ class BaseExceptionTestCase(unittest.TestCase):
     exception: SocialAuthBaseException = SocialAuthBaseException("base test")
     expected_message: str = "base test"
 
-    def test_exception_message(self):
+    def test_exception_message(self) -> None:
         try:
             raise self.exception
         except SocialAuthBaseException as err:

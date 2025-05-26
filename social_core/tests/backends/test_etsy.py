@@ -36,7 +36,7 @@ class EtsyOAuth2Mixin:
     )
     expected_username = "dummy_user_id"
 
-    def test_login(self):
+    def test_login(self) -> None:
         user = self.do_login()
         self.assertEqual(len(user.social), 1)
 
@@ -58,7 +58,7 @@ class EtsyOAuth2Mixin:
             social.extra_data["refresh_token"], "dummy_user_id.dummy_refresh_token"
         )
 
-    def test_refresh_token(self):
+    def test_refresh_token(self) -> None:
         _, social = self.do_refresh_token()
 
         self.assertEqual(social.uid, "dummy_user_id")

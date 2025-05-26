@@ -40,7 +40,7 @@ class LineOAuth2(BaseOAuth2):
             "scope": self.get_scope(),
         }
 
-    def process_error(self, data):
+    def process_error(self, data) -> None:
         error_code = (
             data.get("errorCode") or data.get("statusCode") or data.get("error")
         )

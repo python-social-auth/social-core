@@ -50,16 +50,16 @@ class RedditOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
 
     def refresh_token_arguments(self):
         uri = self.strategy.build_absolute_uri("/complete/reddit/")
         return {"redirect_uri": uri}
 
-    def test_refresh_token(self):
+    def test_refresh_token(self) -> None:
         user, social = self.do_refresh_token()
         self.assertEqual(social.extra_data["access_token"], "foobar-new-token")

@@ -8,7 +8,7 @@ from openid.store.nonce import SKEW
 class OpenIdStore(BaseOpenIDStore):
     """Storage class"""
 
-    def __init__(self, strategy):
+    def __init__(self, strategy) -> None:
         """Init method"""
         super().__init__()
         self.strategy = strategy
@@ -17,11 +17,11 @@ class OpenIdStore(BaseOpenIDStore):
         self.nonce = self.storage.nonce
         self.max_nonce_age = 6 * 60 * 60  # Six hours
 
-    def storeAssociation(self, server_url, association):
+    def storeAssociation(self, server_url, association) -> None:
         """Store new association if it does not exist"""
         self.assoc.store(server_url, association)
 
-    def removeAssociation(self, server_url, handle):
+    def removeAssociation(self, server_url, handle) -> None:
         """Remove association"""
         associations_ids = list(dict(self.assoc.oids(server_url, handle)).keys())
         if associations_ids:
@@ -69,7 +69,7 @@ class OpenIdSessionWrapper(dict):
             value = pickle.loads(value)
         return value
 
-    def __setitem__(self, name, value):
+    def __setitem__(self, name, value) -> None:
         if name in self.pickle_instances:
             value = pickle.dumps(value, 0)
         super().__setitem__(name, value)

@@ -296,34 +296,34 @@ class EGICheckinOpenIdConnectTest(
     }
     """
 
-    def test_do_not_override_endpoint(self):
+    def test_do_not_override_endpoint(self) -> None:
         self.backend.OIDC_ENDPOINT = self.issuer
         self.assertEqual(self.backend.oidc_endpoint(), self.issuer)
 
-    def test_checkin_env_prod(self):
+    def test_checkin_env_prod(self) -> None:
         self.assertEqual(
             self.backend.oidc_endpoint(), "https://aai.egi.eu/auth/realms/egi"
         )
 
-    def test_checkin_env_demo(self):
+    def test_checkin_env_demo(self) -> None:
         self.backend.CHECKIN_ENV = "demo"
         self.assertEqual(
             self.backend.oidc_endpoint(), "https://aai-demo.egi.eu/auth/realms/egi"
         )
 
-    def test_checkin_env_dev(self):
+    def test_checkin_env_dev(self) -> None:
         self.backend.CHECKIN_ENV = "dev"
         self.assertEqual(
             self.backend.oidc_endpoint(), "https://aai-dev.egi.eu/auth/realms/egi"
         )
 
-    def test_entitlements_empty(self):
+    def test_entitlements_empty(self) -> None:
         self.assertEqual(self.backend.entitlement_allowed([]), True)
 
-    def test_entitlements_allowed(self):
+    def test_entitlements_allowed(self) -> None:
         self.backend.ALLOWED_ENTITLEMENTS = ["foo", "baz"]
         self.assertEqual(self.backend.entitlement_allowed(["foo", "bar"]), True)
 
-    def test_entitlements_not_allowed(self):
+    def test_entitlements_not_allowed(self) -> None:
         self.backend.ALLOWED_ENTITLEMENTS = ["baz"]
         self.assertEqual(self.backend.entitlement_allowed(["foo"]), False)

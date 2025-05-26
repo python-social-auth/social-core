@@ -46,13 +46,13 @@ class ExactTargetOAuth2(BaseOAuth2):
         """
         return "{}".format(details.get("id"))
 
-    def uses_redirect(self):
+    def uses_redirect(self) -> bool:
         return False
 
-    def auth_url(self):
-        return None
+    def auth_url(self) -> str:
+        return ""
 
-    def process_error(self, data):
+    def process_error(self, data) -> None:
         if data.get("error"):
             error = self.data.get("error_description") or self.data["error"]
             raise AuthFailed(self, error)

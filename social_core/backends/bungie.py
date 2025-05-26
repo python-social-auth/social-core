@@ -20,9 +20,6 @@ class BungieOAuth2(BaseOAuth2):
         ("refresh_expires_in", "refresh_expires_in"),
     ]
 
-    def auth_html(self):
-        """Abstract Method Inclusion"""
-
     def auth_headers(self):
         """Adds X-API-KEY and Origin"""
         return {

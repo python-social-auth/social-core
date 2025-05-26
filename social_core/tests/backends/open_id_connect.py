@@ -59,7 +59,7 @@ class OpenIdConnectTest(
         super().__init_subclass__(**kwargs)
         cls.access_token_kwargs = getattr(cls, "access_token_kwargs", {})
 
-    def setUp(self):
+    def setUp(self) -> None:
         if self.__class__.__name__ == "OpenIdConnectTest":
             self.skipTest("base class")
         super().setUp()
@@ -173,12 +173,12 @@ class OpenIdConnectTest(
 
         return json.dumps(body)
 
-    def authtoken_raised(self, expected_message, **access_token_kwargs):
+    def authtoken_raised(self, expected_message, **access_token_kwargs) -> None:
         self.access_token_kwargs = access_token_kwargs
         with self.assertRaisesRegex(AuthTokenError, expected_message):
             self.do_login()
 
-    def pre_complete_callback(self, start_url):
+    def pre_complete_callback(self, start_url) -> None:
         nonce = parse_qs(urlparse(start_url).query)["nonce"]
 
         self.access_token_kwargs.setdefault("nonce", nonce)
@@ -187,12 +187,12 @@ class OpenIdConnectTest(
         )
         super().pre_complete_callback(start_url)
 
-    def test_invalid_signature(self):
+    def test_invalid_signature(self) -> None:
         self.authtoken_raised(
             "Token error: Signature verification failed", tamper_message=True
         )
 
-    def test_expired_signature(self):
+    def test_expired_signature(self) -> None:
         expiration_datetime = datetime.datetime.now(
             datetime.timezone.utc
         ) - datetime.timedelta(seconds=30)
@@ -201,15 +201,15 @@ class OpenIdConnectTest(
             expiration_datetime=expiration_datetime,
         )
 
-    def test_invalid_issuer(self):
+    def test_invalid_issuer(self) -> None:
         self.authtoken_raised("Token error: Invalid issuer", issuer="someone-else")
 
-    def test_invalid_audience(self):
+    def test_invalid_audience(self) -> None:
         self.authtoken_raised(
             "Token error: Invalid audience", client_key="someone-else"
         )
 
-    def test_invalid_issue_time(self):
+    def test_invalid_issue_time(self) -> None:
         expiration_datetime = datetime.datetime.now(
             datetime.timezone.utc
         ) - datetime.timedelta(seconds=self.backend.ID_TOKEN_MAX_AGE * 2)
@@ -217,14 +217,14 @@ class OpenIdConnectTest(
             "Token error: Incorrect id_token: iat", issue_datetime=expiration_datetime
         )
 
-    def test_invalid_nonce(self):
+    def test_invalid_nonce(self) -> None:
         self.authtoken_raised(
             "Token error: Incorrect id_token: nonce",
             nonce="something-wrong",
             kid="testkey",
         )
 
-    def test_invalid_kid(self):
+    def test_invalid_kid(self) -> None:
         self.authtoken_raised(
             "Token error: Signature verification failed", kid="doesnotexist"
         )

@@ -79,7 +79,7 @@ class BitbucketDataCenterOAuth2Mixin:
         )
         return target_url
 
-    def test_login(self):
+    def test_login(self) -> None:
         user = self.do_login()
 
         self.assertEqual(len(user.social), 1)
@@ -108,7 +108,7 @@ class BitbucketDataCenterOAuth2Mixin:
         self.assertEqual(social.extra_data["expires"], 3600)
         self.assertEqual(social.extra_data["refresh_token"], "dummy_refresh_token")
 
-    def test_refresh_token(self):
+    def test_refresh_token(self) -> None:
         _, social = self.do_refresh_token()
 
         self.assertEqual(social.uid, "1")

@@ -223,10 +223,10 @@ class NationBuilderOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_NATIONBUILDER_SLUG": "foobar"})
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_NATIONBUILDER_SLUG": "foobar"})
         self.do_partial_pipeline()

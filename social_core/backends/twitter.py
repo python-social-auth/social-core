@@ -18,7 +18,7 @@ class TwitterOAuth(BaseOAuth1):
     ACCESS_TOKEN_URL = "https://api.twitter.com/oauth/access_token"
     REDIRECT_STATE = True
 
-    def process_error(self, data):
+    def process_error(self, data) -> None:
         if "denied" in data:
             raise AuthCanceled(self)
         super().process_error(data)

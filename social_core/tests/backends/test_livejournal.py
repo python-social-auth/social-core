@@ -53,10 +53,10 @@ session_type:DH-SHA1
     def openid_url(self):
         return super().openid_url() + "/data/yadis"
 
-    def post_start(self):
+    def post_start(self) -> None:
         self.strategy.remove_from_request_data("openid_lj_user")
 
-    def _setup_handlers(self):
+    def _setup_handlers(self) -> None:
         responses.add(
             responses.POST,
             "http://www.livejournal.com/openid/server.bml",
@@ -81,18 +81,18 @@ session_type:DH-SHA1
         )
 
     @pytest.mark.xfail(reason="responses mocking does not work for openid")
-    def test_login(self):
+    def test_login(self) -> None:
         self.strategy.set_request_data({"openid_lj_user": "foobar"}, self.backend)
         self._setup_handlers()
         self.do_login()
 
     @pytest.mark.xfail(reason="responses mocking does not work for openid")
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.strategy.set_request_data({"openid_lj_user": "foobar"}, self.backend)
         self._setup_handlers()
         self.do_partial_pipeline()
 
-    def test_failed_login(self):
+    def test_failed_login(self) -> None:
         self._setup_handlers()
         with self.assertRaises(AuthMissingParameter):
             self.do_login()

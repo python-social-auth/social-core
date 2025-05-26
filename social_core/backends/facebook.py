@@ -85,7 +85,7 @@ class FacebookOAuth2(BaseOAuth2):
         version = self.setting("API_VERSION", API_VERSION)
         return self.get_json(self.USER_DATA_URL.format(version=version), params=params)
 
-    def process_error(self, data):
+    def process_error(self, data) -> None:
         super().process_error(data)
         if data.get("error_code"):
             raise AuthCanceled(
@@ -183,7 +183,7 @@ class FacebookAppOAuth2(FacebookOAuth2):
 
     name = "facebook-app"
 
-    def uses_redirect(self):
+    def uses_redirect(self) -> bool:
         return False
 
     def auth_complete(self, *args, **kwargs):

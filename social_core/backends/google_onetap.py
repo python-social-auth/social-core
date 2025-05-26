@@ -14,7 +14,7 @@ class GoogleOneTap(BaseGoogleAuth, BaseAuth):
     def auth_url(self):
         raise AuthException(self, "Cannot start login flow for Google One Tap")
 
-    def verify_csrf(self, request):
+    def verify_csrf(self, request) -> None:
         csrf_token_body = self.data.get(self.CSRF_KEY)
         csrf_token_cookie = request.COOKIES.get(self.CSRF_KEY)
 

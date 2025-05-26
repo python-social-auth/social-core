@@ -35,7 +35,7 @@ class VaultOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
         )
         return settings
 
-    def pre_complete_callback(self, start_url):
+    def pre_complete_callback(self, start_url) -> None:
         super().pre_complete_callback(start_url)
         responses.add(
             responses.GET,
@@ -45,5 +45,5 @@ class VaultOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
             content_type="text/json",
         )
 
-    def test_everything_works(self):
+    def test_everything_works(self) -> None:
         self.do_login()
