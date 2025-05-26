@@ -4,10 +4,11 @@ import json
 
 import responses
 
-from ...actions import do_disconnect
-from ...backends.oauth import BaseOAuth2
-from ...exceptions import AuthForbidden
-from ..models import User
+from social_core.actions import do_disconnect
+from social_core.backends.oauth import BaseOAuth2
+from social_core.exceptions import AuthForbidden
+from social_core.tests.models import User
+
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 

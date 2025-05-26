@@ -1,4 +1,5 @@
-from ..exceptions import InvalidEmail
+from social_core.exceptions import InvalidEmail
+
 from .partial import partial
 
 

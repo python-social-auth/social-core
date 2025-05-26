@@ -3,7 +3,8 @@ Steam OpenId backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/steam.html
 """
 
-from ..exceptions import AuthFailed
+from social_core.exceptions import AuthFailed
+
 from .open_id import OpenIdAuth
 
 USER_INFO = "http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?"

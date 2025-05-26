@@ -6,10 +6,9 @@ from typing import Generic, TypeVar
 import requests
 import responses
 
-from ...backends.base import BaseAuth
-from ...backends.utils import load_backends, user_backends_data
-from ...utils import PARTIAL_TOKEN_SESSION_NAME, module_member, parse_qs
-from ..models import (
+from social_core.backends.base import BaseAuth
+from social_core.backends.utils import load_backends, user_backends_data
+from social_core.tests.models import (
     TestAssociation,
     TestCode,
     TestNonce,
@@ -17,7 +16,8 @@ from ..models import (
     TestUserSocialAuth,
     User,
 )
-from ..strategy import TestStrategy
+from social_core.tests.strategy import TestStrategy
+from social_core.utils import PARTIAL_TOKEN_SESSION_NAME, module_member, parse_qs
 
 BackendT = TypeVar("BackendT", bound=BaseAuth)
 

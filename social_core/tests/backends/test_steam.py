@@ -5,7 +5,8 @@ from urllib.parse import urlencode
 import pytest
 import responses
 
-from ...exceptions import AuthFailed
+from social_core.exceptions import AuthFailed
+
 from .open_id import OpenIdTest
 
 INFO_URL = "http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?"

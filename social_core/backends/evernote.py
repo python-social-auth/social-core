@@ -5,7 +5,8 @@ Evernote OAuth1 backend (with sandbox mode support), docs at:
 
 from requests import HTTPError
 
-from ..exceptions import AuthCanceled
+from social_core.exceptions import AuthCanceled
+
 from .oauth import BaseOAuth1
 
 

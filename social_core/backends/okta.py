@@ -5,7 +5,8 @@ Okta OAuth2 and OpenIdConnect:
 
 from urllib.parse import urljoin, urlparse, urlunparse
 
-from ..utils import append_slash
+from social_core.utils import append_slash
+
 from .oauth import BaseOAuth2
 
 

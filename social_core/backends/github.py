@@ -7,7 +7,8 @@ from urllib.parse import urljoin
 
 from requests import HTTPError
 
-from ..exceptions import AuthFailed
+from social_core.exceptions import AuthFailed
+
 from .oauth import BaseOAuth2
 
 

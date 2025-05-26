@@ -6,7 +6,8 @@ Odnoklassniki OAuth2 and Iframe Application backends, docs at:
 from hashlib import md5
 from urllib.parse import unquote
 
-from ..exceptions import AuthFailed
+from social_core.exceptions import AuthFailed
+
 from .base import BaseAuth
 from .oauth import BaseOAuth2
 

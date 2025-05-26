@@ -1,7 +1,8 @@
 import json
 
-from ...backends.facebook import API_VERSION
-from ...exceptions import AuthCanceled, AuthUnknownError
+from social_core.backends.facebook import API_VERSION
+from social_core.exceptions import AuthCanceled, AuthUnknownError
+
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 from .open_id_connect import OpenIdConnectTest
 

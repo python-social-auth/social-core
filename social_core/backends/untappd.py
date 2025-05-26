@@ -1,7 +1,8 @@
 import requests
 
-from ..exceptions import AuthFailed
-from ..utils import handle_http_errors
+from social_core.exceptions import AuthFailed
+from social_core.utils import handle_http_errors
+
 from .oauth import BaseOAuth2
 
 

@@ -1,6 +1,7 @@
 from functools import wraps
 
-from ..utils import PARTIAL_TOKEN_SESSION_NAME
+from social_core.utils import PARTIAL_TOKEN_SESSION_NAME
+
 from .utils import partial_prepare
 
 

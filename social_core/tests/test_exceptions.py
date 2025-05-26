@@ -1,7 +1,7 @@
 import unittest
 
-from ..backends.base import BaseAuth
-from ..exceptions import (
+from social_core.backends.base import BaseAuth
+from social_core.exceptions import (
     AuthAlreadyAssociated,
     AuthCanceled,
     AuthException,
@@ -20,6 +20,7 @@ from ..exceptions import (
     SocialAuthBaseException,
     WrongBackend,
 )
+
 from .models import TestStorage
 from .strategy import TestStrategy
 

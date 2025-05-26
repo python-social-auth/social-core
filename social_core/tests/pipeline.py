@@ -1,4 +1,4 @@
-from ..pipeline.partial import partial
+from social_core.pipeline.partial import partial
 
 
 @partial

@@ -5,7 +5,8 @@ Yahoo OpenId, OAuth1 and OAuth2 backends, docs at:
 
 from requests.auth import HTTPBasicAuth
 
-from ..utils import handle_http_errors
+from social_core.utils import handle_http_errors
+
 from .oauth import BaseOAuth1, BaseOAuth2
 
 

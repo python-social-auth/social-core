@@ -6,8 +6,8 @@ Beats backend, docs at:
 import base64
 
 from social_core.exceptions import AuthUnknownError
+from social_core.utils import handle_http_errors
 
-from ..utils import handle_http_errors
 from .oauth import BaseOAuth2
 
 

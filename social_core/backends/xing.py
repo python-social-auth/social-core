@@ -6,7 +6,8 @@ XING OAuth1 backend, docs at:
 from oauthlib.oauth1 import SIGNATURE_TYPE_AUTH_HEADER
 from requests_oauthlib import OAuth1
 
-from ..exceptions import AuthTokenError
+from social_core.exceptions import AuthTokenError
+
 from .oauth import BaseOAuth1
 
 

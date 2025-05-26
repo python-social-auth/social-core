@@ -6,9 +6,10 @@ from urllib.parse import urlencode
 import jwt
 import responses
 
-from ...actions import do_disconnect
-from ...exceptions import AuthException, AuthTokenError
-from ..models import User
+from social_core.actions import do_disconnect
+from social_core.exceptions import AuthException, AuthTokenError
+from social_core.tests.models import User
+
 from .base import BaseBackendTest
 from .oauth import BaseAuthUrlTestMixin, OAuth1AuthUrlTestMixin, OAuth1Test, OAuth2Test
 from .open_id_connect import OpenIdConnectTest

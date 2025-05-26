@@ -4,7 +4,8 @@ from urllib.parse import urlencode
 import pytest
 import responses
 
-from ...exceptions import AuthMissingParameter
+from social_core.exceptions import AuthMissingParameter
+
 from .open_id import OpenIdTest
 
 JANRAIN_NONCE = datetime.datetime.now(datetime.timezone.utc).strftime(

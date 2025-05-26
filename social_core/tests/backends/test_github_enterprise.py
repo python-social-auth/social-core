@@ -2,7 +2,8 @@ import json
 
 import responses
 
-from ...exceptions import AuthFailed
+from social_core.exceptions import AuthFailed
+
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 

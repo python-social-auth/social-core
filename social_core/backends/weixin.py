@@ -7,7 +7,8 @@ from urllib.parse import urlencode
 
 from requests import HTTPError
 
-from ..exceptions import AuthCanceled, AuthUnknownError
+from social_core.exceptions import AuthCanceled, AuthUnknownError
+
 from .oauth import BaseOAuth2
 
 

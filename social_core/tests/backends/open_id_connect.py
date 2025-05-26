@@ -11,9 +11,9 @@ import jwt
 import responses
 
 from social_core.backends.open_id_connect import OpenIdConnectAuth
+from social_core.exceptions import AuthTokenError
+from social_core.utils import parse_qs
 
-from ...exceptions import AuthTokenError
-from ...utils import parse_qs
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 JWK_KEY = {

@@ -3,7 +3,8 @@ Soundcloud OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/soundcloud.html
 """
 
-from ..utils import url_add_parameters
+from social_core.utils import url_add_parameters
+
 from .oauth import BaseOAuth2
 
 

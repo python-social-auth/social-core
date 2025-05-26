@@ -6,7 +6,7 @@ from typing import TypeVar
 
 from typing_extensions import Self
 
-from ..storage import (
+from social_core.storage import (
     AssociationMixin,
     BaseStorage,
     CodeMixin,

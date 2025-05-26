@@ -2,7 +2,8 @@ from urllib.parse import urlencode
 
 from requests import HTTPError
 
-from ...exceptions import AuthCanceled
+from social_core.exceptions import AuthCanceled
+
 from .oauth import OAuth1AuthUrlTestMixin, OAuth1Test
 
 

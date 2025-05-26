@@ -1,10 +1,11 @@
 import requests
 import responses
 
-from ...actions import do_disconnect
-from ...exceptions import NotAllowedToDisconnect
-from ...utils import parse_qs
-from ..models import TestUserSocialAuth, User
+from social_core.actions import do_disconnect
+from social_core.exceptions import NotAllowedToDisconnect
+from social_core.tests.models import TestUserSocialAuth, User
+from social_core.utils import parse_qs
+
 from .actions import BaseActionTest
 
 

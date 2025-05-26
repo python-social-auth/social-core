@@ -1,6 +1,6 @@
 from uuid import uuid4
 
-from ..utils import module_member, slugify
+from social_core.utils import module_member, slugify
 
 USER_FIELDS = ["username", "email"]
 

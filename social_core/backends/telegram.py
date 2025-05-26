@@ -2,8 +2,9 @@ import hashlib
 import hmac
 import time
 
-from ..exceptions import AuthFailed, AuthMissingParameter
-from ..utils import handle_http_errors
+from social_core.exceptions import AuthFailed, AuthMissingParameter
+from social_core.utils import handle_http_errors
+
 from .base import BaseAuth
 
 

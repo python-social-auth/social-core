@@ -5,7 +5,8 @@ LiveJournal OpenId backend, docs at:
 
 from urllib.parse import urlsplit
 
-from ..exceptions import AuthMissingParameter
+from social_core.exceptions import AuthMissingParameter
+
 from .open_id import OpenIdAuth
 
 

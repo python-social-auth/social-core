@@ -1,8 +1,8 @@
 import unittest
 
-from ...backends.base import BaseAuth
-from ..models import TestStorage
-from ..strategy import TestStrategy
+from social_core.backends.base import BaseAuth
+from social_core.tests.models import TestStorage
+from social_core.tests.strategy import TestStrategy
 
 
 class BrokenBackendAuth(BaseAuth):

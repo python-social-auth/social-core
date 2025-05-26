@@ -10,8 +10,9 @@ from hashlib import md5
 from time import time
 from typing import Any, cast
 
-from ..exceptions import AuthException, AuthTokenRevoked
-from ..utils import parse_qs
+from social_core.exceptions import AuthException, AuthTokenRevoked
+from social_core.utils import parse_qs
+
 from .base import BaseAuth
 from .oauth import BaseOAuth2
 

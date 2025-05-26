@@ -4,14 +4,15 @@ from openid.consumer.consumer import CANCEL, FAILURE, SUCCESS, Consumer
 from openid.consumer.discover import DiscoveryFailure
 from openid.extensions import ax, pape, sreg
 
-from ..exceptions import (
+from social_core.exceptions import (
     AuthCanceled,
     AuthException,
     AuthFailed,
     AuthMissingParameter,
     AuthUnknownError,
 )
-from ..utils import url_add_parameters
+from social_core.utils import url_add_parameters
+
 from .base import BaseAuth
 
 # OpenID configuration

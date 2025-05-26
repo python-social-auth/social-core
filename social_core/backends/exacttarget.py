@@ -8,7 +8,8 @@ from datetime import datetime, timedelta, timezone
 
 import jwt
 
-from ..exceptions import AuthCanceled, AuthFailed
+from social_core.exceptions import AuthCanceled, AuthFailed
+
 from .oauth import BaseOAuth2
 
 

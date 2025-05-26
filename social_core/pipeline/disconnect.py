@@ -1,4 +1,4 @@
-from ..exceptions import NotAllowedToDisconnect
+from social_core.exceptions import NotAllowedToDisconnect
 
 
 def allowed_to_disconnect(

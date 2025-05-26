@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from ..strategy import BaseStrategy, BaseTemplateStrategy
+from social_core.strategy import BaseStrategy, BaseTemplateStrategy
 
 TEST_URI = "http://myapp.com"
 TEST_HOST = "myapp.com"

@@ -1,6 +1,7 @@
 from requests.auth import HTTPBasicAuth
 
-from ..utils import handle_http_errors
+from social_core.utils import handle_http_errors
+
 from .oauth import BaseOAuth2
 
 

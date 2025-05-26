@@ -3,9 +3,8 @@ from __future__ import annotations
 from typing import cast
 from urllib.parse import urljoin
 
-from social_core.utils import cache
+from social_core.utils import append_slash, cache
 
-from ..utils import append_slash
 from .open_id_connect import OpenIdConnectAuth
 
 

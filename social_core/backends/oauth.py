@@ -8,7 +8,7 @@ from urllib.parse import urlencode
 from oauthlib.oauth1 import SIGNATURE_TYPE_AUTH_HEADER
 from requests_oauthlib import OAuth1
 
-from ..exceptions import (
+from social_core.exceptions import (
     AuthCanceled,
     AuthException,
     AuthFailed,
@@ -18,12 +18,13 @@ from ..exceptions import (
     AuthTokenError,
     AuthUnknownError,
 )
-from ..utils import (
+from social_core.utils import (
     constant_time_compare,
     handle_http_errors,
     parse_qs,
     url_add_parameters,
 )
+
 from .base import BaseAuth
 
 if TYPE_CHECKING:

@@ -9,13 +9,14 @@ import hmac
 import json
 import time
 
-from ..exceptions import (
+from social_core.exceptions import (
     AuthCanceled,
     AuthException,
     AuthMissingParameter,
     AuthUnknownError,
 )
-from ..utils import constant_time_compare, handle_http_errors, parse_qs
+from social_core.utils import constant_time_compare, handle_http_errors, parse_qs
+
 from .oauth import BaseOAuth2
 
 API_VERSION = 18.0

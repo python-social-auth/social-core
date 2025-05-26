@@ -1,5 +1,6 @@
-from ..exceptions import MissingBackend
-from ..utils import module_member, user_is_authenticated
+from social_core.exceptions import MissingBackend
+from social_core.utils import module_member, user_is_authenticated
+
 from .base import BaseAuth
 
 # Cache for discovered backends.

@@ -6,7 +6,8 @@ from urllib.parse import parse_qs, urlencode, urlparse
 import requests
 import responses
 
-from ...exceptions import AuthException
+from social_core.exceptions import AuthException
+
 from .base import BaseBackendTest
 
 TEST_KEY = "foo"

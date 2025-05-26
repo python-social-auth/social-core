@@ -5,10 +5,17 @@ from html.parser import HTMLParser
 import requests
 import responses
 
-from ...backends.utils import load_backends
-from ...utils import module_member, parse_qs
-from ..models import TestAssociation, TestNonce, TestStorage, TestUserSocialAuth, User
-from ..strategy import TestStrategy
+from social_core.backends.utils import load_backends
+from social_core.tests.models import (
+    TestAssociation,
+    TestNonce,
+    TestStorage,
+    TestUserSocialAuth,
+    User,
+)
+from social_core.tests.strategy import TestStrategy
+from social_core.utils import module_member, parse_qs
+
 from .base import BaseBackendTest
 
 

@@ -1,8 +1,9 @@
 import json
 
-from ..exceptions import AuthException
-from ..pipeline.user import user_details
-from ..utils import PARTIAL_TOKEN_SESSION_NAME
+from social_core.exceptions import AuthException
+from social_core.pipeline.user import user_details
+from social_core.utils import PARTIAL_TOKEN_SESSION_NAME
+
 from .actions.actions import BaseActionTest
 from .models import TestStorage, TestUserSocialAuth, User
 from .strategy import TestStrategy
