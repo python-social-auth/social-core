@@ -1,23 +1,15 @@
 # pyright: reportAttributeAccessIssue=false
 
-import sys
 from html.parser import HTMLParser
 
 import requests
 import responses
-from openid import oidutil
 
 from ...backends.utils import load_backends
 from ...utils import module_member, parse_qs
 from ..models import TestAssociation, TestNonce, TestStorage, TestUserSocialAuth, User
 from ..strategy import TestStrategy
 from .base import BaseBackendTest
-
-sys.path.insert(0, "..")
-
-
-# Patch to remove the too-verbose output until a new version is released
-oidutil.log = lambda *args, **kwargs: None
 
 
 class FormHTMLParser(HTMLParser):
