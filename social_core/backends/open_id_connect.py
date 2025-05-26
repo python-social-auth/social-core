@@ -16,7 +16,12 @@ from jwt import (
 from jwt.utils import base64url_decode
 
 from social_core.backends.oauth import BaseOAuth2
-from social_core.exceptions import AuthMissingParameter, AuthTokenError
+from social_core.exceptions import (
+    AuthInvalidParameter,
+    AuthMissingParameter,
+    AuthNotImplementedParameter,
+    AuthTokenError,
+)
 from social_core.utils import cache
 
 
@@ -144,7 +149,7 @@ class OpenIdConnectAuth(BaseOAuth2):
         response = self.request(self.jwks_uri())
         return json.loads(response.text)["keys"]
 
-    def auth_params(self, state=None):
+    def auth_params(self, state=None):  # noqa: C901
         """Return extra arguments needed on auth process."""
         params = super().auth_params(state)
         params["nonce"] = self.get_and_store_nonce(self.authorization_url(), state)
