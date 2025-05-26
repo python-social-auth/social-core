@@ -61,6 +61,7 @@ class OpenIdConnectAuth(BaseOAuth2):
     USERNAME_KEY = "preferred_username"
     JWT_ALGORITHMS = ["RS256"]
     JWT_DECODE_OPTIONS: dict[str, Any] = {}
+    JWT_LEEWAY: float = 1.0  # seconds
     # When these options are unspecified, server will choose via openid autoconfiguration
     ID_TOKEN_ISSUER = ""
     ACCESS_TOKEN_URL = ""
@@ -295,6 +296,7 @@ class OpenIdConnectAuth(BaseOAuth2):
                 audience=client_id,
                 issuer=self.id_token_issuer(),
                 options=self.setting("JWT_DECODE_OPTIONS", self.JWT_DECODE_OPTIONS),
+                leeway=self.setting("JWT_LEEWAY", self.JWT_LEEWAY),
             )
         except ExpiredSignatureError:
             raise AuthTokenError(self, "Signature has expired")
