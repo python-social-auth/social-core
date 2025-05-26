@@ -153,12 +153,12 @@ class OpenIdConnectAuth(BaseOAuth2):
         if display is not None:
             if not display:
                 raise AuthMissingParameter(
-                    "OpenID Connect display value cannot be empty string."
+                    self, "OpenID Connect display value cannot be empty string."
                 )
 
             if display not in ("page", "popup", "touch", "wap"):
                 raise AuthMissingParameter(
-                    f"Invalid OpenID Connect display value: {display}"
+                    self, f"Invalid OpenID Connect display value: {display}"
                 )
 
             params["display"] = display
@@ -166,36 +166,36 @@ class OpenIdConnectAuth(BaseOAuth2):
         prompt = self.setting("PROMPT", default=self.PROMPT)
         if prompt is not None:
             if not prompt:
-                raise AuthInvalidParameter("prompt")
+                raise AuthInvalidParameter(self, "prompt")
 
             for prompt_token in prompt.split():
                 if prompt_token not in ("none", "login", "consent", "select_account"):
-                    raise AuthInvalidParameter("prompt")
+                    raise AuthInvalidParameter(self, "prompt")
 
             params["prompt"] = prompt
 
         max_age = self.setting("MAX_AGE", default=self.MAX_AGE)
         if max_age is not None:
             if max_age < 0:
-                raise AuthInvalidParameter("max_age")
+                raise AuthInvalidParameter(self, "max_age")
 
             params["max_age"] = max_age
 
         ui_locales = self.setting("UI_LOCALES", default=self.UI_LOCALES)
         if ui_locales is not None:
-            raise AuthNotImplementedParameter("ui_locales")
+            raise AuthNotImplementedParameter(self, "ui_locales")
 
         id_token_hint = self.setting("ID_TOKEN_HINT", default=self.ID_TOKEN_HINT)
         if id_token_hint is not None:
-            raise AuthNotImplementedParameter("id_token_hint")
+            raise AuthNotImplementedParameter(self, "id_token_hint")
 
         login_hint = self.setting("LOGIN_HINT", default=self.LOGIN_HINT)
         if login_hint is not None:
-            raise AuthNotImplementedParameter("login_hint")
+            raise AuthNotImplementedParameter(self, "login_hint")
 
         acr_values = self.setting("ACR_VALUES", default=self.ACR_VALUES)
         if acr_values is not None:
-            raise AuthNotImplementedParameter("acr_values")
+            raise AuthNotImplementedParameter(self, "acr_values")
 
         return params
 
