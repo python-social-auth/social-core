@@ -155,7 +155,6 @@ ignore = [
   "ARG003",  # TODO: Unused class method argument
   "B026",  # TODO: Star-arg unpacking after a keyword argument is strongly discouraged
   "B904",  # TODO: use raise from
-  "BLE001",  # TODO: Do not catch blind exception: `Exception`
   "COM",  # CONFIG: No trailing commas
   "D",  # TODO: Missing documentation
   "D203",  # CONFIG: incompatible with D211
