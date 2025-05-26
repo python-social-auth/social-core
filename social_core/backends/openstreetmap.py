@@ -9,7 +9,7 @@ must be defined with the corresponding values.
 More info: https://wiki.openstreetmap.org/wiki/OAuth
 """
 
-from xml.dom import minidom
+from defusedxml import minidom
 
 from .oauth import BaseOAuth1
 
@@ -43,7 +43,7 @@ class OpenStreetMapOAuth(BaseOAuth1):
             access_token, "https://api.openstreetmap.org/api/0.6/user/details"
         )
         try:
-            dom = minidom.parseString(response.content)
+            dom = minidom.parseString(response.text)
         except ValueError:
             return None
         user = dom.getElementsByTagName("user")[0]
