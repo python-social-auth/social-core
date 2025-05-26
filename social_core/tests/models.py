@@ -136,7 +136,7 @@ class TestUserSocialAuth(UserMixin, BaseModel):
         return None
 
     @classmethod
-    def get_social_auth_for_user(cls, user, provider=None, id=None):
+    def get_social_auth_for_user(cls, user, provider=None, id=None):  # noqa: A002
         return [
             usa
             for usa in user.social
