@@ -4,7 +4,8 @@ OAuth2 Backend to work with microsoft graph.
 
 import time
 
-from ..exceptions import AuthMissingParameter
+from social_core.exceptions import AuthMissingParameter
+
 from .oauth import BaseOAuth2
 
 

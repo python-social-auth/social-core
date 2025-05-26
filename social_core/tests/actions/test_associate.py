@@ -1,7 +1,8 @@
 import json
 
-from ...exceptions import AuthAlreadyAssociated
-from ..models import User
+from social_core.exceptions import AuthAlreadyAssociated
+from social_core.tests.models import User
+
 from .actions import BaseActionTest
 
 

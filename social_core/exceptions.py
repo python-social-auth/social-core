@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .backends.base import BaseAuth
+    from social_core.backends.base import BaseAuth
 
 
 class SocialAuthBaseException(ValueError):

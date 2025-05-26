@@ -1,8 +1,15 @@
 import random
 import unittest
 
-from ..storage import AssociationMixin, BaseStorage, CodeMixin, NonceMixin, UserMixin
-from ..strategy import BaseStrategy
+from social_core.storage import (
+    AssociationMixin,
+    BaseStorage,
+    CodeMixin,
+    NonceMixin,
+    UserMixin,
+)
+from social_core.strategy import BaseStrategy
+
 from .models import User
 
 NOT_IMPLEMENTED_MSG = "Implement in subclass"

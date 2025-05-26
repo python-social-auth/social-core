@@ -179,7 +179,6 @@ ignore = [
   "S301",  # TODO: `pickle` and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue
   "TD002",  # CONFIG: no detailed TODO documentation is required
   "TD003",  # CONFIG: no detailed TODO documentation is required
-  "TID252",  # TODO: Prefer absolute imports over relative imports from parent modules
   "TRY003",  # TODO: Avoid specifying long messages outside the exception class
   "TRY301",  # TODO: Abstract `raise` to an inner function
   'ISC001'  # CONFIG: formatter

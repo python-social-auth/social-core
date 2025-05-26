@@ -2,7 +2,8 @@ import json
 
 import responses
 
-from ...exceptions import AuthForbidden
+from social_core.exceptions import AuthForbidden
+
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 

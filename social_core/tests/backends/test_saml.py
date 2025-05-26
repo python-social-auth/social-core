@@ -16,7 +16,8 @@ try:
 except ImportError:
     SAML_MODULE_ENABLED = False
 
-from ...exceptions import AuthMissingParameter
+from social_core.exceptions import AuthMissingParameter
+
 from .base import BaseBackendTest
 
 DATA_DIR = Path(__file__).parent / "data"

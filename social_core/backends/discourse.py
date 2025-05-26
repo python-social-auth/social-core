@@ -4,8 +4,9 @@ from base64 import urlsafe_b64decode, urlsafe_b64encode
 from hashlib import sha256
 from urllib.parse import urlencode
 
-from ..exceptions import AuthException, AuthTokenError
-from ..utils import parse_qs
+from social_core.exceptions import AuthException, AuthTokenError
+from social_core.utils import parse_qs
+
 from .base import BaseAuth
 
 

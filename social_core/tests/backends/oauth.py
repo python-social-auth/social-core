@@ -7,9 +7,10 @@ from urllib.parse import urlparse
 import requests
 import responses
 
-from ...backends.oauth import BaseOAuth1, BaseOAuth2, OAuthAuth
-from ...utils import get_querystring, parse_qs, url_add_parameters
-from ..models import User
+from social_core.backends.oauth import BaseOAuth1, BaseOAuth2, OAuthAuth
+from social_core.tests.models import User
+from social_core.utils import get_querystring, parse_qs, url_add_parameters
+
 from .base import BaseBackendTest
 
 OAuthBackendT = TypeVar("OAuthBackendT", bound=OAuthAuth)

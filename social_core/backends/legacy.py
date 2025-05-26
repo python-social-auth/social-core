@@ -1,4 +1,5 @@
-from ..exceptions import AuthMissingParameter
+from social_core.exceptions import AuthMissingParameter
+
 from .base import BaseAuth
 
 

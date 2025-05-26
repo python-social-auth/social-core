@@ -5,8 +5,9 @@ Shopify OAuth2 backend, docs at:
 
 import shopify
 
-from ..exceptions import AuthCanceled, AuthFailed
-from ..utils import handle_http_errors
+from social_core.exceptions import AuthCanceled, AuthFailed
+from social_core.utils import handle_http_errors
+
 from .oauth import BaseOAuth2
 
 

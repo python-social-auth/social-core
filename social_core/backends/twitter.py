@@ -3,7 +3,8 @@ Twitter OAuth1 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/twitter.html
 """
 
-from ..exceptions import AuthCanceled
+from social_core.exceptions import AuthCanceled
+
 from .oauth import BaseOAuth1
 
 

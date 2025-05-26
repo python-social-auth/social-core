@@ -1,10 +1,10 @@
 import unittest
 
-from ...backends.github import GithubOAuth2
-from ...backends.utils import get_backend, load_backends
-from ...exceptions import MissingBackend
-from ..models import TestStorage
-from ..strategy import TestStrategy
+from social_core.backends.github import GithubOAuth2
+from social_core.backends.utils import get_backend, load_backends
+from social_core.exceptions import MissingBackend
+from social_core.tests.models import TestStorage
+from social_core.tests.strategy import TestStrategy
 
 
 class BaseBackendUtilsTest(unittest.TestCase):

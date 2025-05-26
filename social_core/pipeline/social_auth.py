@@ -1,4 +1,4 @@
-from ..exceptions import AuthAlreadyAssociated, AuthException, AuthForbidden
+from social_core.exceptions import AuthAlreadyAssociated, AuthException, AuthForbidden
 
 
 def social_details(backend, details, response, *args, **kwargs):

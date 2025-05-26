@@ -1,7 +1,8 @@
 import requests
 import responses
 
-from ...utils import parse_qs
+from social_core.utils import parse_qs
+
 from .base import BaseBackendTest
 
 

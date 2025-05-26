@@ -1,6 +1,7 @@
-from ...backends.oauth import BaseOAuth2
-from ...utils import PARTIAL_TOKEN_SESSION_NAME
-from ..models import TestUserSocialAuth, User
+from social_core.backends.oauth import BaseOAuth2
+from social_core.tests.models import TestUserSocialAuth, User
+from social_core.utils import PARTIAL_TOKEN_SESSION_NAME
+
 from .actions import BaseActionTest
 
 

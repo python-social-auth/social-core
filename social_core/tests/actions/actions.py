@@ -5,11 +5,17 @@ from urllib.parse import urlparse
 import requests
 import responses
 
-from ...actions import do_auth, do_complete
-from ...backends.oauth import BaseOAuth2
-from ...utils import module_member, parse_qs
-from ..models import TestAssociation, TestNonce, TestStorage, TestUserSocialAuth, User
-from ..strategy import TestStrategy
+from social_core.actions import do_auth, do_complete
+from social_core.backends.oauth import BaseOAuth2
+from social_core.tests.models import (
+    TestAssociation,
+    TestNonce,
+    TestStorage,
+    TestUserSocialAuth,
+    User,
+)
+from social_core.tests.strategy import TestStrategy
+from social_core.utils import module_member, parse_qs
 
 
 class BaseActionTest(unittest.TestCase):

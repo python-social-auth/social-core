@@ -31,7 +31,8 @@ import time
 
 import jwt
 
-from ..exceptions import AuthMissingParameter, AuthTokenError
+from social_core.exceptions import AuthMissingParameter, AuthTokenError
+
 from .oauth import BaseOAuth2
 
 

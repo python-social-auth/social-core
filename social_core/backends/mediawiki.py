@@ -10,7 +10,8 @@ from urllib.parse import parse_qs, urlencode, urlparse
 import jwt
 from requests_oauthlib import OAuth1
 
-from ..exceptions import AuthException
+from social_core.exceptions import AuthException
+
 from .oauth import BaseOAuth1
 
 

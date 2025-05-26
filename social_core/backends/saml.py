@@ -13,7 +13,8 @@ import json
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
 from onelogin.saml2.settings import OneLogin_Saml2_Settings
 
-from ..exceptions import AuthFailed, AuthMissingParameter
+from social_core.exceptions import AuthFailed, AuthMissingParameter
+
 from .base import BaseAuth
 
 # Helpful constants:

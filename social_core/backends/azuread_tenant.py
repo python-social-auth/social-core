@@ -5,7 +5,8 @@ from cryptography.x509 import load_der_x509_certificate
 from jwt import DecodeError, ExpiredSignatureError, get_unverified_header
 from jwt import decode as jwt_decode
 
-from ..exceptions import AuthTokenError
+from social_core.exceptions import AuthTokenError
+
 from .azuread import AzureADOAuth2
 
 """

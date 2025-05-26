@@ -3,8 +3,9 @@ Jawbone OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/jawbone.html
 """
 
-from ..exceptions import AuthCanceled, AuthUnknownError
-from ..utils import handle_http_errors
+from social_core.exceptions import AuthCanceled, AuthUnknownError
+from social_core.utils import handle_http_errors
+
 from .oauth import BaseOAuth2
 
 

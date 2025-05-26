@@ -4,9 +4,9 @@ Google OpenId, OAuth2, OAuth1, Google+ Sign-in backends, docs at:
 """
 
 from social_core.backends.base import BaseAuth
+from social_core.exceptions import AuthMissingParameter
+from social_core.utils import handle_http_errors
 
-from ..exceptions import AuthMissingParameter
-from ..utils import handle_http_errors
 from .oauth import BaseOAuth1, BaseOAuth2
 
 

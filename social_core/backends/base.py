@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING, Any, Literal, cast
 import requests
 from requests import Response
 
-from ..exceptions import AuthConnectionError, AuthUnknownError
-from ..utils import module_member, parse_qs, user_agent
+from social_core.exceptions import AuthConnectionError, AuthUnknownError
+from social_core.utils import module_member, parse_qs, user_agent
 
 if TYPE_CHECKING:
     from collections.abc import Mapping

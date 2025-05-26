@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import Mock
 
-from ..utils import (
+from social_core.utils import (
     build_absolute_uri,
     partial_pipeline_data,
     sanitize_redirect,
@@ -9,6 +9,7 @@ from ..utils import (
     user_is_active,
     user_is_authenticated,
 )
+
 from .models import TestPartial
 
 

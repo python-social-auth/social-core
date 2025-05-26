@@ -34,7 +34,8 @@ from jwt import DecodeError, ExpiredSignatureError, get_unverified_header
 from jwt import decode as jwt_decode
 from jwt.algorithms import RSAAlgorithm
 
-from ..exceptions import AuthException, AuthTokenError
+from social_core.exceptions import AuthException, AuthTokenError
+
 from .azuread import AzureADOAuth2
 
 
