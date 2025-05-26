@@ -30,7 +30,7 @@ def remove_user(strategy, user, *args, **kwargs):
 @partial
 def set_user_from_kwargs(strategy, *args, **kwargs):
     if strategy.session_get("attribute"):
-        kwargs["user"].id
+        assert kwargs["user"].id is not None
         return None
     return strategy.redirect(strategy.build_absolute_uri("/attribute"))
 
@@ -38,6 +38,6 @@ def set_user_from_kwargs(strategy, *args, **kwargs):
 @partial
 def set_user_from_args(strategy, user, *args, **kwargs):
     if strategy.session_get("attribute"):
-        user.id
+        assert user.id is not None
         return None
     return strategy.redirect(strategy.build_absolute_uri("/attribute"))
