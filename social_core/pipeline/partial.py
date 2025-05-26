@@ -36,7 +36,7 @@ def partial_step(save_to_session):
                     pipeline_index=pipeline_index,
                     current_partial=current_partial,
                     *args,
-                    **kwargs
+                    **kwargs,
                 )
                 or {}
             )

@@ -1,8 +1,12 @@
-from .oauth import OAuth2Test
-from .test_open_id_connect import OpenIdConnectTestMixin
+from social_core.backends.egi_checkin import EGICheckinOpenIdConnect
+
+from .oauth import BaseAuthUrlTestMixin
+from .open_id_connect import OpenIdConnectTest
 
 
-class EGICheckinOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
+class EGICheckinOpenIdConnectTest(
+    OpenIdConnectTest[EGICheckinOpenIdConnect], BaseAuthUrlTestMixin
+):
     backend_path = "social_core.backends.egi_checkin.EGICheckinOpenIdConnect"
     issuer = "https://aai.egi.eu/auth/realms/egi"
     openid_config_body = """

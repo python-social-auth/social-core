@@ -11,10 +11,10 @@ class BoxOAuth2(BaseOAuth2):
 
     name = "box"
     AUTHORIZATION_URL = "https://www.box.com/api/oauth2/authorize"
-    ACCESS_TOKEN_METHOD = "POST"
     ACCESS_TOKEN_URL = "https://www.box.com/api/oauth2/token"
     REVOKE_TOKEN_URL = "https://www.box.com/api/oauth2/revoke"
     SCOPE_SEPARATOR = ","
+    REDIRECT_STATE = False
     EXTRA_DATA = [
         ("refresh_token", "refresh_token", True),
         ("id", "id"),

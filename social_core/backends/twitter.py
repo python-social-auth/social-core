@@ -13,7 +13,6 @@ class TwitterOAuth(BaseOAuth1):
     name = "twitter"
     EXTRA_DATA = [("id", "id")]
     REQUEST_TOKEN_METHOD = "POST"
-    ACCESS_TOKEN_METHOD = "POST"
     AUTHORIZATION_URL = "https://api.twitter.com/oauth/authenticate"
     REQUEST_TOKEN_URL = "https://api.twitter.com/oauth/request_token"
     ACCESS_TOKEN_URL = "https://api.twitter.com/oauth/access_token"
@@ -22,8 +21,7 @@ class TwitterOAuth(BaseOAuth1):
     def process_error(self, data):
         if "denied" in data:
             raise AuthCanceled(self)
-        else:
-            super().process_error(data)
+        super().process_error(data)
 
     def get_user_details(self, response):
         """Return user details from Twitter account"""

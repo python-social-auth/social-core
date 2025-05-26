@@ -6,7 +6,7 @@ def social_details(backend, details, response, *args, **kwargs):
 
 
 def social_uid(backend, details, response, *args, **kwargs):
-    return {"uid": backend.get_user_id(details, response)}
+    return {"uid": str(backend.get_user_id(details, response))}
 
 
 def auth_allowed(backend, details, response, *args, **kwargs):
@@ -20,7 +20,7 @@ def social_user(backend, uid, user=None, *args, **kwargs):
     if social:
         if user and social.user != user:
             raise AuthAlreadyAssociated(backend)
-        elif not user:
+        if not user:
             user = social.user
     return {
         "social": social,
@@ -51,6 +51,7 @@ def associate_user(backend, uid, user=None, social=None, *args, **kwargs):
             return result
         else:
             return {"social": social, "user": social.user, "new_association": True}
+    return None
 
 
 def associate_by_email(backend, details, user=None, *args, **kwargs):
@@ -74,12 +75,12 @@ def associate_by_email(backend, details, user=None, *args, **kwargs):
         users = list(backend.strategy.storage.user.get_users_by_email(email))
         if len(users) == 0:
             return None
-        elif len(users) > 1:
+        if len(users) > 1:
             raise AuthException(
                 backend, "The given email address is associated with another account"
             )
-        else:
-            return {"user": users[0], "is_new": False}
+        return {"user": users[0], "is_new": False}
+    return None
 
 
 def load_extra_data(backend, details, response, uid, user, *args, **kwargs):

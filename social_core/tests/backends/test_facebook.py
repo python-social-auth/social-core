@@ -2,15 +2,13 @@ import json
 
 from ...backends.facebook import API_VERSION
 from ...exceptions import AuthCanceled, AuthUnknownError
-from .oauth import OAuth2Test
-from .test_open_id_connect import OpenIdConnectTestMixin
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
+from .open_id_connect import OpenIdConnectTest
 
 
-class FacebookOAuth2Test(OAuth2Test):
+class FacebookOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.facebook.FacebookOAuth2"
-    user_data_url = "https://graph.facebook.com/v{version}/me".format(
-        version=API_VERSION
-    )
+    user_data_url = f"https://graph.facebook.com/v{API_VERSION}/me"
     expected_username = "foobar"
     access_token_body = json.dumps({"access_token": "foobar", "token_type": "bearer"})
     user_data_body = json.dumps(
@@ -70,7 +68,7 @@ class FacebookOAuth2AuthCancelTest(FacebookOAuth2Test):
         self.assertIn("error", cm.exception.response.json())
 
 
-class FacebookLimitedLoginTest(OpenIdConnectTestMixin, OAuth2Test):
+class FacebookLimitedLoginTest(OpenIdConnectTest):
     backend_path = "social_core.backends.facebook_limited.FacebookLimitedLogin"
     issuer = "https://facebook.com"
     openid_config_body = """

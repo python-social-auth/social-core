@@ -3,6 +3,7 @@
 Weibo OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/weibo.html
 """
+
 from .oauth import BaseOAuth2
 
 
@@ -14,7 +15,6 @@ class WeiboOAuth2(BaseOAuth2):
     AUTHORIZATION_URL = "https://api.weibo.com/oauth2/authorize"
     REQUEST_TOKEN_URL = "https://api.weibo.com/oauth2/request_token"
     ACCESS_TOKEN_URL = "https://api.weibo.com/oauth2/access_token"
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
     EXTRA_DATA = [
         ("id", "id"),
@@ -54,7 +54,7 @@ class WeiboOAuth2(BaseOAuth2):
         """Return user data"""
         # If user id was not retrieved in the response, then get it directly
         # from weibo get_token_info endpoint
-        uid = response and response.get("uid") or self.get_uid(access_token)
+        uid = (response and response.get("uid")) or self.get_uid(access_token)
         user_data = self.get_json(
             "https://api.weibo.com/2/users/show.json",
             params={"access_token": access_token, "uid": uid},

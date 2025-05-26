@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class DisqusOAuth2Test(OAuth2Test):
+class DisqusOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.disqus.DisqusOAuth2"
     user_data_url = "https://disqus.com/api/3.0/users/details.json"
     expected_username = "foobar"
@@ -28,8 +28,7 @@ class DisqusOAuth2Test(OAuth2Test):
                 "reputation": 1.231755,
                 "avatar": {
                     "small": {
-                        "permalink": "https://disqus.com/api/users/avatars/"
-                        "foobar.jpg",
+                        "permalink": "https://disqus.com/api/users/avatars/foobar.jpg",
                         "cache": "https://securecdn.disqus.com/uploads/"
                         "users/453/4556/avatar32.jpg?1285535379",
                     },
@@ -38,8 +37,7 @@ class DisqusOAuth2Test(OAuth2Test):
                     "cache": "https://securecdn.disqus.com/uploads/users/453/"
                     "4556/avatar92.jpg?1285535379",
                     "large": {
-                        "permalink": "https://disqus.com/api/users/avatars/"
-                        "foobar.jpg",
+                        "permalink": "https://disqus.com/api/users/avatars/foobar.jpg",
                         "cache": "https://securecdn.disqus.com/uploads/users/"
                         "453/4556/avatar92.jpg?1285535379",
                     },

@@ -1,14 +1,14 @@
 import json
 
-from httpretty import HTTPretty
+import responses
 
-from .oauth import OAuth2Test
-from .test_open_id_connect import OpenIdConnectTestMixin
+from .oauth import BaseAuthUrlTestMixin
+from .open_id_connect import OpenIdConnectTest
 
 ROOT_URL = "https://vault.example.net:8200/"
 
 
-class VaultOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
+class VaultOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.vault.VaultOpenIdConnect"
     issuer = f"{ROOT_URL}v1/identity/oidc/provider/default"
     openid_config_body = json.dumps(
@@ -37,9 +37,9 @@ class VaultOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
 
     def pre_complete_callback(self, start_url):
         super().pre_complete_callback(start_url)
-        HTTPretty.register_uri(
-            "GET",
-            uri=self.backend.userinfo_url(),
+        responses.add(
+            responses.GET,
+            url=self.backend.userinfo_url(),
             status=200,
             body=json.dumps({"preferred_username": self.expected_username}),
             content_type="text/json",

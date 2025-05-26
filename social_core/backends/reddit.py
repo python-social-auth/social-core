@@ -14,7 +14,6 @@ class RedditOAuth2(BaseOAuth2):
     name = "reddit"
     AUTHORIZATION_URL = "https://ssl.reddit.com/api/v1/authorize"
     ACCESS_TOKEN_URL = "https://ssl.reddit.com/api/v1/access_token"
-    ACCESS_TOKEN_METHOD = "POST"
     REFRESH_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
     SCOPE_SEPARATOR = ","

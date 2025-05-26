@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class GrafanaOAuth2Test(OAuth2Test):
+class GrafanaOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.grafana.GrafanaOAuth2"
     user_data_url = "https://grafana.com/api/oauth2/user"
     access_token_body = json.dumps(

@@ -1,10 +1,10 @@
 import json
 from urllib.parse import urlencode
 
-from .oauth import OAuth1Test
+from .oauth import OAuth1AuthUrlTestMixin, OAuth1Test
 
 
-class XingOAuth1Test(OAuth1Test):
+class XingOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
     backend_path = "social_core.backends.xing.XingOAuth"
     user_data_url = "https://api.xing.com/v1/users/me.json"
     expected_username = "FooBar"

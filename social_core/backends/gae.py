@@ -18,6 +18,7 @@ class GoogleAppEngineAuth(BaseAuth):
         user = users.get_current_user()
         if user:
             return user.user_id()
+        return None
 
     def get_user_details(self, response):
         """Return user basic information (id and email only)."""
@@ -37,6 +38,6 @@ class GoogleAppEngineAuth(BaseAuth):
     def auth_complete(self, *args, **kwargs):
         """Completes login process, must return user instance."""
         if not users.get_current_user():
-            raise AuthException("Authentication error")
+            raise AuthException(self, "Authentication error")
         kwargs.update({"response": "", "backend": self})
         return self.strategy.authenticate(*args, **kwargs)

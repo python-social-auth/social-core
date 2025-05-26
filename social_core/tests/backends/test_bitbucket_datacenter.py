@@ -1,6 +1,8 @@
+# pyright: reportAttributeAccessIssue=false
+
 import json
 
-from httpretty import HTTPretty
+import responses
 
 from .oauth import OAuth2PkcePlainTest, OAuth2PkceS256Test
 
@@ -68,8 +70,8 @@ class BitbucketDataCenterOAuth2Mixin:
 
     def auth_handlers(self, start_url):
         target_url = super().auth_handlers(start_url)
-        HTTPretty.register_uri(
-            HTTPretty.GET,
+        responses.add(
+            responses.GET,
             self.application_properties_url,
             body=self.application_properties_body,
             adding_headers=self.application_properties_headers,
@@ -83,7 +85,7 @@ class BitbucketDataCenterOAuth2Mixin:
         self.assertEqual(len(user.social), 1)
 
         social = user.social[0]
-        self.assertEqual(social.uid, 1)
+        self.assertEqual(social.uid, "1")
         self.assertEqual(social.extra_data["first_name"], "Erlich")
         self.assertEqual(social.extra_data["last_name"], "Bachman")
         self.assertEqual(social.extra_data["email"], "erlich@bachmanity.com")
@@ -109,7 +111,7 @@ class BitbucketDataCenterOAuth2Mixin:
     def test_refresh_token(self):
         _, social = self.do_refresh_token()
 
-        self.assertEqual(social.uid, 1)
+        self.assertEqual(social.uid, "1")
         self.assertEqual(social.extra_data["first_name"], "Erlich")
         self.assertEqual(social.extra_data["last_name"], "Bachman")
         self.assertEqual(social.extra_data["email"], "erlich@bachmanity.com")

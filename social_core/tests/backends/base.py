@@ -1,8 +1,12 @@
+from __future__ import annotations
+
 import unittest
+from typing import Generic, TypeVar
 
 import requests
-from httpretty import HTTPretty
+import responses
 
+from ...backends.base import BaseAuth
 from ...backends.utils import load_backends, user_backends_data
 from ...utils import PARTIAL_TOKEN_SESSION_NAME, module_member, parse_qs
 from ..models import (
@@ -15,16 +19,19 @@ from ..models import (
 )
 from ..strategy import TestStrategy
 
+BackendT = TypeVar("BackendT", bound=BaseAuth)
 
-class BaseBackendTest(unittest.TestCase):
-    backend = None
-    backend_path = None
-    name = None
+
+class BaseBackendTest(unittest.TestCase, Generic[BackendT]):
+    backend: BackendT
+    backend_path: str = ""
+    name: str = ""
     complete_url = ""
     raw_complete_url = "/complete/{0}"
+    expected_username: str = ""
 
     def setUp(self):
-        HTTPretty.enable(allow_net_connect=False)
+        responses.start()
         Backend = module_member(self.backend_path)
         self.strategy = TestStrategy(TestStorage)
         self.backend = Backend(self.strategy, redirect_uri=self.complete_url)
@@ -47,19 +54,19 @@ class BaseBackendTest(unittest.TestCase):
         TestCode.reset_cache()
 
     def tearDown(self):
-        HTTPretty.disable()
-        HTTPretty.reset()
-        self.backend = None
+        del self.backend
         self.strategy = None
-        self.name = None
+        self.name = ""
         self.complete_url = None
         User.reset_cache()
         TestUserSocialAuth.reset_cache()
         TestNonce.reset_cache()
         TestAssociation.reset_cache()
         TestCode.reset_cache()
+        responses.stop()
+        responses.reset()
 
-    def extra_settings(self):
+    def extra_settings(self) -> dict[str, str]:
         return {}
 
     def do_start(self):
@@ -109,25 +116,25 @@ class BaseBackendTest(unittest.TestCase):
         )
 
     def pipeline_handlers(self, url):
-        HTTPretty.register_uri(HTTPretty.GET, url, status=200, body="foobar")
-        HTTPretty.register_uri(HTTPretty.POST, url, status=200)
+        responses.add(responses.GET, url, status=200, body="foobar")
+        responses.add(responses.POST, url, status=200)
 
     def pipeline_password_handling(self, url):
         password = "foobar"
-        requests.get(url)
-        requests.post(url, data={"password": password})
+        requests.get(url, timeout=1)
+        requests.post(url, data={"password": password}, timeout=1)
 
-        data = parse_qs(HTTPretty.last_request.body)
+        data = parse_qs(responses.calls[-1].request.body)
         self.assertEqual(data["password"], password)
         self.strategy.session_set("password", data["password"])
         return password
 
     def pipeline_slug_handling(self, url):
         slug = "foo-bar"
-        requests.get(url)
-        requests.post(url, data={"slug": slug})
+        requests.get(url, timeout=1)
+        requests.post(url, data={"slug": slug}, timeout=1)
 
-        data = parse_qs(HTTPretty.last_request.body)
+        data = parse_qs(responses.calls[-1].request.body)
         self.assertEqual(data["slug"], slug)
         self.strategy.session_set("slug", data["slug"])
         return slug

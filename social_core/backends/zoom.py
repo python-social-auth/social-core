@@ -14,21 +14,15 @@ class ZoomOAuth2(BaseOAuth2):
     ACCESS_TOKEN_URL = "https://zoom.us/oauth/token"
     USER_DETAILS_URL = "https://api.zoom.us/v2/users/me"
     DEFAULT_SCOPE = ["user:read"]
-    ACCESS_TOKEN_METHOD = "POST"
     REFRESH_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
     EXTRA_DATA = [("expires_in", "expires")]
 
     def user_data(self, access_token, *args, **kwargs):
-        response = self.get_json(
+        return self.get_json(
             self.USER_DETAILS_URL,
-            headers={
-                "Authorization": "Bearer {access_token}".format(
-                    access_token=access_token
-                )
-            },
+            headers={"Authorization": f"Bearer {access_token}"},
         )
-        return response
 
     def get_user_details(self, response):
         username = response.get("id", "")

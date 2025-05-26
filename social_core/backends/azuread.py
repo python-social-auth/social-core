@@ -1,10 +1,3 @@
-import time
-
-import jwt
-
-from ..exceptions import AuthTokenError
-from .oauth import BaseOAuth2
-
 """
 Copyright (c) 2015 Microsoft Open Technologies, Inc.
 
@@ -29,12 +22,17 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-"""
 
-"""
 Azure AD OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/azuread.html
 """
+
+import time
+
+import jwt
+
+from ..exceptions import AuthMissingParameter, AuthTokenError
+from .oauth import BaseOAuth2
 
 
 class AzureADOAuth2(BaseOAuth2):
@@ -43,7 +41,6 @@ class AzureADOAuth2(BaseOAuth2):
     BASE_URL = "https://{authority_host}/{tenant_id}"
     AUTHORIZATION_URL = "{base_url}/oauth2/authorize"
     ACCESS_TOKEN_URL = "{base_url}/oauth2/token"
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
     DEFAULT_SCOPE = ["openid", "profile", "user_impersonation", "email"]
     EXTRA_DATA = [
@@ -80,7 +77,10 @@ class AzureADOAuth2(BaseOAuth2):
 
     def get_user_id(self, details, response):
         """Use upn as unique id"""
-        return response.get("upn")
+        upn = response.get("upn")
+        if upn is None:
+            raise AuthMissingParameter(self, "upn")
+        return upn
 
     def get_user_details(self, response):
         """Return user details from Azure AD account"""
@@ -145,3 +145,14 @@ class AzureADOAuth2(BaseOAuth2):
             new_token_response = self.refresh_token(token=access_token)
             access_token = new_token_response["access_token"]
         return access_token
+
+
+class AzureADOAuth2V2(AzureADOAuth2):
+    """Version of the AzureADOAuth2 backend that uses the v2.0 API endpoints,
+    supporting users with personal Microsoft accounts, if the app settings
+    allow them."""
+
+    name = "azuread-oauth2-v2"
+    AUTHORIZATION_URL = "{base_url}/oauth2/v2.0/authorize"
+    ACCESS_TOKEN_URL = "{base_url}/oauth2/v2.0/token"
+    DEFAULT_SCOPE = ["User.Read profile openid email"]

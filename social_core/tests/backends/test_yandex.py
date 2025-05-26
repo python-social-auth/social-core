@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class YandexOAuth2Test(OAuth2Test):
+class YandexOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.yandex.YandexOAuth2"
     user_data_url = "https://login.yandex.ru/info"
     expected_username = "foobar"
@@ -26,7 +26,7 @@ class YandexOAuth2Test(OAuth2Test):
         self.do_partial_pipeline()
 
 
-class YandexOAuth2TestEmptyEmail(OAuth2Test):
+class YandexOAuth2TestEmptyEmail(OAuth2Test, BaseAuthUrlTestMixin):
     """
     When user log in to yandex service with social network account (e.g.
     vk.com), they `default_email` could be empty.

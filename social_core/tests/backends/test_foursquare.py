@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class FoursquareOAuth2Test(OAuth2Test):
+class FoursquareOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.foursquare.FoursquareOAuth2"
     user_data_url = "https://api.foursquare.com/v2/users/self"
     expected_username = "FooBar"
@@ -19,8 +19,7 @@ class FoursquareOAuth2Test(OAuth2Test):
             },
             "response": {
                 "user": {
-                    "photo": "https://is0.4sqi.net/userpix_thumbs/"
-                    "BYKIT01VN4T4BISN.jpg",
+                    "photo": "https://is0.4sqi.net/userpix_thumbs/BYKIT01VN4T4BISN.jpg",
                     "pings": False,
                     "homeCity": "Foo, Bar",
                     "id": "1010101",

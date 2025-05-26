@@ -1,12 +1,13 @@
+# pyright: reportAttributeAccessIssue=false
 import json
 
 import requests
-from httpretty import HTTPretty
+import responses
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class StripeOAuth2Test(OAuth2Test):
+class StripeOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.stripe.StripeOAuth2"
     account_data_url = "https://api.stripe.com/v1/account"
     access_token_body = json.dumps(
@@ -36,8 +37,8 @@ class StripeOAuth2Test(OAuth2Test):
 
     def setUp(self):
         super().setUp()
-        HTTPretty.register_uri(
-            HTTPretty.GET, self.account_data_url, status=200, body=self.user_data_body
+        responses.add(
+            responses.GET, self.account_data_url, status=200, body=self.user_data_body
         )
 
     def test_login(self):
@@ -47,6 +48,6 @@ class StripeOAuth2Test(OAuth2Test):
         self.do_partial_pipeline()
 
     def test_get_user_details(self):
-        response = requests.get(self.account_data_url)
+        response = requests.get(self.account_data_url, timeout=1)
         user_details = self.backend.get_user_details(response.json())
         self.assertEqual(user_details["email"], "foobar@yahoo.com")

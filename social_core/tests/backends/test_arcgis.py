@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class ArcGISOAuth2Test(OAuth2Test):
+class ArcGISOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     user_data_url = "https://www.arcgis.com/sharing/rest/community/self"
     backend_path = "social_core.backends.arcgis.ArcGISOAuth2"
     expected_username = "gis@rocks.com"

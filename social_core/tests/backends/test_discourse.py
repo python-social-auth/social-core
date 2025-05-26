@@ -1,10 +1,15 @@
-from urllib.parse import parse_qs, urlparse
+import hashlib
+import hmac
+from base64 import b64encode
+from urllib.parse import parse_qs, urlencode, urlparse
 
 import requests
-from httpretty import HTTPretty
+import responses
 
 from ...exceptions import AuthException
 from .base import BaseBackendTest
+
+TEST_KEY = "foo"
 
 
 class DiscourseTest(BaseBackendTest):
@@ -20,37 +25,34 @@ class DiscourseTest(BaseBackendTest):
         start = self.backend.start()
         start_url = start.url
         return_url = self.backend.redirect_uri
-        # NOTE: This is how we generated sso:
-        # sso = b64encode(urlencode({
-        #     'email': 'user@example.com',
-        #     'username': 'beepboop',
-        #     'nonce': '6YRje7xlXhpyeJ6qtvBeTUjHkXo1UCTQmCrzN8GXfja3AoAFk2' + \
-        #              'CieDRYgSqMYi4W',
-        #     'return_sso_url': 'http://myapp.com'
-        # }))
-        sso = (
-            "dXNlcm5hbWU9YmVlcGJvb3Ambm9uY2U9NllSamU3eGxYaHB5ZUo2cXR2QmV"
-            + "UVWpIa1hvMVVDVFFtQ3J6TjhHWGZqYTNBb0FGazJDaWVEUllnU3FNWWk0Vy"
-            + "ZlbWFpbD11c2VyJTQwZXhhbXBsZS5jb20mcmV0dXJuX3Nzb191cmw9aHR0c"
-            + "CUzQSUyRiUyRm15YXBwLmNvbQ=="
-        )
-        # NOTE: the signature was verified using the 'foo' key, like so:
-        # hmac.new('foo', sso, sha256).hexdigest()
-        sig = "04063f17c99a97b1a765c1e0d7bbb61afb8471d79a39ddcd6af5ba3c93eb10e1"
+        sso = b64encode(
+            urlencode(
+                {
+                    "email": "user@example.com",
+                    "username": "beepboop",
+                    "nonce": "6YRje7xlXhpyeJ6qtvBeTUjHkXo1UCTQmCrzN8GXfja3AoAFk2CieDRYgSqMYi4W",
+                    "return_sso_url": "http://myapp.com/",
+                }
+            ).encode()
+        ).decode()
+        sig = hmac.new(TEST_KEY.encode(), sso.encode(), hashlib.sha256).hexdigest()
         response_query_params = f"sso={sso}&sig={sig}"
 
-        response_url = f"{return_url}?{response_query_params}"
-        HTTPretty.register_uri(
-            HTTPretty.GET, start_url, status=301, location=response_url
+        response_url = f"{return_url}/?{response_query_params}"
+        responses.add(
+            responses.GET,
+            start_url,
+            status=301,
+            headers={"Location": response_url},
         )
-        HTTPretty.register_uri(
-            HTTPretty.GET,
+        responses.add(
+            responses.GET,
             return_url,
             status=200,
             content_type="text/html",
         )
 
-        response = requests.get(start_url)
+        response = requests.get(start_url, timeout=1)
         query_values = {
             k: v[0] for k, v in parse_qs(urlparse(response.url).query).items()
         }
@@ -64,7 +66,7 @@ class DiscourseTest(BaseBackendTest):
         """
         # pretend we've started with a URL like /login/discourse:
         self.strategy.set_settings(
-            {"SERVER_URL": "http://example.com", "SECRET": "foo"}
+            {"SERVER_URL": "http://example.com", "SECRET": TEST_KEY}
         )
         self.do_login()
 

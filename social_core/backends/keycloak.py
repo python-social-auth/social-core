@@ -97,7 +97,6 @@ class KeycloakOAuth2(BaseOAuth2):  # pylint: disable=abstract-method
 
     name = "keycloak"
     ID_KEY = "username"
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
 
     def authorization_url(self):
@@ -121,9 +120,7 @@ class KeycloakOAuth2(BaseOAuth2):  # pylint: disable=abstract-method
             ]
         )
 
-    def user_data(
-        self, access_token, *args, **kwargs
-    ):  # pylint: disable=unused-argument
+    def user_data(self, access_token, *args, **kwargs):  # pylint: disable=unused-argument
         """Decode user data from the access_token
 
         You can specialize this method to e.g. get information
@@ -136,6 +133,7 @@ class KeycloakOAuth2(BaseOAuth2):  # pylint: disable=abstract-method
             key=self.public_key(),
             algorithms=self.algorithm(),
             audience=self.audience(),
+            leeway=self.setting("JWT_LEEWAY", default=0),
         )
 
     def get_user_details(self, response):

@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class MapMyFitnessOAuth2Test(OAuth2Test):
+class MapMyFitnessOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.mapmyfitness.MapMyFitnessOAuth2"
     user_data_url = "https://oauth2-api.mapmyapi.com/v7.0/user/self/"
     expected_username = "FredFlinstone"
@@ -36,12 +36,12 @@ class MapMyFitnessOAuth2Test(OAuth2Test):
             "_links": {
                 "stats": [
                     {
-                        "href": "/v7.0/user_stats/112233/?" "aggregate_by_period=month",
+                        "href": "/v7.0/user_stats/112233/?aggregate_by_period=month",
                         "id": "112233",
                         "name": "month",
                     },
                     {
-                        "href": "/v7.0/user_stats/112233/?" "aggregate_by_period=year",
+                        "href": "/v7.0/user_stats/112233/?aggregate_by_period=year",
                         "id": "112233",
                         "name": "year",
                     },
@@ -51,13 +51,12 @@ class MapMyFitnessOAuth2Test(OAuth2Test):
                         "name": "day",
                     },
                     {
-                        "href": "/v7.0/user_stats/112233/?" "aggregate_by_period=week",
+                        "href": "/v7.0/user_stats/112233/?aggregate_by_period=week",
                         "id": "112233",
                         "name": "week",
                     },
                     {
-                        "href": "/v7.0/user_stats/112233/?"
-                        "aggregate_by_period=lifetime",
+                        "href": "/v7.0/user_stats/112233/?aggregate_by_period=lifetime",
                         "id": "112233",
                         "name": "lifetime",
                     },
@@ -88,7 +87,7 @@ class MapMyFitnessOAuth2Test(OAuth2Test):
                 ],
                 "documentation": [{"href": "https://www.mapmyapi.com/docs/User"}],
                 "workouts": [
-                    {"href": "/v7.0/workout/?user=112233&" "order_by=-start_datetime"}
+                    {"href": "/v7.0/workout/?user=112233&order_by=-start_datetime"}
                 ],
                 "deactivation": [{"href": "/v7.0/user_deactivation/"}],
                 "self": [{"href": "/v7.0/user/112233/", "id": "112233"}],

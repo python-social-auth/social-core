@@ -16,7 +16,6 @@ class MailruOAuth2(BaseOAuth2):
     ID_KEY = "uid"
     AUTHORIZATION_URL = "https://connect.mail.ru/oauth/authorize"
     ACCESS_TOKEN_URL = "https://connect.mail.ru/oauth/token"
-    ACCESS_TOKEN_METHOD = "POST"
     EXTRA_DATA = [("refresh_token", "refresh_token"), ("expires_in", "expires")]
 
     def get_user_details(self, response):
@@ -42,8 +41,9 @@ class MailruOAuth2(BaseOAuth2):
             "app_id": key,
             "secure": "1",
         }
-        param_list = sorted(list(item + "=" + data[item] for item in data))
-        data["sig"] = md5(("".join(param_list) + secret).encode("utf-8")).hexdigest()
+        param_list = sorted(f"{item}={value}" for item, value in data.values())
+        # Usage of md5 is mandated by the API: https://api.mail.ru/docs/guides/restapi/#client
+        data["sig"] = md5(("".join(param_list) + secret).encode("utf-8")).hexdigest()  # noqa: S324
         return self.get_json("http://www.appsmail.ru/platform/api", params=data)[0]
 
 
@@ -52,7 +52,6 @@ class MRGOAuth2(BaseOAuth2):
     ID_KEY = "email"
     AUTHORIZATION_URL = "https://oauth.mail.ru/login"
     ACCESS_TOKEN_URL = "https://oauth.mail.ru/token"
-    ACCESS_TOKEN_METHOD = "POST"
     EXTRA_DATA = [("refresh_token", "refresh_token"), ("expires_in", "expires")]
     REDIRECT_STATE = False
 

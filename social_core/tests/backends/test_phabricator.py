@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class PhabricatorOAuth2Test(OAuth2Test):
+class PhabricatorOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.phabricator.PhabricatorOAuth2"
     user_data_url = "https://secure.phabricator.com/api/user.whoami"
     expected_username = "user"
@@ -37,7 +37,7 @@ class PhabricatorOAuth2Test(OAuth2Test):
         self.do_partial_pipeline()
 
 
-class PhabricatorCustomDomainOAuth2Test(OAuth2Test):
+class PhabricatorCustomDomainOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.phabricator.PhabricatorOAuth2"
     user_data_url = "https://example.com/api/user.whoami"
     expected_username = "user"

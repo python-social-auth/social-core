@@ -1,4 +1,10 @@
+# pyright: reportAttributeAccessIssue=false
+from __future__ import annotations
+
 import base64
+from typing import TypeVar
+
+from typing_extensions import Self
 
 from ..storage import (
     AssociationMixin,
@@ -9,6 +15,8 @@ from ..storage import (
     UserMixin,
 )
 
+ModelT = TypeVar("ModelT", bound="BaseModel")
+
 
 class BaseModel:
     @classmethod
@@ -17,7 +25,7 @@ class BaseModel:
         return cls.NEXT_ID - 1
 
     @classmethod
-    def get(cls, key):
+    def get(cls, key) -> Self | None:
         return cls.cache.get(key)
 
     @classmethod
@@ -57,6 +65,8 @@ class User(BaseModel):
 
 
 class TestUserSocialAuth(UserMixin, BaseModel):
+    __test__ = False
+
     NEXT_ID = 1
     cache = {}
     cache_by_uid = {}
@@ -113,15 +123,17 @@ class TestUserSocialAuth(UserMixin, BaseModel):
 
     @classmethod
     def get_user(cls, pk):
-        for username, user in User.cache.items():
+        for user in User.cache.values():
             if user.id == pk:
                 return user
+        return None
 
     @classmethod
     def get_social_auth(cls, provider, uid):
         social_user = cls.cache_by_uid.get(uid)
         if social_user and social_user.provider == provider:
             return social_user
+        return None
 
     @classmethod
     def get_social_auth_for_user(cls, user, provider=None, id=None):
@@ -141,6 +153,8 @@ class TestUserSocialAuth(UserMixin, BaseModel):
 
 
 class TestNonce(NonceMixin, BaseModel):
+    __test__ = False
+
     NEXT_ID = 1
     cache = {}
 
@@ -157,7 +171,9 @@ class TestNonce(NonceMixin, BaseModel):
         return nonce
 
     @classmethod
-    def get(cls, server_url, salt):
+    def get(  # type: ignore[override]
+        cls, server_url, salt
+    ):
         return TestNonce.cache[server_url]
 
     @classmethod
@@ -167,6 +183,8 @@ class TestNonce(NonceMixin, BaseModel):
 
 
 class TestAssociation(AssociationMixin, BaseModel):
+    __test__ = False
+
     NEXT_ID = 1
     cache = {}
 
@@ -190,7 +208,11 @@ class TestAssociation(AssociationMixin, BaseModel):
         assoc.save()
 
     @classmethod
-    def get(cls, server_url=None, handle=None):
+    def get(  # type: ignore[override]
+        cls: type[TestAssociation],
+        server_url: str | None = None,
+        handle: str | None = None,
+    ) -> list[AssociationMixin]:
         result = []
         for assoc in TestAssociation.cache.values():
             if server_url and assoc.server_url != server_url:
@@ -208,6 +230,8 @@ class TestAssociation(AssociationMixin, BaseModel):
 
 
 class TestCode(CodeMixin, BaseModel):
+    __test__ = False
+
     NEXT_ID = 1
     cache = {}
 
@@ -216,9 +240,12 @@ class TestCode(CodeMixin, BaseModel):
         for c in cls.cache.values():
             if c.code == code:
                 return c
+        return None
 
 
 class TestPartial(PartialMixin, BaseModel):
+    __test__ = False
+
     NEXT_ID = 1
     cache = {}
 
@@ -235,6 +262,8 @@ class TestPartial(PartialMixin, BaseModel):
 
 
 class TestStorage(BaseStorage):
+    __test__ = False
+
     user = TestUserSocialAuth
     nonce = TestNonce
     association = TestAssociation
@@ -242,5 +271,5 @@ class TestStorage(BaseStorage):
     partial = TestPartial
 
     @classmethod
-    def is_integrity_error(cls, exception):
+    def is_integrity_error(cls, exception) -> bool | None:
         pass

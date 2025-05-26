@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class KakaoOAuth2Test(OAuth2Test):
+class KakaoOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.kakao.KakaoOAuth2"
     user_data_url = "https://kapi.kakao.com/v2/user/me"
     expected_username = "foobar"

@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class CourseraOAuth2Test(OAuth2Test):
+class CourseraOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.coursera.CourseraOAuth2"
     user_data_url = "https://api.coursera.org/api/externalBasicProfiles.v1?q=me"
     expected_username = "560e7ed2076e0d589e88bd74b6aad4b7"

@@ -11,7 +11,6 @@ class BungieOAuth2(BaseOAuth2):
     AUTHORIZATION_URL = "https://www.bungie.net/en/oauth/authorize/"
     ACCESS_TOKEN_URL = "https://www.bungie.net/platform/app/oauth/token/"
     REFRESH_TOKEN_URL = "https://www.bungie.net/platform/app/oauth/token/"
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
     EXTRA_DATA = [
         ("refresh_token", "refresh_token", True),
@@ -23,7 +22,6 @@ class BungieOAuth2(BaseOAuth2):
 
     def auth_html(self):
         """Abstract Method Inclusion"""
-        pass
 
     def auth_headers(self):
         """Adds X-API-KEY and Origin"""

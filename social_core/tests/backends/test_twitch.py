@@ -1,10 +1,10 @@
 import json
 
-from .oauth import OAuth2Test
-from .test_open_id_connect import OpenIdConnectTestMixin
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
+from .open_id_connect import OpenIdConnectTest
 
 
-class TwitchOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
+class TwitchOpenIdConnectTest(OpenIdConnectTest):
     backend_path = "social_core.backends.twitch.TwitchOpenIdConnect"
     user_data_url = "https://id.twitch.tv/oauth2/userinfo"
     issuer = "https://id.twitch.tv/oauth2"
@@ -53,7 +53,7 @@ class TwitchOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
     )
 
 
-class TwitchOAuth2Test(OAuth2Test):
+class TwitchOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.twitch.TwitchOAuth2"
     user_data_url = "https://api.twitch.tv/helix/users"
     expected_username = "test_user1"

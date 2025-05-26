@@ -19,7 +19,6 @@ class QiitaOAuth2(BaseOAuth2):
 
     AUTHORIZATION_URL = "https://qiita.com/api/v2/oauth/authorize"
     ACCESS_TOKEN_URL = "https://qiita.com/api/v2/access_tokens"
-    ACCESS_TOKEN_METHOD = "POST"
     SCOPE_SEPARATOR = " "
     REDIRECT_STATE = True
     EXTRA_DATA = [
@@ -43,7 +42,9 @@ class QiitaOAuth2(BaseOAuth2):
         ("image_monthly_upload_remaining", "image_monthly_upload_remaining"),
     ]
 
-    def auth_complete_params(self, state=None):
+    # TODO: I am pretty sure this method returns the wrong type; it should
+    # return a dict
+    def auth_complete_params(self, state=None):  # type: ignore[reportIncompatibleMethodOverride]
         data = super().auth_complete_params(state)
         if "grant_type" in data:
             del data["grant_type"]
@@ -83,5 +84,4 @@ class QiitaOAuth2(BaseOAuth2):
 
         if user_id is not None:
             return str(user_id)
-        else:
-            raise AuthException("failed to get user id")
+        raise AuthException(self, "failed to get user id")

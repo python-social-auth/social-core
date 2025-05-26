@@ -11,7 +11,6 @@ class DigitalOceanOAuth(BaseOAuth2):
     name = "digitalocean"
     AUTHORIZATION_URL = "https://cloud.digitalocean.com/v1/oauth/authorize"
     ACCESS_TOKEN_URL = "https://cloud.digitalocean.com/v1/oauth/token"
-    ACCESS_TOKEN_METHOD = "POST"
     SCOPE_SEPARATOR = " "
     EXTRA_DATA = [("expires_in", "expires_in")]
 
@@ -36,7 +35,7 @@ class DigitalOceanOAuth(BaseOAuth2):
     def user_data(self, token, *args, **kwargs):
         """Loads user data from service"""
         url = "https://api.digitalocean.com/v2/account"
-        auth_header = {"Authorization": "Bearer %s" % token}
+        auth_header = {"Authorization": f"Bearer {token}"}
         try:
             return self.get_json(url, headers=auth_header)
         except ValueError:

@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class BoxOAuth2Test(OAuth2Test):
+class BoxOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.box.BoxOAuth2"
     user_data_url = "https://api.box.com/2.0/users/me"
     expected_username = "sean+awesome@box.com"

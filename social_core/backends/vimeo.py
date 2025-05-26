@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import cast
+
 from .oauth import BaseOAuth1, BaseOAuth2
 
 
@@ -42,18 +46,17 @@ class VimeoOAuth2(BaseOAuth2):
     AUTHORIZATION_URL = "https://api.vimeo.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://api.vimeo.com/oauth/access_token"
     REFRESH_TOKEN_URL = "https://api.vimeo.com/oauth/request_token"
-    ACCESS_TOKEN_METHOD = "POST"
     SCOPE_SEPARATOR = ","
     API_ACCEPT_HEADER = {"Accept": "application/vnd.vimeo.*+json;version=3.0"}
 
-    def get_redirect_uri(self, state=None):
+    def get_redirect_uri(self, state: str | None = None) -> str:
         """
         Build redirect with redirect_state parameter.
 
         @Vimeo API 3 requires exact redirect uri without additional
         additional state parameter included
         """
-        return self.redirect_uri
+        return cast("str", self.redirect_uri)
 
     def get_user_id(self, details, response):
         """Return user id"""

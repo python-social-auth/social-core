@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class ClefOAuth2Test(OAuth2Test):
+class ClefOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.clef.ClefOAuth2"
     user_data_url = "https://clef.io/api/v1/info"
     expected_username = "test"

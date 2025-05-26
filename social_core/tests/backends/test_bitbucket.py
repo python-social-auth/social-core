@@ -1,13 +1,23 @@
 import json
-from urllib.parse import urlencode
 
-from httpretty import HTTPretty
+import responses
 
 from ...exceptions import AuthForbidden
-from .oauth import OAuth1Test, OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class BitbucketOAuthMixin:
+class BitbucketOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
+    backend_path = "social_core.backends.bitbucket.BitbucketOAuth2"
+
+    access_token_body = json.dumps(
+        {
+            "access_token": "foobar_access",
+            "scopes": "foo_scope",
+            "expires_in": 3600,
+            "refresh_token": "foobar_refresh",
+            "token_type": "bearer",
+        }
+    )
     user_data_url = "https://api.bitbucket.org/2.0/user"
     expected_username = "foobar"
     bb_api_user_emails = "https://api.bitbucket.org/2.0/user/emails"
@@ -71,88 +81,15 @@ class BitbucketOAuthMixin:
         }
     )
 
-
-class BitbucketOAuth1Test(BitbucketOAuthMixin, OAuth1Test):
-    backend_path = "social_core.backends.bitbucket.BitbucketOAuth"
-
-    request_token_body = urlencode(
-        {
-            "oauth_token_secret": "foobar-secret",
-            "oauth_token": "foobar",
-            "oauth_callback_confirmed": "true",
-        }
-    )
-
-    access_token_body = json.dumps({"access_token": "foobar", "token_type": "bearer"})
-
     def test_login(self):
-        HTTPretty.register_uri(
-            HTTPretty.GET, self.bb_api_user_emails, status=200, body=self.emails_body
+        responses.add(
+            responses.GET, self.bb_api_user_emails, status=200, body=self.emails_body
         )
         self.do_login()
 
     def test_partial_pipeline(self):
-        HTTPretty.register_uri(
-            HTTPretty.GET, self.bb_api_user_emails, status=200, body=self.emails_body
-        )
-        self.do_partial_pipeline()
-
-
-class BitbucketOAuth1FailTest(BitbucketOAuth1Test):
-    emails_body = json.dumps(
-        {
-            "page": 1,
-            "pagelen": 10,
-            "size": 1,
-            "values": [
-                {
-                    "email": "foo@bar.com",
-                    "is_confirmed": False,
-                    "is_primary": True,
-                    "links": {
-                        "self": {
-                            "href": "https://api.bitbucket.org/2.0/user/emails/foo@bar.com"
-                        }
-                    },
-                    "type": "email",
-                }
-            ],
-        }
-    )
-
-    def test_login(self):
-        self.strategy.set_settings({"SOCIAL_AUTH_BITBUCKET_VERIFIED_EMAILS_ONLY": True})
-        with self.assertRaises(AuthForbidden):
-            super().test_login()
-
-    def test_partial_pipeline(self):
-        self.strategy.set_settings({"SOCIAL_AUTH_BITBUCKET_VERIFIED_EMAILS_ONLY": True})
-        with self.assertRaises(AuthForbidden):
-            super().test_partial_pipeline()
-
-
-class BitbucketOAuth2Test(BitbucketOAuthMixin, OAuth2Test):
-    backend_path = "social_core.backends.bitbucket.BitbucketOAuth2"
-
-    access_token_body = json.dumps(
-        {
-            "access_token": "foobar_access",
-            "scopes": "foo_scope",
-            "expires_in": 3600,
-            "refresh_token": "foobar_refresh",
-            "token_type": "bearer",
-        }
-    )
-
-    def test_login(self):
-        HTTPretty.register_uri(
-            HTTPretty.GET, self.bb_api_user_emails, status=200, body=self.emails_body
-        )
-        self.do_login()
-
-    def test_partial_pipeline(self):
-        HTTPretty.register_uri(
-            HTTPretty.GET, self.bb_api_user_emails, status=200, body=self.emails_body
+        responses.add(
+            responses.GET, self.bb_api_user_emails, status=200, body=self.emails_body
         )
         self.do_partial_pipeline()
 
