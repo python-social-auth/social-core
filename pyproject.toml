@@ -149,8 +149,6 @@ extend-safe-fixes = [
   "UP"
 ]
 ignore = [
-  "A001",  # TODO: Variable is shadowing a Python builtin
-  "A002",  # TODO: Function argument is shadowing a Python builtin
   "ANN",  # TODO: Missing type annotations
   "ARG001",  # TODO: Unused function argument (mostly for API compatibility)
   "ARG002",  # TODO: Unused method argument (mostly for API compatibility)

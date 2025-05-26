@@ -177,7 +177,7 @@ class UserMixin:
         raise NotImplementedError("Implement in subclass")
 
     @classmethod
-    def get_social_auth_for_user(cls, user, provider=None, id=None):
+    def get_social_auth_for_user(cls, user, provider=None, id=None):  # noqa: A002
         """Return all the UserSocialAuth instances for given user"""
         raise NotImplementedError("Implement in subclass")
 
