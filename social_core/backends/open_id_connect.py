@@ -61,7 +61,7 @@ class OpenIdConnectAuth(BaseOAuth2):
     USERNAME_KEY = "preferred_username"
     JWT_ALGORITHMS = ["RS256"]
     JWT_DECODE_OPTIONS: dict[str, Any] = {}
-    JWT_LEEWAY : float = 1.0  # seconds
+    JWT_LEEWAY: float = 1.0  # seconds
     # When these options are unspecified, server will choose via openid autoconfiguration
     ID_TOKEN_ISSUER = ""
     ACCESS_TOKEN_URL = ""
