@@ -1,52 +1,50 @@
 name: Release
 
 on:
-  release:
-    types: [published]
+  push:
+  pull_request:
+
+permissions:
+  contents: read
 
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     steps:
-    - uses: actions/checkout@v2
-
-    - name: Set up Python
-      uses: actions/setup-python@v2
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       with:
-        python-version: '3.9'
+        persist-credentials: false
+    - uses: astral-sh/setup-uv@f0ec1fc3b38f5e7cd731bb6ce540c5af426746bb # v6.1.0
 
-    - name: Install Python dependencies
+    - run: uv build
+
+    - name: Verify wheel install
       run: |
-        python -m pip install --upgrade pip
-        pip install wheel twine
+        uv venv .venv-install-whl
+        source .venv-install-whl/bin/activate
+        uv pip install dist/*.whl
 
-    - name: Verify tag is documented
+    - name: Verify source install
       run: |
-        CURRENT_TAG=${GITHUB_REF#refs/tags/}
-        CURRENT_VERSION=$(head -n1 social_core/__init__.py | awk '{print $3}' | sed 's/[^0-9\.]//g')
-        if [ "${CURRENT_VERSION}" != "${CURRENT_TAG}" ]; then
-            echo "========================================================================"
-            echo "Error: tag '${CURRENT_TAG}' and version '${CURRENT_VERSION}' don't match"
-            echo "========================================================================"
-            exit 1;
-        fi
+        uv venv .venv-install-tar
+        source .venv-install-tar/bin/activate
+        uv pip install dist/*.tar.gz
 
-    - name: Build dist
-      run: python setup.py sdist bdist_wheel --python-tag py3
-
-    - name: Archive dist
-      uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')
       with:
         name: dist
         path: |
           dist/*.tar.gz
           dist/*.whl
 
-    - name: Verify long description rendering
-      run: twine check dist/*
+    - run: uvx twine check dist/*
+    - run: uvx pydistcheck --inspect dist/*
+    - run: uvx pyroma dist/*.tar.gz
+    - run: uvx check-wheel-contents dist/*.whl
+    - run: uvx check-manifest -v
 
-    - name: Publish
-      env:
-        PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
-      run: |
-        twine upload --non-interactive -u __token__ -p "${PYPI_API_TOKEN}" dist/*
+    - if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')
+      run: uv publish --trusted-publishing always

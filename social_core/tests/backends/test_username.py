@@ -2,9 +2,9 @@ from .legacy import BaseLegacyTest
 
 
 class UsernameTest(BaseLegacyTest):
-    backend_path = 'social_core.backends.username.UsernameAuth'
-    expected_username = 'foobar'
-    response_body = 'username=foobar'
+    backend_path = "social_core.backends.username.UsernameAuth"
+    expected_username = "foobar"
+    response_body = "username=foobar"
     form = """
     <form method="post" action="{0}">
         <input name="username" type="text">
@@ -12,8 +12,8 @@ class UsernameTest(BaseLegacyTest):
     </form>
     """
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()

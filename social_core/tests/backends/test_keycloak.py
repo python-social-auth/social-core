@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import json
 import time
 
 import jwt
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 _PRIVATE_KEY_HEADERLESS = """
 MIIEowIBAAKCAQEAvyo2hx1L3ALHeUd/6xk/lIhTyZ/HJZ+Sss/ge6T6gPdES4Dw
@@ -33,13 +35,11 @@ mSNns0AssDwr4TheET7klb7AvbBKrNSP/Tz9AzkwMz148T2ffkPFMZRuvRT+eQ5Z
 ey4gIBKESJF6X9fefiawCrI3+PC7x9x0ngP9R4t/OzDWVAYn9gmd
 """.strip()
 
-_PRIVATE_KEY = """
+_PRIVATE_KEY = f"""
 -----BEGIN RSA PRIVATE KEY-----
 {_PRIVATE_KEY_HEADERLESS}
 -----END RSA PRIVATE KEY-----
-""".format(
-    _PRIVATE_KEY_HEADERLESS=_PRIVATE_KEY_HEADERLESS
-)
+"""
 
 _PUBLIC_KEY_HEADERLESS = """
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvyo2hx1L3ALHeUd/6xk/
@@ -51,70 +51,82 @@ hXI5SIHB1lS88SJ9/+E/flJJPD2NNzv2z3HAVuTUOYi48fnXFHpJLGv+mGLNtE77
 hwIDAQAB
 """.strip()
 
-_PUBLIC_KEY = """
+_PUBLIC_KEY = f"""
 -----BEGIN PUBLIC KEY-----
 {_PUBLIC_KEY_HEADERLESS}
 -----END PUBLIC KEY-----
-""".format(
-    _PUBLIC_KEY_HEADERLESS=_PUBLIC_KEY_HEADERLESS
+"""
+
+_KEY = "example"
+_SECRET = "1234abcd-1234-abcd-1234-abcd1234adcd"
+
+_AUTHORIZATION_URL = (
+    "https://sso.example.com/auth/realms/example/protocol/openid-connect/auth"
+)
+_ACCESS_TOKEN_URL = (
+    "https://sso.example.com/auth/realms/example/protocol/openid-connect/token"
 )
 
-_KEY = 'example'
-_SECRET = '1234abcd-1234-abcd-1234-abcd1234adcd'
-
-_AUTHORIZATION_URL = 'https://sso.example.com/auth/realms/example/protocol/openid-connect/auth'
-_ACCESS_TOKEN_URL = 'https://sso.example.com/auth/realms/example/protocol/openid-connect/token'
-
-_ALGORITHM = 'RS256'
+_ALGORITHM = "RS256"
 _AUTH_TIME = int(time.time())
 _PAYLOAD = {
-    'preferred_username': 'john.doe',
-    'email': 'john.doe@example.com',
-    'name': 'John Doe',
-    'given_name': 'John',
-    'family_name': 'Doe',
-
-    'iss': 'https://sso.example.com',
-    'sub': 'john.doe',
-    'aud': _KEY,
-    'exp': _AUTH_TIME + 3600,
-    'iat': _AUTH_TIME,
+    "preferred_username": "john.doe",
+    "email": "john.doe@example.com",
+    "name": "John Doe",
+    "given_name": "John",
+    "family_name": "Doe",
+    "iss": "https://sso.example.com",
+    "sub": "john.doe",
+    "aud": _KEY,
+    "exp": _AUTH_TIME + 3600,
+    "iat": _AUTH_TIME,
 }
 
 
-def _encode(payload, key=_PRIVATE_KEY, algorithm=_ALGORITHM):
+def _encode(
+    payload: dict[str, str | int], key: str = _PRIVATE_KEY, algorithm: str = _ALGORITHM
+) -> str:
     return jwt.encode(payload, key=key, algorithm=algorithm)
 
 
-def _decode(token, key=_PUBLIC_KEY, algorithms=[_ALGORITHM], audience=_KEY):
+def _decode(
+    token: str,
+    key: str = _PUBLIC_KEY,
+    algorithms: list[str] | None = None,
+    audience: str = _KEY,
+) -> dict[str, str | int]:
+    if algorithms is None:
+        algorithms = [_ALGORITHM]
     return jwt.decode(token, key=key, algorithms=algorithms, audience=audience)
 
 
-class KeycloakOAuth2Test(OAuth2Test):
-    backend_path = 'social_core.backends.keycloak.KeycloakOAuth2'
-    expected_username = 'john.doe'
-    access_token_body = json.dumps({
-        'token_type': 'Bearer',
-        'id_token': _encode(_PAYLOAD),
-        'access_token': _encode(_PAYLOAD),
-    })
+class KeycloakOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
+    backend_path = "social_core.backends.keycloak.KeycloakOAuth2"
+    expected_username = "john.doe"
+    access_token_body = json.dumps(
+        {
+            "token_type": "Bearer",
+            "id_token": _encode(_PAYLOAD),
+            "access_token": _encode(_PAYLOAD),
+        }
+    )
 
     def extra_settings(self):
         return {
-            'SOCIAL_AUTH_KEYCLOAK_KEY': _KEY,
-            'SOCIAL_AUTH_KEYCLOAK_SECRET': _SECRET,
-            'SOCIAL_AUTH_KEYCLOAK_PUBLIC_KEY': _PUBLIC_KEY_HEADERLESS,
-            'SOCIAL_AUTH_KEYCLOAK_ALGORITHM': _ALGORITHM,
-            'SOCIAL_AUTH_KEYCLOAK_AUTHORIZATION_URL': _AUTHORIZATION_URL,
-            'SOCIAL_AUTH_KEYCLOAK_ACCESS_TOKEN_URL': _ACCESS_TOKEN_URL,
+            "SOCIAL_AUTH_KEYCLOAK_KEY": _KEY,
+            "SOCIAL_AUTH_KEYCLOAK_SECRET": _SECRET,
+            "SOCIAL_AUTH_KEYCLOAK_PUBLIC_KEY": _PUBLIC_KEY_HEADERLESS,
+            "SOCIAL_AUTH_KEYCLOAK_ALGORITHM": _ALGORITHM,
+            "SOCIAL_AUTH_KEYCLOAK_AUTHORIZATION_URL": _AUTHORIZATION_URL,
+            "SOCIAL_AUTH_KEYCLOAK_ACCESS_TOKEN_URL": _ACCESS_TOKEN_URL,
         }
 
-    def test_encode_decode(self):
+    def test_encode_decode(self) -> None:
         token = _encode(_PAYLOAD)
         self.assertEqual(_PAYLOAD, _decode(token))
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()

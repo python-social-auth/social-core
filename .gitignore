@@ -25,6 +25,7 @@ pip-log.txt
 .coverage
 .tox
 nosetests.xml
+uv.lock
 
 # Translations
 *.mo
@@ -52,5 +53,5 @@ changelog.sh
 
 .pytest_cache/
 
-files/local.env
 .env
+.venv*

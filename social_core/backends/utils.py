@@ -1,11 +1,9 @@
-from collections import OrderedDict
-
 from ..exceptions import MissingBackend
 from ..utils import module_member, user_is_authenticated
 from .base import BaseAuth
 
 # Cache for discovered backends.
-BACKENDSCACHE = OrderedDict()
+BACKENDSCACHE = {}
 
 
 def load_backends(backends, force_load=False):
@@ -26,9 +24,9 @@ def load_backends(backends, force_load=False):
     A force_load boolean argument is also provided so that get_backend
     below can retry a requested backend that may not yet be discovered.
     """
-    global BACKENDSCACHE
+    global BACKENDSCACHE  # noqa: PLW0603
     if force_load:
-        BACKENDSCACHE = OrderedDict()
+        BACKENDSCACHE = {}
     if not BACKENDSCACHE:
         for auth_backend in backends:
             backend = module_member(auth_backend)
@@ -69,13 +67,10 @@ def user_backends_data(user, backends, storage):
     no difference between 'not_associated' and 'backends'.
     """
     available = list(load_backends(backends).keys())
-    values = {'associated': [],
-              'not_associated': available,
-              'backends': available}
+    values = {"associated": [], "not_associated": available, "backends": available}
     if user_is_authenticated(user):
         associated = storage.user.get_social_auth_for_user(user)
-        not_associated = list(set(available) -
-                              {assoc.provider for assoc in associated})
-        values['associated'] = associated
-        values['not_associated'] = not_associated
+        not_associated = list(set(available) - {assoc.provider for assoc in associated})
+        values["associated"] = associated
+        values["not_associated"] = not_associated
     return values

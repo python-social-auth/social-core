@@ -2,14 +2,14 @@ from ..exceptions import AuthAlreadyAssociated, AuthException, AuthForbidden
 
 
 def social_details(backend, details, response, *args, **kwargs):
-    return {'details': dict(backend.get_user_details(response), **details)}
+    return {"details": dict(backend.get_user_details(response), **details)}
 
 
 def social_uid(backend, details, response, *args, **kwargs):
-    return {'uid': backend.get_user_id(details, response)}
+    return {"uid": str(backend.get_user_id(details, response))}
 
 
-def auth_allowed(backend, details, response, *args, **kwargs):
+def auth_allowed(backend, details, response, *args, **kwargs) -> None:
     if not backend.auth_allowed(response, details):
         raise AuthForbidden(backend)
 
@@ -20,12 +20,14 @@ def social_user(backend, uid, user=None, *args, **kwargs):
     if social:
         if user and social.user != user:
             raise AuthAlreadyAssociated(backend)
-        elif not user:
+        if not user:
             user = social.user
-    return {'social': social,
-            'user': user,
-            'is_new': user is None,
-            'new_association': social is None}
+    return {
+        "social": social,
+        "user": user,
+        "is_new": user is None,
+        "new_association": social is None,
+    }
 
 
 def associate_user(backend, uid, user=None, social=None, *args, **kwargs):
@@ -44,13 +46,12 @@ def associate_user(backend, uid, user=None, social=None, *args, **kwargs):
             # Check if matching social auth really exists. In case it does
             # not, the integrity error probably had different cause than
             # existing entry and should not be hidden.
-            if not result['social']:
+            if not result["social"]:
                 raise
             return result
         else:
-            return {'social': social,
-                    'user': social.user,
-                    'new_association': True}
+            return {"social": social, "user": social.user, "new_association": True}
+    return None
 
 
 def associate_by_email(backend, details, user=None, *args, **kwargs):
@@ -66,7 +67,7 @@ def associate_by_email(backend, details, user=None, *args, **kwargs):
     if user:
         return None
 
-    email = details.get('email')
+    email = details.get("email")
     if email:
         # Try to associate accounts registered with the same email address,
         # only if it's a single object. AuthException is raised if multiple
@@ -74,20 +75,18 @@ def associate_by_email(backend, details, user=None, *args, **kwargs):
         users = list(backend.strategy.storage.user.get_users_by_email(email))
         if len(users) == 0:
             return None
-        elif len(users) > 1:
+        if len(users) > 1:
             raise AuthException(
-                backend,
-                'The given email address is associated with another account'
+                backend, "The given email address is associated with another account"
             )
-        else:
-            return {'user': users[0],
-                    'is_new': False}
+        return {"user": users[0], "is_new": False}
+    return None
 
 
-def load_extra_data(backend, details, response, uid, user, *args, **kwargs):
-    social = kwargs.get('social') or \
-             backend.strategy.storage.user.get_social_auth(backend.name, uid)
+def load_extra_data(backend, details, response, uid, user, *args, **kwargs) -> None:
+    social = kwargs.get("social") or backend.strategy.storage.user.get_social_auth(
+        backend.name, uid
+    )
     if social:
-        extra_data = backend.extra_data(user, uid, response, details,
-                                        *args, **kwargs)
+        extra_data = backend.extra_data(user, uid, response, details, *args, **kwargs)
         social.set_extra_data(extra_data)

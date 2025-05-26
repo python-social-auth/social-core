@@ -1,31 +1,29 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class KakaoOAuth2Test(OAuth2Test):
-    backend_path = 'social_core.backends.kakao.KakaoOAuth2'
-    user_data_url = 'https://kapi.kakao.com/v2/user/me'
-    expected_username = 'foobar'
-    access_token_body = json.dumps({
-        'access_token': 'foobar'
-    })
-    user_data_body = json.dumps({
-        'id': '101010101',
-        'properties': {
-            'nickname': 'foobar',
-            'thumbnail_image': 'http://mud-kage.kakao.co.kr/14/dn/btqbh1AKmRf/'
-                               'ujlHpQhxtMSbhKrBisrxe1/o.jpg',
-            'profile_image': 'http://mud-kage.kakao.co.kr/14/dn/btqbjCnl06Q/'
-                             'wbMJSVAUZB7lzSImgGdsoK/o.jpg'
-        },
-        'kakao_account': {
-            'email': 'a'
+class KakaoOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
+    backend_path = "social_core.backends.kakao.KakaoOAuth2"
+    user_data_url = "https://kapi.kakao.com/v2/user/me"
+    expected_username = "foobar"
+    access_token_body = json.dumps({"access_token": "foobar"})
+    user_data_body = json.dumps(
+        {
+            "id": "101010101",
+            "properties": {
+                "nickname": "foobar",
+                "thumbnail_image": "http://mud-kage.kakao.co.kr/14/dn/btqbh1AKmRf/"
+                "ujlHpQhxtMSbhKrBisrxe1/o.jpg",
+                "profile_image": "http://mud-kage.kakao.co.kr/14/dn/btqbjCnl06Q/"
+                "wbMJSVAUZB7lzSImgGdsoK/o.jpg",
+            },
+            "kakao_account": {"email": "a"},
         }
-    })
+    )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
