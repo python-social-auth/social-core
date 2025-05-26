@@ -10,10 +10,8 @@ Terminology:
 
 import json
 
-from onelogin.saml2.auth import OneLogin_Saml2_Auth  # type: ignore reportMissingImports
-from onelogin.saml2.settings import (  # type: ignore reportMissingImports
-    OneLogin_Saml2_Settings,
-)
+from onelogin.saml2.auth import OneLogin_Saml2_Auth
+from onelogin.saml2.settings import OneLogin_Saml2_Settings
 
 from ..exceptions import AuthFailed, AuthMissingParameter
 from .base import BaseAuth
@@ -288,6 +286,8 @@ class SAMLAuth(BaseAuth):
             "idp": idp_name,
             "next": self.data.get("next"),
         }
+        if session_id := self.strategy.get_session_id():
+            relay_state[self.strategy.SESSION_SAVE_KEY] = session_id
         return auth.login(return_to=json.dumps(relay_state))
 
     def get_user_details(self, response):
@@ -328,7 +328,9 @@ class SAMLAuth(BaseAuth):
             idp_name = relay_state_str
         else:
             idp_name = relay_state["idp"]
-            if next_url := relay_state.get("next"):
+            if session_id := relay_state.get(self.strategy.SESSION_SAVE_KEY):
+                self.strategy.restore_session(session_id, kwargs)
+            elif next_url := relay_state.get("next"):
                 # The do_complete action expects the "next" URL to be in session state or the request params.
                 self.strategy.session_set(kwargs.get("redirect_name", "next"), next_url)
 

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import functools
 import hmac
 import logging
@@ -5,6 +7,7 @@ import re
 import sys
 import time
 import unicodedata
+from typing import Any
 from urllib.parse import parse_qs as battery_parse_qs
 from urllib.parse import unquote, urlencode, urlparse, urlunparse
 
@@ -38,7 +41,9 @@ def user_agent():
     return "social-auth-" + social_core.__version__
 
 
-def url_add_parameters(url, params, _unquote_query=False):
+def url_add_parameters(
+    url: str, params: dict[str, str] | None, _unquote_query: bool = False
+) -> str:
     """Adds parameters to URL, parameter will be repeated if already present"""
     if params:
         fragments = list(urlparse(url))
@@ -51,11 +56,11 @@ def url_add_parameters(url, params, _unquote_query=False):
     return url
 
 
-def to_setting_name(*names):
+def to_setting_name(*names: str) -> str:
     return "_".join([name.upper().replace("-", "_") for name in names if name])
 
 
-def setting_name(*names):
+def setting_name(*names: str) -> str:
     return to_setting_name(*((SETTING_PREFIX, *names)))
 
 
@@ -134,6 +139,10 @@ def parse_qs(value):
     return drop_lists(battery_parse_qs(value))
 
 
+def get_querystring(url: str):
+    return parse_qs(urlparse(url).query)
+
+
 def drop_lists(value):
     out = {}
     for key, val in value.items():
@@ -168,7 +177,7 @@ def partial_pipeline_data(backend, user=None, partial_token=None, *args, **kwarg
             # Normally when resuming a pipeline, request_data will be empty. We
             # only need to check for a uid match if new data was provided (i.e.
             # if current request specifies the ID_KEY).
-            if backend.ID_KEY in request_data:
+            if backend.ID_KEY and backend.ID_KEY in request_data:
                 id_from_partial = partial.kwargs.get("uid")
                 id_from_request = request_data.get(backend.ID_KEY)
 
@@ -270,9 +279,9 @@ class cache:
     Does not work for methods with arguments.
     """
 
-    def __init__(self, ttl):
+    def __init__(self, ttl: int):
         self.ttl = ttl
-        self.cache = {}
+        self.cache: dict[type, Any] = {}
 
     def __call__(self, fn):
         def wrapped(this):
@@ -284,7 +293,7 @@ class cache:
 
             # ignoring this type issue is safe; if cached_value is returned, last_updated
             # is also set, but the type checker doesn't know it.
-            if not cached_value or now - last_updated > self.ttl:  # type: ignore[reportOperatorIssue]
+            if not cached_value or not last_updated or now - last_updated > self.ttl:
                 try:
                     cached_value = fn(this)
                     self.cache[this.__class__] = (now, cached_value)
@@ -294,7 +303,7 @@ class cache:
                         raise
             return cached_value
 
-        wrapped.invalidate = self._invalidate  # type: ignore[reportFunctionMemberAccess]
+        wrapped.invalidate = self._invalidate  # type: ignore[attr-defined]
         return wrapped
 
     def _invalidate(self):

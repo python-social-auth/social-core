@@ -1,61 +1,67 @@
 [build-system]
 build-backend = "setuptools.build_meta"
-requires = ["setuptools"]
+requires = ["setuptools>=78.0.2"]
 
 [dependency-groups]
 dev = [
-  "flake8>=5.0.4",
-  "pytest>=4.5",
-  "httpretty~=1.1.0",
   "coverage>=3.6",
+  "flake8>=5.0.4",
+  "google-auth-stubs==0.3.0",
+  "mypy==1.15.0",
+  "pyright==1.1.401",
   "pytest-cov>=2.7.1",
-  # pinned because of https://github.com/gabrielfalcao/HTTPretty/issues/484
-  "urllib3~=2.2.0",
-  "pyright>=1.1.391",
-  "pytest-xdist>=3.6.1"
+  "pytest-xdist>=3.6.1",
+  "pytest>=4.5",
+  "responses==0.25.7",
+  "types-defusedxml==0.7.0.20250516",
+  "types-oauthlib==3.2.0.20250516",
+  "types-python-jose==3.4.0.20250516",
+  "types-requests-oauthlib==2.0.0.20250516",
+  "types-requests==2.32.0.20250515"
 ]
 
 [project]
 authors = [
-  {name = "Matias Aguirre", email = "matiasaguirre@gmail.com"}
+  {email = "matiasaguirre@gmail.com", name = "Matias Aguirre"},
+  {email = "michal@weblate.org", name = "Michal Čihař"}
 ]
 classifiers = [
-  "Development Status :: 4 - Beta",
+  "Development Status :: 5 - Production/Stable",
   "Environment :: Web Environment",
   "Intended Audience :: Developers",
-  "License :: OSI Approved :: BSD License",
-  "Programming Language :: Python",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python",
   "Topic :: Internet"
 ]
 dependencies = [
-  "PyJWT>=2.7.0",
   "cryptography>=1.4",
   "defusedxml>=0.5.0",
   "oauthlib>=1.0.3",
+  "PyJWT>=2.7.0",
   "python3-openid>=3.0.10",
   "requests-oauthlib>=0.6.1",
   "requests>=2.9.1"
 ]
 description = "Python social authentication made simple."
-keywords = ["openid", "oauth", "saml", "social auth"]
-license = {text = "BSD"}
+keywords = ["oauth", "openid", "saml", "social auth"]
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
 name = "social-auth-core"
 readme = "README.md"
 requires-python = ">=3.9"
-version = "4.5.6"
+version = "4.6.1"
 
 [project.optional-dependencies]
 all = [
-  "social-auth-core[saml]",
   "social-auth-core[azuread]",
-  "social-auth-core[shopify]",
-  "social-auth-core[google-onetap]"
+  "social-auth-core[google-onetap]",
+  "social-auth-core[saml]",
+  "social-auth-core[shopify]"
 ]
 allpy3 = [
   "social-auth-core[all]"
@@ -66,17 +72,26 @@ azuread = [
 # This is present until pip implements supports for PEP 735
 # see https://github.com/pypa/pip/issues/12963
 dev = [
-  "flake8>=5.0.4",
-  "pytest>=4.5",
-  "httpretty~=1.1.0",
   "coverage>=3.6",
+  "flake8>=5.0.4",
+  "google-auth-stubs==0.3.0",
+  "mypy==1.15.0",
+  "pyright==1.1.401",
   "pytest-cov>=2.7.1",
-  # pinned because of https://github.com/gabrielfalcao/HTTPretty/issues/484
-  "urllib3~=2.2.0",
-  "pyright>=1.1.391"
+  "pytest-xdist>=3.6.1",
+  "pytest>=4.5",
+  "responses==0.25.7",
+  "types-defusedxml==0.7.0.20250516",
+  "types-oauthlib==3.2.0.20250516",
+  "types-python-jose==3.4.0.20250516",
+  "types-requests-oauthlib==2.0.0.20250516",
+  "types-requests==2.32.0.20250515"
 ]
 google-onetap = [
-  "google-auth~=2.38.0"
+  "google-auth~=2.40.0"
+]
+ping = [
+  "python-jose>=3.4.0,<4.0"
 ]
 saml = [
   "python3-saml>=1.5.0"
@@ -86,73 +101,95 @@ shopify = [
 ]
 
 [project.urls]
+Changelog = "https://github.com/python-social-auth/social-core/blob/master/CHANGELOG.md"
+Funding = "https://opencollective.com/python-social-auth"
 Homepage = "https://github.com/python-social-auth/social-core"
+
+[tool.check-manifest]
+ignore = [
+  ".coveragerc",
+  ".pre-commit-config.yaml",
+  ".well-known/funding-manifest-urls",
+  "tox.ini"
+]
 
 [tool.codespell]
 count = true
 ignore-words-list = "assertIn"
 
+[tool.mypy]
+check_untyped_defs = true
+
+[[tool.mypy.overrides]]
+disallow_untyped_defs = true
+ignore_missing_imports = true
+module = [
+  "google.appengine.*",
+  "onelogin.*",
+  "openid.*",
+  "shopify.*"
+]
+
+[tool.pyright]
+executionEnvironments = [
+  {reportMissingImports = "none", root = "social_core/backends/gae.py"}
+]
+pythonVersion = "3.9"
+reportOptionalMemberAccess = "none"
+reportPossiblyUnboundVariable = "none"
+
 [tool.ruff.lint]
 extend-safe-fixes = [
+  "ANN",
   "D",
-  "TCH",
+  "FA102",
   "FLY",
   "SIM",
-  "ANN",
-  "FA102",
+  "TCH",
   "UP"
 ]
 ignore = [
-  "COM",  # CONFIG: No trailing commas
-  "D203",  # CONFIG: incompatible with D211
-  "D212",  # CONFIG: incompatible with D213
-  "E501",  # WONTFIX: we accept long strings (rest is formatted by ruff)
-  'ISC001',  # CONFIG: formatter
-  "PT",  # CONFIG: Not using pytest
-  "FIX002",  # CONFIG: we use TODO
-  "TD002",  # CONFIG: no detailed TODO documentation is required
-  "TD003",  # CONFIG: no detailed TODO documentation is required
+  "A001",  # TODO: Variable is shadowing a Python builtin
+  "A002",  # TODO: Function argument is shadowing a Python builtin
   "ANN",  # TODO: Missing type annotations
-  "D",  # TODO: Missing documentation
-  "B904",  # TODO: use raise from
-  "PLR2004",  # TODO: Magic value used in comparison
-  "PLW2901",  # TODO: loop variable overwritten by assignment target
-  "N",  # TODO: Naming issues
-  "PTH",  # TODO: Not using pathlib
-  "RUF012",  # TODO: Type annotations
   "ARG001",  # TODO: Unused function argument (mostly for API compatibility)
   "ARG002",  # TODO: Unused method argument (mostly for API compatibility)
   "ARG003",  # TODO: Unused class method argument
   "ARG005",  # TODO: Unused lambda argument
-  "TID252",  # TODO: Prefer absolute imports over relative imports from parent modules
-  "FBT",  # TODO: Boolean in function definition
-  "S105",  # TODO: Possible hardcoded password assigned
-  "S113",  # TODO: Probable use of `requests` call without timeout
-  "B018",  # TODO: Found useless expression.
-  "A001",  # TODO: Variable is shadowing a Python builtin
-  "A002",  # TODO: Function argument is shadowing a Python builtin
-  "A004",  # TODO: Import `ConnectionError` is shadowing a Python builtin
-  "ERA001",  # TODO: Found commented-out code
-  "EM101",  # TODO: Exception must not use a string literal, assign to variable first
-  "EM102",  # TODO: Exception must not use an f-string literal, assign to variable first
-  "TRY003",  # TODO: Avoid specifying long messages outside the exception class
-  "S101",  # TODO: Use of `assert` detected
+  "B026",  # TODO: Star-arg unpacking after a keyword argument is strongly discouraged
+  "B904",  # TODO: use raise from
+  "BLE001",  # TODO: Do not catch blind exception: `Exception`
+  "COM",  # CONFIG: No trailing commas
+  "D",  # TODO: Missing documentation
+  "D203",  # CONFIG: incompatible with D211
+  "D212",  # CONFIG: incompatible with D213
   "DTZ001",  # TODO: `datetime.datetime()` called without a `tzinfo` argument
   "DTZ005",  # TODO: `datetime.datetime.now()` called without a `tz` argument
-  "B006",  # TODO: Do not use mutable data structures for argument defaults
-  "B026",  # TODO: Star-arg unpacking after a keyword argument is strongly discouraged
-  "S311",  # TODO: Standard pseudo-random generators are not suitable for cryptographic purposes
-  "S301",  # TODO: `pickle` and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue
-  "S324",  # TODO: Probable use of insecure hash functions in `hashlib`
-  "S318",  # TODO: Using `xml` to parse untrusted data is known to be vulnerable to XML attacks; use `defusedxml` equivalents
-  "PLR1704",  # TODO: Redefining argument with the local name
-  "PERF203",  # WONTFIX: This rule is only enforced for Python versions prior to 3.11
+  "E501",  # WONTFIX: we accept long strings (rest is formatted by ruff)
+  "EM101",  # TODO: Exception must not use a string literal, assign to variable first
+  "EM102",  # TODO: Exception must not use an f-string literal, assign to variable first
+  "ERA001",  # TODO: Found commented-out code
+  "FBT",  # TODO: Boolean in function definition
+  "FIX002",  # CONFIG: we use TODO
   "ISC003",  # TODO: Explicitly concatenated string should be implicitly concatenated
+  "N",  # TODO: Naming issues
+  "PERF203",  # WONTFIX: This rule is only enforced for Python versions prior to 3.11
+  "PLR2004",  # TODO: Magic value used in comparison
   "PLW0603",  # TODO: Using the global statement to update `BACKENDSCACHE` is discouraged
-  "TRY301",  # TODO: Abstract `raise` to an inner function
-  "BLE001",  # TODO: Do not catch blind exception: `Exception`
+  "PLW2901",  # TODO: loop variable overwritten by assignment target
+  "PT",  # CONFIG: Not using pytest
+  "RUF012",  # TODO: Type annotations
+  "S101",  # TODO: Use of `assert` detected
+  "S105",  # TODO: Possible hardcoded password assigned
   "S110",  # TODO: `try`-`except`-`pass` detected, consider logging the exception
-  "TRY300"  # TODO: Consider moving this statement to an `else` block
+  "S301",  # TODO: `pickle` and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue
+  "S318",  # TODO: Using `xml` to parse untrusted data is known to be vulnerable to XML attacks; use `defusedxml` equivalents
+  "TD002",  # CONFIG: no detailed TODO documentation is required
+  "TD003",  # CONFIG: no detailed TODO documentation is required
+  "TID252",  # TODO: Prefer absolute imports over relative imports from parent modules
+  "TRY003",  # TODO: Avoid specifying long messages outside the exception class
+  "TRY301",  # TODO: Abstract `raise` to an inner function
+  'ISC001'  # CONFIG: formatter
 ]
 select = ["ALL"]
 
@@ -168,5 +205,11 @@ max-args = 7
 max-branches = 15
 
 [tool.setuptools]
-license-files = []
 packages = ["social_core"]
+
+[tool.tomlsort]
+ignore_case = true
+sort_inline_arrays = true
+sort_inline_tables = true
+sort_table_keys = true
+spaces_before_inline_comment = 2

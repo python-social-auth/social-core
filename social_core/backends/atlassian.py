@@ -4,7 +4,6 @@ from social_core.backends.oauth import BaseOAuth2
 class AtlassianOAuth2(BaseOAuth2):
     name = "atlassian"
     AUTHORIZATION_URL = "https://auth.atlassian.com/authorize"
-    ACCESS_TOKEN_METHOD = "POST"
     ACCESS_TOKEN_URL = "https://auth.atlassian.com/oauth/token"
     DEFAULT_SCOPE = ["read:jira-user", "offline_access"]
     ID_KEY = "accountId"

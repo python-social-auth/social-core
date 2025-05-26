@@ -11,12 +11,21 @@ from .base import BaseAuth
 from .oauth import BaseOAuth2
 
 
+def odnoklassniki_sig(payload: str) -> str:
+    """
+    Calculates a payload signature using md5.
+
+    See
+    https://apiok.ru/en/ext/invite_suggest#calculating-request-signature-stsignature
+    """
+    return md5(payload.encode("utf-8")).hexdigest()  # noqa: S324
+
+
 class OdnoklassnikiOAuth2(BaseOAuth2):
     """Odnoklassniki authentication backend"""
 
     name = "odnoklassniki-oauth2"
     ID_KEY = "uid"
-    ACCESS_TOKEN_METHOD = "POST"
     SCOPE_SEPARATOR = ";"
     AUTHORIZATION_URL = "https://connect.ok.ru/oauth/authorize"
     ACCESS_TOKEN_URL = "https://api.ok.ru/oauth/token.do"
@@ -121,11 +130,13 @@ class OdnoklassnikiApp(BaseAuth):
         return self.strategy.authenticate(*args, **kwargs)
 
     def get_auth_sig(self):
-        secret_key = self.setting("SECRET")
-        hash_source = "{:s}{:s}{:s}".format(
-            self.data["logged_user_id"], self.data["session_key"], secret_key
+        return odnoklassniki_sig(
+            "{:s}{:s}{:s}".format(
+                self.data["logged_user_id"],
+                self.data["session_key"],
+                self.setting("SECRET"),
+            )
         )
-        return md5(hash_source.encode("utf-8")).hexdigest()
 
     def get_response(self):
         fields = (
@@ -153,13 +164,11 @@ def odnoklassniki_oauth_sig(data, client_secret):
         https://apiok.ru/wiki/pages/viewpage.action?pageId=12878032,
     search for "little bit different way"
     """
-    suffix = md5(
-        "{:s}{:s}".format(data["access_token"], client_secret).encode("utf-8")
-    ).hexdigest()
+    suffix = odnoklassniki_sig("{:s}{:s}".format(data["access_token"], client_secret))
     check_list = sorted(
         f"{key:s}={value:s}" for key, value in data.items() if key != "access_token"
     )
-    return md5(("".join(check_list) + suffix).encode("utf-8")).hexdigest()
+    return odnoklassniki_sig("".join(check_list) + suffix)
 
 
 def odnoklassniki_iframe_sig(data, client_secret_or_session_secret):
@@ -170,9 +179,7 @@ def odnoklassniki_iframe_sig(data, client_secret_or_session_secret):
     secret key. Otherwise it is signed with application secret key
     """
     param_list = sorted(f"{key:s}={value:s}" for key, value in data.items())
-    return md5(
-        ("".join(param_list) + client_secret_or_session_secret).encode("utf-8")
-    ).hexdigest()
+    return odnoklassniki_sig("".join(param_list) + client_secret_or_session_secret)
 
 
 def odnoklassniki_api(

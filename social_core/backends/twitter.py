@@ -13,7 +13,6 @@ class TwitterOAuth(BaseOAuth1):
     name = "twitter"
     EXTRA_DATA = [("id", "id")]
     REQUEST_TOKEN_METHOD = "POST"
-    ACCESS_TOKEN_METHOD = "POST"
     AUTHORIZATION_URL = "https://api.twitter.com/oauth/authenticate"
     REQUEST_TOKEN_URL = "https://api.twitter.com/oauth/request_token"
     ACCESS_TOKEN_URL = "https://api.twitter.com/oauth/access_token"

@@ -1,12 +1,17 @@
-import hashlib
-import random
-import time
+from __future__ import annotations
+
+import secrets
+from typing import TYPE_CHECKING, Any
 
 from .backends.utils import get_backend
+from .exceptions import StrategyMissingFeatureError
 from .pipeline import DEFAULT_AUTH_PIPELINE, DEFAULT_DISCONNECT_PIPELINE
 from .pipeline.utils import partial_load, partial_prepare, partial_store
 from .store import OpenIdSessionWrapper, OpenIdStore
 from .utils import PARTIAL_TOKEN_SESSION_NAME, module_member, setting_name
+
+if TYPE_CHECKING:
+    from .backends.base import BaseAuth
 
 
 class BaseTemplateStrategy:
@@ -31,18 +36,19 @@ class BaseTemplateStrategy:
 class BaseStrategy:
     ALLOWED_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     DEFAULT_TEMPLATE_STRATEGY = BaseTemplateStrategy
+    SESSION_SAVE_KEY = "psa_session_id"
 
     def __init__(self, storage=None, tpl=None):
         self.storage = storage
         self.tpl = (tpl or self.DEFAULT_TEMPLATE_STRATEGY)(self)
 
-    def setting(self, name, default=None, backend=None):
+    def setting(self, name: str, default=None, backend: BaseAuth | None = None):
         names = [setting_name(name), name]
         if backend:
             names.insert(0, setting_name(backend.name, name))
-        for name in names:
+        for value in names:
             try:
-                return self.get_setting(name)
+                return self.get_setting(value)
             except (AttributeError, KeyError):
                 pass
         return default
@@ -56,6 +62,20 @@ class BaseStrategy:
     def session_setdefault(self, name, value):
         self.session_set(name, value)
         return self.session_get(name)
+
+    def get_session_id(self) -> str | None:
+        """
+        Return session ID to be used by restore_session.
+        """
+        return None
+
+    def restore_session(self, session_id: str, kwargs: dict[str, Any]) -> None:
+        """
+        Restores session and updates kwargs to match it.
+
+        This is only called if get_session_id returns a value.
+        """
+        raise StrategyMissingFeatureError(self.__class__.__name__, "session restore")
 
     def openid_session_dict(self, name):
         # Many frameworks are switching the session serialization from Pickle
@@ -79,10 +99,10 @@ class BaseStrategy:
     def from_session_value(self, val):
         return val
 
-    def partial_save(self, next_step, backend, *args, **kwargs):
+    def partial_save(self, next_step, backend: BaseAuth, *args, **kwargs):
         return partial_store(self, backend, next_step, *args, **kwargs)
 
-    def partial_prepare(self, next_step, backend, *args, **kwargs):
+    def partial_prepare(self, next_step, backend: BaseAuth, *args, **kwargs):
         return partial_prepare(self, backend, next_step, *args, **kwargs)
 
     def partial_load(self, token):
@@ -97,21 +117,14 @@ class BaseStrategy:
     def openid_store(self):
         return OpenIdStore(self)
 
-    def get_pipeline(self, backend=None):
+    def get_pipeline(self, backend: BaseAuth | None = None):
         return self.setting("PIPELINE", DEFAULT_AUTH_PIPELINE, backend)
 
-    def get_disconnect_pipeline(self, backend=None):
+    def get_disconnect_pipeline(self, backend: BaseAuth | None = None):
         return self.setting("DISCONNECT_PIPELINE", DEFAULT_DISCONNECT_PIPELINE, backend)
 
-    def random_string(self, length=12, chars=ALLOWED_CHARS):
-        # Implementation borrowed from django 1.4
-        try:
-            random.SystemRandom()
-        except NotImplementedError:
-            key = self.setting("SECRET_KEY", "")
-            seed = f"{random.getstate()}{time.time()}{key}"
-            random.seed(hashlib.sha256(seed.encode()).digest())
-        return "".join([random.choice(chars) for i in range(length)])
+    def random_string(self, length: int = 12, chars: str = ALLOWED_CHARS) -> str:
+        return "".join([secrets.choice(chars) for i in range(length)])
 
     def absolute_uri(self, path=None):
         uri = self.build_absolute_uri(path)
@@ -123,14 +136,16 @@ class BaseStrategy:
         """Return current language"""
         return ""
 
-    def send_email_validation(self, backend, email, partial_token=None):
+    def send_email_validation(
+        self, backend: BaseAuth, email: str, partial_token: str | None = None
+    ) -> str:
         email_validation = self.setting("EMAIL_VALIDATION_FUNCTION")
         send_email = module_member(email_validation)
         code = self.storage.code.make_code(email)
         send_email(self, backend, code, partial_token)
         return code
 
-    def validate_email(self, email, code):
+    def validate_email(self, email: str, code: str) -> bool:
         verification_code = self.storage.code.get_code(code)
         if not verification_code or verification_code.code != code:
             return False
@@ -145,7 +160,7 @@ class BaseStrategy:
         """Render given template or raw html with given context"""
         return self.tpl.render(tpl, html, context)
 
-    def authenticate(self, backend, *args, **kwargs):
+    def authenticate(self, backend: BaseAuth, *args, **kwargs):
         """Trigger the authentication mechanism tied to the current
         framework"""
         kwargs["strategy"] = self

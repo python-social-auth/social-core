@@ -3,6 +3,10 @@ Backend for OpenID Connect EGI Check-in
 https://www.egi.eu/service/check-in/
 """
 
+from __future__ import annotations
+
+from typing import Literal
+
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 
 CHECKIN_ENV_ENDPOINTS = {
@@ -16,7 +20,7 @@ class EGICheckinOpenIdConnect(OpenIdConnectAuth):
     name = "egi-checkin"
     # Check-in provides 3 environments: production, demo and development
     # Set the one to use as "prod", "demo" or "dev"
-    CHECKIN_ENV = "prod"
+    CHECKIN_ENV: Literal["prod", "demo", "dev"] = "prod"
     # This is a opaque and unique id for every user that looks like an email
     # see https://docs.egi.eu/providers/check-in/sp/#1-community-user-identifier
     USERNAME_KEY = "voperson_id"
@@ -38,7 +42,7 @@ class EGICheckinOpenIdConnect(OpenIdConnectAuth):
     # This is the list of entitlements that are allowed to login into the
     # service. A user with any of these will be allowed. If empty, all
     # users will be allowed
-    ALLOWED_ENTITLEMENTS = []
+    ALLOWED_ENTITLEMENTS: list[str] = []
 
     def oidc_endpoint(self):
         endpoint = self.setting("OIDC_ENDPOINT", self.OIDC_ENDPOINT)

@@ -17,7 +17,7 @@ repos:
   - id: pretty-format-json
     args: [--no-sort-keys, --autofix, --no-ensure-ascii]
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.9.10
+  rev: v0.11.11
   hooks:
   - id: ruff
     args: [--fix, --exit-non-zero-on-fix]
@@ -31,10 +31,12 @@ repos:
   hooks:
   - id: pretty-format-yaml
     args: [--autofix, --indent, '2']
-  - id: pretty-format-toml
-    args: [--autofix]
+- repo: https://github.com/pappasam/toml-sort
+  rev: v0.24.2
+  hooks:
+  - id: toml-sort-fix
 - repo: https://github.com/abravalheri/validate-pyproject
-  rev: v0.23
+  rev: v0.24.1
   hooks:
   - id: validate-pyproject
 - repo: https://github.com/executablebooks/mdformat
@@ -52,3 +54,11 @@ repos:
   - id: codespell
     additional_dependencies:
     - tomli
+- repo: https://github.com/rhysd/actionlint
+  rev: v1.7.7
+  hooks:
+  - id: actionlint
+- repo: https://github.com/woodruffw/zizmor-pre-commit
+  rev: v1.8.0
+  hooks:
+  - id: zizmor

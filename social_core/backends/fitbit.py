@@ -36,7 +36,6 @@ class FitbitOAuth2(BaseOAuth2):
     name = "fitbit"
     AUTHORIZATION_URL = "https://www.fitbit.com/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://api.fitbit.com/oauth2/token"
-    ACCESS_TOKEN_METHOD = "POST"
     REFRESH_TOKEN_URL = "https://api.fitbit.com/oauth2/token"
     DEFAULT_SCOPE = ["profile"]
     ID_KEY = "encodedId"

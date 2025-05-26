@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import base64
 import hashlib
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal, cast
 from urllib.parse import urlencode
 
 from oauthlib.oauth1 import SIGNATURE_TYPE_AUTH_HEADER
@@ -27,7 +27,10 @@ from ..utils import (
 from .base import BaseAuth
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping, MutableMapping
+    from collections.abc import Mapping
+
+    from requests import Response
+    from requests.auth import AuthBase
 
 
 class OAuthAuth(BaseAuth):
@@ -46,12 +49,12 @@ class OAuthAuth(BaseAuth):
 
     AUTHORIZATION_URL = ""
     ACCESS_TOKEN_URL = ""
-    ACCESS_TOKEN_METHOD = "GET"
-    REVOKE_TOKEN_URL = None
-    REVOKE_TOKEN_METHOD = "POST"
+    ACCESS_TOKEN_METHOD: Literal["GET", "POST"] = "POST"
+    REVOKE_TOKEN_URL: str = ""
+    REVOKE_TOKEN_METHOD: Literal["GET", "POST", "DELETE"] = "POST"
     ID_KEY = "id"
     SCOPE_PARAMETER_NAME = "scope"
-    DEFAULT_SCOPE = None
+    DEFAULT_SCOPE: list[str] | None = None
     SCOPE_SEPARATOR = " "
     REDIRECT_STATE = False
     STATE_PARAMETER = False
@@ -69,7 +72,7 @@ class OAuthAuth(BaseAuth):
         """Generate csrf token to include as state parameter."""
         return self.strategy.random_string(32)
 
-    def get_or_create_state(self):
+    def get_or_create_state(self) -> str | None:
         if self.STATE_PARAMETER or self.REDIRECT_STATE:
             # Store state in session for further request validation. The state
             # value is passed as state parameter (as specified in OAuth2 spec),
@@ -109,9 +112,9 @@ class OAuthAuth(BaseAuth):
             raise AuthStateForbidden(self)
         return state
 
-    def get_redirect_uri(self, state=None):
+    def get_redirect_uri(self, state: str | None = None) -> str:
         """Build redirect with redirect_state parameter."""
-        uri = self.redirect_uri
+        uri = cast("str", self.redirect_uri)
         if self.REDIRECT_STATE and state:
             uri = url_add_parameters(uri, {"redirect_state": state})
         return uri
@@ -140,7 +143,7 @@ class OAuthAuth(BaseAuth):
     def access_token_url(self) -> str:
         return self.ACCESS_TOKEN_URL
 
-    def revoke_token_url(self, token, uid) -> str | None:
+    def revoke_token_url(self, token, uid) -> str:
         return self.REVOKE_TOKEN_URL
 
     def revoke_token_params(self, token, uid) -> dict[str, Any]:
@@ -153,13 +156,12 @@ class OAuthAuth(BaseAuth):
         return response.status_code == 200
 
     def revoke_token(self, token, uid):
-        if self.REVOKE_TOKEN_URL:
-            url = self.revoke_token_url(token, uid)
+        if revoke_token_url := self.revoke_token_url(token, uid):
             params = self.revoke_token_params(token, uid)
             headers = self.revoke_token_headers(token, uid)
             data = urlencode(params) if self.REVOKE_TOKEN_METHOD != "GET" else None
             response = self.request(
-                url,
+                revoke_token_url,
                 params=params,
                 headers=headers,
                 data=data,
@@ -179,7 +181,7 @@ class BaseOAuth1(OAuthAuth):
     """
 
     REQUEST_TOKEN_URL = ""
-    REQUEST_TOKEN_METHOD = "GET"
+    REQUEST_TOKEN_METHOD: Literal["GET", "POST"] = "GET"
     OAUTH_TOKEN_PARAMETER_NAME = "oauth_token"
     REDIRECT_URI_PARAMETER_NAME = "redirect_uri"
     UNATHORIZED_TOKEN_SUFIX = "unauthorized_token_name"
@@ -278,15 +280,18 @@ class BaseOAuth1(OAuthAuth):
             token = parse_qs(token)
         params = self.auth_extra_arguments() or {}
         params.update(self.get_scope_argument())
-        params[self.OAUTH_TOKEN_PARAMETER_NAME] = token.get(
-            self.OAUTH_TOKEN_PARAMETER_NAME
+        params[self.OAUTH_TOKEN_PARAMETER_NAME] = cast(
+            "str", token.get(self.OAUTH_TOKEN_PARAMETER_NAME)
         )
         state = self.get_or_create_state()
         params[self.REDIRECT_URI_PARAMETER_NAME] = self.get_redirect_uri(state)
         return url_add_parameters(self.authorization_url(), params)
 
     def oauth_auth(
-        self, token=None, oauth_verifier=None, signature_type=SIGNATURE_TYPE_AUTH_HEADER
+        self,
+        token: dict | None = None,
+        oauth_verifier=None,
+        signature_type=SIGNATURE_TYPE_AUTH_HEADER,
     ):
         key, secret = self.get_key_and_secret()
         oauth_verifier = oauth_verifier or self.data.get("oauth_verifier")
@@ -311,13 +316,15 @@ class BaseOAuth1(OAuthAuth):
             signature_type=signature_type,
         )
 
-    def oauth_request(self, token, url, params=None, method="GET"):
+    def oauth_request(
+        self, token: dict, url: str, params=None, method: Literal["GET", "POST"] = "GET"
+    ) -> Response:
         """Generate OAuth request, setups callback url"""
         return self.request(
             url, method=method, params=params, auth=self.oauth_auth(token)
         )
 
-    def access_token(self, token):
+    def access_token(self, token: dict) -> dict[str, str]:
         """Return request for access token value"""
         return self.get_querystring(
             self.access_token_url(),
@@ -333,9 +340,9 @@ class BaseOAuth2(OAuthAuth):
         https://datatracker.ietf.org/doc/html/rfc6749
     """
 
-    REFRESH_TOKEN_URL = None
+    REFRESH_TOKEN_URL: str | None = None
     REFRESH_TOKEN_METHOD = "POST"
-    RESPONSE_TYPE = "code"
+    RESPONSE_TYPE: str | None = "code"
     REDIRECT_STATE = True
     STATE_PARAMETER = True
     USE_BASIC_AUTH = False
@@ -343,7 +350,7 @@ class BaseOAuth2(OAuthAuth):
     def use_basic_auth(self) -> bool:
         return self.USE_BASIC_AUTH
 
-    def auth_params(self, state=None) -> MutableMapping[str, Any]:
+    def auth_params(self, state: str | None = None) -> dict[str, str]:
         client_id, client_secret = self.get_key_and_secret()
         params = {"client_id": client_id, "redirect_uri": self.get_redirect_uri(state)}
         if self.STATE_PARAMETER and state:
@@ -392,15 +399,25 @@ class BaseOAuth2(OAuthAuth):
             "Accept": "application/json",
         }
 
-    def extra_data(self, user, uid, response, details=None, *args, **kwargs):
+    def extra_data(self, user, uid, response, details, *args, **kwargs):
         """Return access_token, token_type, and extra defined names to store in
         extra_data field"""
         data = super().extra_data(user, uid, response, details=details, *args, **kwargs)
         data["token_type"] = response.get("token_type") or kwargs.get("token_type")
         return data
 
-    def request_access_token(self, *args, **kwargs):
-        return self.get_json(*args, **kwargs)
+    def request_access_token(
+        self,
+        url: str,
+        method: Literal["GET", "POST", "DELETE"] = "GET",
+        headers: Mapping[str, str | bytes] | None = None,
+        data: dict | bytes | str | None = None,
+        auth: tuple[str, str] | AuthBase | None = None,
+        params: dict | None = None,
+    ) -> dict[Any, Any]:
+        return self.get_json(
+            url, method=method, headers=headers, data=data, auth=auth, params=params
+        )
 
     def process_error(self, data):
         if data.get("error"):
@@ -505,7 +522,7 @@ class BaseOAuth2PKCE(BaseOAuth2):
             return encoded.decode().replace("=", "")  # remove padding
         if method == "plain":
             return code_verifier
-        raise AuthException("Unsupported code challenge method.")
+        raise AuthException(self, "Unsupported code challenge method.")
 
     def auth_params(self, state=None):
         params = super().auth_params(state=state)

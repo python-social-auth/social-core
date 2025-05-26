@@ -4,7 +4,7 @@ import sys
 from html.parser import HTMLParser
 
 import requests
-from httpretty import HTTPretty
+import responses
 from openid import oidutil
 
 from ...backends.utils import load_backends
@@ -33,18 +33,8 @@ class FormHTMLParser(HTMLParser):
 
 
 class OpenIdTest(BaseBackendTest):
-    backend_path = None
-    backend = None
-    access_token_body = None
-    user_data_body = None
-    user_data_url = ""
-    expected_username = ""
-    settings = None
-    partial_login_settings = None
-    raw_complete_url = "/complete/{0}/"
-
     def setUp(self):
-        HTTPretty.enable(allow_net_connect=False)
+        responses.start()
         Backend = module_member(self.backend_path)
         self.strategy = TestStrategy(TestStorage)
         self.complete_url = self.raw_complete_url.format(Backend.name)
@@ -69,8 +59,8 @@ class OpenIdTest(BaseBackendTest):
         TestUserSocialAuth.reset_cache()
         TestNonce.reset_cache()
         TestAssociation.reset_cache()
-        HTTPretty.disable()
-        HTTPretty.reset()
+        responses.stop()
+        responses.reset()
 
     def get_form_data(self, html):
         parser = FormHTMLParser()
@@ -84,8 +74,8 @@ class OpenIdTest(BaseBackendTest):
         pass
 
     def do_start(self):
-        HTTPretty.register_uri(
-            HTTPretty.GET,
+        responses.add(
+            responses.GET,
             self.openid_url(),
             status=200,
             body=self.discovery_body,
@@ -96,12 +86,10 @@ class OpenIdTest(BaseBackendTest):
         form, inputs = self.get_form_data(start)
         action = form.get("action")
         assert action, "The form action must be set in the test"
-        HTTPretty.register_uri(
-            HTTPretty.POST, action, status=200, body=self.server_response
-        )
-        response = requests.post(action, data=inputs)
+        responses.add(responses.POST, action, status=200, body=self.server_response)
+        response = requests.post(action, data=inputs, timeout=1)
         self.strategy.set_request_data(parse_qs(response.content), self.backend)
-        HTTPretty.register_uri(
-            HTTPretty.POST, form.get("action"), status=200, body="is_valid:true\n"
+        responses.add(
+            responses.POST, form.get("action"), status=200, body="is_valid:true\n"
         )
         return self.backend.complete()

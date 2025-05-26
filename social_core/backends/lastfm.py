@@ -27,7 +27,8 @@ class LastFmAuth(BaseAuth):
         key, secret = self.get_key_and_secret()
         token = self.data["token"]
 
-        signature = hashlib.md5(
+        # Usage of md5 is mandated by the API: https://www.last.fm/api/webauth
+        signature = hashlib.md5(  # noqa: S324
             f"api_key{key}methodauth.getSessiontoken{token}{secret}".encode()
         ).hexdigest()
 

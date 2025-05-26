@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import time
 
@@ -81,11 +83,20 @@ _PAYLOAD = {
 }
 
 
-def _encode(payload, key=_PRIVATE_KEY, algorithm=_ALGORITHM):
+def _encode(
+    payload: dict[str, str | int], key: str = _PRIVATE_KEY, algorithm: str = _ALGORITHM
+) -> str:
     return jwt.encode(payload, key=key, algorithm=algorithm)
 
 
-def _decode(token, key=_PUBLIC_KEY, algorithms=[_ALGORITHM], audience=_KEY):
+def _decode(
+    token: str,
+    key: str = _PUBLIC_KEY,
+    algorithms: list[str] | None = None,
+    audience: str = _KEY,
+) -> dict[str, str | int]:
+    if algorithms is None:
+        algorithms = [_ALGORITHM]
     return jwt.decode(token, key=key, algorithms=algorithms, audience=audience)
 
 

@@ -19,7 +19,6 @@ class QiitaOAuth2(BaseOAuth2):
 
     AUTHORIZATION_URL = "https://qiita.com/api/v2/oauth/authorize"
     ACCESS_TOKEN_URL = "https://qiita.com/api/v2/access_tokens"
-    ACCESS_TOKEN_METHOD = "POST"
     SCOPE_SEPARATOR = " "
     REDIRECT_STATE = True
     EXTRA_DATA = [
@@ -85,4 +84,4 @@ class QiitaOAuth2(BaseOAuth2):
 
         if user_id is not None:
             return str(user_id)
-        raise AuthException("failed to get user id")
+        raise AuthException(self, "failed to get user id")

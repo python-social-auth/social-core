@@ -1,10 +1,10 @@
 import json
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
-from .test_open_id_connect import OpenIdConnectTestMixin
+from .open_id_connect import OpenIdConnectTest
 
 
-class TwitchOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
+class TwitchOpenIdConnectTest(OpenIdConnectTest):
     backend_path = "social_core.backends.twitch.TwitchOpenIdConnect"
     user_data_url = "https://id.twitch.tv/oauth2/userinfo"
     issuer = "https://id.twitch.tv/oauth2"

@@ -1,10 +1,31 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .backends.base import BaseAuth
+
+
 class SocialAuthBaseException(ValueError):
     """Base class for pipeline exceptions."""
 
 
+class StrategyMissingFeatureError(SocialAuthBaseException):
+    """Strategy does not support this."""
+
+    def __init__(self, strategy_name: str, feature_name: str):
+        self.strategy_name = strategy_name
+        self.feature_name = feature_name
+        super().__init__()
+
+    def __str__(self):
+        return f"Strategy {self.strategy_name} does not support {self.feature_name}"
+
+
 class WrongBackend(SocialAuthBaseException):
-    def __init__(self, backend_name):
+    def __init__(self, backend_name: str):
         self.backend_name = backend_name
+        super().__init__()
 
     def __str__(self):
         return f'Incorrect authentication service "{self.backend_name}"'
@@ -25,7 +46,7 @@ class NotAllowedToDisconnect(SocialAuthBaseException):
 class AuthException(SocialAuthBaseException):
     """Auth process exception."""
 
-    def __init__(self, backend, *args, **kwargs):
+    def __init__(self, backend: BaseAuth, *args, **kwargs):
         self.backend = backend
         super().__init__(*args, **kwargs)
 
@@ -73,12 +94,26 @@ class AuthTokenError(AuthException):
 class AuthMissingParameter(AuthException):
     """Missing parameter needed to start or complete the process."""
 
-    def __init__(self, backend, parameter, *args, **kwargs):
+    def __init__(self, backend: BaseAuth, parameter: str, *args, **kwargs):
         self.parameter = parameter
         super().__init__(backend, *args, **kwargs)
 
     def __str__(self):
         return f"Missing needed parameter {self.parameter}"
+
+
+class AuthInvalidParameter(AuthMissingParameter):
+    """Invalid value for parameter to start or complete the process."""
+
+    def __str__(self):
+        return f"Invalid value for parameter {self.parameter}"
+
+
+class AuthNotImplementedParameter(AuthMissingParameter):
+    """Optional parameter not implemented to start or complete the process."""
+
+    def __str__(self):
+        return f"Not implemented parameter {self.parameter}"
 
 
 class AuthStateMissing(AuthException):
@@ -126,3 +161,11 @@ class AuthUnreachableProvider(AuthException):
 class InvalidEmail(AuthException):
     def __str__(self):
         return "Email couldn't be validated"
+
+
+class AuthConnectionError(AuthException):
+    """Connection error duing authentication."""
+
+    def __str__(self):
+        msg = super().__str__()
+        return f"Connection error: {msg}"

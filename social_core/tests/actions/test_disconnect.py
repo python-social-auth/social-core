@@ -1,5 +1,5 @@
 import requests
-from httpretty import HTTPretty
+import responses
 
 from ...actions import do_disconnect
 from ...exceptions import NotAllowedToDisconnect
@@ -54,13 +54,13 @@ class DisconnectActionTest(BaseActionTest):
 
         url = self.strategy.build_absolute_uri("/password")
         self.assertEqual(redirect.url, url)
-        HTTPretty.register_uri(HTTPretty.GET, redirect.url, status=200, body="foobar")
-        HTTPretty.register_uri(HTTPretty.POST, redirect.url, status=200)
+        responses.add(responses.GET, redirect.url, status=200, body="foobar")
+        responses.add(responses.POST, redirect.url, status=200)
 
         password = "foobar"
-        requests.get(url)
-        requests.post(url, data={"password": password})
-        data = parse_qs(HTTPretty.last_request.body)
+        requests.get(url, timeout=1)
+        requests.post(url, data={"password": password}, timeout=1)
+        data = parse_qs(responses.calls[-1].request.body)
         self.assertEqual(data["password"], password)
         self.strategy.session_set("password", data["password"])
 
