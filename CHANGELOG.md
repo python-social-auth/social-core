@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+### Changed
+
+- Added Azure OID backend
+
 ## [4.6.1](https://github.com/python-social-auth/social-core/releases/tag/4.6.1) - 2025-04-28
 
 ### Changed
