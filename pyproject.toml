@@ -17,7 +17,7 @@ dev = [
   "types-oauthlib==3.2.0.20250516",
   "types-python-jose==3.5.0.20250531",
   "types-requests-oauthlib==2.0.0.20250516",
-  "types-requests==2.32.0.20250602"
+  "types-requests==2.32.4.20250611"
 ]
 
 [project]
@@ -85,7 +85,7 @@ dev = [
   "types-oauthlib==3.2.0.20250516",
   "types-python-jose==3.5.0.20250531",
   "types-requests-oauthlib==2.0.0.20250516",
-  "types-requests==2.32.0.20250602"
+  "types-requests==2.32.4.20250611"
 ]
 google-onetap = [
   "google-auth~=2.40.0"
