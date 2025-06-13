@@ -1,0 +1,71 @@
+from .azuread_tenant import AzureADTenantOAuth2
+
+"""
+Copyright (c) 2015 Microsoft Open Technologies, Inc.
+
+All rights reserved.
+
+MIT License
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+
+"""
+Azure AD OAuth2 backend, docs at:
+    https://python-social-auth.readthedocs.io/en/latest/backends/azuread.html
+
+See https://nicksnettravels.builttoroam.com/post/2017/01/24/Verifying-Azure-Active-Directory-JWT-Tokens.aspx
+for verifying JWT tokens.
+"""
+
+
+class AzureADOIDOAuth2(AzureADTenantOAuth2):
+    name = "azuread-oid-oauth2"
+
+    def get_user_id(self, details, response):
+        """Use account oid as unique id."""
+        return response.get("oid")
+
+
+class AzureADV2OIDOAuth2(AzureADOIDOAuth2):
+    name = "azuread-v2-OID-oauth2"
+    OPENID_CONFIGURATION_URL = "{base_url}/v2.0/.well-known/openid-configuration{appid}"
+    AUTHORIZATION_URL = "{base_url}/oauth2/v2.0/authorize"
+    ACCESS_TOKEN_URL = "{base_url}/oauth2/v2.0/token"
+    JWKS_URL = "{base_url}/discovery/v2.0/keys{appid}"
+    DEFAULT_SCOPE = ["openid", "profile", "offline_access"]
+
+    def get_user_id(self, details, response):
+        """Use oid as unique id"""
+        return response.get("oid")
+
+    def get_user_details(self, response):
+        """Return user details from Azure AD account"""
+        fullname, first_name, last_name = (
+            response.get("name", ""),
+            response.get("given_name", ""),
+            response.get("family_name", ""),
+        )
+        return {
+            "username": fullname,
+            "email": response.get("preferred_username"),
+            "fullname": fullname,
+            "first_name": first_name,
+            "last_name": last_name,
+        }
