@@ -42,6 +42,7 @@ class AzureADOIDOAuth2(AzureADTenantOAuth2):
         """Use account oid as unique id."""
         return response.get("oid")
 
+
 class AzureADV2OIDOAuth2(AzureADOIDOAuth2):
     name = "azuread-v2-OID-oauth2"
     OPENID_CONFIGURATION_URL = "{base_url}/v2.0/.well-known/openid-configuration{appid}"
