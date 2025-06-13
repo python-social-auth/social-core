@@ -1,13 +1,4 @@
-import base64
-
-from cryptography.hazmat.backends import default_backend
-from cryptography.x509 import load_der_x509_certificate
-from jwt import DecodeError, ExpiredSignatureError, get_unverified_header
-from jwt import decode as jwt_decode
-
-from social_core.exceptions import AuthTokenError
-
-from .azuread import AzureADOAuth2
+from .azuread_tenant import AzureADTenantOAuth2
 
 """
 Copyright (c) 2015 Microsoft Open Technologies, Inc.
@@ -60,8 +51,8 @@ class AzureADV2OIDOAuth2(AzureADOIDOAuth2):
     DEFAULT_SCOPE = ["openid", "profile", "offline_access"]
 
     def get_user_id(self, details, response):
-        """Use upn as unique id"""
-        return response.get("preferred_username")
+        """Use oid as unique id"""
+        return response.get("oid")
 
     def get_user_details(self, response):
         """Return user details from Azure AD account"""
