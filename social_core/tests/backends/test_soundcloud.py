@@ -41,7 +41,7 @@ class SoundcloudOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
             "upload_seconds_left": 7200,
             "country": None,
             "uri": "https://api.soundcloud.com/users/10101010",
-            "avatar_url": "https://a1.sndcdn.com/images/default_avatar_large.png?ca77017",  # noqa
+            "avatar_url": "https://a1.sndcdn.com/images/default_avatar_large.png?ca77017",
             "plan": "Free",
         }
     )
@@ -50,9 +50,7 @@ class SoundcloudOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         """Test standard login flow"""
         assert self.user_data_body is not None
         with patch.object(
-                self.backend,
-                "user_data",
-                return_value=json.loads(self.user_data_body)
+            self.backend, "user_data", return_value=json.loads(self.user_data_body)
         ):
             self.do_login()
 
@@ -60,9 +58,7 @@ class SoundcloudOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         """Test partial pipeline flow"""
         assert self.user_data_body is not None
         with patch.object(
-                self.backend,
-                "user_data",
-                return_value=json.loads(self.user_data_body)
+            self.backend, "user_data", return_value=json.loads(self.user_data_body)
         ):
             self.do_partial_pipeline()
 
@@ -76,7 +72,7 @@ class SoundcloudOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         )
 
         # Mock the HTTP request to the user data endpoint
-        with patch("social_core.backends.base.BaseAuth.request") as mock_request:  # noqa
+        with patch("social_core.backends.base.BaseAuth.request") as mock_request:
             assert self.user_data_body is not None
             mock_request.return_value.json.return_value = json.loads(
                 self.user_data_body
@@ -95,9 +91,6 @@ class SoundcloudOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
 
             # Verify the response data
             self.assertEqual(response["username"], self.expected_username)
-            self.assertEqual(
-                response["permalink_url"],
-                "http://soundcloud.com/foobar"
-            )
+            self.assertEqual(response["permalink_url"], "http://soundcloud.com/foobar")
             self.assertEqual(response["id"], 10101010)
             self.assertEqual(response["full_name"], "Foo Bar")
