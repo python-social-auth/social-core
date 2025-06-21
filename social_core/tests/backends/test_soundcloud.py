@@ -8,12 +8,7 @@ class SoundcloudOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.soundcloud.SoundcloudOAuth2"
     user_data_url = "https://api.soundcloud.com/me"
     expected_username = "foobar"
-    access_token_body = json.dumps(
-        {
-            "access_token": "foobar",
-            "token_type": "bearer"
-        }
-    )
+    access_token_body = json.dumps({"access_token": "foobar", "token_type": "bearer"})
     user_data_body = json.dumps(
         {
             "website": None,
