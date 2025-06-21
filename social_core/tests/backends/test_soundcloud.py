@@ -53,6 +53,7 @@ class SoundcloudOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
 
     def test_login(self):
         """Test standard login flow"""
+        assert self.user_data_body is not None
         with patch.object(
                 self.backend,
                 "user_data",
@@ -62,6 +63,7 @@ class SoundcloudOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
 
     def test_partial_pipeline(self):
         """Test partial pipeline flow"""
+        assert self.user_data_body is not None
         with patch.object(
                 self.backend,
                 "user_data",
@@ -80,6 +82,7 @@ class SoundcloudOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
 
         # Mock the HTTP request to the user data endpoint
         with patch("social_core.backends.base.BaseAuth.request") as mock_request:  # noqa
+            assert self.user_data_body is not None
             mock_request.return_value.json.return_value = json.loads(
                 self.user_data_body
             )
