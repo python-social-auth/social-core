@@ -81,7 +81,7 @@ class SoundcloudOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
             mock_request.return_value.json.return_value = json.loads(
                 self.user_data_body
             )
-            response = self.backend.user_data(access_token="foobar")
+            response = self.backend.user_data(access_token="foobar")  # noqa
 
             # Verify the request was made with the correct parameters
             mock_request.assert_called_once_with(
