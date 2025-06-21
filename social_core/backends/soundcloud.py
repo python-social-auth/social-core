@@ -36,7 +36,9 @@ class SoundcloudOAuth2(BaseOAuth2):
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
         return self.get_json(
-            "https://api.soundcloud.com/me.json", params={"oauth_token": access_token}
+            "https://api.soundcloud.com/me",
+            headers={"Authorization": f"OAuth {access_token}"},
+            params={"format": "json"},
         )
 
     def auth_url(self):
