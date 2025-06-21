@@ -8,12 +8,7 @@ class SoundcloudOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.soundcloud.SoundcloudOAuth2"
     user_data_url = "https://api.soundcloud.com/me"
     expected_username = "foobar"
-    access_token_body = json.dumps(
-        {
-            "access_token": "foobar",
-            "token_type": "bearer"
-        }
-    )
+    access_token_body = json.dumps({"access_token": "foobar", "token_type": "bearer"})
     user_data_body = json.dumps(
         {
             "website": None,
@@ -46,7 +41,7 @@ class SoundcloudOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
             "upload_seconds_left": 7200,
             "country": None,
             "uri": "https://api.soundcloud.com/users/10101010",
-            "avatar_url": "https://a1.sndcdn.com/images/default_avatar_large.png?ca77017",  # noqa
+            "avatar_url": "https://a1.sndcdn.com/images/default_avatar_large.png?ca77017",
             "plan": "Free",
         }
     )
@@ -54,18 +49,14 @@ class SoundcloudOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     def test_login(self):
         """Test standard login flow"""
         with patch.object(
-                self.backend,
-                "user_data",
-                return_value=json.loads(self.user_data_body)
+            self.backend, "user_data", return_value=json.loads(self.user_data_body)
         ):
             self.do_login()
 
     def test_partial_pipeline(self):
         """Test partial pipeline flow"""
         with patch.object(
-                self.backend,
-                "user_data",
-                return_value=json.loads(self.user_data_body)
+            self.backend, "user_data", return_value=json.loads(self.user_data_body)
         ):
             self.do_partial_pipeline()
 
@@ -79,7 +70,7 @@ class SoundcloudOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         )
 
         # Mock the HTTP request to the user data endpoint
-        with patch("social_core.backends.base.BaseAuth.request") as mock_request:  # noqa
+        with patch("social_core.backends.base.BaseAuth.request") as mock_request:
             mock_request.return_value.json.return_value = json.loads(
                 self.user_data_body
             )
@@ -97,9 +88,6 @@ class SoundcloudOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
 
             # Verify the response data
             self.assertEqual(response["username"], self.expected_username)
-            self.assertEqual(
-                response["permalink_url"],
-                "http://soundcloud.com/foobar"
-            )
+            self.assertEqual(response["permalink_url"], "http://soundcloud.com/foobar")
             self.assertEqual(response["id"], 10101010)
             self.assertEqual(response["full_name"], "Foo Bar")
