@@ -24,7 +24,7 @@ class SoundcloudOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Soundcloud account"""
-        fullname, first_name, last_name = self.get_user_names(response.get("full_name"))
+        fullname, first_name, last_name = self.get_user_names(response.get("full_name"))  # noqa
         return {
             "username": response.get("username"),
             "email": response.get("email") or "",
@@ -36,7 +36,9 @@ class SoundcloudOAuth2(BaseOAuth2):
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
         return self.get_json(
-            "https://api.soundcloud.com/me.json", params={"oauth_token": access_token}
+            "https://api.soundcloud.com/me",
+            headers={"Authorization": f"OAuth {access_token}"},
+            params={"format": "json"},
         )
 
     def auth_url(self):
