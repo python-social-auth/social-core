@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import cast
+
 import requests
 import responses
 
@@ -20,14 +24,14 @@ class DisconnectActionTest(BaseActionTest):
 
     def test_disconnect(self) -> None:
         self.do_login()
-        user = User.get(self.expected_username)
+        user = cast("User", User.get(self.expected_username))
         user.password = "password"
         do_disconnect(self.backend, user)
         self.assertEqual(len(user.social), 0)
 
     def test_disconnect_with_association_id(self) -> None:
         self.do_login()
-        user = User.get(self.expected_username)
+        user = cast("User", User.get(self.expected_username))
         user.password = "password"
         association_id = user.social[0].id
         second_usa = TestUserSocialAuth(user, user.social[0].provider, "uid2")
@@ -50,7 +54,7 @@ class DisconnectActionTest(BaseActionTest):
             }
         )
         self.do_login()
-        user = User.get(self.expected_username)
+        user = cast("User", User.get(self.expected_username))
         redirect = do_disconnect(self.backend, user)
 
         url = self.strategy.build_absolute_uri("/password")

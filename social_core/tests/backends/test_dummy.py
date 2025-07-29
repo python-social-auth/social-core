@@ -1,6 +1,8 @@
-# pyright: reportAttributeAccessIssue=false
+from __future__ import annotations
+
 import datetime
 import json
+from typing import cast
 
 import responses
 
@@ -70,7 +72,7 @@ class DummyOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     def test_revoke_token(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_REVOKE_TOKENS_ON_DISCONNECT": True})
         self.do_login()
-        user = User.get(self.expected_username)
+        user = cast("User", User.get(self.expected_username))
         user.password = "password"
         responses.add(
             self._method(self.backend.REVOKE_TOKEN_METHOD),

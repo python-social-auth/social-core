@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 
 from social_core.exceptions import AuthAlreadyAssociated
