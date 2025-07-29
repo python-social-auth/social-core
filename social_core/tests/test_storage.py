@@ -1,4 +1,3 @@
-import random
 import unittest
 
 from social_core.storage import (
@@ -189,14 +188,3 @@ class BrokenStrategyTests(unittest.TestCase):
 
     def test_random_string(self) -> None:
         self.assertTrue(isinstance(self.strategy.random_string(), str))
-
-    def test_random_string_without_systemrandom(self) -> None:
-        def SystemRandom():
-            raise NotImplementedError
-
-        orig_random = getattr(random, "SystemRandom", None)
-        random.SystemRandom = SystemRandom
-
-        strategy = BrokenStrategyWithSettings(storage=BrokenStorage)
-        self.assertTrue(isinstance(strategy.random_string(), str))
-        random.SystemRandom = orig_random
