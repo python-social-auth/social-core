@@ -9,9 +9,11 @@ dev = [
   "google-auth-stubs==0.3.0",
   "mypy==1.17.0",
   "pyright==1.1.403",
-  "pytest-cov>=2.7.1",
-  "pytest-xdist>=3.6.1",
-  "pytest>=4.5",
+  "pytest-cov==6.2.1",
+  "pytest-github-actions-annotate-failures==0.3.0",
+  "pytest-profiling==1.8.1",
+  "pytest-xdist==3.8.0",
+  "pytest==8.4.1",
   "responses==0.25.7",
   "types-defusedxml==0.7.0.20250708",
   "types-oauthlib==3.3.0.20250708",
@@ -77,9 +79,11 @@ dev = [
   "google-auth-stubs==0.3.0",
   "mypy==1.17.0",
   "pyright==1.1.403",
-  "pytest-cov>=2.7.1",
-  "pytest-xdist>=3.6.1",
-  "pytest>=4.5",
+  "pytest-cov==6.2.1",
+  "pytest-github-actions-annotate-failures==0.3.0",
+  "pytest-profiling==1.8.1",
+  "pytest-xdist==3.8.0",
+  "pytest==8.4.1",
   "responses==0.25.7",
   "types-defusedxml==0.7.0.20250708",
   "types-oauthlib==3.3.0.20250708",
@@ -137,6 +141,9 @@ executionEnvironments = [
 pythonVersion = "3.9"
 reportOptionalMemberAccess = "none"
 reportPossiblyUnboundVariable = "none"
+
+[tool.pytest.ini_options]
+addopts = "--cov=social_core --cov-report=xml --durations=10"
 
 [tool.ruff.lint]
 extend-safe-fixes = [
