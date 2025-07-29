@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import json
 import time
+from typing import cast
 from unittest import mock
 from urllib.parse import urlencode
 
@@ -105,7 +108,7 @@ class GoogleRevokeTokenTest(GoogleOAuth2Test):
             {"SOCIAL_AUTH_GOOGLE_OAUTH2_REVOKE_TOKENS_ON_DISCONNECT": True}
         )
         self.do_login()
-        user = User.get(self.expected_username)
+        user = cast("User", User.get(self.expected_username))
         user.password = "password"
         responses.add(
             self._method(self.backend.REVOKE_TOKEN_METHOD),
