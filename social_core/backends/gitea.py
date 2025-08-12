@@ -47,5 +47,5 @@ class GiteaOAuth2(BaseOAuth2):
         """Loads user data from service"""
         return self.get_json(
             self.api_url("/api/v1/user"),
-            headers={"Authorization": f"token {access_token}"},
+            headers={"Authorization": f"Bearer {access_token}"},
         )
