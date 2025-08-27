@@ -35,11 +35,13 @@ class Auth0OpenIdConnectAuth(OpenIdConnectAuth):
         """Extract user details from Auth0 response"""
         details = super().get_user_details(response)
         # Auth0 specific extra data
-        details.update({
-            "email_verified": response.get("email_verified", False),
-            "picture": response.get("picture"),
-            "locale": response.get("locale"),
-            "user_id": response.get("sub"),
-        })
+        details.update(
+            {
+                "email_verified": response.get("email_verified", False),
+                "picture": response.get("picture"),
+                "locale": response.get("locale"),
+                "user_id": response.get("sub"),
+            }
+        )
 
         return details
