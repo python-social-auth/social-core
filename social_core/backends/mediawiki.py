@@ -32,6 +32,7 @@ class MediaWiki(BaseOAuth1):
     name = "mediawiki"
     MEDIAWIKI_URL = "https://meta.wikimedia.org/w/index.php"
     SOCIAL_AUTH_MEDIAWIKI_CALLBACK = "oob"
+    SEND_USER_AGENT = True
     LEEWAY = 10.0
 
     def unauthorized_token(self):
