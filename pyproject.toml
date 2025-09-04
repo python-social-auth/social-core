@@ -78,7 +78,7 @@ dev = [
   "flake8>=5.0.4",
   "google-auth-stubs==0.3.0",
   "mypy==1.17.1",
-  "pyright==1.1.404",
+  "pyright==1.1.405",
   "pytest-cov==6.2.1",
   "pytest-github-actions-annotate-failures==0.3.0",
   "pytest-profiling==1.8.1",
