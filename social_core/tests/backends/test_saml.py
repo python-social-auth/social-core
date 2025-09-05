@@ -16,7 +16,7 @@ try:
 except ImportError:
     SAML_MODULE_ENABLED = False
 
-from social_core.exceptions import AuthMissingParameter
+from social_core.exceptions import AuthInvalidParameter, AuthMissingParameter
 
 from .base import BaseBackendTest
 
@@ -118,13 +118,14 @@ class SAMLTest(BaseBackendTest):
         """
         Test that we handle legacy RelayState (i.e. just the IDP name, not a JSON object).
 
-        This is the form that RelayState had in prior versions of this library. It should be supported for backwards
-        compatibility.
+        This is the form that RelayState had in prior versions of this library.
+        It is no longer supported and fails with invalid parameter.
         """
         self.response_fixture = "saml_response_legacy.txt"
 
         self.strategy.set_request_data({"idp": "testshib"}, self.backend)
-        self.do_login()
+        with self.assertRaises(AuthInvalidParameter):
+            self.do_login()
 
     def test_login_no_idp_in_initial_request(self) -> None:
         """
