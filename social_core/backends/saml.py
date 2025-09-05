@@ -8,12 +8,18 @@ Terminology:
                            users via SAML
 """
 
+from __future__ import annotations
+
 import json
 
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
 from onelogin.saml2.settings import OneLogin_Saml2_Settings
 
-from social_core.exceptions import AuthFailed, AuthMissingParameter
+from social_core.exceptions import (
+    AuthFailed,
+    AuthInvalidParameter,
+    AuthMissingParameter,
+)
 
 from .base import BaseAuth
 
@@ -314,26 +320,27 @@ class SAMLAuth(BaseAuth):
         """
         try:
             relay_state_str = self.strategy.request_data()["RelayState"]
-        except KeyError:
-            raise AuthMissingParameter(self, "RelayState")
+        except KeyError as error:
+            raise AuthMissingParameter(self, "RelayState") from error
 
         try:
-            relay_state = json.loads(relay_state_str)
-            if not isinstance(relay_state, dict) or "idp" not in relay_state:
-                raise ValueError(
-                    "RelayState is expected to contain a JSON object with an 'idp' key"
-                )
-        except ValueError:
-            # Assume RelayState is just the idp_name, as it used to be in previous versions of this code.
-            # This ensures compatibility with previous versions.
-            idp_name = relay_state_str
-        else:
-            idp_name = relay_state["idp"]
-            if session_id := relay_state.get(self.strategy.SESSION_SAVE_KEY):
-                self.strategy.restore_session(session_id, kwargs)
-            elif next_url := relay_state.get("next"):
-                # The do_complete action expects the "next" URL to be in session state or the request params.
-                self.strategy.session_set(kwargs.get("redirect_name", "next"), next_url)
+            relay_state: dict = json.loads(relay_state_str)
+        except json.JSONDecodeError as error:
+            raise AuthInvalidParameter(self, "RelayState") from error
+
+        if not isinstance(relay_state, dict):
+            raise AuthInvalidParameter(self, "RelayState")
+
+        idp_name: str | None = relay_state.get("idp")
+
+        if not idp_name:
+            raise AuthInvalidParameter(self, "RelayState.idp")
+
+        if session_id := relay_state.get(self.strategy.SESSION_SAVE_KEY):
+            self.strategy.restore_session(session_id, kwargs)
+        elif next_url := relay_state.get("next"):
+            # The do_complete action expects the "next" URL to be in session state or the request params.
+            self.strategy.session_set(kwargs.get("redirect_name", "next"), next_url)
 
         idp = self.get_idp(idp_name)
         auth = self._create_saml_auth(idp)
