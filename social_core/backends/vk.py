@@ -93,8 +93,8 @@ class VKOAuth2(BaseOAuth2):
 
     name = "vk-oauth2"
     ID_KEY = "id"
-    AUTHORIZATION_URL = "https://oauth.vk.com/authorize"
-    ACCESS_TOKEN_URL = "https://oauth.vk.com/access_token"
+    AUTHORIZATION_URL = "https://oauth.vk.ru/authorize"
+    ACCESS_TOKEN_URL = "https://oauth.vk.ru/access_token"
     EXTRA_DATA = [("id", "id"), ("expires_in", "expires")]
 
     def get_user_details(self, response):
@@ -158,11 +158,11 @@ class VKOAuth2(BaseOAuth2):
 
             data["method"] = method
             data["format"] = "json"
-            url = "https://api.vk.com/api.php"
+            url = "https://api.vk.ru/api.php"
             param_list = sorted(item + "=" + data[item] for item in data)
             data["sig"] = vk_sig("".join(param_list) + secret)
         else:
-            url = "https://api.vk.com/method/" + method
+            url = "https://api.vk.ru/method/" + method
 
         try:
             return self.get_json(url, params=data)
