@@ -47,6 +47,12 @@ class CASOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
         settings.update(
             {
                 f"SOCIAL_AUTH_{self.name}_OIDC_ENDPOINT": f"{ROOT_URL}oidc",
+                f"SOCIAL_AUTH_{self.name}_ALLOW_GROUPS": [
+                    "users",
+                ],
+                f"SOCIAL_AUTH_{self.name}_WHITELISTED_DOMAINS": [
+                    "example.net",
+                ],
             }
         )
         return settings
