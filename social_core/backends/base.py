@@ -25,7 +25,7 @@ class BaseAuth:
     EXTRA_DATA: list[str | tuple[str, str] | tuple[str, str, bool]] | None = None
     GET_ALL_EXTRA_DATA = False
     REQUIRES_EMAIL_VALIDATION = False
-    SEND_USER_AGENT = False
+    SEND_USER_AGENT = True
 
     def __init__(self, strategy, redirect_uri=None) -> None:
         self.strategy = strategy
