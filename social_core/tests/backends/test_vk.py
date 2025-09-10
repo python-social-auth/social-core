@@ -5,7 +5,7 @@ from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 class VKOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.vk.VKOAuth2"
-    user_data_url = "https://api.vk.com/method/users.get"
+    user_data_url = "https://api.vk.ru/method/users.get"
     expected_username = "durov"
     access_token_body = json.dumps({"access_token": "foobar", "token_type": "bearer"})
     user_data_body = json.dumps(
