@@ -32,7 +32,7 @@ class PingOpenIdConnect(OpenIdConnectAuth):
         Validates the id_token according to the steps at
         http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation.
         """
-        client_id, client_secret = self.get_key_and_secret()
+        client_id, _client_secret = self.get_key_and_secret()
 
         key = self.find_valid_key(id_token)
 

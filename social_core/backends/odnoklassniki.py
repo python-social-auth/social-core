@@ -50,7 +50,7 @@ class OdnoklassnikiOAuth2(BaseOAuth2):
     def user_data(self, access_token, *args, **kwargs):
         """Return user data from Odnoklassniki REST API"""
         data = {"access_token": access_token, "method": "users.getCurrentUser"}
-        key, secret = self.get_key_and_secret()
+        _key, secret = self.get_key_and_secret()
         public_key = self.setting("PUBLIC_NAME")
         return odnoklassniki_api(
             self, data, "https://api.ok.ru/", public_key, secret, "oauth"
@@ -99,7 +99,7 @@ class OdnoklassnikiApp(BaseAuth):
             "uids": "{}".format(response["logged_user_id"]),
             "fields": ",".join(fields),
         }
-        client_key, client_secret = self.get_key_and_secret()
+        _client_key, client_secret = self.get_key_and_secret()
         public_key = self.setting("PUBLIC_NAME")
         details = odnoklassniki_api(
             self,

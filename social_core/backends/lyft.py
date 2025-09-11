@@ -38,7 +38,7 @@ class LyftOAuth2(BaseOAuth2):
         )
 
     def auth_complete_params(self, state=None):
-        client_id, client_secret = self.get_key_and_secret()
+        _client_id, _client_secret = self.get_key_and_secret()
         return {"grant_type": "authorization_code", "code": self.data["code"]}
 
     def auth_complete_credentials(self):

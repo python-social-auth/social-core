@@ -352,7 +352,7 @@ class BaseOAuth2(OAuthAuth):
         return self.USE_BASIC_AUTH
 
     def auth_params(self, state: str | None = None) -> dict[str, str]:
-        client_id, client_secret = self.get_key_and_secret()
+        client_id, _client_secret = self.get_key_and_secret()
         params = {"client_id": client_id, "redirect_uri": self.get_redirect_uri(state)}
         if self.STATE_PARAMETER and state:
             params["state"] = state

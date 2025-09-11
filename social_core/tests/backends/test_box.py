@@ -69,7 +69,7 @@ class BoxOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         return {"redirect_uri": uri}
 
     def test_refresh_token(self) -> None:
-        user, social = self.do_refresh_token()
+        _user, social = self.do_refresh_token()
         self.assertEqual(
             social.extra_data["access_token"], "T9cE5asGnuyYCCqIZFoWjFHvNbvVqHjl"
         )
