@@ -192,7 +192,7 @@ class FacebookAppOAuth2(FacebookOAuth2):
         response = {}
 
         if "signed_request" in self.data:
-            key, secret = self.get_key_and_secret()
+            _key, _secret = self.get_key_and_secret()
             response = self.load_signed_request(self.data["signed_request"])
             assert response, "Missing signed_request response"
             if "user_id" not in response and "oauth_token" not in response:
@@ -212,7 +212,7 @@ class FacebookAppOAuth2(FacebookOAuth2):
         return self.do_auth(access_token, response, *args, **kwargs)
 
     def auth_html(self):
-        key, secret = self.get_key_and_secret()
+        key, _secret = self.get_key_and_secret()
         namespace = self.setting("NAMESPACE", None)
         scope = self.setting("SCOPE", "")
         if scope:
@@ -232,7 +232,7 @@ class FacebookAppOAuth2(FacebookOAuth2):
             data += b"=" * (4 - (len(data) % 4))
             return base64.urlsafe_b64decode(data)
 
-        key, secret = self.get_key_and_secret()
+        _key, secret = self.get_key_and_secret()
         try:
             sig, payload = signed_request.split(".", 1)
         except ValueError:

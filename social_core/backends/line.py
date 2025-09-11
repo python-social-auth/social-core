@@ -32,7 +32,7 @@ class LineOAuth2(BaseOAuth2):
     ]
 
     def auth_params(self, state=None):
-        client_id, client_secret = self.get_key_and_secret()
+        client_id, _client_secret = self.get_key_and_secret()
         return {
             "response_type": self.RESPONSE_TYPE,
             "client_id": client_id,

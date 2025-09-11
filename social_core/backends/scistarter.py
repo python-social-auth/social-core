@@ -53,5 +53,5 @@ class SciStarterOAuth2(BaseOAuth2):
         )
 
     def access_token_url(self):
-        client_id, client_secret = self.get_key_and_secret()
+        _client_id, client_secret = self.get_key_and_secret()
         return self.ACCESS_TOKEN_URL.format(key=client_secret)

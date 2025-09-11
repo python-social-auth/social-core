@@ -73,7 +73,7 @@ class VKontakteOpenAPI(BaseAuth):
             item + "=" + mapping[item] for item in ["expire", "mid", "secret", "sid"]
         )
 
-        key, secret = self.get_key_and_secret()
+        _key, secret = self.get_key_and_secret()
         vk_hash = vk_sig(check_str + secret)
         if vk_hash != mapping["sig"] or int(mapping["expire"]) < time():
             raise ValueError("VK.com authentication failed: Invalid Hash")

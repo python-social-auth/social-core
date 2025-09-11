@@ -21,7 +21,7 @@ class LoginRadiusAuth(BaseOAuth2):
         return False
 
     def auth_html(self):
-        key, secret = self.get_key_and_secret()
+        key, _secret = self.get_key_and_secret()
         tpl = self.setting("TEMPLATE", "loginradius.html")
         return self.strategy.render_html(
             tpl=tpl,

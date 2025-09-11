@@ -59,7 +59,7 @@ class ExactTargetOAuth2(BaseOAuth2):
             raise AuthFailed(self, error)
 
     def do_auth(self, token, *args, **kwargs):
-        dummy, secret = self.get_key_and_secret()
+        _key, secret = self.get_key_and_secret()
         try:  # Decode the token, using the Application Signature from settings
             decoded = jwt.decode(token, secret, algorithms=["HS256"])
         except jwt.DecodeError:  # Wrong signature, fail authentication
