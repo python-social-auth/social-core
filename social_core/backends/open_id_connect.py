@@ -338,15 +338,18 @@ class OpenIdConnectAuth(BaseOAuth2):
     def get_user_details(self, response):
         username_key = self.setting("USERNAME_KEY", self.USERNAME_KEY)
         # populate response with id_token if needed
+        user_details = {}
         for key in [username_key, "email", "name", "given_name", "family_name"]:
-            if response.get(key) is None and self.id_token is not None:
-                response[key] = self.id_token.get(key)
+            if key in response:
+                user_details[key] = response.get(key)
+            elif self.id_token is not None:
+                user_details[key] = self.id_token.get(key)
         return {
-            "username": response.get(username_key),
-            "email": response.get("email"),
-            "fullname": response.get("name"),
-            "first_name": response.get("given_name"),
-            "last_name": response.get("family_name"),
+            "username": user_details.get(username_key),
+            "email": user_details.get("email"),
+            "fullname": user_details.get("name"),
+            "first_name": user_details.get("given_name"),
+            "last_name": user_details.get("family_name"),
         }
 
     @staticmethod
