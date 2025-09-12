@@ -337,7 +337,6 @@ class OpenIdConnectAuth(BaseOAuth2):
 
     def get_user_details(self, response):
         username_key = self.setting("USERNAME_KEY", self.USERNAME_KEY)
-        # populate response with id_token if needed
         user_details = {}
         for key in [username_key, "email", "name", "given_name", "family_name"]:
             if key in response:
