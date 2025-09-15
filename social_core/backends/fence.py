@@ -13,7 +13,7 @@ class Fence(OpenIdConnectAuth):
     OIDC_ENDPOINT = "https://nci-crdc.datacommons.io"
     ID_KEY = "username"
     DEFAULT_SCOPE = ["openid", "user"]
-    JWT_DECODE_OPTIONS = {"verify_at_hash": False}
+    VALIDATE_AT_HASH: bool = False
 
     def _url(self, path):
         return urljoin(append_slash(cast("str", self.OIDC_ENDPOINT)), path)

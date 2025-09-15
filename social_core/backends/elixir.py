@@ -19,7 +19,7 @@ class ElixirOpenIdConnect(OpenIdConnectAuth):
     # ELIXIR, see documentation at
     # https://www.elixir-europe.org/services/compute/aai
     DEFAULT_SCOPE = ["openid", "email"]
-    JWT_DECODE_OPTIONS = {"verify_at_hash": False}
+    VALIDATE_AT_HASH: bool = False
 
     def get_user_details(self, response):
         username_key = self.setting("USERNAME_KEY", default=self.USERNAME_KEY)

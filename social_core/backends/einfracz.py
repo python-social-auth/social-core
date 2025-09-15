@@ -18,7 +18,7 @@ class EInfraCZOpenIdConnect(OpenIdConnectAuth):
     # In order to get any scopes, you have to register your service with
     # e-INFRA CZ AAI at https://spadmin.e-infra.cz/
     DEFAULT_SCOPE = ["openid", "email"]
-    JWT_DECODE_OPTIONS = {"verify_at_hash": False}
+    VALIDATE_AT_HASH: bool = False
 
     def get_user_details(self, response):
         username_key = self.setting("USERNAME_KEY", default=self.USERNAME_KEY)
