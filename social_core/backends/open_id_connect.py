@@ -337,10 +337,11 @@ class OpenIdConnectAuth(BaseOAuth2):
 
     def get_user_details(self, response):
         username_key = self.setting("USERNAME_KEY", self.USERNAME_KEY)
+
         def get_value(key):
             if key in response:
                 return response.get(key)
-            elif self.id_token is not None:
+            if self.id_token is not None:
                 return self.id_token.get(key)
             return None
 
