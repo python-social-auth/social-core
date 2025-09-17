@@ -4,7 +4,7 @@ import base64
 import datetime
 import json
 from calendar import timegm
-from typing import Generic, TypeVar
+from typing import Any, Generic, TypeVar
 from urllib.parse import urlparse
 
 import jwt
@@ -53,6 +53,9 @@ class OpenIdConnectTest(
     issuer: str  # id_token issuer
     openid_config_body: str
     key: dict[str, str]
+    allow_invalid_at_hash = False
+    skip_invalid_at_hash = False
+    access_token_kwargs: dict[str, Any]
 
     # Avoid sharing access_token_kwargs between different subclasses
     def __init_subclass__(cls, **kwargs):
@@ -118,7 +121,7 @@ class OpenIdConnectTest(
             "sub": "1234",
         }
 
-    def prepare_access_token_body(
+    def prepare_access_token_body(  # NOQA: PLR0913
         self,
         client_key=None,
         tamper_message=False,
@@ -127,6 +130,7 @@ class OpenIdConnectTest(
         issue_datetime=None,
         nonce=None,
         issuer=None,
+        at_hash=None,
     ):
         """
         Prepares a provider access token response. Arguments:
@@ -154,7 +158,9 @@ class OpenIdConnectTest(
             issuer,
         )
         # calc at_hash
-        id_token["at_hash"] = OpenIdConnectAuth.calc_at_hash("foobar", "RS256")
+        id_token["at_hash"] = at_hash or OpenIdConnectAuth.calc_at_hash(
+            "foobar", "RS256"
+        )
 
         body["id_token"] = jwt.encode(
             id_token,
@@ -228,3 +234,12 @@ class OpenIdConnectTest(
         self.authtoken_raised(
             "Token error: Signature verification failed", kid="doesnotexist"
         )
+
+    def test_invalid_at_hash(self) -> None:
+        if self.skip_invalid_at_hash:
+            self.skipTest("the call doesn't match any registered mock.")
+        if self.allow_invalid_at_hash:
+            self.access_token_kwargs = {"at_hash": "foo"}
+            self.do_login()
+        else:
+            self.authtoken_raised("Token error: Invalid access token", at_hash="foo")

@@ -62,6 +62,7 @@ class OpenIdConnectAuth(BaseOAuth2):
     JWT_ALGORITHMS = ["RS256"]
     JWT_DECODE_OPTIONS: dict[str, Any] = {}
     JWT_LEEWAY: float = 1.0  # seconds
+    VALIDATE_AT_HASH: bool = True
     # When these options are unspecified, server will choose via openid autoconfiguration
     ID_TOKEN_ISSUER = ""
     ACCESS_TOKEN_URL = ""
@@ -310,8 +311,14 @@ class OpenIdConnectAuth(BaseOAuth2):
 
         # pyjwt does not validate OIDC claims
         # see https://github.com/jpadilla/pyjwt/pull/296
-        if "at_hash" in claims and claims["at_hash"] != self.calc_at_hash(
-            access_token, key["alg"]
+        if (
+            self.VALIDATE_AT_HASH
+            and "at_hash" in claims
+            and claims["at_hash"]
+            != self.calc_at_hash(
+                access_token,
+                key["alg"],
+            )
         ):
             raise AuthTokenError(self, "Invalid access token")
 

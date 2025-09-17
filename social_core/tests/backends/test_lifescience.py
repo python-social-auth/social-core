@@ -262,6 +262,7 @@ class LifeScienceOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
             "name": "Foo Bar",
         }
     )
+    allow_invalid_at_hash = True
 
     def test_login(self) -> None:
         self.do_login()
