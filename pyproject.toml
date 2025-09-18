@@ -9,7 +9,7 @@ dev = [
   "google-auth-stubs==0.3.0",
   "mypy==1.18.1",
   "pyright==1.1.405",
-  "pytest-cov==6.2.1",
+  "pytest-cov==7.0.0",
   "pytest-github-actions-annotate-failures==0.3.0",
   "pytest-profiling==1.8.1",
   "pytest-xdist==3.8.0",
