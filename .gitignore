@@ -55,3 +55,6 @@ changelog.sh
 
 .env
 .venv*
+
+/prof/
+/coverage.xml

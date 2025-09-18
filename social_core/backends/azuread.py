@@ -31,7 +31,8 @@ import time
 
 import jwt
 
-from ..exceptions import AuthMissingParameter, AuthTokenError
+from social_core.exceptions import AuthMissingParameter, AuthTokenError
+
 from .oauth import BaseOAuth2
 
 
@@ -60,7 +61,7 @@ class AzureADOAuth2(BaseOAuth2):
         return self.setting("AUTHORITY_HOST", "login.microsoftonline.com")
 
     @property
-    def tenant_id(self):
+    def tenant_id(self) -> str:
         return "common"
 
     @property

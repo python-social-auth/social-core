@@ -16,7 +16,8 @@ try:
 except ImportError:
     SAML_MODULE_ENABLED = False
 
-from ...exceptions import AuthMissingParameter
+from social_core.exceptions import AuthInvalidParameter, AuthMissingParameter
+
 from .base import BaseBackendTest
 
 DATA_DIR = Path(__file__).parent / "data"
@@ -36,7 +37,7 @@ class SAMLTest(BaseBackendTest):
         config_str = file.read_text()
         return json.loads(config_str)
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Patch the time so that we can replay canned
         request/response pairs"""
         super().setUp()
@@ -49,7 +50,7 @@ class SAMLTest(BaseBackendTest):
         now_patch.start()
         self.addCleanup(now_patch.stop)
 
-    def install_http_intercepts(self, start_url, return_url):
+    def install_http_intercepts(self, start_url, return_url) -> None:
         # When we request start_url
         # (https://idp.testshib.org/idp/profile/SAML2/Redirect/SSO...)
         # we will eventually get a redirect back, with SAML assertion
@@ -84,13 +85,13 @@ class SAMLTest(BaseBackendTest):
         self.strategy.set_request_data(query_values, self.backend)
         return self.backend.complete()
 
-    def test_metadata_generation(self):
+    def test_metadata_generation(self) -> None:
         """Test that we can generate the metadata without error"""
         xml, errors = self.backend.generate_metadata_xml()
         self.assertEqual(len(errors), 0)
         self.assertEqual(xml.decode()[0], "<")
 
-    def test_login_with_next_url(self):
+    def test_login_with_next_url(self) -> None:
         """
         Test that we login and then redirect to the "next" URL.
         """
@@ -102,7 +103,7 @@ class SAMLTest(BaseBackendTest):
         # The core `do_complete` action assumes the "next" URL is stored in session state or the request data.
         self.assertEqual(self.strategy.session_get("next"), "/foo/bar")
 
-    def test_login_no_next_url(self):
+    def test_login_no_next_url(self) -> None:
         """
         Test that we handle "next" being omitted from the request data and RelayState.
         """
@@ -113,26 +114,27 @@ class SAMLTest(BaseBackendTest):
         self.do_login()
         self.assertEqual(self.strategy.session_get("next"), None)
 
-    def test_login_with_legacy_relay_state(self):
+    def test_login_with_legacy_relay_state(self) -> None:
         """
         Test that we handle legacy RelayState (i.e. just the IDP name, not a JSON object).
 
-        This is the form that RelayState had in prior versions of this library. It should be supported for backwards
-        compatibility.
+        This is the form that RelayState had in prior versions of this library.
+        It is no longer supported and fails with invalid parameter.
         """
         self.response_fixture = "saml_response_legacy.txt"
 
         self.strategy.set_request_data({"idp": "testshib"}, self.backend)
-        self.do_login()
+        with self.assertRaises(AuthInvalidParameter):
+            self.do_login()
 
-    def test_login_no_idp_in_initial_request(self):
+    def test_login_no_idp_in_initial_request(self) -> None:
         """
         Logging in without an idp param should raise AuthMissingParameter
         """
         with self.assertRaises(AuthMissingParameter):
             self.do_start()
 
-    def test_login_no_idp_in_saml_response(self):
+    def test_login_no_idp_in_saml_response(self) -> None:
         """
         The RelayState should always contain a JSON object with an "idp" key, or be just the IDP name as a string.
         This tests that an exception is raised if it is a JSON object, but is missing the "idp" key.

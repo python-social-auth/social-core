@@ -10,13 +10,13 @@ class CognitoOAuth2(BaseOAuth2):
     def user_pool_domain(self):
         return self.setting("POOL_DOMAIN")
 
-    def authorization_url(self):
+    def authorization_url(self) -> str:
         return f"{self.user_pool_domain()}/login"
 
-    def access_token_url(self):
+    def access_token_url(self) -> str:
         return f"{self.user_pool_domain()}/oauth2/token"
 
-    def user_data_url(self):
+    def user_data_url(self) -> str:
         return f"{self.user_pool_domain()}/oauth2/userInfo"
 
     def get_user_details(self, response):

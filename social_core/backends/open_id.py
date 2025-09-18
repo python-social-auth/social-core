@@ -4,14 +4,15 @@ from openid.consumer.consumer import CANCEL, FAILURE, SUCCESS, Consumer
 from openid.consumer.discover import DiscoveryFailure
 from openid.extensions import ax, pape, sreg
 
-from ..exceptions import (
+from social_core.exceptions import (
     AuthCanceled,
     AuthException,
     AuthFailed,
     AuthMissingParameter,
     AuthUnknownError,
 )
-from ..utils import url_add_parameters
+from social_core.utils import url_add_parameters
+
 from .base import BaseAuth
 
 # OpenID configuration
@@ -192,7 +193,7 @@ class OpenIdAuth(BaseAuth):
             self.strategy.restore_session(session_id, kwargs)
         return self.strategy.authenticate(self, response=response, *args, **kwargs)
 
-    def process_error(self, data):
+    def process_error(self, data) -> None:
         if not data:
             raise AuthException(self, "OpenID relying party endpoint")
         if data.status == FAILURE:

@@ -118,10 +118,10 @@ class TwitterOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
 
 
@@ -242,9 +242,9 @@ class TwitterOAuth1IncludeEmailTest(OAuth1Test, OAuth1AuthUrlTestMixin):
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         user = self.do_login()
         self.assertEqual(user.email, "foo@bar.bas")
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()

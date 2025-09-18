@@ -18,7 +18,6 @@ class RedditOAuth2(BaseOAuth2):
     REDIRECT_STATE = False
     SCOPE_SEPARATOR = ","
     DEFAULT_SCOPE = ["identity"]
-    SEND_USER_AGENT = True
     EXTRA_DATA = [
         ("id", "id"),
         ("name", "username"),

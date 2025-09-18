@@ -7,7 +7,8 @@ from urllib.parse import urlencode
 
 from requests import HTTPError
 
-from ..exceptions import AuthCanceled, AuthUnknownError
+from social_core.exceptions import AuthCanceled, AuthUnknownError
+
 from .oauth import BaseOAuth2
 
 
@@ -53,7 +54,7 @@ class WeixinOAuth2(BaseOAuth2):
         return data
 
     def auth_params(self, state=None):
-        appid, secret = self.get_key_and_secret()
+        appid, _secret = self.get_key_and_secret()
         params = {"appid": appid, "redirect_uri": self.get_redirect_uri(state)}
         if self.STATE_PARAMETER and state:
             params["state"] = state
@@ -147,7 +148,7 @@ class WeixinOAuth2APP(WeixinOAuth2):
             "secret": secret,
         }
 
-    def validate_state(self):
+    def validate_state(self) -> None:
         return None
 
     def auth_complete(self, *args, **kwargs):

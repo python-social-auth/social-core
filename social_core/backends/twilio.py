@@ -25,9 +25,9 @@ class TwilioAuth(BaseAuth):
             "last_name": "",
         }
 
-    def auth_url(self):
+    def auth_url(self) -> str:
         """Return authorization redirect url."""
-        key, secret = self.get_key_and_secret()
+        key, _secret = self.get_key_and_secret()
         callback = self.strategy.absolute_uri(self.redirect_uri)
         callback = sub(r"^https", "http", callback)
         query = urlencode({"cb": callback})

@@ -42,7 +42,7 @@ class StripeOAuth2(BaseOAuth2):
         }
 
     def auth_complete_params(self, state=None):
-        client_id, client_secret = self.get_key_and_secret()
+        client_id, _client_secret = self.get_key_and_secret()
         return {
             "grant_type": "authorization_code",
             "client_id": client_id,
@@ -51,7 +51,7 @@ class StripeOAuth2(BaseOAuth2):
         }
 
     def auth_headers(self):
-        client_id, client_secret = self.get_key_and_secret()
+        _client_id, client_secret = self.get_key_and_secret()
         return {
             "Accept": "application/json",
             "Authorization": f"Bearer {client_secret}",

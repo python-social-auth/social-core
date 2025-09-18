@@ -35,7 +35,7 @@ class BaseOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
         )
         return settings
 
-    def pre_complete_callback(self, start_url):
+    def pre_complete_callback(self, start_url) -> None:
         super().pre_complete_callback(start_url)
         responses.add(
             "GET",
@@ -45,7 +45,7 @@ class BaseOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
             content_type="text/json",
         )
 
-    def test_everything_works(self):
+    def test_everything_works(self) -> None:
         self.do_login()
 
 
@@ -72,7 +72,7 @@ class ExampleOpenIdConnectTest(OpenIdConnectTest):
 
     expected_username = "cartman"
 
-    def pre_complete_callback(self, start_url):
+    def pre_complete_callback(self, start_url) -> None:
         super().pre_complete_callback(start_url)
         responses.add(
             responses.GET,
@@ -82,5 +82,40 @@ class ExampleOpenIdConnectTest(OpenIdConnectTest):
             content_type="text/json",
         )
 
-    def test_everything_works(self):
+    def test_everything_works(self) -> None:
+        self.do_login()
+
+
+class OpenIdConnectAuthNoValidateAtHash(ExampleOpenIdConnectAuth):
+    VALIDATE_AT_HASH = False
+
+
+class ExampleOpenIdConnectNoValidateAtHashTest(OpenIdConnectTest):
+    backend_path = "social_core.tests.backends.test_open_id_connect.OpenIdConnectAuthNoValidateAtHash"
+    issuer = "https://example.com"
+    openid_config_body = json.dumps(
+        {
+            "issuer": "https://example.com",
+            "authorization_endpoint": "https://example.com/oidc/auth",
+            "token_endpoint": "https://example.com/oidc/token",
+            "userinfo_endpoint": "https://example.com/oidc/userinfo",
+            "revocation_endpoint": "https://example.com/oidc/revoke",
+            "jwks_uri": "https://example.com/oidc/certs",
+        }
+    )
+
+    expected_username = "cartman"
+    allow_invalid_at_hash = True
+
+    def pre_complete_callback(self, start_url) -> None:
+        super().pre_complete_callback(start_url)
+        responses.add(
+            responses.GET,
+            url=self.backend.userinfo_url(),
+            status=200,
+            body=json.dumps({"preferred_username": self.expected_username}),
+            content_type="text/json",
+        )
+
+    def test_everything_works(self) -> None:
         self.do_login()

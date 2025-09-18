@@ -1,4 +1,4 @@
-from ..exceptions import AuthAlreadyAssociated, AuthException, AuthForbidden
+from social_core.exceptions import AuthAlreadyAssociated, AuthException, AuthForbidden
 
 
 def social_details(backend, details, response, *args, **kwargs):
@@ -9,7 +9,7 @@ def social_uid(backend, details, response, *args, **kwargs):
     return {"uid": str(backend.get_user_id(details, response))}
 
 
-def auth_allowed(backend, details, response, *args, **kwargs):
+def auth_allowed(backend, details, response, *args, **kwargs) -> None:
     if not backend.auth_allowed(response, details):
         raise AuthForbidden(backend)
 
@@ -83,7 +83,7 @@ def associate_by_email(backend, details, user=None, *args, **kwargs):
     return None
 
 
-def load_extra_data(backend, details, response, uid, user, *args, **kwargs):
+def load_extra_data(backend, details, response, uid, user, *args, **kwargs) -> None:
     social = kwargs.get("social") or backend.strategy.storage.user.get_social_auth(
         backend.name, uid
     )

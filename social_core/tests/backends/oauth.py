@@ -7,9 +7,10 @@ from urllib.parse import urlparse
 import requests
 import responses
 
-from ...backends.oauth import BaseOAuth1, BaseOAuth2, OAuthAuth
-from ...utils import get_querystring, parse_qs, url_add_parameters
-from ..models import User
+from social_core.backends.oauth import BaseOAuth1, BaseOAuth2, OAuthAuth
+from social_core.tests.models import User
+from social_core.utils import get_querystring, parse_qs, url_add_parameters
+
 from .base import BaseBackendTest
 
 OAuthBackendT = TypeVar("OAuthBackendT", bound=OAuthAuth)
@@ -68,7 +69,7 @@ class BaseOAuthTest(BaseBackendTest[OAuthBackendT], Generic[OAuthBackendT]):
             )
         return target_url
 
-    def pre_complete_callback(self, start_url):
+    def pre_complete_callback(self, start_url) -> None:
         responses.add(
             self._method(self.backend.ACCESS_TOKEN_METHOD),
             url=self.backend.access_token_url(),
@@ -100,7 +101,7 @@ class OAuth1Test(BaseOAuthTest[BaseOAuth1BackendT], Generic[BaseOAuth1BackendT])
     request_token_body: str
     raw_complete_url = "/complete/{0}/?oauth_verifier=bazqux&oauth_token=foobar"
 
-    def request_token_handler(self):
+    def request_token_handler(self) -> None:
         assert self.request_token_body, "Subclasses must set request_token_body"
         responses.add(
             self._method(self.backend.REQUEST_TOKEN_METHOD),
@@ -210,7 +211,9 @@ class OAuth2PkceS256Test(OAuth2Test):
 class BaseAuthUrlTestMixin(Generic[OAuthBackendT]):
     backend: OAuthBackendT
 
-    def check_parameters_in_authorization_url(self, auth_url_key="AUTHORIZATION_URL"):
+    def check_parameters_in_authorization_url(
+        self, auth_url_key="AUTHORIZATION_URL"
+    ) -> None:
         """
         Check the parameters in authorization url
 
@@ -235,11 +238,11 @@ class BaseAuthUrlTestMixin(Generic[OAuthBackendT]):
             # we expect an & symbol to join the different parameters
             assert "?param1=value1&param2=value2&" in self.backend.auth_url()
 
-    def test_auth_url_parameters(self):
+    def test_auth_url_parameters(self) -> None:
         self.check_parameters_in_authorization_url()
 
 
 class OAuth1AuthUrlTestMixin(BaseAuthUrlTestMixin):
-    def test_auth_url_parameters(self):
+    def test_auth_url_parameters(self) -> None:
         self.request_token_handler()  # type: ignore[attr-defined]
         self.check_parameters_in_authorization_url()

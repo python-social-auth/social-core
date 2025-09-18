@@ -6,7 +6,8 @@ from urllib.parse import parse_qs, urlencode, urlparse
 import requests
 import responses
 
-from ...exceptions import AuthException
+from social_core.exceptions import AuthException
+
 from .base import BaseBackendTest
 
 TEST_KEY = "foo"
@@ -17,7 +18,7 @@ class DiscourseTest(BaseBackendTest):
     expected_username = "beepboop"
     raw_complete_url = "/complete/{0}/"
 
-    def post_start(self):
+    def post_start(self) -> None:
         pass
 
     def do_start(self):
@@ -60,7 +61,7 @@ class DiscourseTest(BaseBackendTest):
 
         return self.backend.complete()
 
-    def test_login(self):
+    def test_login(self) -> None:
         """
         Test that we can authenticate with the Discourse IdP
         """
@@ -70,7 +71,7 @@ class DiscourseTest(BaseBackendTest):
         )
         self.do_login()
 
-    def test_failed_login(self):
+    def test_failed_login(self) -> None:
         """
         Test that authentication fails when our request is signed with a
         different secret than our payload

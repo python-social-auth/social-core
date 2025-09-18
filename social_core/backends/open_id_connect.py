@@ -28,7 +28,7 @@ from social_core.utils import cache
 class OpenIdConnectAssociation:
     """Use Association model to save the nonce by force."""
 
-    def __init__(self, handle, secret="", issued=0, lifetime=0, assoc_type=""):
+    def __init__(self, handle, secret="", issued=0, lifetime=0, assoc_type="") -> None:
         self.handle = handle  # as nonce
         self.secret = secret.encode()  # not use
         self.issued = issued  # not use
@@ -61,6 +61,8 @@ class OpenIdConnectAuth(BaseOAuth2):
     USERNAME_KEY = "preferred_username"
     JWT_ALGORITHMS = ["RS256"]
     JWT_DECODE_OPTIONS: dict[str, Any] = {}
+    JWT_LEEWAY: float = 1.0  # seconds
+    VALIDATE_AT_HASH: bool = True
     # When these options are unspecified, server will choose via openid autoconfiguration
     ID_TOKEN_ISSUER = ""
     ACCESS_TOKEN_URL = ""
@@ -78,7 +80,7 @@ class OpenIdConnectAuth(BaseOAuth2):
     LOGIN_HINT = None
     ACR_VALUES = None
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         self.id_token = None
         super().__init__(*args, **kwargs)
 
@@ -220,10 +222,10 @@ class OpenIdConnectAuth(BaseOAuth2):
         except IndexError:
             pass
 
-    def remove_nonce(self, nonce_id):
+    def remove_nonce(self, nonce_id) -> None:
         self.strategy.storage.association.remove([nonce_id])
 
-    def validate_claims(self, id_token):
+    def validate_claims(self, id_token) -> None:
         utc_timestamp = timegm(datetime.datetime.now(datetime.timezone.utc).timetuple())
 
         if "nbf" in id_token and utc_timestamp < id_token["nbf"]:
@@ -278,7 +280,7 @@ class OpenIdConnectAuth(BaseOAuth2):
         Validates the id_token according to the steps at
         http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation.
         """
-        client_id, client_secret = self.get_key_and_secret()
+        client_id, _client_secret = self.get_key_and_secret()
 
         key = self.find_valid_key(id_token)
 
@@ -295,6 +297,7 @@ class OpenIdConnectAuth(BaseOAuth2):
                 audience=client_id,
                 issuer=self.id_token_issuer(),
                 options=self.setting("JWT_DECODE_OPTIONS", self.JWT_DECODE_OPTIONS),
+                leeway=self.setting("JWT_LEEWAY", self.JWT_LEEWAY),
             )
         except ExpiredSignatureError:
             raise AuthTokenError(self, "Signature has expired")
@@ -308,8 +311,14 @@ class OpenIdConnectAuth(BaseOAuth2):
 
         # pyjwt does not validate OIDC claims
         # see https://github.com/jpadilla/pyjwt/pull/296
-        if "at_hash" in claims and claims["at_hash"] != self.calc_at_hash(
-            access_token, key["alg"]
+        if (
+            self.VALIDATE_AT_HASH
+            and "at_hash" in claims
+            and claims["at_hash"]
+            != self.calc_at_hash(
+                access_token,
+                key["alg"],
+            )
         ):
             raise AuthTokenError(self, "Invalid access token")
 
@@ -335,12 +344,20 @@ class OpenIdConnectAuth(BaseOAuth2):
 
     def get_user_details(self, response):
         username_key = self.setting("USERNAME_KEY", self.USERNAME_KEY)
+
+        def get_value(key):
+            if key in response:
+                return response.get(key)
+            if self.id_token is not None:
+                return self.id_token.get(key)
+            return None
+
         return {
-            "username": response.get(username_key),
-            "email": response.get("email"),
-            "fullname": response.get("name"),
-            "first_name": response.get("given_name"),
-            "last_name": response.get("family_name"),
+            "username": get_value(username_key),
+            "email": get_value("email"),
+            "fullname": get_value("name"),
+            "first_name": get_value("given_name"),
+            "last_name": get_value("family_name"),
         }
 
     @staticmethod

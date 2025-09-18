@@ -1,7 +1,8 @@
 import requests
 import responses
 
-from ...utils import parse_qs
+from social_core.utils import parse_qs
+
 from .base import BaseBackendTest
 
 
@@ -9,7 +10,7 @@ class BaseLegacyTest(BaseBackendTest):
     form = ""
     response_body = ""
 
-    def setUp(self):
+    def setUp(self) -> None:
         super().setUp()
         self.strategy.set_settings(
             {

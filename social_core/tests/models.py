@@ -6,7 +6,7 @@ from typing import TypeVar
 
 from typing_extensions import Self
 
-from ..storage import (
+from social_core.storage import (
     AssociationMixin,
     BaseStorage,
     CodeMixin,
@@ -29,7 +29,7 @@ class BaseModel:
         return cls.cache.get(key)
 
     @classmethod
-    def reset_cache(cls):
+    def reset_cache(cls) -> None:
         cls.cache = {}
 
 
@@ -37,8 +37,18 @@ class User(BaseModel):
     NEXT_ID = 1
     cache = {}
     _is_active = True
+    username: str
+    email: str | None
+    first_name: str | None
+    password: str | None
+    slug: str | None
+    social: list[TestUserSocialAuth]
+    extra_data: dict[str, str]
+    extra_user_fields: dict[str, str]
 
-    def __init__(self, username, email=None, **extra_user_fields):
+    def __init__(
+        self, username: str, email: str | None = None, **extra_user_fields
+    ) -> None:
         self.id = User.next_id()
         self.username = username
         self.email = email
@@ -54,13 +64,13 @@ class User(BaseModel):
         return self._is_active
 
     @classmethod
-    def set_active(cls, is_active=True):
+    def set_active(cls, is_active=True) -> None:
         cls._is_active = is_active
 
-    def set_password(self, password):
+    def set_password(self, password) -> None:
         self.password = password
 
-    def save(self):
+    def save(self) -> None:
         User.cache[self.username] = self
 
 
@@ -71,7 +81,7 @@ class TestUserSocialAuth(UserMixin, BaseModel):
     cache = {}
     cache_by_uid = {}
 
-    def __init__(self, user, provider, uid, extra_data=None):
+    def __init__(self, user: User, provider, uid, extra_data=None) -> None:
         self.id = TestUserSocialAuth.next_id()
         self.user = user
         self.provider = provider
@@ -80,16 +90,16 @@ class TestUserSocialAuth(UserMixin, BaseModel):
         self.user.social.append(self)
         TestUserSocialAuth.cache_by_uid[uid] = self
 
-    def save(self):
+    def save(self) -> None:
         pass
 
     @classmethod
-    def reset_cache(cls):
+    def reset_cache(cls) -> None:
         cls.cache = {}
         cls.cache_by_uid = {}
 
     @classmethod
-    def changed(cls, user):
+    def changed(cls, user) -> None:
         pass
 
     @classmethod
@@ -101,7 +111,7 @@ class TestUserSocialAuth(UserMixin, BaseModel):
         return User
 
     @classmethod
-    def username_max_length(cls):
+    def username_max_length(cls) -> int:
         return 1024
 
     @classmethod
@@ -109,7 +119,7 @@ class TestUserSocialAuth(UserMixin, BaseModel):
         return user.password or len(user.social) > 1
 
     @classmethod
-    def disconnect(cls, entry):
+    def disconnect(cls, entry) -> None:
         cls.cache.pop(entry.id, None)
         entry.user.social = [s for s in entry.user.social if entry != s]
 
@@ -129,14 +139,19 @@ class TestUserSocialAuth(UserMixin, BaseModel):
         return None
 
     @classmethod
-    def get_social_auth(cls, provider, uid):
+    def get_social_auth(cls, provider: str, uid: int):
         social_user = cls.cache_by_uid.get(uid)
         if social_user and social_user.provider == provider:
             return social_user
         return None
 
     @classmethod
-    def get_social_auth_for_user(cls, user, provider=None, id=None):
+    def get_social_auth_for_user(
+        cls,
+        user: User,
+        provider: str | None = None,
+        id: int | None = None,  # noqa: A002
+    ):
         return [
             usa
             for usa in user.social
@@ -144,11 +159,11 @@ class TestUserSocialAuth(UserMixin, BaseModel):
         ]
 
     @classmethod
-    def create_social_auth(cls, user, uid, provider):
+    def create_social_auth(cls, user: User, uid: int, provider: str):
         return cls(user=user, provider=provider, uid=uid)
 
     @classmethod
-    def get_users_by_email(cls, email):
+    def get_users_by_email(cls, email: str):
         return [user for user in User.cache.values() if user.email == email]
 
 
@@ -158,7 +173,7 @@ class TestNonce(NonceMixin, BaseModel):
     NEXT_ID = 1
     cache = {}
 
-    def __init__(self, server_url, timestamp, salt):
+    def __init__(self, server_url, timestamp, salt) -> None:
         self.id = TestNonce.next_id()
         self.server_url = server_url
         self.timestamp = timestamp
@@ -177,7 +192,7 @@ class TestNonce(NonceMixin, BaseModel):
         return TestNonce.cache[server_url]
 
     @classmethod
-    def delete(cls, nonce):
+    def delete(cls, nonce) -> None:
         server_url = nonce.server_url
         del TestNonce.cache[server_url]
 
@@ -188,16 +203,16 @@ class TestAssociation(AssociationMixin, BaseModel):
     NEXT_ID = 1
     cache = {}
 
-    def __init__(self, server_url, handle):
+    def __init__(self, server_url, handle) -> None:
         self.id = TestAssociation.next_id()
         self.server_url = server_url
         self.handle = handle
 
-    def save(self):
+    def save(self) -> None:
         TestAssociation.cache[(self.server_url, self.handle)] = self
 
     @classmethod
-    def store(cls, server_url, association):
+    def store(cls, server_url, association) -> None:
         assoc = TestAssociation.cache.get((server_url, association.handle))
         if assoc is None:
             assoc = TestAssociation(server_url=server_url, handle=association.handle)
@@ -223,7 +238,7 @@ class TestAssociation(AssociationMixin, BaseModel):
         return result
 
     @classmethod
-    def remove(cls, ids_to_delete):
+    def remove(cls, ids_to_delete) -> None:
         assoc = filter(lambda a: a.id in ids_to_delete, TestAssociation.cache.values())
         for a in list(assoc):
             TestAssociation.cache.pop((a.server_url, a.handle), None)
@@ -249,7 +264,7 @@ class TestPartial(PartialMixin, BaseModel):
     NEXT_ID = 1
     cache = {}
 
-    def save(self):
+    def save(self) -> None:
         TestPartial.cache[self.token] = self
 
     @classmethod
@@ -257,7 +272,7 @@ class TestPartial(PartialMixin, BaseModel):
         return cls.cache.get(token)
 
     @classmethod
-    def destroy(cls, token):
+    def destroy(cls, token) -> None:
         cls.cache.pop(token)
 
 
@@ -271,5 +286,5 @@ class TestStorage(BaseStorage):
     partial = TestPartial
 
     @classmethod
-    def is_integrity_error(cls, exception) -> bool | None:
-        pass
+    def is_integrity_error(cls, exception) -> bool:
+        return False

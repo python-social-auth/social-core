@@ -4,7 +4,8 @@ Google App Engine support using User API
 
 from google.appengine.api import users
 
-from ..exceptions import AuthException
+from social_core.exceptions import AuthException
+
 from .base import BaseAuth
 
 

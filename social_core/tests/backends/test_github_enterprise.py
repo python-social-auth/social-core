@@ -2,7 +2,8 @@ import json
 
 import responses
 
-from ...exceptions import AuthFailed
+from social_core.exceptions import AuthFailed
+
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
@@ -46,7 +47,7 @@ class GithubEnterpriseOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.strategy.set_settings(
             {"SOCIAL_AUTH_GITHUB_ENTERPRISE_URL": "https://www.example.com"}
         )
@@ -55,7 +56,7 @@ class GithubEnterpriseOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         )
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.strategy.set_settings(
             {"SOCIAL_AUTH_GITHUB_ENTERPRISE_URL": "https://www.example.com"}
         )
@@ -101,7 +102,7 @@ class GithubEnterpriseOAuth2NoEmailTest(GithubEnterpriseOAuth2Test):
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.strategy.set_settings(
             {"SOCIAL_AUTH_GITHUB_ENTERPRISE_URL": "https://www.example.com"}
         )
@@ -118,7 +119,7 @@ class GithubEnterpriseOAuth2NoEmailTest(GithubEnterpriseOAuth2Test):
         )
         self.do_login()
 
-    def test_login_next_format(self):
+    def test_login_next_format(self) -> None:
         self.strategy.set_settings(
             {"SOCIAL_AUTH_GITHUB_ENTERPRISE_URL": "https://www.example.com"}
         )
@@ -135,7 +136,7 @@ class GithubEnterpriseOAuth2NoEmailTest(GithubEnterpriseOAuth2Test):
         )
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.strategy.set_settings(
             {"SOCIAL_AUTH_GITHUB_ENTERPRISE_URL": "https://www.example.com"}
         )
@@ -162,7 +163,7 @@ class GithubEnterpriseOrganizationOAuth2Test(GithubEnterpriseOAuth2Test):
         responses.add(responses.GET, url, status=204, body="")
         return super().auth_handlers(start_url)
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.strategy.set_settings(
             {"SOCIAL_AUTH_GITHUB_ENTERPRISE_ORG_URL": "https://www.example.com"}
         )
@@ -174,7 +175,7 @@ class GithubEnterpriseOrganizationOAuth2Test(GithubEnterpriseOAuth2Test):
         self.strategy.set_settings({"SOCIAL_AUTH_GITHUB_ENTERPRISE_ORG_NAME": "foobar"})
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.strategy.set_settings(
             {"SOCIAL_AUTH_GITHUB_ENTERPRISE_ORG_URL": "https://www.example.com"}
         )
@@ -203,7 +204,7 @@ class GithubEnterpriseOrganizationOAuth2FailTest(GithubEnterpriseOAuth2Test):
         )
         return super().auth_handlers(start_url)
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.strategy.set_settings(
             {"SOCIAL_AUTH_GITHUB_ENTERPRISE_ORG_URL": "https://www.example.com"}
         )
@@ -216,7 +217,7 @@ class GithubEnterpriseOrganizationOAuth2FailTest(GithubEnterpriseOAuth2Test):
         with self.assertRaises(AuthFailed):
             self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.strategy.set_settings(
             {"SOCIAL_AUTH_GITHUB_ENTERPRISE_ORG_URL": "https://www.example.com"}
         )
@@ -238,7 +239,7 @@ class GithubEnterpriseTeamOAuth2Test(GithubEnterpriseOAuth2Test):
         responses.add(responses.GET, url, status=204, body="")
         return super().auth_handlers(start_url)
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.strategy.set_settings(
             {"SOCIAL_AUTH_GITHUB_ENTERPRISE_TEAM_URL": "https://www.example.com"}
         )
@@ -250,7 +251,7 @@ class GithubEnterpriseTeamOAuth2Test(GithubEnterpriseOAuth2Test):
         self.strategy.set_settings({"SOCIAL_AUTH_GITHUB_ENTERPRISE_TEAM_ID": "123"})
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.strategy.set_settings(
             {"SOCIAL_AUTH_GITHUB_ENTERPRISE_TEAM_URL": "https://www.example.com"}
         )
@@ -277,7 +278,7 @@ class GithubEnterpriseTeamOAuth2FailTest(GithubEnterpriseOAuth2Test):
         )
         return super().auth_handlers(start_url)
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.strategy.set_settings(
             {"SOCIAL_AUTH_GITHUB_ENTERPRISE_TEAM_URL": "https://www.example.com"}
         )
@@ -290,7 +291,7 @@ class GithubEnterpriseTeamOAuth2FailTest(GithubEnterpriseOAuth2Test):
         with self.assertRaises(AuthFailed):
             self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.strategy.set_settings(
             {"SOCIAL_AUTH_GITHUB_ENTERPRISE_TEAM_URL": "https://www.example.com"}
         )

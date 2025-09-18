@@ -181,3 +181,4 @@ class ElixirOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
         "authorization_endpoint": "https://login.elixir-czech.org/oidc/authorize"
     }
     """
+    skip_invalid_at_hash = allow_invalid_at_hash = True

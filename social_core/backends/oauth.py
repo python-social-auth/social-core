@@ -8,7 +8,7 @@ from urllib.parse import urlencode
 from oauthlib.oauth1 import SIGNATURE_TYPE_AUTH_HEADER
 from requests_oauthlib import OAuth1
 
-from ..exceptions import (
+from social_core.exceptions import (
     AuthCanceled,
     AuthException,
     AuthFailed,
@@ -18,12 +18,13 @@ from ..exceptions import (
     AuthTokenError,
     AuthUnknownError,
 )
-from ..utils import (
+from social_core.utils import (
     constant_time_compare,
     handle_http_errors,
     parse_qs,
     url_add_parameters,
 )
+
 from .base import BaseAuth
 
 if TYPE_CHECKING:
@@ -186,12 +187,12 @@ class BaseOAuth1(OAuthAuth):
     REDIRECT_URI_PARAMETER_NAME = "redirect_uri"
     UNATHORIZED_TOKEN_SUFIX = "unauthorized_token_name"
 
-    def auth_url(self) -> str | bytes | None:
+    def auth_url(self) -> str:
         """Return redirect url"""
         token = self.set_unauthorized_token()
         return self.oauth_authorization_request(token)
 
-    def process_error(self, data):
+    def process_error(self, data) -> None:
         if "oauth_problem" in data:
             if data["oauth_problem"] == "user_refused":
                 raise AuthCanceled(self, "User refused the access")
@@ -351,7 +352,7 @@ class BaseOAuth2(OAuthAuth):
         return self.USE_BASIC_AUTH
 
     def auth_params(self, state: str | None = None) -> dict[str, str]:
-        client_id, client_secret = self.get_key_and_secret()
+        client_id, _client_secret = self.get_key_and_secret()
         params = {"client_id": client_id, "redirect_uri": self.get_redirect_uri(state)}
         if self.STATE_PARAMETER and state:
             params["state"] = state
@@ -359,7 +360,7 @@ class BaseOAuth2(OAuthAuth):
             params["response_type"] = self.RESPONSE_TYPE
         return params
 
-    def auth_url(self) -> str | bytes | None:
+    def auth_url(self) -> str:
         """Return redirect url"""
         state = self.get_or_create_state()
         params = self.auth_params(state)
@@ -419,7 +420,7 @@ class BaseOAuth2(OAuthAuth):
             url, method=method, headers=headers, data=data, auth=auth, params=params
         )
 
-    def process_error(self, data):
+    def process_error(self, data) -> None:
         if data.get("error"):
             if "denied" in data["error"] or "cancelled" in data["error"]:
                 raise AuthCanceled(self, data.get("error_description", ""))

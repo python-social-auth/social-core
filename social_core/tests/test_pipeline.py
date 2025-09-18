@@ -1,8 +1,9 @@
 import json
 
-from ..exceptions import AuthException
-from ..pipeline.user import user_details
-from ..utils import PARTIAL_TOKEN_SESSION_NAME
+from social_core.exceptions import AuthException
+from social_core.pipeline.user import user_details
+from social_core.utils import PARTIAL_TOKEN_SESSION_NAME
+
 from .actions.actions import BaseActionTest
 from .models import TestStorage, TestUserSocialAuth, User
 from .strategy import TestStrategy
@@ -52,20 +53,20 @@ class UnknownErrorStorage(IntegrityErrorStorage):
 
 
 class IntegrityErrorOnLoginTest(BaseActionTest):
-    def setUp(self):
+    def setUp(self) -> None:
         self.strategy = TestStrategy(IntegrityErrorStorage)
         super().setUp()
 
-    def test_integrity_error(self):
+    def test_integrity_error(self) -> None:
         self.do_login()
 
 
 class UnknownErrorOnLoginTest(BaseActionTest):
-    def setUp(self):
+    def setUp(self) -> None:
         self.strategy = TestStrategy(UnknownErrorStorage)
         super().setUp()
 
-    def test_unknown_error(self):
+    def test_unknown_error(self) -> None:
         with self.assertRaises(UnknownError):
             self.do_login()
 
@@ -73,7 +74,7 @@ class UnknownErrorOnLoginTest(BaseActionTest):
 class EmailAsUsernameTest(BaseActionTest):
     expected_username = "foo@bar.com"
 
-    def test_email_as_username(self):
+    def test_email_as_username(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL": True})
         self.do_login()
 
@@ -113,7 +114,7 @@ class RandomUsernameTest(BaseActionTest):
         }
     )
 
-    def test_random_username(self):
+    def test_random_username(self) -> None:
         self.do_login(after_complete_checks=False)
 
 
@@ -154,7 +155,7 @@ class SluggedUsernameTest(BaseActionTest):
         }
     )
 
-    def test_random_username(self):
+    def test_random_username(self) -> None:
         self.strategy.set_settings(
             {
                 "SOCIAL_AUTH_CLEAN_USERNAMES": False,
@@ -165,14 +166,14 @@ class SluggedUsernameTest(BaseActionTest):
 
 
 class RepeatedUsernameTest(BaseActionTest):
-    def test_random_username(self):
+    def test_random_username(self) -> None:
         User(username="foobar")
         self.do_login(after_complete_checks=False)
         self.assertTrue(self.strategy.session_get("username").startswith("foobar"))
 
 
 class AssociateByEmailTest(BaseActionTest):
-    def test_multiple_accounts_with_same_email(self):
+    def test_multiple_accounts_with_same_email(self) -> None:
         user = User(username="foobar1")
         user.email = "foo@bar.com"
         self.do_login(after_complete_checks=False)
@@ -180,7 +181,7 @@ class AssociateByEmailTest(BaseActionTest):
 
 
 class MultipleAccountsWithSameEmailTest(BaseActionTest):
-    def test_multiple_accounts_with_same_email(self):
+    def test_multiple_accounts_with_same_email(self) -> None:
         user1 = User(username="foobar1")
         user2 = User(username="foobar2")
         user1.email = "foo@bar.com"
@@ -190,7 +191,7 @@ class MultipleAccountsWithSameEmailTest(BaseActionTest):
 
 
 class UserPersistsInPartialPipeline(BaseActionTest):
-    def test_user_persists_in_partial_pipeline_kwargs(self):
+    def test_user_persists_in_partial_pipeline_kwargs(self) -> None:
         user = User(username="foobar1")
         user.email = "foo@bar.com"
 
@@ -213,7 +214,7 @@ class UserPersistsInPartialPipeline(BaseActionTest):
         partial = self.strategy.partial_load(token)
         self.backend.continue_pipeline(partial)
 
-    def test_user_persists_in_partial_pipeline(self):
+    def test_user_persists_in_partial_pipeline(self) -> None:
         user = User(username="foobar1")
         user.email = "foo@bar.com"
 
@@ -238,7 +239,7 @@ class UserPersistsInPartialPipeline(BaseActionTest):
 
 
 class TestUserDetails(BaseActionTest):
-    def test_user_details(self):
+    def test_user_details(self) -> None:
         self.strategy.set_settings({})
         details = {"first_name": "Test"}
         user = User(username="foobar")
@@ -251,7 +252,7 @@ class TestUserDetails(BaseActionTest):
         user_details(self.strategy, details, backend, user)
         self.assertEqual(user.first_name, "Test2")
 
-    def test_user_details_(self):
+    def test_user_details_(self) -> None:
         self.strategy.set_settings(
             {"SOCIAL_AUTH_IMMUTABLE_USER_FIELDS": ("first_name",)}
         )
@@ -303,7 +304,7 @@ class TestLowerCaseEmailOverride(BaseActionTest):
         }
     )
 
-    def test_lowercase_email(self):
+    def test_lowercase_email(self) -> None:
         self.strategy.set_settings(
             {
                 "SOCIAL_AUTH_FORCE_EMAIL_LOWERCASE": True,

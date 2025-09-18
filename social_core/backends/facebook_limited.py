@@ -3,7 +3,8 @@ Facebook Limited Login backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/facebook.html
 """
 
-from ..exceptions import AuthTokenError
+from social_core.exceptions import AuthTokenError
+
 from .open_id_connect import OpenIdConnectAuth
 
 
@@ -40,7 +41,7 @@ class FacebookLimitedLogin(OpenIdConnectAuth):
         # We don't have an access token to call any API for the user details.
         return {}
 
-    def validate_claims(self, id_token):
+    def validate_claims(self, id_token) -> None:
         try:
             super().validate_claims(id_token)
         except AuthTokenError as e:

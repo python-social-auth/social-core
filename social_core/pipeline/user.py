@@ -1,6 +1,6 @@
 from uuid import uuid4
 
-from ..utils import module_member, slugify
+from social_core.utils import module_member, slugify
 
 USER_FIELDS = ["username", "email"]
 
@@ -79,7 +79,7 @@ def create_user(strategy, details, backend, user=None, *args, **kwargs):
     return {"is_new": True, "user": strategy.create_user(**fields)}
 
 
-def user_details(strategy, details, backend, user=None, *args, **kwargs):
+def user_details(strategy, details, backend, user=None, *args, **kwargs) -> None:
     """Update user details using data from provider."""
     if not user:
         return

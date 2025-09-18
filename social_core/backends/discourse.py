@@ -4,8 +4,9 @@ from base64 import urlsafe_b64decode, urlsafe_b64encode
 from hashlib import sha256
 from urllib.parse import urlencode
 
-from ..exceptions import AuthException, AuthTokenError
-from ..utils import parse_qs
+from social_core.exceptions import AuthException, AuthTokenError
+from social_core.utils import parse_qs
+
 from .base import BaseAuth
 
 
@@ -13,7 +14,7 @@ class DiscourseAuth(BaseAuth):
     name = "discourse"
     EXTRA_DATA = ["username", "name", "avatar_url"]
 
-    def auth_url(self):
+    def auth_url(self) -> str:
         """
         Get the URL to which we must redirect in order to authenticate the user
         """
@@ -49,13 +50,13 @@ class DiscourseAuth(BaseAuth):
             "is_superuser": response.get("admin") == "true",
         }
 
-    def add_nonce(self, nonce):
+    def add_nonce(self, nonce) -> None:
         self.strategy.storage.nonce.use(self.setting("SERVER_URL"), time.time(), nonce)
 
     def get_nonce(self, nonce):
         return self.strategy.storage.nonce.get(self.setting("SERVER_URL"), nonce)
 
-    def delete_nonce(self, nonce):
+    def delete_nonce(self, nonce) -> None:
         self.strategy.storage.nonce.delete(nonce)
 
     def auth_complete(self, *args, **kwargs):

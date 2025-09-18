@@ -7,8 +7,9 @@ import json
 
 import requests
 
-from ..exceptions import AuthFailed
-from ..utils import handle_http_errors
+from social_core.exceptions import AuthFailed
+from social_core.utils import handle_http_errors
+
 from .oauth import BaseOAuth2
 
 
@@ -31,7 +32,7 @@ class LineOAuth2(BaseOAuth2):
     ]
 
     def auth_params(self, state=None):
-        client_id, client_secret = self.get_key_and_secret()
+        client_id, _client_secret = self.get_key_and_secret()
         return {
             "response_type": self.RESPONSE_TYPE,
             "client_id": client_id,
@@ -40,7 +41,7 @@ class LineOAuth2(BaseOAuth2):
             "scope": self.get_scope(),
         }
 
-    def process_error(self, data):
+    def process_error(self, data) -> None:
         error_code = (
             data.get("errorCode") or data.get("statusCode") or data.get("error")
         )

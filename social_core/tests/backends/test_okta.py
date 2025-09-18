@@ -52,7 +52,7 @@ class OktaOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.strategy.set_settings(
             {
                 "SOCIAL_AUTH_OKTA_OAUTH2_API_URL": "https://dev-000000.oktapreview.com/oauth2"
@@ -60,7 +60,7 @@ class OktaOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         )
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.strategy.set_settings(
             {
                 "SOCIAL_AUTH_OKTA_OAUTH2_API_URL": "https://dev-000000.oktapreview.com/oauth2"
@@ -156,7 +156,7 @@ class OktaOpenIdConnectTest(OpenIdConnectTest):
         )
         return settings
 
-    def setUp(self):
+    def setUp(self) -> None:
         responses.add(
             responses.GET,
             # Note: okta.py strips the /oauth2 prefix using urljoin with absolute path
@@ -176,7 +176,7 @@ class OktaOpenIdConnectTest(OpenIdConnectTest):
 
         super().setUp()
 
-    def pre_complete_callback(self, start_url):
+    def pre_complete_callback(self, start_url) -> None:
         super().pre_complete_callback(start_url)
         responses.add(
             responses.GET,
@@ -185,10 +185,10 @@ class OktaOpenIdConnectTest(OpenIdConnectTest):
             json={"preferred_username": self.expected_username},
         )
 
-    def test_everything_works(self):
+    def test_everything_works(self) -> None:
         self.do_login()
 
-    def test_okta_oidc_config(self):
+    def test_okta_oidc_config(self) -> None:
         # With no custom authorization server
         self.strategy.set_settings(
             {

@@ -20,8 +20,8 @@ class ThisIsMyJameOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
         {"id": 10101010, "person": {"name": "foobar", "fullname": "Foo Bar"}}
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()

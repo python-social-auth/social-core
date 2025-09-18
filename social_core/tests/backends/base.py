@@ -6,10 +6,9 @@ from typing import Generic, TypeVar
 import requests
 import responses
 
-from ...backends.base import BaseAuth
-from ...backends.utils import load_backends, user_backends_data
-from ...utils import PARTIAL_TOKEN_SESSION_NAME, module_member, parse_qs
-from ..models import (
+from social_core.backends.base import BaseAuth
+from social_core.backends.utils import load_backends, user_backends_data
+from social_core.tests.models import (
     TestAssociation,
     TestCode,
     TestNonce,
@@ -17,7 +16,8 @@ from ..models import (
     TestUserSocialAuth,
     User,
 )
-from ..strategy import TestStrategy
+from social_core.tests.strategy import TestStrategy
+from social_core.utils import PARTIAL_TOKEN_SESSION_NAME, module_member, parse_qs
 
 BackendT = TypeVar("BackendT", bound=BaseAuth)
 
@@ -30,7 +30,7 @@ class BaseBackendTest(unittest.TestCase, Generic[BackendT]):
     raw_complete_url = "/complete/{0}"
     expected_username: str = ""
 
-    def setUp(self):
+    def setUp(self) -> None:
         responses.start()
         Backend = module_member(self.backend_path)
         self.strategy = TestStrategy(TestStorage)
@@ -53,7 +53,7 @@ class BaseBackendTest(unittest.TestCase, Generic[BackendT]):
         TestAssociation.reset_cache()
         TestCode.reset_cache()
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         del self.backend
         self.strategy = None
         self.name = ""
@@ -93,7 +93,7 @@ class BaseBackendTest(unittest.TestCase, Generic[BackendT]):
         self.assertEqual(len(user_backends["backends"]), 2)
         return user
 
-    def pipeline_settings(self):
+    def pipeline_settings(self) -> None:
         self.strategy.set_settings(
             {
                 "SOCIAL_AUTH_PIPELINE": (
@@ -115,7 +115,7 @@ class BaseBackendTest(unittest.TestCase, Generic[BackendT]):
             }
         )
 
-    def pipeline_handlers(self, url):
+    def pipeline_handlers(self, url) -> None:
         responses.add(responses.GET, url, status=200, body="foobar")
         responses.add(responses.POST, url, status=200)
 

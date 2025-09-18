@@ -16,12 +16,12 @@ class LoginRadiusAuth(BaseOAuth2):
     REDIRECT_STATE = False
     STATE_PARAMETER = False
 
-    def uses_redirect(self):
+    def uses_redirect(self) -> bool:
         """Return False because we return HTML instead."""
         return False
 
     def auth_html(self):
-        key, secret = self.get_key_and_secret()
+        key, _secret = self.get_key_and_secret()
         tpl = self.setting("TEMPLATE", "loginradius.html")
         return self.strategy.render_html(
             tpl=tpl,

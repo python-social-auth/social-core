@@ -9,13 +9,14 @@ import hmac
 import json
 import time
 
-from ..exceptions import (
+from social_core.exceptions import (
     AuthCanceled,
     AuthException,
     AuthMissingParameter,
     AuthUnknownError,
 )
-from ..utils import constant_time_compare, handle_http_errors, parse_qs
+from social_core.utils import constant_time_compare, handle_http_errors, parse_qs
+
 from .oauth import BaseOAuth2
 
 API_VERSION = 18.0
@@ -85,7 +86,7 @@ class FacebookOAuth2(BaseOAuth2):
         version = self.setting("API_VERSION", API_VERSION)
         return self.get_json(self.USER_DATA_URL.format(version=version), params=params)
 
-    def process_error(self, data):
+    def process_error(self, data) -> None:
         super().process_error(data)
         if data.get("error_code"):
             raise AuthCanceled(
@@ -183,7 +184,7 @@ class FacebookAppOAuth2(FacebookOAuth2):
 
     name = "facebook-app"
 
-    def uses_redirect(self):
+    def uses_redirect(self) -> bool:
         return False
 
     def auth_complete(self, *args, **kwargs):
@@ -191,7 +192,7 @@ class FacebookAppOAuth2(FacebookOAuth2):
         response = {}
 
         if "signed_request" in self.data:
-            key, secret = self.get_key_and_secret()
+            _key, _secret = self.get_key_and_secret()
             response = self.load_signed_request(self.data["signed_request"])
             assert response, "Missing signed_request response"
             if "user_id" not in response and "oauth_token" not in response:
@@ -211,7 +212,7 @@ class FacebookAppOAuth2(FacebookOAuth2):
         return self.do_auth(access_token, response, *args, **kwargs)
 
     def auth_html(self):
-        key, secret = self.get_key_and_secret()
+        key, _secret = self.get_key_and_secret()
         namespace = self.setting("NAMESPACE", None)
         scope = self.setting("SCOPE", "")
         if scope:
@@ -231,7 +232,7 @@ class FacebookAppOAuth2(FacebookOAuth2):
             data += b"=" * (4 - (len(data) % 4))
             return base64.urlsafe_b64decode(data)
 
-        key, secret = self.get_key_and_secret()
+        _key, secret = self.get_key_and_secret()
         try:
             sig, payload = signed_request.split(".", 1)
         except ValueError:

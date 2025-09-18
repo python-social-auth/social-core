@@ -14,7 +14,6 @@ class SimpleLoginOAuth2(BaseOAuth2):
     ACCESS_TOKEN_URL = "https://app.simplelogin.io/oauth2/token"
     REDIRECT_STATE = False
     STATE_PARAMETER = True
-    SEND_USER_AGENT = True
     EXTRA_DATA = [
         ("name", "name"),
         ("email", "email"),

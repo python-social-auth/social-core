@@ -1,14 +1,18 @@
+from __future__ import annotations
+
 import json
 import time
+from typing import cast
 from unittest import mock
 from urllib.parse import urlencode
 
 import jwt
 import responses
 
-from ...actions import do_disconnect
-from ...exceptions import AuthException, AuthTokenError
-from ..models import User
+from social_core.actions import do_disconnect
+from social_core.exceptions import AuthException, AuthTokenError
+from social_core.tests.models import User
+
 from .base import BaseBackendTest
 from .oauth import BaseAuthUrlTestMixin, OAuth1AuthUrlTestMixin, OAuth1Test, OAuth2Test
 from .open_id_connect import OpenIdConnectTest
@@ -34,7 +38,7 @@ class GoogleOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()
         last_request = responses.calls[-1].request
         self.assertEqual(last_request.method, "GET")
@@ -44,10 +48,10 @@ class GoogleOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
             "Bearer foobar",
         )
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
 
-    def test_with_unique_user_id(self):
+    def test_with_unique_user_id(self) -> None:
         self.strategy.set_settings(
             {
                 "SOCIAL_AUTH_GOOGLE_OAUTH2_USE_UNIQUE_USER_ID": True,
@@ -76,19 +80,19 @@ class GoogleOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
 
-    def test_with_unique_user_id(self):
+    def test_with_unique_user_id(self) -> None:
         self.strategy.set_settings(
             {"SOCIAL_AUTH_GOOGLE_OAUTH_USE_UNIQUE_USER_ID": True}
         )
         self.do_login()
 
-    def test_with_anonymous_key_and_secret(self):
+    def test_with_anonymous_key_and_secret(self) -> None:
         self.strategy.set_settings(
             {
                 "SOCIAL_AUTH_GOOGLE_OAUTH_KEY": None,
@@ -99,12 +103,12 @@ class GoogleOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
 
 
 class GoogleRevokeTokenTest(GoogleOAuth2Test):
-    def test_revoke_token(self):
+    def test_revoke_token(self) -> None:
         self.strategy.set_settings(
             {"SOCIAL_AUTH_GOOGLE_OAUTH2_REVOKE_TOKENS_ON_DISCONNECT": True}
         )
         self.do_login()
-        user = User.get(self.expected_username)
+        user = cast("User", User.get(self.expected_username))
         user.password = "password"
         responses.add(
             self._method(self.backend.REVOKE_TOKEN_METHOD),
@@ -194,7 +198,7 @@ cshMNkjyNDP+MvGORQIDAQAB
 -----END PUBLIC KEY-----"""
     client_id = "a-key"
 
-    def setUp(self):
+    def setUp(self) -> None:
         super().setUp()
         responses.add(
             responses.GET,
@@ -214,31 +218,31 @@ cshMNkjyNDP+MvGORQIDAQAB
             "iss": "accounts.google.com",
         }
 
-    def test_auth_url(self):
+    def test_auth_url(self) -> None:
         with self.assertRaises(AuthException):
             self.backend.start()
 
-    def test_verify_csrf_no_csrf_token_body(self):
+    def test_verify_csrf_no_csrf_token_body(self) -> None:
         with self.assertRaises(AuthTokenError):
             self.backend.verify_csrf(request=mock.Mock())
 
-    def test_verify_csrf_no_csrf_token_cookie_not_ignored(self):
+    def test_verify_csrf_no_csrf_token_cookie_not_ignored(self) -> None:
         self.backend.data = {"g_csrf_token": "csrf"}
         with self.assertRaises(AuthTokenError):
             self.backend.verify_csrf(request=mock.Mock(COOKIES={}))
 
-    def test_verify_csrf_no_csrf_token_cookie_ignored(self):
+    def test_verify_csrf_no_csrf_token_cookie_ignored(self) -> None:
         self.strategy.set_settings(
             {"SOCIAL_AUTH_GOOGLE_ONETAP_IGNORE_MISSING_CSRF_COOKIE": True}
         )
         self.backend.data = {"g_csrf_token": "csrf"}
         self.backend.verify_csrf(request=mock.Mock(COOKIES={}))
 
-    def test_verify_csrf_valid(self):
+    def test_verify_csrf_valid(self) -> None:
         self.backend.data = {"g_csrf_token": "csrf"}
         self.backend.verify_csrf(request=mock.Mock(COOKIES={"g_csrf_token": "csrf"}))
 
-    def test_get_decoded_info_error(self):
+    def test_get_decoded_info_error(self) -> None:
         payload = self._get_jwt_payload()
         payload["exp"] -= 31
         self.backend.data = {
@@ -255,7 +259,7 @@ cshMNkjyNDP+MvGORQIDAQAB
         with self.assertRaises(AuthException):
             self.backend.auth_complete(request=request)
 
-    def test_get_decoded_info_success(self):
+    def test_get_decoded_info_success(self) -> None:
         self.backend.data = {
             "credential": jwt.encode(
                 self._get_jwt_payload(),

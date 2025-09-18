@@ -1,11 +1,15 @@
-from ..strategy import BaseStrategy, BaseTemplateStrategy
+from __future__ import annotations
+
+from typing import Any
+
+from social_core.strategy import BaseStrategy, BaseTemplateStrategy
 
 TEST_URI = "http://myapp.com"
 TEST_HOST = "myapp.com"
 
 
 class Redirect:
-    def __init__(self, url):
+    def __init__(self, url) -> None:
         self.url = url
 
 
@@ -24,7 +28,7 @@ class TestStrategy(BaseStrategy):
 
     DEFAULT_TEMPLATE_STRATEGY = TestTemplateStrategy
 
-    def __init__(self, storage, tpl=None):
+    def __init__(self, storage, tpl=None) -> None:
         self._request_data = {}
         self._settings = {}
         self._session = {}
@@ -41,9 +45,14 @@ class TestStrategy(BaseStrategy):
         """Return HTTP response with given content"""
         return content
 
-    def render_html(self, tpl=None, html=None, context=None):
+    def render_html(
+        self,
+        tpl: str | None = None,
+        html: str | None = None,
+        context: dict[str, Any] | None = None,
+    ) -> str:
         """Render given template or raw html with given context"""
-        return tpl or html
+        return tpl or html or ""
 
     def request_data(self, merge=True):
         """Return current request data (POST or GET)"""
@@ -53,15 +62,15 @@ class TestStrategy(BaseStrategy):
         """Return current host value"""
         return TEST_HOST
 
-    def request_is_secure(self):
+    def request_is_secure(self) -> bool:
         """Is the request using HTTPS?"""
         return False
 
-    def request_path(self):
+    def request_path(self) -> str:
         """path of the current request"""
         return ""
 
-    def request_port(self):
+    def request_port(self) -> int:
         """Port in use for this request"""
         return 80
 
@@ -77,7 +86,7 @@ class TestStrategy(BaseStrategy):
         """Return session value for given key"""
         return self._session.get(name, default)
 
-    def session_set(self, name, value):
+    def session_set(self, name, value) -> None:
         """Set session value for given key"""
         self._session[name] = value
 
@@ -92,14 +101,14 @@ class TestStrategy(BaseStrategy):
             return path
         return TEST_URI + path
 
-    def set_settings(self, values):
+    def set_settings(self, values) -> None:
         self._settings.update(values)
 
-    def set_request_data(self, values, backend):
+    def set_request_data(self, values, backend) -> None:
         self._request_data.update(values)
         backend.data = self._request_data
 
-    def remove_from_request_data(self, name):
+    def remove_from_request_data(self, name) -> None:
         self._request_data.pop(name, None)
 
     def authenticate(self, *args, **kwargs):

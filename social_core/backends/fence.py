@@ -3,9 +3,8 @@ from __future__ import annotations
 from typing import cast
 from urllib.parse import urljoin
 
-from social_core.utils import cache
+from social_core.utils import append_slash, cache
 
-from ..utils import append_slash
 from .open_id_connect import OpenIdConnectAuth
 
 
@@ -14,7 +13,7 @@ class Fence(OpenIdConnectAuth):
     OIDC_ENDPOINT = "https://nci-crdc.datacommons.io"
     ID_KEY = "username"
     DEFAULT_SCOPE = ["openid", "user"]
-    JWT_DECODE_OPTIONS = {"verify_at_hash": False}
+    VALIDATE_AT_HASH: bool = False
 
     def _url(self, path):
         return urljoin(append_slash(cast("str", self.OIDC_ENDPOINT)), path)

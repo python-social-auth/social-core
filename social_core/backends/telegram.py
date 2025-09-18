@@ -2,8 +2,9 @@ import hashlib
 import hmac
 import time
 
-from ..exceptions import AuthFailed, AuthMissingParameter
-from ..utils import handle_http_errors
+from social_core.exceptions import AuthFailed, AuthMissingParameter
+from social_core.utils import handle_http_errors
+
 from .base import BaseAuth
 
 
@@ -11,7 +12,7 @@ class TelegramAuth(BaseAuth):
     name = "telegram"
     ID_KEY = "id"
 
-    def verify_data(self, response):
+    def verify_data(self, response) -> None:
         bot_token = self.setting("BOT_TOKEN")
         if bot_token is None:
             raise AuthMissingParameter(self, "SOCIAL_AUTH_TELEGRAM_BOT_TOKEN")

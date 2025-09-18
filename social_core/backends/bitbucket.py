@@ -5,7 +5,8 @@ Bitbucket OAuth2 and OAuth1 backends, docs at:
 
 from __future__ import annotations
 
-from ..exceptions import AuthForbidden
+from social_core.exceptions import AuthForbidden
+
 from .oauth import BaseOAuth2
 
 

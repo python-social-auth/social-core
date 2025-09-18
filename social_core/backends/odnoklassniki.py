@@ -6,7 +6,8 @@ Odnoklassniki OAuth2 and Iframe Application backends, docs at:
 from hashlib import md5
 from urllib.parse import unquote
 
-from ..exceptions import AuthFailed
+from social_core.exceptions import AuthFailed
+
 from .base import BaseAuth
 from .oauth import BaseOAuth2
 
@@ -49,7 +50,7 @@ class OdnoklassnikiOAuth2(BaseOAuth2):
     def user_data(self, access_token, *args, **kwargs):
         """Return user data from Odnoklassniki REST API"""
         data = {"access_token": access_token, "method": "users.getCurrentUser"}
-        key, secret = self.get_key_and_secret()
+        _key, secret = self.get_key_and_secret()
         public_key = self.setting("PUBLIC_NAME")
         return odnoklassniki_api(
             self, data, "https://api.ok.ru/", public_key, secret, "oauth"
@@ -98,7 +99,7 @@ class OdnoklassnikiApp(BaseAuth):
             "uids": "{}".format(response["logged_user_id"]),
             "fields": ",".join(fields),
         }
-        client_key, client_secret = self.get_key_and_secret()
+        _client_key, client_secret = self.get_key_and_secret()
         public_key = self.setting("PUBLIC_NAME")
         details = odnoklassniki_api(
             self,
@@ -150,7 +151,7 @@ class OdnoklassnikiApp(BaseAuth):
         )
         return {name: self.data[name] for name in fields if name in self.data}
 
-    def verify_auth_sig(self):
+    def verify_auth_sig(self) -> None:
         correct_key = self.get_auth_sig()
         key = self.data["auth_sig"].lower()
         if correct_key != key:

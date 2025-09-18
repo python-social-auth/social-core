@@ -44,7 +44,7 @@ class DisqusOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        key, secret = self.get_key_and_secret()
+        _key, secret = self.get_key_and_secret()
         return self.get_json(
             "https://disqus.com/api/3.0/users/details.json",
             params={"access_token": access_token, "api_secret": secret},

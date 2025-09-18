@@ -70,12 +70,12 @@ class ORCIDOAuth2(BaseOAuth2):
         if person:
             name = person.get("name")
 
-            fullname = name
-
             if name:
                 first_name = name.get("given-names", {}).get("value", "")
                 if (family_name := name.get("family-name", None)) is not None:
                     last_name = family_name.get("value", "")
+                fullname = first_name + " " + last_name
+                fullname = fullname.strip()
 
             emails = person.get("emails")
             if emails:
@@ -114,29 +114,23 @@ class ORCIDOAuth2(BaseOAuth2):
         #     "family_name":"Jones",
         #     "given_name":"Tom"
         # }
-        try:
-            response = self.get_json(
-                self.USER_ID_URL,
-                headers={
-                    "Content-Type": "application/json",
-                    "Authorization": f"Bearer {access_token!s}",
-                },
-            )
+        response = self.get_json(
+            self.USER_ID_URL,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {access_token!s}",
+            },
+        )
 
-            # Update Jan 28 2021: Now we definitely have an ORCID id of format "0000-0000-0000-0000"
-            orcid = response["sub"]
-        except Exception:
-            pass
+        # Update Jan 28 2021: Now we definitely have an ORCID id of format "0000-0000-0000-0000"
+        orcid = response["sub"]
 
         # We can now attempt to access the ORCID public API with the Orcid:
-        try:
-            return self.get_json(
-                self.USER_DATA_URL.format(orcid),
-                headers={"Content-Type": "application/json"},
-                params=params,
-            )
-        except Exception:
-            return None
+        return self.get_json(
+            self.USER_DATA_URL.format(orcid),
+            headers={"Content-Type": "application/json"},
+            params=params,
+        )
 
 
 class ORCIDOAuth2Sandbox(ORCIDOAuth2):

@@ -43,3 +43,4 @@ class FenceOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
             "subject_types_supported": ["public"],
         }
     )
+    skip_invalid_at_hash = allow_invalid_at_hash = True

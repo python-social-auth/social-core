@@ -15,21 +15,26 @@ if TYPE_CHECKING:
 
 
 class BaseTemplateStrategy:
-    def __init__(self, strategy):
+    def __init__(self, strategy) -> None:
         self.strategy = strategy
 
-    def render(self, tpl=None, html=None, context=None):
-        if not tpl and not html:
-            raise ValueError("Missing template or html parameters")
+    def render(
+        self,
+        tpl: str | None = None,
+        html: str | None = None,
+        context: dict[str, Any] | None = None,
+    ) -> str:
         context = context or {}
         if tpl:
             return self.render_template(tpl, context)
+        if not html:
+            raise ValueError("Missing template or html parameters")
         return self.render_string(html, context)
 
-    def render_template(self, tpl, context):
+    def render_template(self, tpl: str, context: dict[str, Any] | None) -> str:
         raise NotImplementedError("Implement in subclass")
 
-    def render_string(self, html, context):
+    def render_string(self, html: str, context: dict[str, Any] | None) -> str:
         raise NotImplementedError("Implement in subclass")
 
 
@@ -38,7 +43,7 @@ class BaseStrategy:
     DEFAULT_TEMPLATE_STRATEGY = BaseTemplateStrategy
     SESSION_SAVE_KEY = "psa_session_id"
 
-    def __init__(self, storage=None, tpl=None):
+    def __init__(self, storage=None, tpl=None) -> None:
         self.storage = storage
         self.tpl = (tpl or self.DEFAULT_TEMPLATE_STRATEGY)(self)
 
@@ -108,7 +113,7 @@ class BaseStrategy:
     def partial_load(self, token):
         return partial_load(self, token)
 
-    def clean_partial_pipeline(self, token):
+    def clean_partial_pipeline(self, token) -> None:
         self.storage.partial.destroy(token)
         current_token_in_session = self.session_get(PARTIAL_TOKEN_SESSION_NAME)
         if current_token_in_session == token:
@@ -132,7 +137,7 @@ class BaseStrategy:
             uri = uri.replace("http://", "https://")
         return uri
 
-    def get_language(self):
+    def get_language(self) -> str:
         """Return current language"""
         return ""
 
@@ -156,7 +161,12 @@ class BaseStrategy:
         verification_code.verify()
         return True
 
-    def render_html(self, tpl=None, html=None, context=None):
+    def render_html(
+        self,
+        tpl: str | None = None,
+        html: str | None = None,
+        context: dict[str, Any] | None = None,
+    ) -> str:
         """Render given template or raw html with given context"""
         return self.tpl.render(tpl, html, context)
 
@@ -205,7 +215,7 @@ class BaseStrategy:
         """Return current request data (POST or GET)"""
         raise NotImplementedError("Implement in subclass")
 
-    def request_host(self):
+    def request_host(self) -> str:
         """Return current host value"""
         raise NotImplementedError("Implement in subclass")
 
@@ -221,19 +231,19 @@ class BaseStrategy:
         """Pop session value for given key"""
         raise NotImplementedError("Implement in subclass")
 
-    def build_absolute_uri(self, path=None):
+    def build_absolute_uri(self, path: str | None = None) -> str:
         """Build absolute URI with given (optional) path"""
         raise NotImplementedError("Implement in subclass")
 
-    def request_is_secure(self):
+    def request_is_secure(self) -> bool:
         """Is the request using HTTPS?"""
         raise NotImplementedError("Implement in subclass")
 
-    def request_path(self):
+    def request_path(self) -> str:
         """path of the current request"""
         raise NotImplementedError("Implement in subclass")
 
-    def request_port(self):
+    def request_port(self) -> int:
         """Port in use for this request"""
         raise NotImplementedError("Implement in subclass")
 

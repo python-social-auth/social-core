@@ -5,7 +5,8 @@ from cryptography.x509 import load_der_x509_certificate
 from jwt import DecodeError, ExpiredSignatureError, get_unverified_header
 from jwt import decode as jwt_decode
 
-from ..exceptions import AuthTokenError
+from social_core.exceptions import AuthTokenError
+
 from .azuread import AzureADOAuth2
 
 """
@@ -60,7 +61,7 @@ class AzureADTenantOAuth2(AzureADOAuth2):
     def jwks_url(self):
         return self.JWKS_URL.format(base_url=self.base_url, appid=self._appid())
 
-    def _appid(self):
+    def _appid(self) -> str:
         return (
             f"?appid={self.setting('KEY')}" if self.setting("KEY") is not None else ""
         )

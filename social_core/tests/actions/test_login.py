@@ -1,6 +1,7 @@
-from ...backends.oauth import BaseOAuth2
-from ...utils import PARTIAL_TOKEN_SESSION_NAME
-from ..models import TestUserSocialAuth, User
+from social_core.backends.oauth import BaseOAuth2
+from social_core.tests.models import TestUserSocialAuth, User
+from social_core.utils import PARTIAL_TOKEN_SESSION_NAME
+
 from .actions import BaseActionTest
 
 
@@ -19,7 +20,7 @@ class BackendThatControlsRedirect(BaseOAuth2):
 
     ACCESS_TOKEN_URL = "https://example.com/oauth/access_token"
 
-    def auth_url(self):
+    def auth_url(self) -> str:
         return "https://example.com/oauth/auth?state=foo"
 
     def auth_complete(self, *args, **kwargs):
@@ -29,13 +30,13 @@ class BackendThatControlsRedirect(BaseOAuth2):
 
 
 class LoginActionTest(BaseActionTest):
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()
 
-    def test_login_with_partial_pipeline(self):
+    def test_login_with_partial_pipeline(self) -> None:
         self.do_login_with_partial_pipeline()
 
-    def test_fields_stored_in_session(self):
+    def test_fields_stored_in_session(self) -> None:
         self.strategy.set_settings(
             {"SOCIAL_AUTH_FIELDS_STORED_IN_SESSION": ["foo", "bar"]}
         )
@@ -57,37 +58,37 @@ class LoginActionTest(BaseActionTest):
         self.assertEqual(self.strategy.session_get("foo"), "3")
         self.assertEqual(self.strategy.session_get("bar"), None)
 
-    def test_redirect_value(self):
+    def test_redirect_value(self) -> None:
         self.strategy.set_request_data({"next": "/after-login"}, self.backend)
         redirect = self.do_login(after_complete_checks=False)
         self.assertEqual(redirect.url, "/after-login")
 
-    def test_redirect_value_set_by_backend(self):
+    def test_redirect_value_set_by_backend(self) -> None:
         self.backend = BackendThatControlsRedirect(self.strategy)
         self.user = TestUserSocialAuth.create_user("test-user")
         redirect = self.do_login(after_complete_checks=False)
         self.assertEqual(redirect.url, "/after-login")
 
-    def test_login_with_invalid_partial_pipeline(self):
-        def before_complete():
+    def test_login_with_invalid_partial_pipeline(self) -> None:
+        def before_complete() -> None:
             partial_token = self.strategy.session_get(PARTIAL_TOKEN_SESSION_NAME)
             partial = self.strategy.storage.partial.load(partial_token)
             partial.data["backend"] = "foobar"
 
         self.do_login_with_partial_pipeline(before_complete)
 
-    def test_new_user(self):
+    def test_new_user(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_NEW_USER_REDIRECT_URL": "/new-user"})
         redirect = self.do_login(after_complete_checks=False)
         self.assertEqual(redirect.url, "/new-user")
 
-    def test_inactive_user(self):
+    def test_inactive_user(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_INACTIVE_USER_URL": "/inactive"})
         User.set_active(False)
         redirect = self.do_login(after_complete_checks=False)
         self.assertEqual(redirect.url, "/inactive")
 
-    def test_invalid_user(self):
+    def test_invalid_user(self) -> None:
         self.strategy.set_settings(
             {
                 "SOCIAL_AUTH_LOGIN_ERROR_URL": "/error",

@@ -27,7 +27,7 @@ class LinkedinOpenIdConnect(OpenIdConnectAuth):
     # else our request falls back to basic auth which is not supported.
     TOKEN_ENDPOINT_AUTH_METHOD = "client_secret_post"
 
-    def validate_claims(self, id_token):
+    def validate_claims(self, id_token) -> None:
         """Copy of the regular validate_claims method without the nonce validation."""
 
         utc_timestamp = timegm(datetime.datetime.now(datetime.timezone.utc).timetuple())
@@ -150,7 +150,7 @@ class LinkedinOAuth2(BaseOAuth2):
         kwargs["params"] = kwargs.pop("data")
         return super().request_access_token(*args, **kwargs)
 
-    def process_error(self, data):
+    def process_error(self, data) -> None:
         super().process_error(data)
         if data.get("serviceErrorCode"):
             raise AuthCanceled(self, data.get("message") or data.get("status"))

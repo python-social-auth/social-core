@@ -7,7 +7,8 @@ from urllib.parse import urljoin
 
 from requests import HTTPError
 
-from ..exceptions import AuthFailed
+from social_core.exceptions import AuthFailed
+
 from .oauth import BaseOAuth2
 
 
@@ -21,7 +22,6 @@ class GithubOAuth2(BaseOAuth2):
     SCOPE_SEPARATOR = ","
     REDIRECT_STATE = False
     STATE_PARAMETER = True
-    SEND_USER_AGENT = True
     EXTRA_DATA = [
         ("id", "id"),
         ("expires_in", "expires"),

@@ -1,30 +1,29 @@
 # pyright: reportAttributeAccessIssue=false
 
-import sys
 from html.parser import HTMLParser
 
 import requests
 import responses
-from openid import oidutil
 
-from ...backends.utils import load_backends
-from ...utils import module_member, parse_qs
-from ..models import TestAssociation, TestNonce, TestStorage, TestUserSocialAuth, User
-from ..strategy import TestStrategy
+from social_core.backends.utils import load_backends
+from social_core.tests.models import (
+    TestAssociation,
+    TestNonce,
+    TestStorage,
+    TestUserSocialAuth,
+    User,
+)
+from social_core.tests.strategy import TestStrategy
+from social_core.utils import module_member, parse_qs
+
 from .base import BaseBackendTest
-
-sys.path.insert(0, "..")
-
-
-# Patch to remove the too-verbose output until a new version is released
-oidutil.log = lambda *args, **kwargs: None
 
 
 class FormHTMLParser(HTMLParser):
     form = {}
     inputs = {}
 
-    def handle_starttag(self, tag, attrs):
+    def handle_starttag(self, tag, attrs) -> None:
         attrs = dict(attrs)
         if tag == "form":
             self.form.update(attrs)
@@ -33,7 +32,7 @@ class FormHTMLParser(HTMLParser):
 
 
 class OpenIdTest(BaseBackendTest):
-    def setUp(self):
+    def setUp(self) -> None:
         responses.start()
         Backend = module_member(self.backend_path)
         self.strategy = TestStrategy(TestStorage)
@@ -53,7 +52,7 @@ class OpenIdTest(BaseBackendTest):
             force_load=True,
         )
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         self.strategy = None
         User.reset_cache()
         TestUserSocialAuth.reset_cache()
@@ -70,7 +69,7 @@ class OpenIdTest(BaseBackendTest):
     def openid_url(self):
         return self.backend.openid_url()
 
-    def post_start(self):
+    def post_start(self) -> None:
         pass
 
     def do_start(self):

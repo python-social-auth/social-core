@@ -38,6 +38,3 @@ class InstagramOAuth2(BaseOAuth2):
         params = {"access_token": access_token, "fields": fields}
         response = self.get_json("https://graph.instagram.com/me", params=params)
         return {"user": response}
-
-    def auth_html(self):
-        pass

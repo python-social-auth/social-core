@@ -4,16 +4,16 @@ import base64
 import datetime
 import json
 from calendar import timegm
-from typing import Generic, TypeVar
+from typing import Any, Generic, TypeVar
 from urllib.parse import urlparse
 
 import jwt
 import responses
 
 from social_core.backends.open_id_connect import OpenIdConnectAuth
+from social_core.exceptions import AuthTokenError
+from social_core.utils import parse_qs
 
-from ...exceptions import AuthTokenError
-from ...utils import parse_qs
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 JWK_KEY = {
@@ -53,13 +53,16 @@ class OpenIdConnectTest(
     issuer: str  # id_token issuer
     openid_config_body: str
     key: dict[str, str]
+    allow_invalid_at_hash = False
+    skip_invalid_at_hash = False
+    access_token_kwargs: dict[str, Any]
 
     # Avoid sharing access_token_kwargs between different subclasses
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
         cls.access_token_kwargs = getattr(cls, "access_token_kwargs", {})
 
-    def setUp(self):
+    def setUp(self) -> None:
         if self.__class__.__name__ == "OpenIdConnectTest":
             self.skipTest("base class")
         super().setUp()
@@ -118,7 +121,7 @@ class OpenIdConnectTest(
             "sub": "1234",
         }
 
-    def prepare_access_token_body(
+    def prepare_access_token_body(  # NOQA: PLR0913
         self,
         client_key=None,
         tamper_message=False,
@@ -127,6 +130,7 @@ class OpenIdConnectTest(
         issue_datetime=None,
         nonce=None,
         issuer=None,
+        at_hash=None,
     ):
         """
         Prepares a provider access token response. Arguments:
@@ -154,7 +158,9 @@ class OpenIdConnectTest(
             issuer,
         )
         # calc at_hash
-        id_token["at_hash"] = OpenIdConnectAuth.calc_at_hash("foobar", "RS256")
+        id_token["at_hash"] = at_hash or OpenIdConnectAuth.calc_at_hash(
+            "foobar", "RS256"
+        )
 
         body["id_token"] = jwt.encode(
             id_token,
@@ -173,12 +179,12 @@ class OpenIdConnectTest(
 
         return json.dumps(body)
 
-    def authtoken_raised(self, expected_message, **access_token_kwargs):
+    def authtoken_raised(self, expected_message, **access_token_kwargs) -> None:
         self.access_token_kwargs = access_token_kwargs
         with self.assertRaisesRegex(AuthTokenError, expected_message):
             self.do_login()
 
-    def pre_complete_callback(self, start_url):
+    def pre_complete_callback(self, start_url) -> None:
         nonce = parse_qs(urlparse(start_url).query)["nonce"]
 
         self.access_token_kwargs.setdefault("nonce", nonce)
@@ -187,12 +193,12 @@ class OpenIdConnectTest(
         )
         super().pre_complete_callback(start_url)
 
-    def test_invalid_signature(self):
+    def test_invalid_signature(self) -> None:
         self.authtoken_raised(
             "Token error: Signature verification failed", tamper_message=True
         )
 
-    def test_expired_signature(self):
+    def test_expired_signature(self) -> None:
         expiration_datetime = datetime.datetime.now(
             datetime.timezone.utc
         ) - datetime.timedelta(seconds=30)
@@ -201,15 +207,15 @@ class OpenIdConnectTest(
             expiration_datetime=expiration_datetime,
         )
 
-    def test_invalid_issuer(self):
+    def test_invalid_issuer(self) -> None:
         self.authtoken_raised("Token error: Invalid issuer", issuer="someone-else")
 
-    def test_invalid_audience(self):
+    def test_invalid_audience(self) -> None:
         self.authtoken_raised(
             "Token error: Invalid audience", client_key="someone-else"
         )
 
-    def test_invalid_issue_time(self):
+    def test_invalid_issue_time(self) -> None:
         expiration_datetime = datetime.datetime.now(
             datetime.timezone.utc
         ) - datetime.timedelta(seconds=self.backend.ID_TOKEN_MAX_AGE * 2)
@@ -217,14 +223,23 @@ class OpenIdConnectTest(
             "Token error: Incorrect id_token: iat", issue_datetime=expiration_datetime
         )
 
-    def test_invalid_nonce(self):
+    def test_invalid_nonce(self) -> None:
         self.authtoken_raised(
             "Token error: Incorrect id_token: nonce",
             nonce="something-wrong",
             kid="testkey",
         )
 
-    def test_invalid_kid(self):
+    def test_invalid_kid(self) -> None:
         self.authtoken_raised(
             "Token error: Signature verification failed", kid="doesnotexist"
         )
+
+    def test_invalid_at_hash(self) -> None:
+        if self.skip_invalid_at_hash:
+            self.skipTest("the call doesn't match any registered mock.")
+        if self.allow_invalid_at_hash:
+            self.access_token_kwargs = {"at_hash": "foo"}
+            self.do_login()
+        else:
+            self.authtoken_raised("Token error: Invalid access token", at_hash="foo")

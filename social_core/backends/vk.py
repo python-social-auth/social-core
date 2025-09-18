@@ -10,8 +10,9 @@ from hashlib import md5
 from time import time
 from typing import Any, cast
 
-from ..exceptions import AuthException, AuthTokenRevoked
-from ..utils import parse_qs
+from social_core.exceptions import AuthException, AuthTokenRevoked
+from social_core.utils import parse_qs
+
 from .base import BaseAuth
 from .oauth import BaseOAuth2
 
@@ -49,7 +50,7 @@ class VKontakteOpenAPI(BaseAuth):
     def user_data(self, access_token, *args, **kwargs):
         return self.data
 
-    def auth_html(self):
+    def auth_html(self) -> str:
         """Returns local VK authentication page, not necessary for
         VK to authenticate.
         """
@@ -72,15 +73,15 @@ class VKontakteOpenAPI(BaseAuth):
             item + "=" + mapping[item] for item in ["expire", "mid", "secret", "sid"]
         )
 
-        key, secret = self.get_key_and_secret()
-        hash = vk_sig(check_str + secret)
-        if hash != mapping["sig"] or int(mapping["expire"]) < time():
+        _key, secret = self.get_key_and_secret()
+        vk_hash = vk_sig(check_str + secret)
+        if vk_hash != mapping["sig"] or int(mapping["expire"]) < time():
             raise ValueError("VK.com authentication failed: Invalid Hash")
 
         kwargs.update({"backend": self, "response": self.user_data(mapping["mid"])})
         return self.strategy.authenticate(*args, **kwargs)
 
-    def uses_redirect(self):
+    def uses_redirect(self) -> bool:
         """VK.com does not require visiting server url in order
         to do authentication, so auth_xxx methods are not needed to be called.
         Their current implementation is just an example"""
@@ -92,8 +93,8 @@ class VKOAuth2(BaseOAuth2):
 
     name = "vk-oauth2"
     ID_KEY = "id"
-    AUTHORIZATION_URL = "https://oauth.vk.com/authorize"
-    ACCESS_TOKEN_URL = "https://oauth.vk.com/access_token"
+    AUTHORIZATION_URL = "https://oauth.vk.ru/authorize"
+    ACCESS_TOKEN_URL = "https://oauth.vk.ru/access_token"
     EXTRA_DATA = [("id", "id"), ("expires_in", "expires")]
 
     def get_user_details(self, response):
@@ -157,11 +158,11 @@ class VKOAuth2(BaseOAuth2):
 
             data["method"] = method
             data["format"] = "json"
-            url = "https://api.vk.com/api.php"
+            url = "https://api.vk.ru/api.php"
             param_list = sorted(item + "=" + data[item] for item in data)
             data["sig"] = vk_sig("".join(param_list) + secret)
         else:
-            url = "https://api.vk.com/method/" + method
+            url = "https://api.vk.ru/method/" + method
 
         try:
             return self.get_json(url, params=data)

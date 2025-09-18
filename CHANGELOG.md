@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.7.0](https://github.com/python-social-auth/social-core/releases/tag/4.7.0) - 2025-06-27
+
+### Changed
+
+- Fixed getting user info in LinkedIn authentication.
+- Fixed okta OIDC authentication URLs.
+- Dropped AOL OpenID backend.
+- Improved error handling in ORCID.
+- Fixed Soundcloud OAuth2 authorization.
+
+### Added
+
+- More OIDC configuration options.
+- Session restore with stricter SameSite cookie policy.
+- JWT leeway configuration for some backends.
+
 ## [4.6.1](https://github.com/python-social-auth/social-core/releases/tag/4.6.1) - 2025-04-28
 
 ### Changed
