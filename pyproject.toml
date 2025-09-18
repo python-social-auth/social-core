@@ -136,7 +136,7 @@ module = [
 executionEnvironments = [
   {reportMissingImports = "none", root = "social_core/backends/gae.py"}
 ]
-pythonVersion = "3.9"
+pythonVersion = "3.10"
 reportOptionalMemberAccess = "none"
 reportPossiblyUnboundVariable = "none"
 
@@ -153,6 +153,7 @@ extend-safe-fixes = [
   "TCH",
   "UP"
 ]
+future-annotations = true
 ignore = [
   "ANN",  # TODO: Missing type annotations
   "ARG001",  # TODO: Unused function argument (mostly for API compatibility)
