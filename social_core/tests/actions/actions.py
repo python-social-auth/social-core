@@ -1,12 +1,14 @@
+from __future__ import annotations
+
 import json
 import unittest
+from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
 import requests
 import responses
 
 from social_core.actions import do_auth, do_complete
-from social_core.backends.oauth import BaseOAuth2
 from social_core.tests.models import (
     TestAssociation,
     TestNonce,
@@ -16,6 +18,9 @@ from social_core.tests.models import (
 )
 from social_core.tests.strategy import TestStrategy
 from social_core.utils import module_member, parse_qs
+
+if TYPE_CHECKING:
+    from social_core.backends.oauth import BaseOAuth2
 
 
 class BaseActionTest(unittest.TestCase):
