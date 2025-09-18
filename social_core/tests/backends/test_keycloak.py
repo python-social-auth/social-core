@@ -111,7 +111,7 @@ class KeycloakOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         }
     )
 
-    def extra_settings(self):
+    def extra_settings(self) -> dict[str, str | list[str]]:
         return {
             "SOCIAL_AUTH_KEYCLOAK_KEY": _KEY,
             "SOCIAL_AUTH_KEYCLOAK_SECRET": _SECRET,

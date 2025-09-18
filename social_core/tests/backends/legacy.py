@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import requests
 import responses
 
@@ -20,7 +22,7 @@ class BaseLegacyTest(BaseBackendTest):
             }
         )
 
-    def extra_settings(self):
+    def extra_settings(self) -> dict[str, str | list[str]]:
         return {f"SOCIAL_AUTH_{self.name}_FORM_URL": f"/login/{self.backend.name}"}
 
     def do_start(self):
