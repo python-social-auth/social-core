@@ -3,6 +3,8 @@ Stackoverflow OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/stackoverflow.html
 """
 
+from social_core.utils import wrap_access_token_error
+
 from .oauth import BaseOAuth2
 
 
@@ -40,4 +42,5 @@ class StackoverflowOAuth2(BaseOAuth2):
         )["items"][0]
 
     def request_access_token(self, *args, **kwargs):
-        return self.get_querystring(*args, **kwargs)
+        with wrap_access_token_error(self):
+            return self.get_querystring(*args, **kwargs)

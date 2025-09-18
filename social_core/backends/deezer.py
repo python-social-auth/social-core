@@ -6,6 +6,8 @@ Deezer backend, docs at:
 
 from urllib.parse import parse_qsl
 
+from social_core.utils import wrap_access_token_error
+
 from .oauth import BaseOAuth2
 
 
@@ -28,7 +30,8 @@ class DeezerOAuth2(BaseOAuth2):
         }
 
     def request_access_token(self, *args, **kwargs):
-        response = self.request(*args, **kwargs)
+        with wrap_access_token_error(self):
+            response = self.request(*args, **kwargs)
         return dict(parse_qsl(response.text))
 
     def get_user_details(self, response):
