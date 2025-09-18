@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import unittest
-from typing import TYPE_CHECKING, Generic, TypeVar
+from typing import Generic, TypeVar
 
 import requests
 import responses
@@ -18,9 +18,6 @@ from social_core.tests.models import (
 )
 from social_core.tests.strategy import TestStrategy
 from social_core.utils import PARTIAL_TOKEN_SESSION_NAME, module_member, parse_qs
-
-if TYPE_CHECKING:
-    from collections.abc import Mapping
 
 BackendT = TypeVar("BackendT", bound=BaseAuth)
 
@@ -69,7 +66,7 @@ class BaseBackendTest(unittest.TestCase, Generic[BackendT]):
         responses.stop()
         responses.reset()
 
-    def extra_settings(self) -> Mapping[str, str | list[str]]:
+    def extra_settings(self) -> dict[str, str | list[str]]:
         return {}
 
     def do_start(self):

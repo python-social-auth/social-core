@@ -24,7 +24,7 @@ class BaseOAuthTest(BaseBackendTest[OAuthBackendT], Generic[OAuthBackendT]):
     access_token_body: str | None = None
     access_token_status: int = 200
 
-    def extra_settings(self):
+    def extra_settings(self) -> dict[str, str | list[str]]:
         assert self.name, "Subclasses must set the name attribute"
         return {
             "SOCIAL_AUTH_" + self.name + "_KEY": "a-key",
