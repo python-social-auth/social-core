@@ -22,9 +22,8 @@ def partial_prepare(
             "uid": kwargs.get("uid"),
             "is_new": kwargs.get("is_new") or False,
             "new_association": kwargs.get("new_association") or False,
-            "user": hasattr(user, "id") and user.id or None,
-            "social": social
-            and {"provider": social.provider, "uid": social.uid}
+            "user": (hasattr(user, "id") and user.id) or None,
+            "social": (social and {"provider": social.provider, "uid": social.uid})
             or None,
         }
     )

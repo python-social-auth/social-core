@@ -2,13 +2,13 @@
 Angel OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/angel.html
 """
+
 from .oauth import BaseOAuth2
 
 
 class AngelOAuth2(BaseOAuth2):
     name = "angel"
     AUTHORIZATION_URL = "https://angel.co/api/oauth/authorize/"
-    ACCESS_TOKEN_METHOD = "POST"
     ACCESS_TOKEN_URL = "https://angel.co/api/oauth/token/"
     REDIRECT_STATE = False
 

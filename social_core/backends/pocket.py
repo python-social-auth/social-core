@@ -2,7 +2,9 @@
 Pocket OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/pocket.html
 """
-from ..utils import handle_http_errors
+
+from social_core.utils import handle_http_errors
+
 from .base import BaseAuth
 
 
@@ -24,15 +26,14 @@ class PocketAuth(BaseAuth):
     def extra_data(self, user, uid, response, details=None, *args, **kwargs):
         return response
 
-    def auth_url(self):
+    def auth_url(self) -> str:
         data = {
             "consumer_key": self.setting("KEY"),
             "redirect_uri": self.redirect_uri,
         }
         token = self.get_json(self.REQUEST_TOKEN_URL, data=data)["code"]
         self.strategy.session_set("pocket_request_token", token)
-        bits = (self.AUTHORIZATION_URL, token, self.redirect_uri)
-        return "%s?request_token=%s&redirect_uri=%s" % bits
+        return f"{self.AUTHORIZATION_URL}?request_token={token}&redirect_uri={self.redirect_uri}"
 
     @handle_http_errors
     def auth_complete(self, *args, **kwargs):

@@ -1,6 +1,7 @@
 """
 Bungie OAuth2 backend
 """
+
 from social_core.backends.oauth import BaseOAuth2
 
 
@@ -10,7 +11,6 @@ class BungieOAuth2(BaseOAuth2):
     AUTHORIZATION_URL = "https://www.bungie.net/en/oauth/authorize/"
     ACCESS_TOKEN_URL = "https://www.bungie.net/platform/app/oauth/token/"
     REFRESH_TOKEN_URL = "https://www.bungie.net/platform/app/oauth/token/"
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
     EXTRA_DATA = [
         ("refresh_token", "refresh_token", True),
@@ -19,10 +19,6 @@ class BungieOAuth2(BaseOAuth2):
         ("membership_id", "membership_id"),
         ("refresh_expires_in", "refresh_expires_in"),
     ]
-
-    def auth_html(self):
-        """Abstract Method Inclusion"""
-        pass
 
     def auth_headers(self):
         """Adds X-API-KEY and Origin"""

@@ -7,7 +7,6 @@ class MineIDOAuth2(BaseOAuth2):
     name = "mineid"
     _AUTHORIZATION_URL = "%(scheme)s://%(host)s/oauth/authorize"
     _ACCESS_TOKEN_URL = "%(scheme)s://%(host)s/oauth/access_token"
-    ACCESS_TOKEN_METHOD = "POST"
     SCOPE_SEPARATOR = ","
     EXTRA_DATA = []
 
@@ -19,7 +18,7 @@ class MineIDOAuth2(BaseOAuth2):
         return self._user_data(access_token)
 
     def _user_data(self, access_token, path=None):
-        url = "%(scheme)s://%(host)s/api/user" % self.get_mineid_url_params()
+        url = "{scheme}://{host}/api/user".format(**self.get_mineid_url_params())
         return self.get_json(url, params={"access_token": access_token})
 
     @property

@@ -2,6 +2,7 @@
 LoginRadius BaseOAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/loginradius.html
 """
+
 from .oauth import BaseOAuth2
 
 
@@ -12,16 +13,15 @@ class LoginRadiusAuth(BaseOAuth2):
     ID_KEY = "ID"
     ACCESS_TOKEN_URL = "https://api.loginradius.com/api/v2/access_token"
     PROFILE_URL = "https://api.loginradius.com/api/v2/userprofile"
-    ACCESS_TOKEN_METHOD = "GET"
     REDIRECT_STATE = False
     STATE_PARAMETER = False
 
-    def uses_redirect(self):
+    def uses_redirect(self) -> bool:
         """Return False because we return HTML instead."""
         return False
 
     def auth_html(self):
-        key, secret = self.get_key_and_secret()
+        key, _secret = self.get_key_and_secret()
         tpl = self.setting("TEMPLATE", "loginradius.html")
         return self.strategy.render_html(
             tpl=tpl,
@@ -36,7 +36,7 @@ class LoginRadiusAuth(BaseOAuth2):
         return self.get_json(
             params={"token": self.data.get("token"), "secret": self.setting("SECRET")},
             *args,
-            **kwargs
+            **kwargs,
         )
 
     def user_data(self, access_token, *args, **kwargs):
@@ -46,7 +46,7 @@ class LoginRadiusAuth(BaseOAuth2):
             params={"access_token": access_token},
             data=self.auth_complete_params(self.validate_state()),
             headers=self.auth_headers(),
-            method=self.ACCESS_TOKEN_METHOD,
+            method="GET",
         )
 
     def get_user_details(self, response):
@@ -57,14 +57,13 @@ class LoginRadiusAuth(BaseOAuth2):
          'first_name': <user first name if any>,
          'last_name': <user last name if any>}
         """
-        profile = {
+        return {
             "username": response["NickName"] or "",
             "email": response["Email"][0]["Value"] or "",
             "fullname": response["FullName"] or "",
             "first_name": response["FirstName"] or "",
             "last_name": response["LastName"] or "",
         }
-        return profile
 
     def get_user_id(self, details, response):
         """Return a unique ID for the current user, by default from server

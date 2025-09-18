@@ -2,6 +2,7 @@
 Gitea OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/gitea.html
 """
+
 from .oauth import BaseOAuth2
 
 
@@ -12,7 +13,6 @@ class GiteaOAuth2(BaseOAuth2):
     API_URL = "https://gitea.com"
     AUTHORIZATION_URL = "https://gitea.com/login/oauth/authorize"
     ACCESS_TOKEN_URL = "https://gitea.com/login/oauth/access_token"
-    ACCESS_TOKEN_METHOD = "POST"
     SCOPE_SEPARATOR = ","
     REDIRECT_STATE = False
     STATE_PARAMETER = True
@@ -46,5 +46,6 @@ class GiteaOAuth2(BaseOAuth2):
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
         return self.get_json(
-            self.api_url("/api/v1/user"), params={"access_token": access_token}
+            self.api_url("/api/v1/user"),
+            headers={"Authorization": f"Bearer {access_token}"},
         )

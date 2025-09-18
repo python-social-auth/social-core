@@ -2,6 +2,7 @@
 Coursera OAuth2 backend, docs at:
     https://tech.coursera.org/app-platform/oauth2/
 """
+
 from .oauth import BaseOAuth2
 
 
@@ -12,7 +13,6 @@ class CourseraOAuth2(BaseOAuth2):
     ID_KEY = "username"
     AUTHORIZATION_URL = "https://accounts.coursera.org/oauth2/v1/auth"
     ACCESS_TOKEN_URL = "https://accounts.coursera.org/oauth2/v1/token"
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
     SCOPE_SEPARATOR = ","
     DEFAULT_SCOPE = ["view_profile"]

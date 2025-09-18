@@ -1,6 +1,7 @@
 """
 Coding OAuth2 backend, docs at:
 """
+
 from urllib.parse import urljoin
 
 from .oauth import BaseOAuth2
@@ -13,7 +14,6 @@ class CodingOAuth2(BaseOAuth2):
     API_URL = "https://coding.net/api/"
     AUTHORIZATION_URL = "https://coding.net/oauth_authorize.html"
     ACCESS_TOKEN_URL = "https://coding.net/api/oauth/access_token"
-    ACCESS_TOKEN_METHOD = "POST"
     SCOPE_SEPARATOR = ","
     DEFAULT_SCOPE = ["user"]
     REDIRECT_STATE = False

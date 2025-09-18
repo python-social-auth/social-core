@@ -1,11 +1,11 @@
 import json
 
-from httpretty import HTTPretty
+import responses
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class AmazonOAuth2Test(OAuth2Test):
+class AmazonOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.amazon.AmazonOAuth2"
     user_data_url = "https://api.amazon.com/user/profile"
     expected_username = "FooBar"
@@ -18,14 +18,14 @@ class AmazonOAuth2Test(OAuth2Test):
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
 
 
-class AmazonOAuth2BrokenServerResponseTest(OAuth2Test):
+class AmazonOAuth2BrokenServerResponseTest(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.amazon.AmazonOAuth2"
     user_data_url = "https://www.amazon.com/ap/user/profile"
     expected_username = "FooBar"
@@ -41,18 +41,18 @@ class AmazonOAuth2BrokenServerResponseTest(OAuth2Test):
         }
     )
 
-    def setUp(self):
+    def setUp(self) -> None:
         super().setUp()
-        HTTPretty.register_uri(
-            HTTPretty.GET,
+        responses.add(
+            responses.GET,
             "https://api.amazon.com/user/profile",
             status=200,
             body=self.user_data_body,
             content_type="application/json",
         )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()

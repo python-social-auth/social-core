@@ -2,6 +2,7 @@
 Edmodo OAuth2 Sign-in backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/edmodo.html
 """
+
 from .oauth import BaseOAuth2
 
 
@@ -11,7 +12,6 @@ class EdmodoOAuth2(BaseOAuth2):
     name = "edmodo"
     AUTHORIZATION_URL = "https://api.edmodo.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://api.edmodo.com/oauth/token"
-    ACCESS_TOKEN_METHOD = "POST"
 
     def get_user_details(self, response):
         """Return user details from Edmodo account"""

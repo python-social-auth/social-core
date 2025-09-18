@@ -2,6 +2,7 @@
 Flat OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/flat.html
 """
+
 from .oauth import BaseOAuth2
 
 
@@ -12,7 +13,6 @@ class FlatOAuth2(BaseOAuth2):
     DEFAULT_SCOPE = ["account.public_profile"]
     AUTHORIZATION_URL = "https://flat.io/auth/oauth"
     ACCESS_TOKEN_URL = "https://api.flat.io/oauth/access_token"
-    ACCESS_TOKEN_METHOD = "POST"
 
     def get_user_id(self, details, response):
         return response.get("id")

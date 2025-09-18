@@ -2,6 +2,7 @@
 RunKeeper OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/runkeeper.html
 """
+
 from .oauth import BaseOAuth2
 
 
@@ -11,7 +12,6 @@ class RunKeeperOAuth2(BaseOAuth2):
     name = "runkeeper"
     AUTHORIZATION_URL = "https://runkeeper.com/apps/authorize"
     ACCESS_TOKEN_URL = "https://runkeeper.com/apps/token"
-    ACCESS_TOKEN_METHOD = "POST"
     EXTRA_DATA = [
         ("userID", "id"),
     ]

@@ -2,6 +2,7 @@
 Disqus OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/disqus.html
 """
+
 from .oauth import BaseOAuth2
 
 
@@ -9,7 +10,6 @@ class DisqusOAuth2(BaseOAuth2):
     name = "disqus"
     AUTHORIZATION_URL = "https://disqus.com/api/oauth/2.0/authorize/"
     ACCESS_TOKEN_URL = "https://disqus.com/api/oauth/2.0/access_token/"
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
     SCOPE_SEPARATOR = ","
     EXTRA_DATA = [
@@ -44,7 +44,7 @@ class DisqusOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        key, secret = self.get_key_and_secret()
+        _key, secret = self.get_key_and_secret()
         return self.get_json(
             "https://disqus.com/api/3.0/users/details.json",
             params={"access_token": access_token, "api_secret": secret},

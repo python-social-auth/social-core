@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class UberOAuth2Test(OAuth2Test):
+class UberOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     user_data_url = "https://api.uber.com/v1/me"
     backend_path = "social_core.backends.uber.UberOAuth2"
     expected_username = "foo@bar.com"
@@ -29,8 +29,8 @@ class UberOAuth2Test(OAuth2Test):
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()

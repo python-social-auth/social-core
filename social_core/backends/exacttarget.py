@@ -3,11 +3,13 @@ ExactTarget OAuth support.
 Support Authentication from IMH using JWT token and pre-shared key.
 Requires package pyjwt
 """
-from datetime import datetime, timedelta
+
+from datetime import datetime, timedelta, timezone
 
 import jwt
 
-from ..exceptions import AuthCanceled, AuthFailed
+from social_core.exceptions import AuthCanceled, AuthFailed
+
 from .oauth import BaseOAuth2
 
 
@@ -45,19 +47,19 @@ class ExactTargetOAuth2(BaseOAuth2):
         """
         return "{}".format(details.get("id"))
 
-    def uses_redirect(self):
+    def uses_redirect(self) -> bool:
         return False
 
-    def auth_url(self):
-        return None
+    def auth_url(self) -> str:
+        return ""
 
-    def process_error(self, data):
+    def process_error(self, data) -> None:
         if data.get("error"):
             error = self.data.get("error_description") or self.data["error"]
             raise AuthFailed(self, error)
 
     def do_auth(self, token, *args, **kwargs):
-        dummy, secret = self.get_key_and_secret()
+        _key, secret = self.get_key_and_secret()
         try:  # Decode the token, using the Application Signature from settings
             decoded = jwt.decode(token, secret, algorithms=["HS256"])
         except jwt.DecodeError:  # Wrong signature, fail authentication
@@ -90,7 +92,7 @@ class ExactTargetOAuth2(BaseOAuth2):
         # The expiresIn value determines how long the tokens are valid for.
         # Take a bit off, then convert to an int timestamp
         expiresSeconds = details.get("expiresIn", 0) - 30
-        expires = datetime.utcnow() + timedelta(seconds=expiresSeconds)
+        expires = datetime.now(timezone.utc) + timedelta(seconds=expiresSeconds)
         data["expires"] = (expires - datetime(1970, 1, 1)).total_seconds()
 
         if response.get("token"):

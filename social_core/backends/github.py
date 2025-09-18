@@ -2,11 +2,13 @@
 Github OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/github.html
 """
+
 from urllib.parse import urljoin
 
 from requests import HTTPError
 
-from ..exceptions import AuthFailed
+from social_core.exceptions import AuthFailed
+
 from .oauth import BaseOAuth2
 
 
@@ -17,14 +19,17 @@ class GithubOAuth2(BaseOAuth2):
     API_URL = "https://api.github.com/"
     AUTHORIZATION_URL = "https://github.com/login/oauth/authorize"
     ACCESS_TOKEN_URL = "https://github.com/login/oauth/access_token"
-    ACCESS_TOKEN_METHOD = "POST"
     SCOPE_SEPARATOR = ","
     REDIRECT_STATE = False
     STATE_PARAMETER = True
-    SEND_USER_AGENT = True
-    EXTRA_DATA = [("id", "id"), ("expires", "expires"), ("login", "login")]
+    EXTRA_DATA = [
+        ("id", "id"),
+        ("expires_in", "expires"),
+        ("login", "login"),
+        ("refresh_token", "refresh_token"),
+    ]
 
-    def api_url(self):
+    def api_url(self) -> str:
         return self.API_URL
 
     def get_user_details(self, response):

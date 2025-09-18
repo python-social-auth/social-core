@@ -2,6 +2,7 @@
 Stocktwits OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/stocktwits.html
 """
+
 from .oauth import BaseOAuth2
 
 
@@ -11,7 +12,6 @@ class StocktwitsOAuth2(BaseOAuth2):
     name = "stocktwits"
     AUTHORIZATION_URL = "https://api.stocktwits.com/api/2/oauth/authorize"
     ACCESS_TOKEN_URL = "https://api.stocktwits.com/api/2/oauth/token"
-    ACCESS_TOKEN_METHOD = "POST"
     SCOPE_SEPARATOR = ","
     DEFAULT_SCOPE = [
         "read",

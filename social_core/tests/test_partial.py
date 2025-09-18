@@ -1,12 +1,12 @@
 import unittest
 from unittest.mock import Mock, patch
 
-from ..pipeline.partial import partial, partial_step
-from ..utils import PARTIAL_TOKEN_SESSION_NAME
+from social_core.pipeline.partial import partial, partial_step
+from social_core.utils import PARTIAL_TOKEN_SESSION_NAME
 
 
 class PartialDecoratorTestCase(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         super().setUp()
         self.mock_current_partial_token = Mock()
         self.mock_current_partial = Mock(token=self.mock_current_partial_token)
@@ -20,7 +20,7 @@ class PartialDecoratorTestCase(unittest.TestCase):
         self.mock_session_set = Mock()
         self.mock_strategy.session_set = self.mock_session_set
 
-    def test_save_to_session(self):
+    def test_save_to_session(self) -> None:
         # GIVEN
         expected_response = Mock()
 
@@ -51,7 +51,7 @@ class PartialDecoratorTestCase(unittest.TestCase):
                 self.mock_session_set.call_args[0],
             )
 
-    def test_not_to_save_to_session(self):
+    def test_not_to_save_to_session(self) -> None:
         # GIVEN
         expected_response = Mock()
 
@@ -78,7 +78,7 @@ class PartialDecoratorTestCase(unittest.TestCase):
 
             self.assertEqual(0, self.mock_session_set.call_count)
 
-    def test_save_to_session_by_backward_compatible_decorator(self):
+    def test_save_to_session_by_backward_compatible_decorator(self) -> None:
         # GIVEN
         expected_response = Mock()
 
@@ -109,7 +109,7 @@ class PartialDecoratorTestCase(unittest.TestCase):
                 self.mock_session_set.call_args[0],
             )
 
-    def test_not_to_save_to_session_when_the_response_is_a_dict(self):
+    def test_not_to_save_to_session_when_the_response_is_a_dict(self) -> None:
         # GIVEN
         expected_response = {"test_key": "test_value"}
 

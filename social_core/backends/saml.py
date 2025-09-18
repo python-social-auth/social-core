@@ -7,10 +7,20 @@ Terminology:
 "Identity Provider" (IdP): The third-party site that is authenticating
                            users via SAML
 """
+
+from __future__ import annotations
+
+import json
+
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
 from onelogin.saml2.settings import OneLogin_Saml2_Settings
 
-from ..exceptions import AuthFailed, AuthMissingParameter
+from social_core.exceptions import (
+    AuthFailed,
+    AuthInvalidParameter,
+    AuthMissingParameter,
+)
+
 from .base import BaseAuth
 
 # Helpful constants:
@@ -26,14 +36,14 @@ OID_USERID = "urn:oid:0.9.2342.19200300.100.1.1"
 class SAMLIdentityProvider:
     """Wrapper around configuration for a SAML Identity provider"""
 
-    def __init__(self, name, **kwargs):
+    def __init__(self, name, **kwargs) -> None:
         """Load and parse configuration"""
         self.name = name
         # name should be a slug and must not contain a colon, which
         # could conflict with uid prefixing:
-        assert (
-            ":" not in self.name and " " not in self.name
-        ), 'IdP "name" should be a slug (short, no spaces)'
+        assert ":" not in self.name and " " not in self.name, (
+            'IdP "name" should be a slug (short, no spaces)'
+        )
         self.conf = kwargs
 
     def get_user_permanent_id(self, attributes):
@@ -71,12 +81,9 @@ class SAMLIdentityProvider:
         another attribute to use.
         """
         key = self.conf.get(conf_key, default_attribute)
-        value = attributes[key] if key in attributes else None
+        value = attributes.get(key, None)
         if isinstance(value, list):
-            if len(value):
-                value = value[0]
-            else:
-                value = None
+            value = value[0] if value else None
         return value
 
     @property
@@ -136,7 +143,7 @@ class DummySAMLIdentityProvider(SAMLIdentityProvider):
     config, this can be removed.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             "dummy",
             entity_id="https://dummy.none/saml2",
@@ -281,8 +288,14 @@ class SAMLAuth(BaseAuth):
         # Below, return_to sets the RelayState, which can contain
         # arbitrary data.  We use it to store the specific SAML IdP
         # name, since we multiple IdPs share the same auth_complete
-        # URL.
-        return auth.login(return_to=idp_name)
+        # URL, and the URL to redirect to after auth completes.
+        relay_state = {
+            "idp": idp_name,
+            "next": self.data.get("next"),
+        }
+        if session_id := self.strategy.get_session_id():
+            relay_state[self.strategy.SESSION_SAVE_KEY] = session_id
+        return auth.login(return_to=json.dumps(relay_state))
 
     def get_user_details(self, response):
         """Get user details like full name, email, etc. from the
@@ -290,7 +303,7 @@ class SAMLAuth(BaseAuth):
         idp = self.get_idp(response["idp_name"])
         return idp.get_user_details(response["attributes"])
 
-    def get_user_id(self, details, response):
+    def get_user_id(self, details, response) -> str:
         """
         Get the permanent ID for this user from the response.
         We prefix each ID with the name of the IdP so that we can
@@ -305,7 +318,30 @@ class SAMLAuth(BaseAuth):
         The user has been redirected back from the IdP and we should
         now log them in, if everything checks out.
         """
-        idp_name = self.strategy.request_data()["RelayState"]
+        try:
+            relay_state_str = self.strategy.request_data()["RelayState"]
+        except KeyError as error:
+            raise AuthMissingParameter(self, "RelayState") from error
+
+        try:
+            relay_state: dict = json.loads(relay_state_str)
+        except json.JSONDecodeError as error:
+            raise AuthInvalidParameter(self, "RelayState") from error
+
+        if not isinstance(relay_state, dict):
+            raise AuthInvalidParameter(self, "RelayState")
+
+        idp_name: str | None = relay_state.get("idp")
+
+        if not idp_name:
+            raise AuthInvalidParameter(self, "RelayState.idp")
+
+        if session_id := relay_state.get(self.strategy.SESSION_SAVE_KEY):
+            self.strategy.restore_session(session_id, kwargs)
+        elif next_url := relay_state.get("next"):
+            # The do_complete action expects the "next" URL to be in session state or the request params.
+            self.strategy.session_set(kwargs.get("redirect_name", "next"), next_url)
+
         idp = self.get_idp(idp_name)
         auth = self._create_saml_auth(idp)
         auth.process_response()
@@ -349,7 +385,7 @@ class SAMLAuth(BaseAuth):
         errors = auth.get_errors()
         return url, errors
 
-    def _check_entitlements(self, idp, attributes):
+    def _check_entitlements(self, idp, attributes) -> None:
         """
         Additional verification of a SAML response before
         authenticating the user.
@@ -362,4 +398,3 @@ class SAMLAuth(BaseAuth):
         be authenticated, or do nothing to allow the login pipeline to
         continue.
         """
-        pass

@@ -1,8 +1,8 @@
-from .oauth import OAuth2Test
-from .test_open_id_connect import OpenIdConnectTestMixin
+from .oauth import BaseAuthUrlTestMixin
+from .open_id_connect import OpenIdConnectTest
 
 
-class ElixirOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
+class ElixirOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.elixir.ElixirOpenIdConnect"
     issuer = "https://login.elixir-czech.org/oidc/"
     openid_config_body = """
@@ -181,3 +181,4 @@ class ElixirOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
         "authorization_endpoint": "https://login.elixir-czech.org/oidc/authorize"
     }
     """
+    skip_invalid_at_hash = allow_invalid_at_hash = True

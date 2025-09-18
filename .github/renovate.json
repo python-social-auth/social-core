@@ -1,0 +1,43 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:best-practices",
+    ":dependencyDashboard",
+    "helpers:pinGitHubActionDigests"
+  ],
+  "rangeStrategy": "widen",
+  "automerge": true,
+  "automergeType": "pr",
+  "automergeStrategy": "rebase",
+  "platformAutomerge": true,
+  "pre-commit": {
+    "enabled": true
+  },
+  "poetry": {
+    "enabled": false
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/\\.pre-commit-config\\.yaml/"
+      ],
+      "matchStrings": [
+        "(?<depName>[^'\" ]+)==(?<currentValue>[^'\" ,\\s]+)"
+      ],
+      "datasourceTemplate": "pypi",
+      "versioningTemplate": "pep440"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/\\.pre-commit-config\\.yaml/"
+      ],
+      "matchStrings": [
+        "(?<depName>[^'\" ]+)@(?<currentValue>[^'\" ,\\s]+)"
+      ],
+      "datasourceTemplate": "npm",
+      "versioningTemplate": "npm"
+    }
+  ]
+}

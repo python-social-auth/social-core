@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class UniverseAuth2Test(OAuth2Test):
+class UniverseAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.universe.UniverseOAuth2"
     user_data_url = "https://www.universe.com/api/v2/current_user"
     expected_username = "scott+awesome@universe.com"
@@ -22,8 +22,8 @@ class UniverseAuth2Test(OAuth2Test):
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()

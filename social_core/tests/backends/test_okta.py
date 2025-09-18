@@ -1,9 +1,10 @@
 import json
 
-from httpretty import HTTPretty
+import responses
 
-from social_core.tests.backends.oauth import OAuth2Test
-from social_core.tests.backends.test_open_id_connect import OpenIdConnectTestMixin
+from social_core.tests.backends.oauth import BaseAuthUrlTestMixin, OAuth2Test
+
+from .open_id_connect import OpenIdConnectTest
 
 JWK_KEY = {
     "kty": "RSA",
@@ -28,7 +29,7 @@ JWK_KEY = {
 JWK_PUBLIC_KEY = {key: value for key, value in JWK_KEY.items() if key != "d"}
 
 
-class OktaOAuth2Test(OAuth2Test):
+class OktaOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.okta.OktaOAuth2"
     user_data_url = "https://dev-000000.oktapreview.com/oauth2/v1/userinfo"
     expected_username = "foo"
@@ -51,7 +52,7 @@ class OktaOAuth2Test(OAuth2Test):
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.strategy.set_settings(
             {
                 "SOCIAL_AUTH_OKTA_OAUTH2_API_URL": "https://dev-000000.oktapreview.com/oauth2"
@@ -59,7 +60,7 @@ class OktaOAuth2Test(OAuth2Test):
         )
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.strategy.set_settings(
             {
                 "SOCIAL_AUTH_OKTA_OAUTH2_API_URL": "https://dev-000000.oktapreview.com/oauth2"
@@ -68,7 +69,7 @@ class OktaOAuth2Test(OAuth2Test):
         self.do_partial_pipeline()
 
 
-class OktaOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
+class OktaOpenIdConnectTest(OpenIdConnectTest):
     backend_path = "social_core.backends.okta_openidconnect.OktaOpenIdConnect"
     user_data_url = "https://dev-000000.oktapreview.com/oauth2/v1/userinfo"
     issuer = "https://dev-000000.oktapreview.com/oauth2"
@@ -120,52 +121,90 @@ class OktaOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
             ],
         }
     )
+    user_data_body = json.dumps(
+        {
+            "family_name": "Bar",
+            "sub": "101010101010101010101",
+            "locale": "en",
+            "email_verified": True,
+            "given_name": "Foo",
+            "email": "foo@bar.com",
+            "name": "Foo Bar",
+            "nickname": "foobar",
+            "middle_name": "",
+            "profile": "https://example.com/foo.bar",
+            "zoneinfo": "America/Los_Angeles",
+            "updated_at": 1311280970,
+            "preferred_username": "foo",
+        }
+    )
     expected_username = "foo"
 
-    def setUp(self):
-        super(OpenIdConnectTestMixin, self).setUp()
+    def extra_settings(self):
+        settings = super().extra_settings()
         # Settings for Okta
-        self.strategy.set_settings(
+        oidc_config = json.loads(self.openid_config_body)
+        settings.update(
             {
-                "SOCIAL_AUTH_OKTA_OPENIDCONNECT_API_URL": "https://dev-000000.oktapreview.com/oauth2"
+                "SOCIAL_AUTH_OKTA_OPENIDCONNECT_API_URL": "https://dev-000000.oktapreview.com/oauth2",
+                "SOCIAL_AUTH_OKTA_OPENIDCONNECT_OIDC_ENDPOINT": "https://dev-000000.oktapreview.com/oauth2",
+                "SOCIAL_AUTH_OKTA_OPENIDCONNECT_JWKS_URI": oidc_config.get("jwks_uri"),
+                "SOCIAL_AUTH_OKTA_OPENIDCONNECT_ID_TOKEN_ISSUER": oidc_config.get(
+                    "issuer"
+                ),
             }
         )
-        self.backend.OIDC_ENDPOINT = "https://dev-000000.oktapreview.com/oauth2"
+        return settings
 
-        self.key = JWK_KEY.copy()
-        self.public_key = JWK_PUBLIC_KEY.copy()
-
-        HTTPretty.register_uri(
-            HTTPretty.GET,
+    def setUp(self) -> None:
+        responses.add(
+            responses.GET,
             # Note: okta.py strips the /oauth2 prefix using urljoin with absolute path
             "https://dev-000000.oktapreview.com/.well-known/openid-configuration?client_id=a-key",
             status=200,
             body=self.openid_config_body,
+            content_type="application/json",
         )
         oidc_config = json.loads(self.openid_config_body)
 
-        def jwks(_request, _uri, headers):
-            return 200, headers, json.dumps({"keys": [self.key]})
-
-        HTTPretty.register_uri(
-            HTTPretty.GET,
+        responses.add(
+            responses.GET,
             oidc_config.get("jwks_uri"),
             status=200,
-            body=json.dumps({"keys": [self.public_key]}),
+            json={"keys": [JWK_PUBLIC_KEY]},
         )
 
-        self.backend.JWKS_URI = oidc_config.get("jwks_uri")
-        self.backend.ID_TOKEN_ISSUER = oidc_config.get("issuer")
+        super().setUp()
 
-    def pre_complete_callback(self, start_url):
+    def pre_complete_callback(self, start_url) -> None:
         super().pre_complete_callback(start_url)
-        HTTPretty.register_uri(
-            "GET",
-            uri=self.backend.userinfo_url(),
+        responses.add(
+            responses.GET,
+            url=self.backend.userinfo_url(),
             status=200,
-            body=json.dumps({"preferred_username": self.expected_username}),
-            content_type="text/json",
+            json={"preferred_username": self.expected_username},
         )
 
-    def test_everything_works(self):
+    def test_everything_works(self) -> None:
         self.do_login()
+
+    def test_okta_oidc_config(self) -> None:
+        # With no custom authorization server
+        self.strategy.set_settings(
+            {
+                "SOCIAL_AUTH_OKTA_OPENIDCONNECT_API_URL": "https://dev-000000.oktapreview.com/oauth2",
+            }
+        )
+        self.assertEqual(
+            self.backend.oidc_config_url(),
+            "https://dev-000000.oktapreview.com/.well-known/openid-configuration?client_id=a-key",
+        )
+        self.strategy.set_settings(
+            {
+                "SOCIAL_AUTH_OKTA_OPENIDCONNECT_API_URL": "https://dev-000000.oktapreview.com/oauth2/id-123456",
+            }
+        )
+        self.assertEqual(
+            self.backend.oidc_config_url(),
+            "https://dev-000000.oktapreview.com/oauth2/id-123456/.well-known/openid-configuration?client_id=a-key",
+        )

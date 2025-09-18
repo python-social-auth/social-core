@@ -6,7 +6,6 @@ from .oauth import BaseOAuth2
 class AsanaOAuth2(BaseOAuth2):
     name = "asana"
     AUTHORIZATION_URL = "https://app.asana.com/-/oauth_authorize"
-    ACCESS_TOKEN_METHOD = "POST"
     ACCESS_TOKEN_URL = "https://app.asana.com/-/oauth_token"
     REFRESH_TOKEN_URL = "https://app.asana.com/-/oauth_token"
     REDIRECT_STATE = False
@@ -36,8 +35,8 @@ class AsanaOAuth2(BaseOAuth2):
     def extra_data(self, user, uid, response, details=None, *args, **kwargs):
         data = super().extra_data(user, uid, response, details)
         if self.setting("ESTIMATE_EXPIRES_ON"):
-            expires_on = datetime.datetime.utcnow() + datetime.timedelta(
-                seconds=data["expires"]
-            )
+            expires_on = datetime.datetime.now(
+                datetime.timezone.utc
+            ) + datetime.timedelta(seconds=data["expires"])
             data["expires_on"] = expires_on.isoformat()
         return data

@@ -1,7 +1,10 @@
 """
 OAuth2 Backend to work with microsoft graph.
 """
+
 import time
+
+from social_core.exceptions import AuthMissingParameter
 
 from .oauth import BaseOAuth2
 
@@ -12,7 +15,6 @@ class MicrosoftOAuth2(BaseOAuth2):
     AUTHORIZATION_URL = "https://login.microsoftonline.com/common/oauth2/v2.0/authorize"
     ACCESS_TOKEN_URL = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
 
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
     DEFAULT_SCOPE = ["User.Read"]
 
@@ -42,6 +44,9 @@ class MicrosoftOAuth2(BaseOAuth2):
         """Return user details from Microsoft online account"""
         email = response.get("mail")
         username = response.get("userPrincipalName")
+
+        if not username:
+            raise AuthMissingParameter(self, "userPrincipalName")
 
         if "@" in username:
             if not email:

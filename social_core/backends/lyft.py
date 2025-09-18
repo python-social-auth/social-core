@@ -2,6 +2,7 @@
 Lyft OAuth2 backend. Read more about the
     API at https://developer.lyft.com/docs
 """
+
 from .oauth import BaseOAuth2
 
 
@@ -11,12 +12,11 @@ class LyftOAuth2(BaseOAuth2):
     SCOPE_SEPARATOR = " "
     AUTHORIZATION_URL = "https://api.lyft.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://api.lyft.com/oauth/token"
-    ACCESS_TOKEN_METHOD = "POST"
     REFRESH_TOKEN_URL = "https://api.lyft.com/oauth/token"
     USER_DATA_URL = "https://api.lyft.com/v1/profile"
     DEFAULT_SCOPE = ["public", "profile", "rides.read", "rides.request"]
     RESPONSE_TYPE = "code"
-    STATE_PARAMETER = "asdf"
+    STATE_PARAMETER = True
     EXTRA_DATA = [
         ("id", "id"),
         ("username", "username"),
@@ -38,7 +38,7 @@ class LyftOAuth2(BaseOAuth2):
         )
 
     def auth_complete_params(self, state=None):
-        client_id, client_secret = self.get_key_and_secret()
+        _client_id, _client_secret = self.get_key_and_secret()
         return {"grant_type": "authorization_code", "code": self.data["code"]}
 
     def auth_complete_credentials(self):

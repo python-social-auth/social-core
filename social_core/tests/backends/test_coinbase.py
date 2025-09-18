@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class CoinbaseOAuth2Test(OAuth2Test):
+class CoinbaseOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.coinbase.CoinbaseOAuth2"
     user_data_url = "https://api.coinbase.com/v2/user"
     expected_username = "satoshi_nakomoto"
@@ -24,8 +24,8 @@ class CoinbaseOAuth2Test(OAuth2Test):
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()

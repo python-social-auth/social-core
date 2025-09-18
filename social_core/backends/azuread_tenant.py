@@ -2,11 +2,11 @@ import base64
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.x509 import load_der_x509_certificate
-from jwt import DecodeError, ExpiredSignatureError
+from jwt import DecodeError, ExpiredSignatureError, get_unverified_header
 from jwt import decode as jwt_decode
-from jwt import get_unverified_header
 
-from ..exceptions import AuthTokenError
+from social_core.exceptions import AuthTokenError
+
 from .azuread import AzureADOAuth2
 
 """
@@ -46,18 +46,25 @@ for verifying JWT tokens.
 
 class AzureADTenantOAuth2(AzureADOAuth2):
     name = "azuread-tenant-oauth2"
-    OPENID_CONFIGURATION_URL = "{base_url}/.well-known/openid-configuration"
-    JWKS_URL = "{base_url}/discovery/keys"
+    OPENID_CONFIGURATION_URL = "{base_url}/.well-known/openid-configuration{appid}"
+    JWKS_URL = "{base_url}/discovery/keys{appid}"
 
     @property
     def tenant_id(self):
         return self.setting("TENANT_ID", "common")
 
     def openid_configuration_url(self):
-        return self.OPENID_CONFIGURATION_URL.format(base_url=self.base_url)
+        return self.OPENID_CONFIGURATION_URL.format(
+            base_url=self.base_url, appid=self._appid()
+        )
 
     def jwks_url(self):
-        return self.JWKS_URL.format(base_url=self.base_url)
+        return self.JWKS_URL.format(base_url=self.base_url, appid=self._appid())
+
+    def _appid(self) -> str:
+        return (
+            f"?appid={self.setting('KEY')}" if self.setting("KEY") is not None else ""
+        )
 
     def get_certificate(self, kid):
         # retrieve keys from jwks_url
@@ -80,7 +87,10 @@ class AzureADTenantOAuth2(AzureADOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         response = kwargs.get("response")
-        id_token = response.get("id_token")
+        if response and response.get("id_token"):
+            id_token = response.get("id_token")
+        else:
+            id_token = access_token
 
         # get key id and algorithm
         key_id = get_unverified_header(id_token)["kid"]
@@ -91,7 +101,7 @@ class AzureADTenantOAuth2(AzureADOAuth2):
 
             return jwt_decode(
                 id_token,
-                key=certificate.public_key(),
+                key=certificate.public_key(),  # type: ignore[reportArgumentType]
                 algorithms=["RS256"],
                 audience=self.setting("KEY"),
             )
@@ -101,10 +111,10 @@ class AzureADTenantOAuth2(AzureADOAuth2):
 
 class AzureADV2TenantOAuth2(AzureADTenantOAuth2):
     name = "azuread-v2-tenant-oauth2"
-    OPENID_CONFIGURATION_URL = "{base_url}/v2.0/.well-known/openid-configuration"
+    OPENID_CONFIGURATION_URL = "{base_url}/v2.0/.well-known/openid-configuration{appid}"
     AUTHORIZATION_URL = "{base_url}/oauth2/v2.0/authorize"
     ACCESS_TOKEN_URL = "{base_url}/oauth2/v2.0/token"
-    JWKS_URL = "{base_url}/discovery/v2.0/keys"
+    JWKS_URL = "{base_url}/discovery/v2.0/keys{appid}"
     DEFAULT_SCOPE = ["openid", "profile", "offline_access"]
 
     def get_user_id(self, details, response):

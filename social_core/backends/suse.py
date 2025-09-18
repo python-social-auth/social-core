@@ -2,6 +2,7 @@
 Open Suse OpenId backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/suse.html
 """
+
 from .open_id import OpenIdAuth
 
 

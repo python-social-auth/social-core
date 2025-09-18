@@ -2,6 +2,7 @@
 Kakao OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/kakao.html
 """
+
 from .oauth import BaseOAuth2
 
 
@@ -11,7 +12,6 @@ class KakaoOAuth2(BaseOAuth2):
     name = "kakao"
     AUTHORIZATION_URL = "https://kauth.kakao.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://kauth.kakao.com/oauth/token"
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
     EXTRA_DATA = [
         ("properties", "properties"),

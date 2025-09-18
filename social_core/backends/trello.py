@@ -2,11 +2,11 @@
 Trello OAuth1 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/trello.html
 """
+
 from .oauth import BaseOAuth1
 
 
 class TrelloOAuth(BaseOAuth1):
-
     """Trello OAuth authentication backend"""
 
     name = "trello"

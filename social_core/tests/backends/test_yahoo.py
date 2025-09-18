@@ -1,15 +1,16 @@
+# pyright: reportAttributeAccessIssue=false
 import json
 from urllib.parse import urlencode
 
 import requests
-from httpretty import HTTPretty
+import responses
 
-from .oauth import OAuth1Test
+from .oauth import OAuth1AuthUrlTestMixin, OAuth1Test
 
 
-class YahooOAuth1Test(OAuth1Test):
+class YahooOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
     backend_path = "social_core.backends.yahoo.YahooOAuth"
-    user_data_url = "https://social.yahooapis.com/v1/user/a-guid/profile?" "format=json"
+    user_data_url = "https://social.yahooapis.com/v1/user/a-guid/profile?format=json"
     expected_username = "foobar"
     access_token_body = json.dumps({"access_token": "foobar", "token_type": "bearer"})
     request_token_body = urlencode(
@@ -57,28 +58,28 @@ class YahooOAuth1Test(OAuth1Test):
         }
     )
 
-    def test_login(self):
-        HTTPretty.register_uri(
-            HTTPretty.GET,
+    def test_login(self) -> None:
+        responses.add(
+            responses.GET,
             "https://social.yahooapis.com/v1/me/guid?format=json",
             status=200,
             body=self.guid_body,
         )
         self.do_login()
 
-    def test_partial_pipeline(self):
-        HTTPretty.register_uri(
-            HTTPretty.GET,
+    def test_partial_pipeline(self) -> None:
+        responses.add(
+            responses.GET,
             "https://social.yahooapis.com/v1/me/guid?format=json",
             status=200,
             body=self.guid_body,
         )
         self.do_partial_pipeline()
 
-    def test_get_user_details(self):
-        HTTPretty.register_uri(
-            HTTPretty.GET, self.user_data_url, status=200, body=self.user_data_body
+    def test_get_user_details(self) -> None:
+        responses.add(
+            responses.GET, self.user_data_url, status=200, body=self.user_data_body
         )
-        response = requests.get(self.user_data_url)
+        response = requests.get(self.user_data_url, timeout=1)
         user_details = self.backend.get_user_details(response.json()["profile"])
         self.assertEqual(user_details["email"], "foobar@yahoo.com")

@@ -1,4 +1,4 @@
-""" SciStarter OAuth2 Auth """
+"""SciStarter OAuth2 Auth"""
 
 from .oauth import BaseOAuth2
 
@@ -11,7 +11,6 @@ class SciStarterOAuth2(BaseOAuth2):
     SCOPE_SEPARATOR = " "
     AUTHORIZATION_URL = "https://scistarter.com/authorize"
     ACCESS_TOKEN_URL = "https://scistarter.com/token?key={key}"
-    ACCESS_TOKEN_METHOD = "POST"
     USER_ACCESS_URL = (
         "https://scistarter.com/api/user_info?client_id={clientid}&key={key}"
     )
@@ -45,12 +44,14 @@ class SciStarterOAuth2(BaseOAuth2):
 
     def access_token(self, token):
         """Return request for access token value"""
+        # TODO: confirm if this should be OAuth2 or OAuth1; the `oauth_auth` method
+        # is for OAuth1, but this class inherits from OAuth2
         return self.get_querystring(
             self.access_token_url(),
-            auth=self.oauth_auth(token),
+            auth=self.oauth_auth(token),  # type: ignore[reportAttributeAccessIssue]
             method=self.ACCESS_TOKEN_METHOD,
         )
 
     def access_token_url(self):
-        client_id, client_secret = self.get_key_and_secret()
+        _client_id, client_secret = self.get_key_and_secret()
         return self.ACCESS_TOKEN_URL.format(key=client_secret)

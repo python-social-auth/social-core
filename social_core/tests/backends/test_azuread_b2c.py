@@ -23,14 +23,21 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
+from __future__ import annotations
+
 import json
 from time import time
+from typing import TYPE_CHECKING, cast
 
 import jwt
-from httpretty import HTTPretty
+import responses
 from jwt.algorithms import RSAAlgorithm
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
+
+if TYPE_CHECKING:
+    from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
 
 # Dummy private and private keys:
 RSA_PUBLIC_JWT_KEY = {
@@ -83,7 +90,7 @@ RSA_PRIVATE_JWT_KEY = {
 }
 
 
-class AzureADOAuth2Test(OAuth2Test):
+class AzureADB2COAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     AUTH_KEY = "abcdef12-1234-9876-0000-abcdef098765"
     EXPIRES_IN = 3600
     AUTH_TIME = int(time())
@@ -106,7 +113,10 @@ class AzureADOAuth2Test(OAuth2Test):
             "access_token": "foobar",
             "token_type": "bearer",
             "id_token": jwt.encode(
-                key=RSAAlgorithm.from_jwk(json.dumps(RSA_PRIVATE_JWT_KEY)),
+                key=cast(
+                    "RSAPrivateKey",
+                    RSAAlgorithm.from_jwk(json.dumps(RSA_PRIVATE_JWT_KEY)),
+                ),
                 headers={
                     "kid": RSA_PRIVATE_JWT_KEY["kid"],
                 },
@@ -120,7 +130,7 @@ class AzureADOAuth2Test(OAuth2Test):
                     "family_name": "Bar",
                     "given_name": "Foo",
                     "iat": AUTH_TIME,
-                    "iss": "https://login.microsoftonline.com/9a9a9a9a-1111-5555-0000-bc24adfdae00/v2.0/",
+                    "iss": "https://foobar.b2clogin.com/9a9a9a9a-1111-5555-0000-bc24adfdae00/v2.0/",
                     "name": "FooBar",
                     "nbf": AUTH_TIME,
                     "oid": "11223344-5566-7788-9999-aabbccddeeff",
@@ -138,19 +148,20 @@ class AzureADOAuth2Test(OAuth2Test):
 
     def extra_settings(self):
         settings = super().extra_settings()
+        assert self.name, "Name must be set in subclasses"
         settings.update(
             {
                 "SOCIAL_AUTH_" + self.name + "_POLICY": "b2c_1_signin",
                 "SOCIAL_AUTH_" + self.name + "_KEY": self.AUTH_KEY,
-                "SOCIAL_AUTH_" + self.name + "_TENANT_ID": "footenant.onmicrosoft.com",
+                "SOCIAL_AUTH_" + self.name + "_TENANT_NAME": "footenant",
             }
         )
         return settings
 
-    def setUp(self):
+    def setUp(self) -> None:
         super().setUp()
 
-        keys_url = "https://login.microsoftonline.com/footenant.onmicrosoft.com/discovery/v2.0/keys?p=b2c_1_signin"
+        keys_url = "https://footenant.b2clogin.com/footenant.onmicrosoft.com/discovery/v2.0/keys?p=b2c_1_signin"
         keys_body = json.dumps(
             {
                 "keys": [
@@ -171,14 +182,14 @@ class AzureADOAuth2Test(OAuth2Test):
                 ],
             }
         )
-        HTTPretty.register_uri(HTTPretty.GET, keys_url, status=200, body=keys_body)
+        responses.add(responses.GET, keys_url, status=200, body=keys_body)
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
 
-    def test_refresh_token(self):
-        user, social = self.do_refresh_token()
+    def test_refresh_token(self) -> None:
+        _user, social = self.do_refresh_token()
         self.assertEqual(social.extra_data["access_token"], "foobar-new-token")

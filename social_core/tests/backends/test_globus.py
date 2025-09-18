@@ -1,10 +1,10 @@
 import json
 
-from .oauth import OAuth2Test
-from .test_open_id_connect import OpenIdConnectTestMixin
+from .oauth import BaseAuthUrlTestMixin
+from .open_id_connect import OpenIdConnectTest
 
 
-class GlobusOpenIdConnectTest(OpenIdConnectTestMixin, OAuth2Test):
+class GlobusOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.globus.GlobusOpenIdConnect"
     issuer = "https://auth.globus.org"
     openid_config_body = json.dumps(

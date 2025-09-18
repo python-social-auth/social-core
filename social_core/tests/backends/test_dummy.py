@@ -1,14 +1,17 @@
+from __future__ import annotations
+
 import datetime
 import json
-import time
+from typing import cast
 
-from httpretty import HTTPretty
+import responses
 
-from ...actions import do_disconnect
-from ...backends.oauth import BaseOAuth2
-from ...exceptions import AuthForbidden
-from ..models import User
-from .oauth import OAuth2Test
+from social_core.actions import do_disconnect
+from social_core.backends.oauth import BaseOAuth2
+from social_core.exceptions import AuthForbidden
+from social_core.tests.models import User
+
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
 class DummyOAuth2(BaseOAuth2):
@@ -40,7 +43,7 @@ class Dummy2OAuth2(DummyOAuth2):
     GET_ALL_EXTRA_DATA = True
 
 
-class DummyOAuth2Test(OAuth2Test):
+class DummyOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.tests.backends.test_dummy.DummyOAuth2"
     user_data_url = "http://dummy.com/user"
     expected_username = "foobar"
@@ -56,22 +59,22 @@ class DummyOAuth2Test(OAuth2Test):
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
 
-    def test_tokens(self):
+    def test_tokens(self) -> None:
         user = self.do_login()
         self.assertEqual(user.social[0].access_token, "foobar")
 
-    def test_revoke_token(self):
+    def test_revoke_token(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_REVOKE_TOKENS_ON_DISCONNECT": True})
         self.do_login()
-        user = User.get(self.expected_username)
+        user = cast("User", User.get(self.expected_username))
         user.password = "password"
-        HTTPretty.register_uri(
+        responses.add(
             self._method(self.backend.REVOKE_TOKEN_METHOD),
             self.backend.REVOKE_TOKEN_URL,
             status=200,
@@ -80,30 +83,30 @@ class DummyOAuth2Test(OAuth2Test):
 
 
 class WhitelistEmailsTest(DummyOAuth2Test):
-    def test_valid_login(self):
+    def test_valid_login(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_WHITELISTED_EMAILS": ["foo@bar.com"]})
         self.do_login()
 
-    def test_invalid_login(self):
+    def test_invalid_login(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_WHITELISTED_EMAILS": ["foo2@bar.com"]})
         with self.assertRaises(AuthForbidden):
             self.do_login()
 
-    def test_login_case_sensitive_local_part(self):
+    def test_login_case_sensitive_local_part(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_WHITELISTED_EMAILS": ["fOo@bar.com"]})
         self.do_login()
 
-    def test_login_case_sensitive_domain(self):
+    def test_login_case_sensitive_domain(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_WHITELISTED_EMAILS": ["foo@bAR.com"]})
         self.do_login()
 
 
 class WhitelistDomainsTest(DummyOAuth2Test):
-    def test_valid_login(self):
+    def test_valid_login(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_WHITELISTED_DOMAINS": ["bar.com"]})
         self.do_login()
 
-    def test_invalid_login(self):
+    def test_invalid_login(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_WHITELISTED_EMAILS": ["bar2.com"]})
         with self.assertRaises(AuthForbidden):
             self.do_login()
@@ -121,11 +124,11 @@ class ExpirationTimeTest(DummyOAuth2Test):
             "first_name": "Foo",
             "last_name": "Bar",
             "email": "foo@bar.com",
-            "expires": time.mktime((datetime.datetime.utcnow() + DELTA).timetuple()),
+            "expires": (datetime.datetime.now() + DELTA).timestamp(),
         }
     )
 
-    def test_expires_time(self):
+    def test_expires_time(self) -> None:
         user = self.do_login()
         social = user.social[0]
         expiration = social.expiration_timedelta()
@@ -147,7 +150,7 @@ class AllExtraDataTest(DummyOAuth2Test):
         }
     )
 
-    def test_get_all_extra_data(self):
+    def test_get_all_extra_data(self) -> None:
         user = self.do_login()
         social = user.social[0]
         self.assertIn("not_normally_in_extra_data", social.extra_data)

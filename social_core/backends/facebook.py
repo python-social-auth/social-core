@@ -1,25 +1,25 @@
 """
-Facebook OAuth2, Canvas Application and Limited Login backends, docs at:
+Facebook OAuth2, and Canvas Application  backends, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/facebook.html
 """
+
 import base64
 import hashlib
 import hmac
 import json
 import time
 
-from ..exceptions import (
+from social_core.exceptions import (
     AuthCanceled,
     AuthException,
     AuthMissingParameter,
-    AuthTokenError,
     AuthUnknownError,
 )
-from ..utils import constant_time_compare, handle_http_errors, parse_qs
-from .oauth import BaseOAuth2
-from .open_id_connect import OpenIdConnectAuth
+from social_core.utils import constant_time_compare, handle_http_errors, parse_qs
 
-API_VERSION = 12.0
+from .oauth import BaseOAuth2
+
+API_VERSION = 18.0
 
 
 class FacebookOAuth2(BaseOAuth2):
@@ -31,6 +31,7 @@ class FacebookOAuth2(BaseOAuth2):
     SCOPE_SEPARATOR = ","
     AUTHORIZATION_URL = "https://www.facebook.com/v{version}/dialog/oauth"
     ACCESS_TOKEN_URL = "https://graph.facebook.com/v{version}/oauth/access_token"
+    ACCESS_TOKEN_METHOD = "GET"
     REVOKE_TOKEN_URL = "https://graph.facebook.com/v{version}/{uid}/permissions"
     REVOKE_TOKEN_METHOD = "DELETE"
     USER_DATA_URL = "https://graph.facebook.com/v{version}/me"
@@ -85,7 +86,7 @@ class FacebookOAuth2(BaseOAuth2):
         version = self.setting("API_VERSION", API_VERSION)
         return self.get_json(self.USER_DATA_URL.format(version=version), params=params)
 
-    def process_error(self, data):
+    def process_error(self, data) -> None:
         super().process_error(data)
         if data.get("error_code"):
             raise AuthCanceled(
@@ -108,6 +109,7 @@ class FacebookOAuth2(BaseOAuth2):
                 "client_secret": secret,
                 "code": self.data["code"],
             },
+            method=self.ACCESS_TOKEN_METHOD,
         )
         # API v2.3 returns a JSON, according to the documents linked at issue
         # #592, but it seems that this needs to be enabled(?), otherwise the
@@ -147,7 +149,7 @@ class FacebookOAuth2(BaseOAuth2):
             # account on further logins), this app cannot allow it to
             # continue with the auth process.
             raise AuthUnknownError(
-                self, "An error occurred while retrieving " "users Facebook data"
+                self, "An error occurred while retrieving users Facebook data"
             )
 
         data["access_token"] = access_token
@@ -182,7 +184,7 @@ class FacebookAppOAuth2(FacebookOAuth2):
 
     name = "facebook-app"
 
-    def uses_redirect(self):
+    def uses_redirect(self) -> bool:
         return False
 
     def auth_complete(self, *args, **kwargs):
@@ -190,8 +192,9 @@ class FacebookAppOAuth2(FacebookOAuth2):
         response = {}
 
         if "signed_request" in self.data:
-            key, secret = self.get_key_and_secret()
+            _key, _secret = self.get_key_and_secret()
             response = self.load_signed_request(self.data["signed_request"])
+            assert response, "Missing signed_request response"
             if "user_id" not in response and "oauth_token" not in response:
                 raise AuthException(self)
 
@@ -205,12 +208,11 @@ class FacebookAppOAuth2(FacebookOAuth2):
         if access_token is None:
             if self.data.get("error") == "access_denied":
                 raise AuthCanceled(self)
-            else:
-                raise AuthException(self)
+            raise AuthException(self)
         return self.do_auth(access_token, response, *args, **kwargs)
 
     def auth_html(self):
-        key, secret = self.get_key_and_secret()
+        key, _secret = self.get_key_and_secret()
         namespace = self.setting("NAMESPACE", None)
         scope = self.setting("SCOPE", "")
         if scope:
@@ -230,7 +232,7 @@ class FacebookAppOAuth2(FacebookOAuth2):
             data += b"=" * (4 - (len(data) % 4))
             return base64.urlsafe_b64decode(data)
 
-        key, secret = self.get_key_and_secret()
+        _key, secret = self.get_key_and_secret()
         try:
             sig, payload = signed_request.split(".", 1)
         except ValueError:
@@ -249,46 +251,3 @@ class FacebookAppOAuth2(FacebookOAuth2):
                 time.time() - 86400
             ):
                 return data
-
-
-class FacebookLimitedLogin(OpenIdConnectAuth):
-    """Facebook Limited Login (OIDC) backend"""
-
-    name = "facebook-limited-login"
-    OIDC_ENDPOINT = "https://www.facebook.com"
-    ACCESS_TOKEN_URL = "https://facebook.com/dialog/oauth/"
-    ID_TOKEN_MAX_AGE = 3600
-
-    def authenticate(self, *args, **kwargs):
-        if (
-            "backend" not in kwargs
-            or kwargs["backend"].name != self.name
-            or "strategy" not in kwargs
-            or "response" not in kwargs
-        ):
-            return None
-
-        # Replace response with the decoded JWT
-        raw_jwt = kwargs.get("response", {}).get("access_token")
-        kwargs["response"] = self.validate_and_return_id_token(raw_jwt, "")
-        return super().authenticate(*args, **kwargs)
-
-    def get_user_details(self, response):
-        return {
-            "fullname": response.get("name"),
-            "email": response.get("email"),
-            "picture": response.get("picture"),
-        }
-
-    def user_data(self, access_token, *args, **kwargs):
-        # We don't have an access token to call any API for the user details.
-        return None
-
-    def validate_claims(self, id_token):
-        try:
-            super().validate_claims(id_token)
-        except AuthTokenError as e:
-            if "Incorrect id_token: nonce" in e.args:
-                # Ignore errors about nonce. We can't validate it since it's not generated server-side.
-                return
-            raise

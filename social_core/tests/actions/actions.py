@@ -3,12 +3,19 @@ import unittest
 from urllib.parse import urlparse
 
 import requests
-from httpretty import HTTPretty
+import responses
 
-from ...actions import do_auth, do_complete
-from ...utils import module_member, parse_qs
-from ..models import TestAssociation, TestNonce, TestStorage, TestUserSocialAuth, User
-from ..strategy import TestStrategy
+from social_core.actions import do_auth, do_complete
+from social_core.backends.oauth import BaseOAuth2
+from social_core.tests.models import (
+    TestAssociation,
+    TestNonce,
+    TestStorage,
+    TestUserSocialAuth,
+    User,
+)
+from social_core.tests.strategy import TestStrategy
+from social_core.utils import module_member, parse_qs
 
 
 class BaseActionTest(unittest.TestCase):
@@ -51,31 +58,33 @@ class BaseActionTest(unittest.TestCase):
         }
     )
 
-    def __init__(self, *args, **kwargs):
-        self.strategy = None
-        super().__init__(*args, **kwargs)
+    strategy: TestStrategy
+    backend: BaseOAuth2
 
-    def setUp(self):
-        HTTPretty.enable()
+    def setUp(self) -> None:
+        responses.start()
         User.reset_cache()
         TestUserSocialAuth.reset_cache()
         TestNonce.reset_cache()
         TestAssociation.reset_cache()
         Backend = module_member("social_core.backends.github.GithubOAuth2")
-        self.strategy = self.strategy or TestStrategy(TestStorage)
-        self.backend = Backend(self.strategy, redirect_uri="/complete/github")
+        if not hasattr(self, "strategy"):
+            self.strategy = TestStrategy(TestStorage)
+        if not hasattr(self, "backend"):
+            self.backend = Backend(self.strategy, redirect_uri="/complete/github")
         self.user = None
 
-    def tearDown(self):
-        self.backend = None
-        self.strategy = None
+    def tearDown(self) -> None:
+        del self.backend
+        del self.strategy
         self.user = None
         User.reset_cache()
         User.set_active(True)
         TestUserSocialAuth.reset_cache()
         TestNonce.reset_cache()
         TestAssociation.reset_cache()
-        HTTPretty.disable()
+        responses.stop()
+        responses.reset()
 
     def do_login(
         self, after_complete_checks=True, user_data_body=None, expected_username=None
@@ -102,18 +111,21 @@ class BaseActionTest(unittest.TestCase):
         )
         location_query = parse_qs(urlparse(location_url).query)
 
-        HTTPretty.register_uri(
-            HTTPretty.GET, start_url, status=301, location=location_url
+        responses.add(
+            responses.GET,
+            start_url,
+            status=301,
+            headers={"Location": location_url},
         )
-        HTTPretty.register_uri(HTTPretty.GET, location_url, status=200, body="foobar")
+        responses.add(responses.GET, location_url, status=200, body="foobar")
 
-        response = requests.get(start_url)
+        response = requests.get(start_url, timeout=1)
         self.assertEqual(response.url, location_url)
         self.assertEqual(response.text, "foobar")
 
-        HTTPretty.register_uri(
-            HTTPretty.POST,
-            uri=self.backend.ACCESS_TOKEN_URL,
+        responses.add(
+            responses.POST,
+            url=self.backend.ACCESS_TOKEN_URL,
             status=200,
             body=self.access_token_body or "",
             content_type="text/json",
@@ -121,16 +133,19 @@ class BaseActionTest(unittest.TestCase):
 
         if self.user_data_url:
             user_data_body = user_data_body or self.user_data_body or ""
-            HTTPretty.register_uri(
-                HTTPretty.GET,
+            responses.add(
+                responses.GET,
                 self.user_data_url,
                 body=user_data_body,
                 content_type="text/json",
             )
         self.strategy.set_request_data(location_query, self.backend)
 
-        def _login(backend, user, social_user):
+        def _login(backend, user, social_user) -> None:
             backend.strategy.session_set("username", user.username)
+            user_email = getattr(user, "email", None)
+            if user_email:
+                backend.strategy.session_set("email", user_email)
 
         redirect = do_complete(self.backend, user=self.user, login=_login)
 
@@ -142,7 +157,7 @@ class BaseActionTest(unittest.TestCase):
             self.assertEqual(redirect.url, self.login_redirect_url)
         return redirect
 
-    def do_login_with_partial_pipeline(self, before_complete=None):
+    def do_login_with_partial_pipeline(self, before_complete=None) -> None:
         self.strategy.set_settings(
             {
                 "SOCIAL_AUTH_GITHUB_KEY": "a-key",
@@ -178,45 +193,51 @@ class BaseActionTest(unittest.TestCase):
         )
         location_query = parse_qs(urlparse(location_url).query)
 
-        HTTPretty.register_uri(
-            HTTPretty.GET, start_url, status=301, location=location_url
+        responses.add(
+            responses.GET,
+            start_url,
+            status=301,
+            headers={"Location": location_url},
         )
-        HTTPretty.register_uri(HTTPretty.GET, location_url, status=200, body="foobar")
+        responses.add(responses.GET, location_url, status=200, body="foobar")
 
-        response = requests.get(start_url)
+        response = requests.get(start_url, timeout=1)
         self.assertEqual(response.url, location_url)
         self.assertEqual(response.text, "foobar")
 
-        HTTPretty.register_uri(
-            HTTPretty.GET,
-            uri=self.backend.ACCESS_TOKEN_URL,
+        responses.add(
+            responses.POST,
+            url=self.backend.ACCESS_TOKEN_URL,
             status=200,
             body=self.access_token_body or "",
             content_type="text/json",
         )
 
         if self.user_data_url:
-            HTTPretty.register_uri(
-                HTTPretty.GET,
+            responses.add(
+                responses.GET,
                 self.user_data_url,
                 body=self.user_data_body or "",
                 content_type="text/json",
             )
         self.strategy.set_request_data(location_query, self.backend)
 
-        def _login(backend, user, social_user):
+        def _login(backend, user, social_user) -> None:
             backend.strategy.session_set("username", user.username)
+            user_email = getattr(user, "email", None)
+            if user_email:
+                backend.strategy.session_set("email", user_email)
 
         redirect = do_complete(self.backend, user=self.user, login=_login)
         url = self.strategy.build_absolute_uri("/password")
         self.assertEqual(redirect.url, url)
-        HTTPretty.register_uri(HTTPretty.GET, redirect.url, status=200, body="foobar")
-        HTTPretty.register_uri(HTTPretty.POST, redirect.url, status=200)
+        responses.add(responses.GET, redirect.url, status=200, body="foobar")
+        responses.add(responses.POST, redirect.url, status=200)
 
         password = "foobar"
-        requests.get(url)
-        requests.post(url, data={"password": password})
-        data = parse_qs(HTTPretty.last_request.body)
+        requests.get(url, timeout=1)
+        requests.post(url, data={"password": password}, timeout=1)
+        data = parse_qs(responses.calls[-1].request.body)
         self.assertEqual(data["password"], password)
         self.strategy.session_set("password", data["password"])
 
@@ -226,5 +247,5 @@ class BaseActionTest(unittest.TestCase):
         self.assertEqual(self.strategy.session_get("username"), self.expected_username)
         self.assertEqual(redirect.url, self.login_redirect_url)
 
-    def _logout(self, backend):
+    def _logout(self, backend) -> None:
         backend.strategy.session_set("username", None)

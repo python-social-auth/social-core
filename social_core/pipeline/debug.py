@@ -1,7 +1,7 @@
 from pprint import pprint
 
 
-def debug(response, details, *args, **kwargs):
+def debug(response, details, *args, **kwargs) -> None:
     print("=" * 80)
     pprint(response)
     print("=" * 80)

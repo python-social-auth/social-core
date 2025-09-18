@@ -1,9 +1,9 @@
 import json
 
-from httpretty import HTTPretty
-from jose import jwt
+import jwt
+import responses
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 JWK_KEY = {
     "kty": "RSA",
@@ -30,7 +30,7 @@ JWK_PUBLIC_KEY = {key: value for key, value in JWK_KEY.items() if key != "d"}
 DOMAIN = "foobar.auth0.com"
 
 
-class Auth0OAuth2Test(OAuth2Test):
+class Auth0OAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.auth0.Auth0OAuth2"
     access_token_body = json.dumps(
         {
@@ -45,8 +45,9 @@ class Auth0OAuth2Test(OAuth2Test):
                     "picture": "http://example.com/image.png",
                     "sub": "123456",
                     "iss": f"https://{DOMAIN}/",
+                    "aud": "a-key",
                 },
-                JWK_KEY,
+                jwt.PyJWK(JWK_KEY).key,
                 algorithm="RS256",
             ),
         }
@@ -55,21 +56,22 @@ class Auth0OAuth2Test(OAuth2Test):
     jwks_url = "https://foobar.auth0.com/.well-known/jwks.json"
 
     def extra_settings(self):
+        assert self.name, "Subclasses must set the name attribute"
         settings = super().extra_settings()
         settings["SOCIAL_AUTH_" + self.name + "_DOMAIN"] = DOMAIN
         return settings
 
     def auth_handlers(self, start_url):
-        HTTPretty.register_uri(
-            HTTPretty.GET,
+        responses.add(
+            responses.GET,
             self.jwks_url,
             body=json.dumps({"keys": [JWK_PUBLIC_KEY]}),
             content_type="application/json",
         )
         return super().auth_handlers(start_url)
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()

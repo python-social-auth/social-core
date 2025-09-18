@@ -2,8 +2,9 @@ import hashlib
 import hmac
 import time
 
-from ..exceptions import AuthFailed, AuthMissingParameter
-from ..utils import handle_http_errors
+from social_core.exceptions import AuthFailed, AuthMissingParameter
+from social_core.utils import handle_http_errors
+
 from .base import BaseAuth
 
 
@@ -11,16 +12,16 @@ class TelegramAuth(BaseAuth):
     name = "telegram"
     ID_KEY = "id"
 
-    def verify_data(self, response):
+    def verify_data(self, response) -> None:
         bot_token = self.setting("BOT_TOKEN")
         if bot_token is None:
-            raise AuthMissingParameter("telegram", "SOCIAL_AUTH_TELEGRAM_BOT_TOKEN")
+            raise AuthMissingParameter(self, "SOCIAL_AUTH_TELEGRAM_BOT_TOKEN")
 
         received_hash_string = response.get("hash")
         auth_date = response.get("auth_date")
 
         if received_hash_string is None or auth_date is None:
-            raise AuthMissingParameter("telegram", "hash or auth_date")
+            raise AuthMissingParameter(self, "hash or auth_date")
 
         data_check_string = [f"{k}={v}" for k, v in response.items() if k != "hash"]
         data_check_string = "\n".join(sorted(data_check_string))
@@ -31,9 +32,9 @@ class TelegramAuth(BaseAuth):
         current_timestamp = int(time.time())
         auth_timestamp = int(auth_date)
         if current_timestamp - auth_timestamp > 86400:
-            raise AuthFailed("telegram", "Auth date is outdated")
+            raise AuthFailed(self, "Auth date is outdated")
         if built_hash != received_hash_string:
-            raise AuthFailed("telegram", "Invalid hash supplied")
+            raise AuthFailed(self, "Invalid hash supplied")
 
     def extra_data(self, user, uid, response, details=None, *args, **kwargs):
         return response
@@ -43,7 +44,7 @@ class TelegramAuth(BaseAuth):
         last_name = response.get("last_name", "")
         fullname = f"{first_name} {last_name}".strip()
         return {
-            "username": response.get("username") or response[self.ID_KEY],
+            "username": response.get("username") or str(response[self.ID_KEY]),
             "first_name": first_name,
             "last_name": last_name,
             "fullname": fullname,

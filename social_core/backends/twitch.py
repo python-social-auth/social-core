@@ -2,6 +2,7 @@
 Twitch OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/twitch.html
 """
+
 from .oauth import BaseOAuth2
 from .open_id_connect import OpenIdConnectAuth
 
@@ -24,6 +25,8 @@ class TwitchOpenIdConnect(OpenIdConnectAuth):
         return params
 
     def get_user_details(self, response):
+        assert self.id_token, "No id_token to parse"
+
         return {
             "username": self.id_token["preferred_username"],
             "email": self.id_token["email"],
@@ -41,7 +44,6 @@ class TwitchOAuth2(BaseOAuth2):
     ID_KEY = "_id"
     AUTHORIZATION_URL = "https://id.twitch.tv/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://id.twitch.tv/oauth2/token"
-    ACCESS_TOKEN_METHOD = "POST"
     DEFAULT_SCOPE = ["user:read:email"]
     REDIRECT_STATE = False
 
@@ -62,7 +64,7 @@ class TwitchOAuth2(BaseOAuth2):
     def user_data(self, access_token, *args, **kwargs):
         client_id, _ = self.get_key_and_secret()
         auth_headers = {
-            "Authorization": "Bearer %s" % access_token,
+            "Authorization": f"Bearer {access_token}",
             "Client-Id": client_id,
         }
         url = "https://api.twitch.tv/helix/users"

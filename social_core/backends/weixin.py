@@ -2,11 +2,13 @@
 """
 Weixin OAuth2 backend
 """
+
 from urllib.parse import urlencode
 
 from requests import HTTPError
 
-from ..exceptions import AuthCanceled, AuthUnknownError
+from social_core.exceptions import AuthCanceled, AuthUnknownError
+
 from .oauth import BaseOAuth2
 
 
@@ -17,7 +19,6 @@ class WeixinOAuth2(BaseOAuth2):
     ID_KEY = "openid"
     AUTHORIZATION_URL = "https://open.weixin.qq.com/connect/qrconnect"
     ACCESS_TOKEN_URL = "https://api.weixin.qq.com/sns/oauth2/access_token"
-    ACCESS_TOKEN_METHOD = "POST"
     DEFAULT_SCOPE = ["snsapi_login"]
     REDIRECT_STATE = False
     EXTRA_DATA = [
@@ -53,7 +54,7 @@ class WeixinOAuth2(BaseOAuth2):
         return data
 
     def auth_params(self, state=None):
-        appid, secret = self.get_key_and_secret()
+        appid, _secret = self.get_key_and_secret()
         params = {"appid": appid, "redirect_uri": self.get_redirect_uri(state)}
         if self.STATE_PARAMETER and state:
             params["state"] = state
@@ -93,8 +94,7 @@ class WeixinOAuth2(BaseOAuth2):
         except HTTPError as err:
             if err.response.status_code == 400:
                 raise AuthCanceled(self, response=err.response)
-            else:
-                raise
+            raise
         except KeyError:
             raise AuthUnknownError(self)
         if "errcode" in response:
@@ -116,7 +116,6 @@ class WeixinOAuth2APP(WeixinOAuth2):
     ID_KEY = "openid"
     AUTHORIZATION_URL = "https://open.weixin.qq.com/connect/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://api.weixin.qq.com/sns/oauth2/access_token"
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
 
     def auth_url(self):
@@ -149,7 +148,7 @@ class WeixinOAuth2APP(WeixinOAuth2):
             "secret": secret,
         }
 
-    def validate_state(self):
+    def validate_state(self) -> None:
         return None
 
     def auth_complete(self, *args, **kwargs):
@@ -165,8 +164,7 @@ class WeixinOAuth2APP(WeixinOAuth2):
         except HTTPError as err:
             if err.response.status_code == 400:
                 raise AuthCanceled(self)
-            else:
-                raise
+            raise
         except KeyError:
             raise AuthUnknownError(self)
 

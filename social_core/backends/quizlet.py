@@ -2,6 +2,7 @@
 Quizlet OAuth2 Sign-in backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/quizlet.html
 """
+
 from .oauth import BaseOAuth2
 
 
@@ -13,7 +14,6 @@ class QuizletOAuth2(BaseOAuth2):
     API_URL = "https://api.quizlet.com/2.0/"
     AUTHORIZATION_URL = "https://quizlet.com/authorize"
     ACCESS_TOKEN_URL = "https://api.quizlet.com/oauth/token"
-    ACCESS_TOKEN_METHOD = "POST"
     SCOPE_SEPARATOR = " "
     DEFAULT_SCOPE = ["read"]
 

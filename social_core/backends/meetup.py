@@ -2,6 +2,7 @@
 Meetup OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/meetup.html
 """
+
 from .oauth import BaseOAuth2
 
 
@@ -11,11 +12,10 @@ class MeetupOAuth2(BaseOAuth2):
     name = "meetup"
     AUTHORIZATION_URL = "https://secure.meetup.com/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://secure.meetup.com/oauth2/access"
-    ACCESS_TOKEN_METHOD = "POST"
     DEFAULT_SCOPE = ["basic"]
     SCOPE_SEPARATOR = ","
     REDIRECT_STATE = False
-    STATE_PARAMETER = "state"
+    STATE_PARAMETER = True
 
     def get_user_details(self, response):
         """Return user details from Meetup account"""

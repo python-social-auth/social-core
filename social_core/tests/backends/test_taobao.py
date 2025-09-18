@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class TaobaoOAuth2Test(OAuth2Test):
+class TaobaoOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.taobao.TAOBAOAuth"
     user_data_url = "https://eco.taobao.com/router/rest"
     expected_username = "foobar"
@@ -21,8 +21,8 @@ class TaobaoOAuth2Test(OAuth2Test):
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()

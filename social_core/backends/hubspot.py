@@ -2,6 +2,7 @@
 HubSpot OAuth2 backend, docs at:
     https://developers.hubspot.com/docs/methods/oauth2/oauth2-overview
 """
+
 from .oauth import BaseOAuth2
 
 
@@ -11,7 +12,6 @@ class HubSpotOAuth2(BaseOAuth2):
     name = "hubspot"
     AUTHORIZATION_URL = "https://app.hubspot.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://api.hubapi.com/oauth/v1/token"
-    ACCESS_TOKEN_METHOD = "POST"
     USER_DATA_URL = "https://api.hubapi.com/oauth/v1/access-tokens/"
     DEFAULT_SCOPE = ["oauth"]
     EXTRA_DATA = [

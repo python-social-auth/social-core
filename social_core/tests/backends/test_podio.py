@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class PodioOAuth2Test(OAuth2Test):
+class PodioOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.podio.PodioOAuth2"
     user_data_url = "https://api.podio.com/user/status"
     expected_username = "user_1010101010"
@@ -49,13 +49,13 @@ class PodioOAuth2Test(OAuth2Test):
                 "link": "https://podio.com/users/1010101010",
                 "name": "Foo Bar",
                 # more properties ...
-            }
+            },
             # more properties ...
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()

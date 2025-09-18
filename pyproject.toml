@@ -1,0 +1,212 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools>=78.0.2"]
+
+[dependency-groups]
+dev = [
+  "coverage==7.10.6",
+  "flake8==7.3.0",
+  "google-auth-stubs==0.3.0",
+  "mypy==1.17.1",
+  "pyright==1.1.405",
+  "pytest-cov==6.2.1",
+  "pytest-github-actions-annotate-failures==0.3.0",
+  "pytest-profiling==1.8.1",
+  "pytest-xdist==3.8.0",
+  "pytest==8.4.1",
+  "responses==0.25.8",
+  "types-defusedxml==0.7.0.20250822",
+  "types-oauthlib==3.3.0.20250822",
+  "types-python-jose==3.5.0.20250531",
+  "types-requests-oauthlib==2.0.0.20250809",
+  "types-requests==2.32.4.20250913"
+]
+
+[project]
+authors = [
+  {email = "matiasaguirre@gmail.com", name = "Matias Aguirre"},
+  {email = "michal@weblate.org", name = "Michal Čihař"}
+]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Web Environment",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python",
+  "Topic :: Internet"
+]
+dependencies = [
+  "defusedxml>=0.7.1",
+  "oauthlib>=3.3.1",
+  "PyJWT[crypto]>=2.10.1",
+  "python3-openid>=3.2.0",
+  "requests-oauthlib>=2.0.0",
+  "requests>=2.32.5"
+]
+description = "Python social authentication made simple."
+keywords = ["oauth", "openid", "saml", "social auth"]
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
+name = "social-auth-core"
+readme = "README.md"
+requires-python = ">=3.10"
+version = "4.7.0"
+
+[project.optional-dependencies]
+all = [
+  "social-auth-core[azuread]",
+  "social-auth-core[google-onetap]",
+  "social-auth-core[saml]",
+  "social-auth-core[shopify]"
+]
+allpy3 = [
+  "social-auth-core[all]"
+]
+azuread = [
+  "cryptography>=42.0.8"
+]
+# This is present until pip implements supports for PEP 735
+# see https://github.com/pypa/pip/issues/12963
+dev = [
+  "coverage==7.10.6",
+  "flake8==7.3.0",
+  "google-auth-stubs==0.3.0",
+  "mypy==1.18.1",
+  "pyright==1.1.405",
+  "pytest-cov==7.0.0",
+  "pytest-github-actions-annotate-failures==0.3.0",
+  "pytest-profiling==1.8.1",
+  "pytest-xdist==3.8.0",
+  "pytest==8.4.2",
+  "responses==0.25.8",
+  "types-defusedxml==0.7.0.20250822",
+  "types-oauthlib==3.3.0.20250822",
+  "types-python-jose==3.5.0.20250531",
+  "types-requests-oauthlib==2.0.0.20250809",
+  "types-requests==2.32.4.20250913"
+]
+google-onetap = [
+  "google-auth~=2.40.0"
+]
+ping = [
+  "python-jose>=3.4.0,<4.0"
+]
+saml = [
+  "python3-saml>=1.16.0"
+]
+shopify = [
+  "ShopifyAPI"
+]
+
+[project.urls]
+Changelog = "https://github.com/python-social-auth/social-core/blob/master/CHANGELOG.md"
+Funding = "https://opencollective.com/python-social-auth"
+Homepage = "https://github.com/python-social-auth/social-core"
+
+[tool.check-manifest]
+ignore = [
+  ".coveragerc",
+  ".pre-commit-config.yaml",
+  ".well-known/funding-manifest-urls",
+  "tox.ini"
+]
+
+[tool.codespell]
+count = true
+ignore-words-list = "assertIn"
+
+[tool.mypy]
+check_untyped_defs = true
+
+[[tool.mypy.overrides]]
+disallow_untyped_defs = true
+ignore_missing_imports = true
+module = [
+  "google.appengine.*",
+  "onelogin.*",
+  "openid.*",
+  "shopify.*"
+]
+
+[tool.pyright]
+executionEnvironments = [
+  {reportMissingImports = "none", root = "social_core/backends/gae.py"}
+]
+pythonVersion = "3.9"
+reportOptionalMemberAccess = "none"
+reportPossiblyUnboundVariable = "none"
+
+[tool.pytest.ini_options]
+addopts = "--cov=social_core --cov-report=xml --durations=10"
+
+[tool.ruff.lint]
+extend-safe-fixes = [
+  "ANN",
+  "D",
+  "FA102",
+  "FLY",
+  "SIM",
+  "TCH",
+  "UP"
+]
+ignore = [
+  "ANN",  # TODO: Missing type annotations
+  "ARG001",  # TODO: Unused function argument (mostly for API compatibility)
+  "ARG002",  # TODO: Unused method argument (mostly for API compatibility)
+  "ARG003",  # TODO: Unused class method argument
+  "B026",  # TODO: Star-arg unpacking after a keyword argument is strongly discouraged
+  "B904",  # TODO: use raise from
+  "COM",  # CONFIG: No trailing commas
+  "D",  # TODO: Missing documentation
+  "D203",  # CONFIG: incompatible with D211
+  "D212",  # CONFIG: incompatible with D213
+  "DTZ001",  # TODO: `datetime.datetime()` called without a `tzinfo` argument
+  "DTZ005",  # TODO: `datetime.datetime.now()` called without a `tz` argument
+  "E501",  # WONTFIX: we accept long strings (rest is formatted by ruff)
+  "EM101",  # TODO: Exception must not use a string literal, assign to variable first
+  "EM102",  # TODO: Exception must not use an f-string literal, assign to variable first
+  "ERA001",  # TODO: Found commented-out code
+  "FBT",  # TODO: Boolean in function definition
+  "FIX002",  # CONFIG: we use TODO
+  "ISC003",  # TODO: Explicitly concatenated string should be implicitly concatenated
+  "N",  # TODO: Naming issues
+  "PERF203",  # WONTFIX: This rule is only enforced for Python versions prior to 3.11
+  "PLR2004",  # TODO: Magic value used in comparison
+  "PLW2901",  # TODO: loop variable overwritten by assignment target
+  "PT",  # CONFIG: Not using pytest
+  "RUF012",  # TODO: Type annotations
+  "S101",  # TODO: Use of `assert` detected
+  "S105",  # TODO: Possible hardcoded password assigned
+  "S301",  # TODO: `pickle` and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue
+  "TD002",  # CONFIG: no detailed TODO documentation is required
+  "TD003",  # CONFIG: no detailed TODO documentation is required
+  "TRY003",  # TODO: Avoid specifying long messages outside the exception class
+  "TRY301",  # TODO: Abstract `raise` to an inner function
+  'ISC001'  # CONFIG: formatter
+]
+select = ["ALL"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 11  # TODO: should be lower
+
+[tool.ruff.lint.per-file-ignores]
+"social_core/pipeline/debug.py" = ["T201", "T203"]
+
+[tool.ruff.lint.pylint]
+# TODO: all these should be lower (or use defaults)
+max-args = 7
+max-branches = 15
+
+[tool.setuptools]
+packages = ["social_core"]
+
+[tool.tomlsort]
+ignore_case = true
+sort_inline_arrays = true
+sort_inline_tables = true
+sort_table_keys = true
+spaces_before_inline_comment = 2

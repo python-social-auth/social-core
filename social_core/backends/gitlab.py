@@ -7,6 +7,7 @@ implementation for GitLab support on his blog post [Weblate with
 GitLab as OAuth provider](http://widerin.net/blog/weblate-gitlab-oauth-login/).
 His code was a great reference when working on this implementation.
 """
+
 from .oauth import BaseOAuth2
 
 
@@ -17,7 +18,6 @@ class GitLabOAuth2(BaseOAuth2):
     API_URL = "https://gitlab.com"
     AUTHORIZATION_URL = "https://gitlab.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://gitlab.com/oauth/token"
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
     DEFAULT_SCOPE = ["read_user"]
     EXTRA_DATA = [

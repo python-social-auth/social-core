@@ -1,17 +1,16 @@
 """
 Openshift OAuth2 backend
 """
+
 from urllib.parse import urljoin
 
-import requests
+from social_core.utils import append_slash
 
-from ..utils import append_slash
 from .oauth import BaseOAuth2
 
 
 class OpenshiftOAuth2(BaseOAuth2):
     name = "openshift"
-    ACCESS_TOKEN_METHOD = "POST"
 
     def access_token_url(self):
         return urljoin(append_slash(self.setting("URL")), "oauth/token")
@@ -32,7 +31,7 @@ class OpenshiftOAuth2(BaseOAuth2):
         """Loads user data from service"""
         headers = {"Authorization": "Bearer " + access_token}
 
-        return requests.get(
+        return self.request(
             urljoin(append_slash(self.setting("URL")), "oapi/v1/users/~"),
             headers=headers,
         ).json()

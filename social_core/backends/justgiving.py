@@ -1,6 +1,7 @@
 from requests.auth import HTTPBasicAuth
 
-from ..utils import handle_http_errors
+from social_core.utils import handle_http_errors
+
 from .oauth import BaseOAuth2
 
 
@@ -11,7 +12,6 @@ class JustGivingOAuth2(BaseOAuth2):
     ID_KEY = "userId"
     AUTHORIZATION_URL = "https://identity.justgiving.com/connect/authorize"
     ACCESS_TOKEN_URL = "https://identity.justgiving.com/connect/token"
-    ACCESS_TOKEN_METHOD = "POST"
     USER_DATA_URL = "https://api.justgiving.com/v1/account"
     DEFAULT_SCOPE = ["openid", "account", "profile", "email", "fundraise"]
 

@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class SimpleLoginOAuth2Test(OAuth2Test):
+class SimpleLoginOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.simplelogin.SimpleLoginOAuth2"
     user_data_url = "https://app.simplelogin.io/oauth2/userinfo"
     access_token_body = json.dumps({"access_token": "foobar", "token_type": "bearer"})
@@ -19,8 +19,8 @@ class SimpleLoginOAuth2Test(OAuth2Test):
     )
     expected_username = "john@wick.com"
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()

@@ -2,46 +2,82 @@ name: Tests
 
 on: [push, pull_request]
 
+permissions:
+  contents: read
+
 jobs:
-  test:
-    runs-on: ubuntu-20.04
+  types:
+    runs-on: ubuntu-24.04
     strategy:
+      fail-fast: false
       matrix:
         python-version:
-        - '3.6'
-        - '3.7'
-        - '3.8'
-        - '3.9'
         - '3.10'
-        - '3.11'
+        - '3.13'
     env:
       PYTHON_VERSION: ${{ matrix.python-version }}
       PYTHONUNBUFFERED: 1
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      with:
+        persist-credentials: false
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
       with:
         python-version: ${{ matrix.python-version }}
-        cache: pip
-        cache-dependency-path: requirements*.txt
+
+    - uses: astral-sh/setup-uv@b75a909f75acd358c2196fb9a5f1299a9a8868a4 # v6.7.0
+      with:
+        cache-suffix: ${{ matrix.python-version }}
 
     - name: Install System dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -qq -y --no-install-recommends libxmlsec1-dev swig
 
-    - name: Install Python dependencies
+    - name: Type check with tox
+      run: uvx tox -e "py${PYTHON_VERSION/\./}-pyright"
+
+  test:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version:
+        - '3.10'
+        - '3.11'
+        - '3.12'
+        - '3.13'
+    env:
+      PYTHON_VERSION: ${{ matrix.python-version }}
+      PYTHONUNBUFFERED: 1
+
+    steps:
+    - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      with:
+        persist-credentials: false
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - uses: astral-sh/setup-uv@b75a909f75acd358c2196fb9a5f1299a9a8868a4 # v6.7.0
+      with:
+        cache-suffix: ${{ matrix.python-version }}
+
+    - name: Install System dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install tox coverage
+        sudo apt-get update
+        sudo apt-get install -qq -y --no-install-recommends libxmlsec1-dev swig
 
     - name: Test with tox
-      run: tox -e "py${PYTHON_VERSION/\./}"
+      run: uvx tox -e "py${PYTHON_VERSION/\./}"
 
-    - uses: codecov/codecov-action@v1
+    - uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
       with:
         flags: unittests
         name: Python ${{ matrix.python-version }}
+        token: ${{secrets.CODECOV_TOKEN}}

@@ -2,6 +2,7 @@
 Stripe OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/stripe.html
 """
+
 from .oauth import BaseOAuth2
 
 
@@ -12,7 +13,6 @@ class StripeOAuth2(BaseOAuth2):
     ID_KEY = "stripe_user_id"
     AUTHORIZATION_URL = "https://connect.stripe.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://connect.stripe.com/oauth/token"
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
     EXTRA_DATA = [
         ("stripe_publishable_key", "stripe_publishable_key"),
@@ -42,7 +42,7 @@ class StripeOAuth2(BaseOAuth2):
         }
 
     def auth_complete_params(self, state=None):
-        client_id, client_secret = self.get_key_and_secret()
+        client_id, _client_secret = self.get_key_and_secret()
         return {
             "grant_type": "authorization_code",
             "client_id": client_id,
@@ -51,7 +51,7 @@ class StripeOAuth2(BaseOAuth2):
         }
 
     def auth_headers(self):
-        client_id, client_secret = self.get_key_and_secret()
+        _client_id, client_secret = self.get_key_and_secret()
         return {
             "Accept": "application/json",
             "Authorization": f"Bearer {client_secret}",

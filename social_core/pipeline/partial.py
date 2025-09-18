@@ -1,6 +1,7 @@
 from functools import wraps
 
-from ..utils import PARTIAL_TOKEN_SESSION_NAME
+from social_core.utils import PARTIAL_TOKEN_SESSION_NAME
+
 from .utils import partial_prepare
 
 
@@ -36,7 +37,7 @@ def partial_step(save_to_session):
                     pipeline_index=pipeline_index,
                     current_partial=current_partial,
                     *args,
-                    **kwargs
+                    **kwargs,
                 )
                 or {}
             )

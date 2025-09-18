@@ -1,10 +1,13 @@
 """Models mixins for Social Auth"""
+
+from __future__ import annotations
+
 import base64
 import re
-import time
 import uuid
-import warnings
-from datetime import datetime, timedelta
+from abc import abstractmethod
+from datetime import datetime, timedelta, timezone
+from typing import Any
 
 from openid.association import Association as OpenIdAssociation
 
@@ -18,10 +21,12 @@ class UserMixin:
     # Consider tokens that expire in 5 seconds as already expired
     ACCESS_TOKEN_EXPIRED_THRESHOLD = 5
 
-    user = ""
     provider = ""
     uid = None
-    extra_data = None
+    extra_data: dict[str, Any] | None = None
+
+    @abstractmethod
+    def save(self): ...
 
     def get_backend(self, strategy):
         return strategy.get_backend_class(self.provider)
@@ -37,12 +42,7 @@ class UserMixin:
         """Return access_token stored in extra_data or None"""
         return self.extra_data.get("access_token")
 
-    @property
-    def tokens(self):
-        warnings.warn("tokens is deprecated, use access_token instead")
-        return self.access_token
-
-    def refresh_token(self, strategy, *args, **kwargs):
+    def refresh_token(self, strategy, *args, **kwargs) -> None:
         token = self.extra_data.get("refresh_token") or self.extra_data.get(
             "access_token"
         )
@@ -61,28 +61,28 @@ class UserMixin:
         timedelta is inferred from current time (using UTC timezone). None is
         returned if there's no value stored or it's invalid.
         """
-        if self.extra_data and "expires" in self.extra_data:
+        if self.extra_data and (expires := self.extra_data.get("expires")) is not None:
             try:
-                expires = int(self.extra_data.get("expires"))
+                expires = int(expires)
             except (ValueError, TypeError):
                 return None
 
-            now = datetime.utcnow()
+            now = datetime.now(timezone.utc)
 
             # Detect if expires is a timestamp
-            if expires > time.mktime(now.timetuple()):
+            if expires > now.timestamp():
                 # expires is a datetime, return the remaining difference
-                return datetime.utcfromtimestamp(expires) - now
-            else:
-                # expires is the time to live seconds since creation,
-                # check against auth_time if present, otherwise return
-                # the value
-                auth_time = self.extra_data.get("auth_time")
-                if auth_time:
-                    reference = datetime.utcfromtimestamp(auth_time)
-                    return (reference + timedelta(seconds=expires)) - now
-                else:
-                    return timedelta(seconds=expires)
+                expiry_time = datetime.fromtimestamp(expires, tz=timezone.utc)
+                return expiry_time - now
+            # expires is the time to live seconds since creation,
+            # check against auth_time if present, otherwise return
+            # the value
+            auth_time = self.extra_data.get("auth_time")
+            if auth_time:
+                reference = datetime.fromtimestamp(auth_time, tz=timezone.utc)
+                return (reference + timedelta(seconds=expires)) - now
+            return timedelta(seconds=expires)
+        return None
 
     def expiration_datetime(self):
         # backward compatible alias
@@ -102,28 +102,28 @@ class UserMixin:
             self.refresh_token(strategy)
         return self.access_token
 
-    def set_extra_data(self, extra_data=None):
+    def set_extra_data(self, extra_data: dict[str, Any] | None = None) -> bool | None:
         if extra_data and self.extra_data != extra_data:
             if self.extra_data and not isinstance(self.extra_data, str):
                 self.extra_data.update(extra_data)
             else:
                 self.extra_data = extra_data
             return True
+        return None
 
     @classmethod
     def clean_username(cls, value):
         """Clean username removing any unsupported character"""
         value = NO_ASCII_REGEX.sub("", value)
-        value = NO_SPECIAL_REGEX.sub("", value)
-        return value
+        return NO_SPECIAL_REGEX.sub("", value)
 
     @classmethod
-    def changed(cls, user):
+    def changed(cls, user) -> None:
         """The given user instance is ready to be saved"""
         raise NotImplementedError("Implement in subclass")
 
     @classmethod
-    def get_username(cls, user):
+    def get_username(cls, user) -> str:
         """Return the username for given user"""
         raise NotImplementedError("Implement in subclass")
 
@@ -133,12 +133,12 @@ class UserMixin:
         raise NotImplementedError("Implement in subclass")
 
     @classmethod
-    def username_max_length(cls):
+    def username_max_length(cls) -> int:
         """Return the max length for username"""
         raise NotImplementedError("Implement in subclass")
 
     @classmethod
-    def allowed_to_disconnect(cls, user, backend_name, association_id=None):
+    def allowed_to_disconnect(cls, user, backend_name, association_id=None) -> bool:
         """Return if it's safe to disconnect the social account for the
         given user"""
         raise NotImplementedError("Implement in subclass")
@@ -149,7 +149,7 @@ class UserMixin:
         raise NotImplementedError("Implement in subclass")
 
     @classmethod
-    def user_exists(cls, *args, **kwargs):
+    def user_exists(cls, *args, **kwargs) -> bool:
         """
         Return True/False if a User instance exists with the given arguments.
         Arguments are directly passed to filter() manager method.
@@ -167,22 +167,27 @@ class UserMixin:
         raise NotImplementedError("Implement in subclass")
 
     @classmethod
-    def get_users_by_email(cls, email):
+    def get_users_by_email(cls, email: str):
         """Return users instances for given email address"""
         raise NotImplementedError("Implement in subclass")
 
     @classmethod
-    def get_social_auth(cls, provider, uid):
+    def get_social_auth(cls, provider: str, uid: int):
         """Return UserSocialAuth for given provider and uid"""
         raise NotImplementedError("Implement in subclass")
 
     @classmethod
-    def get_social_auth_for_user(cls, user, provider=None, id=None):
+    def get_social_auth_for_user(
+        cls,
+        user,
+        provider: str | None = None,
+        id: int | None = None,  # noqa: A002
+    ):
         """Return all the UserSocialAuth instances for given user"""
         raise NotImplementedError("Implement in subclass")
 
     @classmethod
-    def create_social_auth(cls, user, uid, provider):
+    def create_social_auth(cls, user, uid: int, provider: str):
         """Create a UserSocialAuth instance for given user"""
         raise NotImplementedError("Implement in subclass")
 
@@ -250,7 +255,7 @@ class AssociationMixin:
         raise NotImplementedError("Implement in subclass")
 
     @classmethod
-    def get(cls, *args, **kwargs):
+    def get(cls, server_url: str | None = None, handle: str | None = None):
         """Get an Association instance"""
         raise NotImplementedError("Implement in subclass")
 
@@ -265,7 +270,10 @@ class CodeMixin:
     code = ""
     verified = False
 
-    def verify(self):
+    @abstractmethod
+    def save(self): ...
+
+    def verify(self) -> None:
         self.verified = True
         self.save()
 
@@ -289,8 +297,8 @@ class CodeMixin:
 
 class PartialMixin:
     token = ""
-    data = ""
-    next_step = ""
+    data: dict[str, Any] = {}
+    next_step: int
     backend = ""
 
     @property
@@ -298,7 +306,7 @@ class PartialMixin:
         return self.data.get("args", [])
 
     @args.setter
-    def args(self, value):
+    def args(self, value) -> None:
         self.data["args"] = value
 
     @property
@@ -306,10 +314,10 @@ class PartialMixin:
         return self.data.get("kwargs", {})
 
     @kwargs.setter
-    def kwargs(self, value):
+    def kwargs(self, value) -> None:
         self.data["kwargs"] = value
 
-    def extend_kwargs(self, values):
+    def extend_kwargs(self, values) -> None:
         self.data["kwargs"].update(values)
 
     @classmethod
@@ -325,7 +333,7 @@ class PartialMixin:
         raise NotImplementedError("Implement in subclass")
 
     @classmethod
-    def prepare(cls, backend, next_step, data):
+    def prepare(cls, backend, next_step: int, data: dict[str, Any]):
         partial = cls()
         partial.backend = backend
         partial.next_step = next_step
@@ -347,6 +355,6 @@ class BaseStorage:
     partial = PartialMixin
 
     @classmethod
-    def is_integrity_error(cls, exception):
+    def is_integrity_error(cls, exception) -> bool:
         """Check if given exception flags an integrity error in the DB"""
         raise NotImplementedError("Implement in subclass")

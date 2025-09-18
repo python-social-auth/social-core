@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class RedditOAuth2Test(OAuth2Test):
+class RedditOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.reddit.RedditOAuth2"
     user_data_url = "https://oauth.reddit.com/api/v1/me.json"
     expected_username = "foobar"
@@ -50,16 +50,16 @@ class RedditOAuth2Test(OAuth2Test):
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
 
     def refresh_token_arguments(self):
         uri = self.strategy.build_absolute_uri("/complete/reddit/")
         return {"redirect_uri": uri}
 
-    def test_refresh_token(self):
-        user, social = self.do_refresh_token()
+    def test_refresh_token(self) -> None:
+        _user, social = self.do_refresh_token()
         self.assertEqual(social.extra_data["access_token"], "foobar-new-token")

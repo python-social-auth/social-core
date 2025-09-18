@@ -6,7 +6,8 @@ Created on May 13, 2014
 
 import json
 
-from ..utils import parse_qs
+from social_core.utils import parse_qs
+
 from .oauth import BaseOAuth2
 
 

@@ -2,12 +2,14 @@
 LINE Login OAuth2 backend, docs at:
     https://developers.line.me/en/docs/line-login/
 """
+
 import json
 
 import requests
 
-from ..exceptions import AuthFailed
-from ..utils import handle_http_errors
+from social_core.exceptions import AuthFailed
+from social_core.utils import handle_http_errors
+
 from .oauth import BaseOAuth2
 
 
@@ -17,7 +19,6 @@ class LineOAuth2(BaseOAuth2):
     ACCESS_TOKEN_URL = "https://api.line.me/oauth2/v2.1/token"
     BASE_API_URL = "https://api.line.me"
     USER_INFO_URL = BASE_API_URL + "/v2/profile"
-    ACCESS_TOKEN_METHOD = "POST"
     STATE_PARAMETER = True
     DEFAULT_SCOPE = ["profile"]
     REDIRECT_STATE = True
@@ -31,7 +32,7 @@ class LineOAuth2(BaseOAuth2):
     ]
 
     def auth_params(self, state=None):
-        client_id, client_secret = self.get_key_and_secret()
+        client_id, _client_secret = self.get_key_and_secret()
         return {
             "response_type": self.RESPONSE_TYPE,
             "client_id": client_id,
@@ -40,7 +41,7 @@ class LineOAuth2(BaseOAuth2):
             "scope": self.get_scope(),
         }
 
-    def process_error(self, data):
+    def process_error(self, data) -> None:
         error_code = (
             data.get("errorCode") or data.get("statusCode") or data.get("error")
         )
@@ -98,6 +99,7 @@ class LineOAuth2(BaseOAuth2):
                 self.USER_INFO_URL, headers={"Authorization": f"Bearer {access_token}"}
             )
             self.process_error(response)
-            return response
         except requests.HTTPError as err:
             self.process_error(err.response.json())
+            return None
+        return response

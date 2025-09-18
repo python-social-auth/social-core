@@ -1,10 +1,10 @@
 import json
 from urllib.parse import urlencode
 
-from .oauth import OAuth1Test
+from .oauth import OAuth1AuthUrlTestMixin, OAuth1Test
 
 
-class ThisIsMyJameOAuth1Test(OAuth1Test):
+class ThisIsMyJameOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
     backend_path = "social_core.backends.thisismyjam.ThisIsMyJamOAuth1"
     user_data_url = "http://api.thisismyjam.com/1/verify.json"
     expected_username = "foobar"
@@ -20,8 +20,8 @@ class ThisIsMyJameOAuth1Test(OAuth1Test):
         {"id": 10101010, "person": {"name": "foobar", "fullname": "Foo Bar"}}
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()

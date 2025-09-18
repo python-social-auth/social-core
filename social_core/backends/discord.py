@@ -2,16 +2,16 @@
 Discord Auth OAuth2 backend, docs at:
     https://discord.com/developers/docs/topics/oauth2
 """
+
 from .oauth import BaseOAuth2
 
 
 class DiscordOAuth2(BaseOAuth2):
     name = "discord"
     HOSTNAME = "discord.com"
-    AUTHORIZATION_URL = "https://%s/api/oauth2/authorize" % HOSTNAME
-    ACCESS_TOKEN_URL = "https://%s/api/oauth2/token" % HOSTNAME
-    ACCESS_TOKEN_METHOD = "POST"
-    REVOKE_TOKEN_URL = "https://%s/api/oauth2/token/revoke" % HOSTNAME
+    AUTHORIZATION_URL = f"https://{HOSTNAME}/api/oauth2/authorize"
+    ACCESS_TOKEN_URL = f"https://{HOSTNAME}/api/oauth2/token"
+    REVOKE_TOKEN_URL = f"https://{HOSTNAME}/api/oauth2/token/revoke"
     REVOKE_TOKEN_METHOD = "GET"
     DEFAULT_SCOPE = ["identify"]
     SCOPE_SEPARATOR = "+"
@@ -25,6 +25,6 @@ class DiscordOAuth2(BaseOAuth2):
         }
 
     def user_data(self, access_token, *args, **kwargs):
-        url = "https://%s/api/users/@me" % self.HOSTNAME
-        auth_header = {"Authorization": "Bearer %s" % access_token}
+        url = f"https://{self.HOSTNAME}/api/users/@me"
+        auth_header = {"Authorization": f"Bearer {access_token}"}
         return self.get_json(url, headers=auth_header)

@@ -2,6 +2,7 @@
 Podio OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/podio.html
 """
+
 from .oauth import BaseOAuth2
 
 
@@ -11,7 +12,6 @@ class PodioOAuth2(BaseOAuth2):
     name = "podio"
     AUTHORIZATION_URL = "https://podio.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://podio.com/oauth/token"
-    ACCESS_TOKEN_METHOD = "POST"
     EXTRA_DATA = [
         ("access_token", "access_token"),
         ("token_type", "token_type"),
@@ -27,7 +27,7 @@ class PodioOAuth2(BaseOAuth2):
             response["profile"]["name"]
         )
         return {
-            "username": "user_%d" % response["user"]["user_id"],
+            "username": f"user_{response['user']['user_id']}",
             "email": response["user"]["mail"],
             "fullname": fullname,
             "first_name": first_name,

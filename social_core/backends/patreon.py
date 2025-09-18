@@ -2,6 +2,7 @@
 Patreon OAuth2 backend
 https://www.patreon.com/platform/documentation/oauth
 """
+
 from .oauth import BaseOAuth2
 
 
@@ -12,7 +13,6 @@ class PatreonOAuth2(BaseOAuth2):
     AUTHORIZATION_URL = "https://www.patreon.com/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://www.patreon.com/api/oauth2/token"
     REVOKE_TOKEN_URL = "https://www.patreon.com/oauth2/revoke"
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
     ID_KEY = "id"
     EXTRA_DATA = [

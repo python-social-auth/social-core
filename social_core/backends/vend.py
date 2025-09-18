@@ -1,6 +1,7 @@
 """
 Vend  OAuth2 backend:
 """
+
 from .oauth import BaseOAuth2
 
 
@@ -8,7 +9,6 @@ class VendOAuth2(BaseOAuth2):
     name = "vend"
     AUTHORIZATION_URL = "https://secure.vendhq.com/connect"
     ACCESS_TOKEN_URL = "https://{0}.vendhq.com/api/1.0/token"
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
     EXTRA_DATA = [
         ("refresh_token", "refresh_token"),

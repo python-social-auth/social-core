@@ -1,6 +1,7 @@
 """
 Orbi OAuth2 backend
 """
+
 from .oauth import BaseOAuth2
 
 
@@ -10,7 +11,6 @@ class OrbiOAuth2(BaseOAuth2):
     name = "orbi"
     AUTHORIZATION_URL = "https://login.orbi.kr/oauth/authorize"
     ACCESS_TOKEN_URL = "https://login.orbi.kr/oauth/token"
-    ACCESS_TOKEN_METHOD = "POST"
     EXTRA_DATA = [
         ("imin", "imin"),
         ("nick", "nick"),

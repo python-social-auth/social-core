@@ -6,6 +6,7 @@ openid.yandex.ru/user. Username is retrieved from the identity url.
 
 If username is not specified, OpenID 2.0 url used for authentication.
 """
+
 from urllib.parse import urlsplit
 
 from .oauth import BaseOAuth2
@@ -37,7 +38,6 @@ class YandexOAuth2(BaseOAuth2):
     name = "yandex-oauth2"
     AUTHORIZATION_URL = "https://oauth.yandex.com/authorize"
     ACCESS_TOKEN_URL = "https://oauth.yandex.com/token"
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
 
     def get_user_details(self, response):
@@ -67,7 +67,6 @@ class YaruOAuth2(BaseOAuth2):
     name = "yaru"
     AUTHORIZATION_URL = "https://oauth.yandex.com/authorize"
     ACCESS_TOKEN_URL = "https://oauth.yandex.com/token"
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
 
     def get_user_details(self, response):

@@ -2,13 +2,15 @@
 Okta OAuth2 and OpenIdConnect:
     https://python-social-auth.readthedocs.io/en/latest/backends/okta.html
 """
-from urllib.parse import urljoin
 
-from ..utils import append_slash
+from urllib.parse import urljoin, urlparse, urlunparse
+
+from social_core.utils import append_slash
+
 from .oauth import BaseOAuth2
 
 
-class OktaMixin:
+class OktaMixin(BaseOAuth2):
     def api_url(self):
         return append_slash(self.setting("API_URL"))
 
@@ -21,14 +23,25 @@ class OktaMixin:
     def _url(self, path):
         return urljoin(append_slash(self.setting("API_URL")), path)
 
-    def oidc_config(self):
-        return self.get_json(
-            self._url(
-                "/.well-known/openid-configuration?client_id={}".format(
-                    self.setting("KEY")
-                )
-            )
+    def oidc_config_url(self):
+        # https://developer.okta.com/docs/reference/api/oidc/#well-known-openid-configuration
+        url = urlparse(self.api_url())
+
+        # If the URL path does not contain an authorizedServerId, we need
+        # to truncate the path in order to generate a proper openid-configuration
+        # URL.
+        if url.path == "/oauth2/":
+            url = url._replace(path="")
+
+        return urljoin(
+            urlunparse(url),
+            "./.well-known/openid-configuration?client_id={}".format(
+                self.setting("KEY")
+            ),
         )
+
+    def oidc_config(self):
+        return self.get_json(self.oidc_config_url())
 
 
 class OktaOAuth2(OktaMixin, BaseOAuth2):
@@ -36,7 +49,6 @@ class OktaOAuth2(OktaMixin, BaseOAuth2):
 
     name = "okta-oauth2"
     REDIRECT_STATE = False
-    ACCESS_TOKEN_METHOD = "POST"
     SCOPE_SEPARATOR = " "
     ID_KEY = "preferred_username"
 

@@ -1,7 +1,8 @@
 """
-    ORCID OAuth2 Application backend, docs at:
-    https://python-social-auth.readthedocs.io/en/latest/backends/orcid.html
+ORCID OAuth2 Application backend, docs at:
+https://python-social-auth.readthedocs.io/en/latest/backends/orcid.html
 """
+
 from .oauth import BaseOAuth2
 
 
@@ -15,7 +16,6 @@ class ORCIDOAuth2(BaseOAuth2):
     USER_ID_URL = "https://orcid.org/oauth/userinfo"
     USER_DATA_URL = "https://pub.orcid.org/v2.0/{}"
     DEFAULT_SCOPE = ["/authenticate"]
-    ACCESS_TOKEN_METHOD = "POST"
     EXTRA_DATA = [
         ("orcid", "id"),
         ("expires_in", "expires"),
@@ -23,8 +23,7 @@ class ORCIDOAuth2(BaseOAuth2):
     ]
 
     def auth_params(self, state=None):
-        params = super().auth_params(state)
-        return params
+        return super().auth_params(state)
 
     def get_user_details(self, response):
         """Return user details from ORCID account"""
@@ -71,11 +70,12 @@ class ORCIDOAuth2(BaseOAuth2):
         if person:
             name = person.get("name")
 
-            fullname = name
-
             if name:
                 first_name = name.get("given-names", {}).get("value", "")
-                last_name = name.get("family-name", {}).get("value", "")
+                if (family_name := name.get("family-name", None)) is not None:
+                    last_name = family_name.get("value", "")
+                fullname = first_name + " " + last_name
+                fullname = fullname.strip()
 
             emails = person.get("emails")
             if emails:
@@ -114,29 +114,23 @@ class ORCIDOAuth2(BaseOAuth2):
         #     "family_name":"Jones",
         #     "given_name":"Tom"
         # }
-        try:
-            response = self.get_json(
-                self.USER_ID_URL,
-                headers={
-                    "Content-Type": "application/json",
-                    "Authorization": f"Bearer {str(access_token)}",
-                },
-            )
+        response = self.get_json(
+            self.USER_ID_URL,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {access_token!s}",
+            },
+        )
 
-            # Update Jan 28 2021: Now we definitely have an ORCID id of format "0000-0000-0000-0000"
-            orcid = response["sub"]
-        except Exception:
-            pass
+        # Update Jan 28 2021: Now we definitely have an ORCID id of format "0000-0000-0000-0000"
+        orcid = response["sub"]
 
         # We can now attempt to access the ORCID public API with the Orcid:
-        try:
-            return self.get_json(
-                self.USER_DATA_URL.format(orcid),
-                headers={"Content-Type": "application/json"},
-                params=params,
-            )
-        except Exception:
-            return None
+        return self.get_json(
+            self.USER_DATA_URL.format(orcid),
+            headers={"Content-Type": "application/json"},
+            params=params,
+        )
 
 
 class ORCIDOAuth2Sandbox(ORCIDOAuth2):

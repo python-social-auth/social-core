@@ -2,6 +2,7 @@
 Coinbase OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/coinbase.html
 """
+
 from .oauth import BaseOAuth2
 
 
@@ -12,7 +13,6 @@ class CoinbaseOAuth2(BaseOAuth2):
     AUTHORIZATION_URL = "https://www.coinbase.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://api.coinbase.com/oauth/token"
     REVOKE_TOKEN_URL = "https://api.coinbase.com/oauth/revoke"
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
 
     def get_user_id(self, details, response):

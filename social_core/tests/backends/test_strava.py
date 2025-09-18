@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class StravaOAuthTest(OAuth2Test):
+class StravaOAuthTest(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.strava.StravaOAuth"
     user_data_url = "https://www.strava.com/api/v3/athlete"
     expected_username = "marianne_v"
@@ -69,8 +69,8 @@ class StravaOAuthTest(OAuth2Test):
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()

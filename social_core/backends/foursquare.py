@@ -2,6 +2,7 @@
 Foursquare OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/foursquare.html
 """
+
 from .oauth import BaseOAuth2
 
 
@@ -9,7 +10,6 @@ class FoursquareOAuth2(BaseOAuth2):
     name = "foursquare"
     AUTHORIZATION_URL = "https://foursquare.com/oauth2/authenticate"
     ACCESS_TOKEN_URL = "https://foursquare.com/oauth2/access_token"
-    ACCESS_TOKEN_METHOD = "POST"
     API_VERSION = "20140128"
 
     def get_user_id(self, details, response):

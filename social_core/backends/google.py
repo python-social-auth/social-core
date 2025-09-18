@@ -2,28 +2,26 @@
 Google OpenId, OAuth2, OAuth1, Google+ Sign-in backends, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/google.html
 """
-from ..exceptions import AuthMissingParameter
-from ..utils import handle_http_errors
+
+from social_core.backends.base import BaseAuth
+from social_core.exceptions import AuthMissingParameter
+from social_core.utils import handle_http_errors
+
 from .oauth import BaseOAuth1, BaseOAuth2
 
 
-class BaseGoogleAuth:
+class BaseGoogleAuth(BaseAuth):
     def get_user_id(self, details, response):
         """Use google email as unique id"""
         if self.setting("USE_UNIQUE_USER_ID", False):
             if "sub" in response:
                 return response["sub"]
-            else:
-                return response["id"]
-        else:
-            return details["email"]
+            return response["id"]
+        return details["email"]
 
     def get_user_details(self, response):
         """Return user details from Google API account"""
-        if "email" in response:
-            email = response["email"]
-        else:
-            email = ""
+        email = response.get("email", "")
 
         name, given_name, family_name = (
             response.get("name", ""),
@@ -49,7 +47,7 @@ class BaseGoogleOAuth2API(BaseGoogleAuth):
         return self.get_json(
             "https://www.googleapis.com/oauth2/v3/userinfo",
             headers={
-                "Authorization": "Bearer %s" % access_token,
+                "Authorization": f"Bearer {access_token}",
             },
         )
 
@@ -67,7 +65,6 @@ class GoogleOAuth2(BaseGoogleOAuth2API, BaseOAuth2):
     REDIRECT_STATE = False
     AUTHORIZATION_URL = "https://accounts.google.com/o/oauth2/auth"
     ACCESS_TOKEN_URL = "https://accounts.google.com/o/oauth2/token"
-    ACCESS_TOKEN_METHOD = "POST"
     REVOKE_TOKEN_URL = "https://accounts.google.com/o/oauth2/revoke"
     REVOKE_TOKEN_METHOD = "GET"
     # The order of the default scope is important
@@ -85,7 +82,6 @@ class GooglePlusAuth(BaseGoogleOAuth2API, BaseOAuth2):
     STATE_PARAMETER = False
     AUTHORIZATION_URL = "https://accounts.google.com/o/oauth2/auth"
     ACCESS_TOKEN_URL = "https://accounts.google.com/o/oauth2/token"
-    ACCESS_TOKEN_METHOD = "POST"
     REVOKE_TOKEN_URL = "https://accounts.google.com/o/oauth2/revoke"
     REVOKE_TOKEN_METHOD = "GET"
     DEFAULT_SCOPE = [
@@ -117,7 +113,7 @@ class GooglePlusAuth(BaseGoogleOAuth2API, BaseOAuth2):
             )
             self.process_error(response)
             return self.do_auth(token, response=response, *args, **kwargs)
-        elif "code" in self.data:  # Server-side workflow
+        if "code" in self.data:  # Server-side workflow
             response = self.request_access_token(
                 self.ACCESS_TOKEN_URL,
                 data=self.auth_complete_params(),
@@ -128,11 +124,10 @@ class GooglePlusAuth(BaseGoogleOAuth2API, BaseOAuth2):
             return self.do_auth(
                 response["access_token"], response=response, *args, **kwargs
             )
-        elif "id_token" in self.data:  # Client-side workflow
+        if "id_token" in self.data:  # Client-side workflow
             token = self.data.get("id_token")
             return self.do_auth(token, *args, **kwargs)
-        else:
-            raise AuthMissingParameter(self, "access_token, id_token, or code")
+        raise AuthMissingParameter(self, "access_token, id_token, or code")
 
     def user_data(self, access_token, *args, **kwargs):
         if "id_token" not in self.data:

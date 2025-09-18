@@ -2,8 +2,10 @@
 Jawbone OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/jawbone.html
 """
-from ..exceptions import AuthCanceled, AuthUnknownError
-from ..utils import handle_http_errors
+
+from social_core.exceptions import AuthCanceled, AuthUnknownError
+from social_core.utils import handle_http_errors
+
 from .oauth import BaseOAuth2
 
 
@@ -46,8 +48,7 @@ class JawboneOAuth2(BaseOAuth2):
         if error:
             if error == "access_denied":
                 raise AuthCanceled(self)
-            else:
-                raise AuthUnknownError(self, f"Jawbone error was {error}")
+            raise AuthUnknownError(self, f"Jawbone error was {error}")
         return super().process_error(data)
 
     def auth_complete_params(self, state=None):

@@ -2,6 +2,7 @@
 Reddit OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/reddit.html
 """
+
 import base64
 
 from .oauth import BaseOAuth2
@@ -13,12 +14,10 @@ class RedditOAuth2(BaseOAuth2):
     name = "reddit"
     AUTHORIZATION_URL = "https://ssl.reddit.com/api/v1/authorize"
     ACCESS_TOKEN_URL = "https://ssl.reddit.com/api/v1/access_token"
-    ACCESS_TOKEN_METHOD = "POST"
     REFRESH_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
     SCOPE_SEPARATOR = ","
     DEFAULT_SCOPE = ["identity"]
-    SEND_USER_AGENT = True
     EXTRA_DATA = [
         ("id", "id"),
         ("name", "username"),

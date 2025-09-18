@@ -1,45 +1,43 @@
 import json
-import os
 import re
 import sys
 import unittest
-from os import path
+from pathlib import Path
 from unittest.mock import patch
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 import requests
-from httpretty import HTTPretty
+import responses
 
 try:
     from onelogin.saml2.utils import OneLogin_Saml2_Utils
-except ImportError:
-    # Only available for python 2.7 at the moment, so don't worry if this fails
-    pass
 
-from ...exceptions import AuthMissingParameter
+    SAML_MODULE_ENABLED = True
+except ImportError:
+    SAML_MODULE_ENABLED = False
+
+from social_core.exceptions import AuthInvalidParameter, AuthMissingParameter
+
 from .base import BaseBackendTest
 
-DATA_DIR = path.join(path.dirname(__file__), "data")
+DATA_DIR = Path(__file__).parent / "data"
 
 
-@unittest.skipIf(
-    "TRAVIS" in os.environ,
-    "Travis-ci segfaults probably due to a bad " "dependencies build",
-)
 @unittest.skipIf(
     "__pypy__" in sys.builtin_module_names, "dm.xmlsec not compatible with pypy"
 )
+@unittest.skipUnless(SAML_MODULE_ENABLED, "Only run if onelogin.saml2 is installed")
 class SAMLTest(BaseBackendTest):
     backend_path = "social_core.backends.saml.SAMLAuth"
     expected_username = "myself"
+    response_fixture = "saml_response.txt"
 
     def extra_settings(self):
-        name = path.join(DATA_DIR, "saml_config.json")
-        with open(name) as config_file:
-            config_str = config_file.read()
+        file = DATA_DIR / "saml_config.json"
+        config_str = file.read_text()
         return json.loads(config_str)
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Patch the time so that we can replay canned
         request/response pairs"""
         super().setUp()
@@ -52,19 +50,21 @@ class SAMLTest(BaseBackendTest):
         now_patch.start()
         self.addCleanup(now_patch.stop)
 
-    def install_http_intercepts(self, start_url, return_url):
+    def install_http_intercepts(self, start_url, return_url) -> None:
         # When we request start_url
         # (https://idp.testshib.org/idp/profile/SAML2/Redirect/SSO...)
         # we will eventually get a redirect back, with SAML assertion
         # data in the query string.  A pre-recorded correct response
         # is kept in this .txt file:
-        name = path.join(DATA_DIR, "saml_response.txt")
-        with open(name) as response_file:
-            response_url = response_file.read()
-        HTTPretty.register_uri(
-            HTTPretty.GET, start_url, status=301, location=response_url
+        file = DATA_DIR / self.response_fixture
+        response_url = file.read_text()
+        responses.add(
+            responses.GET,
+            start_url,
+            status=301,
+            headers={"Location": response_url},
         )
-        HTTPretty.register_uri(HTTPretty.GET, return_url, status=200, body="foobar")
+        responses.add(responses.GET, return_url, status=200, body="foobar")
 
     def do_start(self):
         start_url = self.backend.start().url
@@ -75,7 +75,7 @@ class SAMLTest(BaseBackendTest):
         # be redirected back to:
         return_url = self.backend.redirect_uri
         self.install_http_intercepts(start_url, return_url)
-        response = requests.get(start_url)
+        response = requests.get(start_url, timeout=1)
         self.assertTrue(response.url.startswith(return_url))
         self.assertEqual(response.text, "foobar")
         query_values = {
@@ -85,20 +85,62 @@ class SAMLTest(BaseBackendTest):
         self.strategy.set_request_data(query_values, self.backend)
         return self.backend.complete()
 
-    def test_metadata_generation(self):
+    def test_metadata_generation(self) -> None:
         """Test that we can generate the metadata without error"""
         xml, errors = self.backend.generate_metadata_xml()
         self.assertEqual(len(errors), 0)
         self.assertEqual(xml.decode()[0], "<")
 
-    def test_login(self):
-        """Test that we can authenticate with a SAML IdP (TestShib)"""
-        # pretend we've started with a URL like /login/saml/?idp=testshib:
+    def test_login_with_next_url(self) -> None:
+        """
+        Test that we login and then redirect to the "next" URL.
+        """
+        # pretend we've started with a URL like /login/saml/?idp=testshib&next=/foo/bar
+        self.strategy.set_request_data(
+            {"idp": "testshib", "next": "/foo/bar"}, self.backend
+        )
+        self.do_login()
+        # The core `do_complete` action assumes the "next" URL is stored in session state or the request data.
+        self.assertEqual(self.strategy.session_get("next"), "/foo/bar")
+
+    def test_login_no_next_url(self) -> None:
+        """
+        Test that we handle "next" being omitted from the request data and RelayState.
+        """
+        self.response_fixture = "saml_response_no_next_url.txt"
+
+        # pretend we've started with a URL like /login/saml/?idp=testshib
         self.strategy.set_request_data({"idp": "testshib"}, self.backend)
         self.do_login()
+        self.assertEqual(self.strategy.session_get("next"), None)
 
-    def test_login_no_idp(self):
-        """Logging in without an idp param should raise AuthMissingParameter"""
+    def test_login_with_legacy_relay_state(self) -> None:
+        """
+        Test that we handle legacy RelayState (i.e. just the IDP name, not a JSON object).
+
+        This is the form that RelayState had in prior versions of this library.
+        It is no longer supported and fails with invalid parameter.
+        """
+        self.response_fixture = "saml_response_legacy.txt"
+
+        self.strategy.set_request_data({"idp": "testshib"}, self.backend)
+        with self.assertRaises(AuthInvalidParameter):
+            self.do_login()
+
+    def test_login_no_idp_in_initial_request(self) -> None:
+        """
+        Logging in without an idp param should raise AuthMissingParameter
+        """
+        with self.assertRaises(AuthMissingParameter):
+            self.do_start()
+
+    def test_login_no_idp_in_saml_response(self) -> None:
+        """
+        The RelayState should always contain a JSON object with an "idp" key, or be just the IDP name as a string.
+        This tests that an exception is raised if it is a JSON object, but is missing the "idp" key.
+        """
+        self.response_fixture = "saml_response_no_idp_name.txt"
+
         with self.assertRaises(AuthMissingParameter):
             self.do_start()
 

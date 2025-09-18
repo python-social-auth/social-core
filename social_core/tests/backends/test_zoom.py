@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class ZoomOAuth2Test(OAuth2Test):
+class ZoomOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.zoom.ZoomOAuth2"
     user_data_url = "https://api.zoom.us/v2/users/me"
     expected_username = "foobar"
@@ -56,13 +56,13 @@ class ZoomOAuth2Test(OAuth2Test):
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
 
-    def test_refresh_token(self):
+    def test_refresh_token(self) -> None:
         user, social = self.do_refresh_token()
         self.assertEqual(user.username, self.expected_username)
         self.assertEqual(social.extra_data["access_token"], "foobar-new-token")

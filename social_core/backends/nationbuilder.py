@@ -2,6 +2,7 @@
 NationBuilder OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/nationbuilder.html
 """
+
 from .oauth import BaseOAuth2
 
 
@@ -11,7 +12,6 @@ class NationBuilderOAuth2(BaseOAuth2):
     name = "nationbuilder"
     AUTHORIZATION_URL = "https://{slug}.nationbuilder.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://{slug}.nationbuilder.com/oauth/token"
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
     SCOPE_SEPARATOR = ","
     EXTRA_DATA = [("id", "id"), ("expires", "expires")]

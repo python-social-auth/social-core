@@ -1,11 +1,10 @@
-from collections import OrderedDict
+from social_core.exceptions import MissingBackend
+from social_core.utils import module_member, user_is_authenticated
 
-from ..exceptions import MissingBackend
-from ..utils import module_member, user_is_authenticated
 from .base import BaseAuth
 
 # Cache for discovered backends.
-BACKENDSCACHE = OrderedDict()
+BACKENDSCACHE = {}
 
 
 def load_backends(backends, force_load=False):
@@ -26,9 +25,9 @@ def load_backends(backends, force_load=False):
     A force_load boolean argument is also provided so that get_backend
     below can retry a requested backend that may not yet be discovered.
     """
-    global BACKENDSCACHE
+    global BACKENDSCACHE  # noqa: PLW0603
     if force_load:
-        BACKENDSCACHE = OrderedDict()
+        BACKENDSCACHE = {}
     if not BACKENDSCACHE:
         for auth_backend in backends:
             backend = module_member(auth_backend)

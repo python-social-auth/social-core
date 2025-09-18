@@ -2,9 +2,12 @@
 Beats backend, docs at:
     https://developer.beatsmusic.com/docs
 """
+
 import base64
 
-from ..utils import handle_http_errors
+from social_core.exceptions import AuthUnknownError
+from social_core.utils import handle_http_errors
+
 from .oauth import BaseOAuth2
 
 
@@ -14,7 +17,6 @@ class BeatsOAuth2(BaseOAuth2):
     ID_KEY = "user_context"
     AUTHORIZATION_URL = "https://partner.api.beatsmusic.com/v1/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://partner.api.beatsmusic.com/oauth2/token"
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
 
     def get_user_id(self, details, response):
@@ -43,6 +45,8 @@ class BeatsOAuth2(BaseOAuth2):
         # mashery wraps in jsonrpc
         if response.get("jsonrpc", None):
             response = response.get("result", None)
+            if response is None:
+                raise AuthUnknownError(self, "Invalid authentication response")
         return self.do_auth(
             response["access_token"], response=response, *args, **kwargs
         )

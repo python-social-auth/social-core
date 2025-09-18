@@ -2,6 +2,7 @@
 Rdio OAuth1 and OAuth2 backends, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/rdio.html
 """
+
 from .oauth import BaseOAuth1, BaseOAuth2, OAuthAuth
 
 RDIO_API = "https://www.rdio.com/api/1/"
@@ -46,7 +47,8 @@ class RdioOAuth1(BaseRdio, BaseOAuth1):
             "extras": "username,displayName,streamRegion",
         }
         request = self.oauth_request(access_token, RDIO_API, params, method="POST")
-        return self.get_json(request.url, method="POST", data=request.to_postdata())[
+        # TODO: I don't think to_postdata exists.
+        return self.get_json(request.url, method="POST", data=request.to_postdata())[  # type: ignore[reportAttributeAccessIssue]
             "result"
         ]
 
@@ -55,7 +57,6 @@ class RdioOAuth2(BaseRdio, BaseOAuth2):
     name = "rdio-oauth2"
     AUTHORIZATION_URL = "https://www.rdio.com/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://www.rdio.com/oauth2/token"
-    ACCESS_TOKEN_METHOD = "POST"
     EXTRA_DATA = [
         ("key", "rdio_id"),
         ("icon", "rdio_icon_url"),

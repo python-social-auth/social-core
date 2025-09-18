@@ -13,7 +13,6 @@ class SlackOAuth2(BaseOAuth2):
     name = "slack"
     AUTHORIZATION_URL = "https://slack.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://slack.com/api/oauth.access"
-    ACCESS_TOKEN_METHOD = "POST"
     DEFAULT_SCOPE = ["identity.basic", "identity.email"]
     SCOPE_SEPARATOR = ","
     REDIRECT_STATE = False
@@ -33,7 +32,7 @@ class SlackOAuth2(BaseOAuth2):
         team = response.get("team")
         name = user["name"]
         email = user.get("email")
-        username = email and email.split("@", 1)[0] or name
+        username = (email and email.split("@", 1)[0]) or name
         fullname, first_name, last_name = self.get_user_names(name)
 
         if self.setting("USERNAME_WITH_TEAM", True) and team and "name" in team:
@@ -51,7 +50,7 @@ class SlackOAuth2(BaseOAuth2):
         """Loads user data from service"""
         response = self.get_json(
             "https://slack.com/api/users.identity",
-            headers={"Authorization": "Bearer %s" % access_token},
+            headers={"Authorization": f"Bearer {access_token}"},
         )
         if not response.get("id", None):
             response["id"] = response["user"]["id"]

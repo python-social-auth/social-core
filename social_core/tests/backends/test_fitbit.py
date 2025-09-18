@@ -1,10 +1,10 @@
 import json
 from urllib.parse import urlencode
 
-from .oauth import OAuth1Test
+from .oauth import OAuth1AuthUrlTestMixin, OAuth1Test
 
 
-class FitbitOAuth1Test(OAuth1Test):
+class FitbitOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
     backend_path = "social_core.backends.fitbit.FitbitOAuth1"
     expected_username = "foobar"
     access_token_body = urlencode(
@@ -49,8 +49,8 @@ class FitbitOAuth1Test(OAuth1Test):
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()

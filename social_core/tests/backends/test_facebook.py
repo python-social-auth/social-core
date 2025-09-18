@@ -1,16 +1,15 @@
 import json
 
-from ...backends.facebook import API_VERSION
-from ...exceptions import AuthCanceled, AuthUnknownError
-from .oauth import OAuth2Test
-from .test_open_id_connect import OpenIdConnectTestMixin
+from social_core.backends.facebook import API_VERSION
+from social_core.exceptions import AuthCanceled, AuthUnknownError
+
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
+from .open_id_connect import OpenIdConnectTest
 
 
-class FacebookOAuth2Test(OAuth2Test):
+class FacebookOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.facebook.FacebookOAuth2"
-    user_data_url = "https://graph.facebook.com/v{version}/me".format(
-        version=API_VERSION
-    )
+    user_data_url = f"https://graph.facebook.com/v{API_VERSION}/me"
     expected_username = "foobar"
     access_token_body = json.dumps({"access_token": "foobar", "token_type": "bearer"})
     user_data_body = json.dumps(
@@ -27,21 +26,21 @@ class FacebookOAuth2Test(OAuth2Test):
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
 
 
 class FacebookOAuth2WrongUserDataTest(FacebookOAuth2Test):
     user_data_body = "null"
 
-    def test_login(self):
+    def test_login(self) -> None:
         with self.assertRaises(AuthUnknownError):
             self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         with self.assertRaises(AuthUnknownError):
             self.do_partial_pipeline()
 
@@ -59,19 +58,19 @@ class FacebookOAuth2AuthCancelTest(FacebookOAuth2Test):
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         with self.assertRaises(AuthCanceled) as cm:
             self.do_login()
         self.assertIn("error", cm.exception.response.json())
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         with self.assertRaises(AuthCanceled) as cm:
             self.do_partial_pipeline()
         self.assertIn("error", cm.exception.response.json())
 
 
-class FacebookLimitedLoginTest(OpenIdConnectTestMixin, OAuth2Test):
-    backend_path = "social_core.backends.facebook.FacebookLimitedLogin"
+class FacebookLimitedLoginTest(OpenIdConnectTest):
+    backend_path = "social_core.backends.facebook_limited.FacebookLimitedLogin"
     issuer = "https://facebook.com"
     openid_config_body = """
     {
@@ -105,6 +104,6 @@ class FacebookLimitedLoginTest(OpenIdConnectTestMixin, OAuth2Test):
     }
     """
 
-    def test_invalid_nonce(self):
+    def test_invalid_nonce(self) -> None:
         # The nonce isn't generated server-side so the test isn't relevant here.
         pass

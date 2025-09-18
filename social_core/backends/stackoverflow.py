@@ -2,6 +2,7 @@
 Stackoverflow OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/stackoverflow.html
 """
+
 from .oauth import BaseOAuth2
 
 
@@ -12,7 +13,6 @@ class StackoverflowOAuth2(BaseOAuth2):
     ID_KEY = "user_id"
     AUTHORIZATION_URL = "https://stackexchange.com/oauth"
     ACCESS_TOKEN_URL = "https://stackexchange.com/oauth/access_token"
-    ACCESS_TOKEN_METHOD = "POST"
     SCOPE_SEPARATOR = ","
     EXTRA_DATA = [("id", "id"), ("expires", "expires")]
 

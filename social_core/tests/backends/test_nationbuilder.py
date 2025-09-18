@@ -1,9 +1,9 @@
 import json
 
-from .oauth import OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
-class NationBuilderOAuth2Test(OAuth2Test):
+class NationBuilderOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.nationbuilder.NationBuilderOAuth2"
     user_data_url = "https://foobar.nationbuilder.com/api/v1/people/me"
     expected_username = "foobar"
@@ -223,10 +223,10 @@ class NationBuilderOAuth2Test(OAuth2Test):
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_NATIONBUILDER_SLUG": "foobar"})
         self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_NATIONBUILDER_SLUG": "foobar"})
         self.do_partial_pipeline()

@@ -3,6 +3,7 @@ NGP VAN's `ActionID` Provider
 
 http://developers.ngpvan.com/action-id
 """
+
 from openid.extensions import ax
 
 from .open_id import OpenIdAuth
@@ -34,7 +35,7 @@ class ActionIDOpenID(OpenIdAuth):
         """
         Setup the OpenID request
 
-        Because ActionID does not advertise the availiability of AX attributes
+        Because ActionID does not advertise the availability of AX attributes
         nor use standard attribute aliases, we need to setup the attributes
         manually instead of rely on the parent OpenIdAuth.setup_request()
         """

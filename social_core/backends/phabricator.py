@@ -2,6 +2,7 @@
 Phabricator OAuth2 backend, docs at:
     https://secure.phabricator.com/book/phabcontrib/article/using_oauthserver/
 """
+
 from .oauth import BaseOAuth2
 
 
@@ -12,7 +13,6 @@ class PhabricatorOAuth2(BaseOAuth2):
     API_URL = "https://secure.phabricator.com"
     AUTHORIZATION_URL = "https://secure.phabricator.com/oauthserver/auth/"
     ACCESS_TOKEN_URL = "https://secure.phabricator.com/oauthserver/token/"
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
 
     def api_url(self, path):

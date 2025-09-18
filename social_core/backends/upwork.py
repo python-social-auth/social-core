@@ -1,6 +1,7 @@
 """
 Upwork OAuth1 backend
 """
+
 from .oauth import BaseOAuth1
 
 
@@ -13,7 +14,6 @@ class UpworkOAuth(BaseOAuth1):
     REQUEST_TOKEN_URL = "https://www.upwork.com/api/auth/v1/oauth/token/request"
     REQUEST_TOKEN_METHOD = "POST"
     ACCESS_TOKEN_URL = "https://www.upwork.com/api/auth/v1/oauth/token/access"
-    ACCESS_TOKEN_METHOD = "POST"
     REDIRECT_URI_PARAMETER_NAME = "oauth_callback"
 
     def get_user_details(self, response):

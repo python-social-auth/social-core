@@ -3,6 +3,7 @@ Spotify backend, docs at:
     https://developer.spotify.com/spotify-web-api/
     https://developer.spotify.com/spotify-web-api/authorization-guide/
 """
+
 import base64
 
 from .oauth import BaseOAuth2
@@ -15,7 +16,6 @@ class SpotifyOAuth2(BaseOAuth2):
     ID_KEY = "id"
     AUTHORIZATION_URL = "https://accounts.spotify.com/authorize"
     ACCESS_TOKEN_URL = "https://accounts.spotify.com/api/token"
-    ACCESS_TOKEN_METHOD = "POST"
     SCOPE_SEPARATOR = " "
     REDIRECT_STATE = False
     EXTRA_DATA = [

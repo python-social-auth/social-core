@@ -2,6 +2,7 @@
 EVE Online Single Sign-On (SSO) OAuth2 backend
 Documentation at https://eveonline-third-party-documentation.readthedocs.io/en/latest/sso/index.html
 """
+
 from .oauth import BaseOAuth2
 
 
@@ -13,7 +14,6 @@ class EVEOnlineOAuth2(BaseOAuth2):
     AUTHORIZATION_URL = BASE_URL + "/authorize"
     ACCESS_TOKEN_URL = BASE_URL + "/token"
     ID_KEY = "CharacterID"
-    ACCESS_TOKEN_METHOD = "POST"
     EXTRA_DATA = [
         ("CharacterID", "id"),
         ("expires_in", "expires"),

@@ -2,6 +2,7 @@
 Instagram OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/instagram.html
 """
+
 from .oauth import BaseOAuth2
 
 
@@ -9,7 +10,6 @@ class InstagramOAuth2(BaseOAuth2):
     name = "instagram"
     AUTHORIZATION_URL = "https://api.instagram.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://api.instagram.com/oauth/access_token"
-    ACCESS_TOKEN_METHOD = "POST"
 
     def get_user_id(self, details, response):
         user = response.get("user") or {}
@@ -38,6 +38,3 @@ class InstagramOAuth2(BaseOAuth2):
         params = {"access_token": access_token, "fields": fields}
         response = self.get_json("https://graph.instagram.com/me", params=params)
         return {"user": response}
-
-    def auth_html(self):
-        pass
