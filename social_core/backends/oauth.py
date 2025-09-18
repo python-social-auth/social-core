@@ -23,6 +23,7 @@ from social_core.utils import (
     handle_http_errors,
     parse_qs,
     url_add_parameters,
+    wrap_access_token_error,
 )
 
 from .base import BaseAuth
@@ -416,9 +417,10 @@ class BaseOAuth2(OAuthAuth):
         auth: tuple[str, str] | AuthBase | None = None,
         params: dict | None = None,
     ) -> dict[Any, Any]:
-        return self.get_json(
-            url, method=method, headers=headers, data=data, auth=auth, params=params
-        )
+        with wrap_access_token_error(self):
+            return self.get_json(
+                url, method=method, headers=headers, data=data, auth=auth, params=params
+            )
 
     def process_error(self, data) -> None:
         if data.get("error"):

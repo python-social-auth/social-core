@@ -72,7 +72,11 @@ def do_complete(backend, login, user=None, redirect_name="next", *args, **kwargs
                 "LOGIN_REDIRECT_URL",
             )
     elif user:
-        if user_is_active(user):
+        # check if inactive users are allowed to login
+        bypass_inactivation = backend.strategy.setting(
+            "ALLOW_INACTIVE_USERS_LOGIN", False
+        )
+        if bypass_inactivation or user_is_active(user):
             # catch is_new/social_user in case login() resets the instance
             is_new = getattr(user, "is_new", False)
             social_user = user.social_user

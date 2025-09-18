@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import functools
 import hmac
 import logging
@@ -7,7 +8,7 @@ import re
 import sys
 import time
 import unicodedata
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from urllib.parse import parse_qs as battery_parse_qs
 from urllib.parse import unquote, urlencode, urlparse, urlunparse
 
@@ -15,7 +16,15 @@ import requests
 
 import social_core
 
-from .exceptions import AuthCanceled, AuthForbidden, AuthUnreachableProvider
+from .exceptions import (
+    AuthCanceled,
+    AuthForbidden,
+    AuthTokenError,
+    AuthUnreachableProvider,
+)
+
+if TYPE_CHECKING:
+    from social_core.backends.base import BaseAuth
 
 SETTING_PREFIX = "SOCIAL_AUTH"
 
@@ -249,6 +258,16 @@ def handle_http_errors(func):
             raise
 
     return wrapper
+
+
+@contextlib.contextmanager
+def wrap_access_token_error(backend: BaseAuth):
+    try:
+        yield
+    except requests.HTTPError as error:
+        if error.response.status_code == 401:
+            raise AuthTokenError(backend, "Invalid key/secret, perhaps expired")
+        raise
 
 
 def append_slash(url):

@@ -6,7 +6,7 @@ Created on May 13, 2014
 
 import json
 
-from social_core.utils import parse_qs
+from social_core.utils import parse_qs, wrap_access_token_error
 
 from .oauth import BaseOAuth2
 
@@ -67,5 +67,6 @@ class QQOAuth2(BaseOAuth2):
         return response
 
     def request_access_token(self, url, data, *args, **kwargs):
-        response = self.request(url, *args, **kwargs)
+        with wrap_access_token_error(self):
+            response = self.request(url, *args, **kwargs)
         return parse_qs(response.content)

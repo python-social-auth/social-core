@@ -3,6 +3,8 @@ LoginRadius BaseOAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/loginradius.html
 """
 
+from social_core.utils import wrap_access_token_error
+
 from .oauth import BaseOAuth2
 
 
@@ -33,11 +35,15 @@ class LoginRadiusAuth(BaseOAuth2):
         )
 
     def request_access_token(self, *args, **kwargs):
-        return self.get_json(
-            params={"token": self.data.get("token"), "secret": self.setting("SECRET")},
-            *args,
-            **kwargs,
-        )
+        with wrap_access_token_error(self):
+            return self.get_json(
+                params={
+                    "token": self.data.get("token"),
+                    "secret": self.setting("SECRET"),
+                },
+                *args,
+                **kwargs,
+            )
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service. Implement in subclass."""
