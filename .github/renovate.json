@@ -13,6 +13,9 @@
   "pre-commit": {
     "enabled": true
   },
+  "poetry": {
+    "enabled": false
+  },
   "customManagers": [
     {
       "customType": "regex",
