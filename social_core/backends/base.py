@@ -147,7 +147,9 @@ class BaseAuth:
             # store the last time authentication took place
             "auth_time": int(time.time())
         }
-        extra_data_entries: list[str | tuple[str, str] | tuple[str, str, bool]] = []
+        extra_data_entries: (
+            list[str] | list[str | tuple[str, str] | tuple[str, str, bool]]
+        ) = []
         if self.GET_ALL_EXTRA_DATA or self.setting("GET_ALL_EXTRA_DATA", False):
             extra_data_entries = list(response.keys())
         else:
