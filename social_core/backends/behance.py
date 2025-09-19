@@ -3,6 +3,10 @@ Behance OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/behance.html
 """
 
+from __future__ import annotations
+
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -33,10 +37,17 @@ class BehanceOAuth2(BaseOAuth2):
             "email": "",
         }
 
-    def extra_data(self, user, uid, response, details=None, *args, **kwargs):
+    def extra_data(
+        self,
+        user,
+        uid: str,
+        response: dict[str, Any],
+        details: dict[str, Any],
+        pipeline_kwargs: dict[str, Any],
+    ) -> dict[str, Any]:
         # Pull up the embedded user attributes so they can be found as extra
         # data. See the example token response for possible attributes:
         # http://www.behance.net/dev/authentication#step-by-step
         data = response.copy()
         data.update(response["user"])
-        return super().extra_data(user, uid, data, details, *args, **kwargs)
+        return super().extra_data(user, uid, response, details, pipeline_kwargs)

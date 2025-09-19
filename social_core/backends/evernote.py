@@ -3,6 +3,10 @@ Evernote OAuth1 backend (with sandbox mode support), docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/evernote.html
 """
 
+from __future__ import annotations
+
+from typing import Any
+
 from requests import HTTPError
 
 from social_core.exceptions import AuthCanceled
@@ -57,8 +61,15 @@ class EvernoteOAuth(BaseOAuth1):
                 raise AuthCanceled(self, response=err.response)
             raise
 
-    def extra_data(self, user, uid, response, details, *args, **kwargs):
-        data = super().extra_data(user, uid, response, details, *args, **kwargs)
+    def extra_data(
+        self,
+        user,
+        uid: str,
+        response: dict[str, Any],
+        details: dict[str, Any],
+        pipeline_kwargs: dict[str, Any],
+    ) -> dict[str, Any]:
+        data = super().extra_data(user, uid, response, details, pipeline_kwargs)
         # Evernote returns expiration timestamp in milliseconds, so it needs to
         # be normalized.
         if "expires" in data:

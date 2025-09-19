@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import time
+from typing import Any
 
 from social_core.utils import handle_http_errors
 
@@ -30,14 +33,19 @@ class ItembaseOAuth2(BaseOAuth2):
         ("preferred_currency", "preferred_currency"),
     ]
 
-    def add_expires(self, data):
+    def add_expires(self, data: dict[str, Any]) -> dict[str, Any]:
         data["expires"] = int(time.time()) + data.get("expires_in", 0)
         return data
 
-    def extra_data(self, user, uid, response, details=None, *args, **kwargs):
-        data = BaseOAuth2.extra_data(
-            self, user, uid, response, *args, details=details, **kwargs
-        )
+    def extra_data(
+        self,
+        user,
+        uid: str,
+        response: dict[str, Any],
+        details: dict[str, Any],
+        pipeline_kwargs: dict[str, Any],
+    ) -> dict[str, Any]:
+        data = super().extra_data(user, uid, response, details, pipeline_kwargs)
         return self.add_expires(data)
 
     def process_refresh_token_response(self, response, *args, **kwargs):

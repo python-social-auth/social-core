@@ -3,6 +3,10 @@ Shopify OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/shopify.html
 """
 
+from __future__ import annotations
+
+from typing import Any
+
 import shopify
 
 from social_core.exceptions import AuthCanceled, AuthFailed
@@ -27,10 +31,17 @@ class ShopifyOAuth2(BaseOAuth2):
         """Use the shopify store name as the username"""
         return {"username": str(response.get("shop", "")).replace(".myshopify.com", "")}
 
-    def extra_data(self, user, uid, response, details=None, *args, **kwargs):
+    def extra_data(
+        self,
+        user,
+        uid: str,
+        response: dict[str, Any],
+        details: dict[str, Any],
+        pipeline_kwargs: dict[str, Any],
+    ) -> dict[str, Any]:
         """Return access_token and extra defined names to store in
         extra_data field"""
-        data = super().extra_data(user, uid, response, details, *args, **kwargs)
+        data = super().extra_data(user, uid, response, details, pipeline_kwargs)
         session = shopify.Session(
             self.data.get("shop").strip(), version=self.shopify_api_version
         )
