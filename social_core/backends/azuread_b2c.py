@@ -32,7 +32,7 @@ import json
 from cryptography.hazmat.primitives import serialization
 from jwt import DecodeError, ExpiredSignatureError, get_unverified_header
 from jwt import decode as jwt_decode
-from jwt.algorithms import RSAAlgorithm
+from jwt.algorithms import RSAAlgorithm  # ty: ignore[possibly-unbound-import]
 
 from social_core.exceptions import AuthException, AuthTokenError
 
