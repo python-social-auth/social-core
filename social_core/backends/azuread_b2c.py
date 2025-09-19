@@ -168,9 +168,9 @@ class AzureADB2COAuth2(AzureADOAuth2):
         raise DecodeError(f"Cannot find kid={kid}")
 
     def user_data(self, access_token, *args, **kwargs):
-        response = kwargs.get("response")
+        response = kwargs["response"]
 
-        id_token = response.get("id_token")
+        id_token = response["id_token"]
 
         # `kid` is short for key id
         kid = get_unverified_header(id_token)["kid"]
