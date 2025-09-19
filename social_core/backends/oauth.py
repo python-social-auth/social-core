@@ -61,11 +61,18 @@ class OAuthAuth(BaseAuth):
     REDIRECT_STATE = False
     STATE_PARAMETER = False
 
-    def extra_data(self, user, uid, response, details=None, *args, **kwargs):
+    def extra_data(
+        self,
+        user,
+        uid: str,
+        response: dict[str, Any],
+        details: dict[str, Any],
+        pipeline_kwargs: dict[str, Any],
+    ) -> dict[str, Any]:
         """Return access_token and extra defined names to store in
         extra_data field"""
-        data = super().extra_data(user, uid, response, details, *args, **kwargs)
-        data["access_token"] = response.get("access_token", "") or kwargs.get(
+        data = super().extra_data(user, uid, response, details, pipeline_kwargs)
+        data["access_token"] = response.get("access_token") or pipeline_kwargs.get(
             "access_token"
         )
         return data
@@ -401,11 +408,20 @@ class BaseOAuth2(OAuthAuth):
             "Accept": "application/json",
         }
 
-    def extra_data(self, user, uid, response, details, *args, **kwargs):
+    def extra_data(
+        self,
+        user,
+        uid: str,
+        response: dict[str, Any],
+        details: dict[str, Any],
+        pipeline_kwargs: dict[str, Any],
+    ) -> dict[str, Any]:
         """Return access_token, token_type, and extra defined names to store in
         extra_data field"""
-        data = super().extra_data(user, uid, response, *args, details=details, **kwargs)
-        data["token_type"] = response.get("token_type") or kwargs.get("token_type")
+        data = super().extra_data(user, uid, response, details, pipeline_kwargs)
+        data["token_type"] = response.get("token_type") or pipeline_kwargs.get(
+            "token_type"
+        )
         return data
 
     def request_access_token(

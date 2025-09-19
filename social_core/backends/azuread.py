@@ -27,7 +27,10 @@ Azure AD OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/azuread.html
 """
 
+from __future__ import annotations
+
 import time
+from typing import Any
 
 import jwt
 
@@ -120,10 +123,17 @@ class AzureADOAuth2(BaseOAuth2):
             extra_arguments.update({"resource": resource})
         return extra_arguments
 
-    def extra_data(self, user, uid, response, details=None, *args, **kwargs):
+    def extra_data(
+        self,
+        user,
+        uid: str,
+        response: dict[str, Any],
+        details: dict[str, Any],
+        pipeline_kwargs: dict[str, Any],
+    ) -> dict[str, Any]:
         """Return access_token and extra defined names to store in
         extra_data field"""
-        data = super().extra_data(user, uid, response, details, *args, **kwargs)
+        data = super().extra_data(user, uid, response, details, pipeline_kwargs)
         data["resource"] = self.setting("RESOURCE")
         return data
 

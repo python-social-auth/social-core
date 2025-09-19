@@ -3,6 +3,10 @@ Pocket OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/pocket.html
 """
 
+from __future__ import annotations
+
+from typing import Any
+
 from social_core.utils import handle_http_errors
 
 from .base import BaseAuth
@@ -23,7 +27,14 @@ class PocketAuth(BaseAuth):
     def get_user_details(self, response):
         return {"username": response["username"]}
 
-    def extra_data(self, user, uid, response, details=None, *args, **kwargs):
+    def extra_data(
+        self,
+        user,
+        uid: str,
+        response: dict[str, Any],
+        details: dict[str, Any],
+        pipeline_kwargs: dict[str, Any],
+    ) -> dict[str, Any]:
         return response
 
     def auth_url(self) -> str:

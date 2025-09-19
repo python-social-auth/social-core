@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import hashlib
 import hmac
 import time
+from typing import Any
 
 from social_core.exceptions import AuthFailed, AuthMissingParameter
 from social_core.utils import handle_http_errors
@@ -36,7 +39,14 @@ class TelegramAuth(BaseAuth):
         if built_hash != received_hash_string:
             raise AuthFailed(self, "Invalid hash supplied")
 
-    def extra_data(self, user, uid, response, details=None, *args, **kwargs):
+    def extra_data(
+        self,
+        user,
+        uid: str,
+        response: dict[str, Any],
+        details: dict[str, Any],
+        pipeline_kwargs: dict[str, Any],
+    ) -> dict[str, Any]:
         return response
 
     def get_user_details(self, response):

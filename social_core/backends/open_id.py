@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 from openid.consumer.consumer import CANCEL, FAILURE, SUCCESS, Consumer
 from openid.consumer.discover import DiscoveryFailure
 from openid.extensions import ax, pape, sreg
@@ -127,7 +129,14 @@ class OpenIdAuth(BaseAuth):
         )
         return values
 
-    def extra_data(self, user, uid, response, details=None, *args, **kwargs):
+    def extra_data(
+        self,
+        user,
+        uid: str,
+        response: dict[str, Any],
+        details: dict[str, Any],
+        pipeline_kwargs: dict[str, Any],
+    ) -> dict[str, Any]:
         """Return defined extra data names to store in extra_data field.
         Settings will be inspected to get more values names that should be
         stored on extra_data field. Setting name is created from current
@@ -141,7 +150,7 @@ class OpenIdAuth(BaseAuth):
         sreg_names = self.setting("SREG_EXTRA_DATA")
         ax_names = self.setting("AX_EXTRA_DATA")
         values = self.values_from_response(response, sreg_names, ax_names)
-        from_details = super().extra_data(user, uid, {}, details, *args, **kwargs)
+        from_details = super().extra_data(user, uid, {}, details, pipeline_kwargs)
         values.update(from_details)
         return values
 

@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import datetime
+from typing import Any
 
 from .oauth import BaseOAuth2
 
@@ -32,8 +35,15 @@ class AsanaOAuth2(BaseOAuth2):
             self.USER_DATA_URL, headers={"Authorization": f"Bearer {access_token}"}
         )
 
-    def extra_data(self, user, uid, response, details=None, *args, **kwargs):
-        data = super().extra_data(user, uid, response, details)
+    def extra_data(
+        self,
+        user,
+        uid: str,
+        response: dict[str, Any],
+        details: dict[str, Any],
+        pipeline_kwargs: dict[str, Any],
+    ) -> dict[str, Any]:
+        data = super().extra_data(user, uid, response, details, pipeline_kwargs)
         if self.setting("ESTIMATE_EXPIRES_ON"):
             expires_on = datetime.datetime.now(
                 datetime.timezone.utc

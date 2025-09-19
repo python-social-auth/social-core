@@ -11,6 +11,7 @@ Terminology:
 from __future__ import annotations
 
 import json
+from typing import Any
 
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
 from onelogin.saml2.settings import OneLogin_Saml2_Settings
@@ -436,9 +437,16 @@ class SAMLAuth(BaseAuth):
         kwargs.update({"response": response, "backend": self})
         return self.strategy.authenticate(*args, **kwargs)
 
-    def extra_data(self, user, uid, response, details=None, *args, **kwargs):
+    def extra_data(
+        self,
+        user,
+        uid: str,
+        response: dict[str, Any],
+        details: dict[str, Any],
+        pipeline_kwargs: dict[str, Any],
+    ) -> dict[str, Any]:
         extra_data = super().extra_data(
-            user, uid, response["attributes"], *args, details=details, **kwargs
+            user, uid, response["attributes"], details, pipeline_kwargs
         )
         extra_data["session_index"] = response["session_index"]
         extra_data["name_id"] = response["attributes"]["name_id"]

@@ -139,8 +139,7 @@ class BaseAuth:
         uid: str,
         response: dict[str, Any],
         details: dict[str, Any],
-        *args,
-        **kwargs,
+        pipeline_kwargs: dict[str, Any],
     ) -> dict[str, Any]:
         """Return default extra data to store in extra_data field"""
         data: dict[str, Any] = {

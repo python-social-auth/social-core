@@ -3,6 +3,10 @@ Mozilla Persona authentication backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/persona.html
 """
 
+from __future__ import annotations
+
+from typing import Any
+
 from social_core.exceptions import AuthFailed, AuthMissingParameter
 from social_core.utils import handle_http_errors
 
@@ -34,7 +38,14 @@ class PersonaAuth(BaseAuth):
             "last_name": "",
         }
 
-    def extra_data(self, user, uid, response, details=None, *args, **kwargs):
+    def extra_data(
+        self,
+        user,
+        uid: str,
+        response: dict[str, Any],
+        details: dict[str, Any],
+        pipeline_kwargs: dict[str, Any],
+    ) -> dict[str, Any]:
         """Return users extra data"""
         return {"audience": response["audience"], "issuer": response["issuer"]}
 

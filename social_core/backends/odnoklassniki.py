@@ -3,7 +3,10 @@ Odnoklassniki OAuth2 and Iframe Application backends, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/odnoklassnikiru.html
 """
 
+from __future__ import annotations
+
 from hashlib import md5
+from typing import Any
 from urllib.parse import unquote
 
 from social_core.exceptions import AuthFailed
@@ -63,7 +66,14 @@ class OdnoklassnikiApp(BaseAuth):
     name = "odnoklassniki-app"
     ID_KEY = "uid"
 
-    def extra_data(self, user, uid, response, details=None, *args, **kwargs):
+    def extra_data(
+        self,
+        user,
+        uid: str,
+        response: dict[str, Any],
+        details: dict[str, Any],
+        pipeline_kwargs: dict[str, Any],
+    ) -> dict[str, Any]:
         return {
             key: value
             for key, value in response.items()
