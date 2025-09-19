@@ -5,11 +5,19 @@ Qiita OAuth2 backend, docs at:
     https://qiita.com/api/v2/docs#get-apiv2authenticated_user
 """
 
+from __future__ import annotations
+
 import json
+from typing import TYPE_CHECKING, Any, Literal
 
 from social_core.exceptions import AuthException
 
 from .oauth import BaseOAuth2
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
+    from requests.auth import AuthBase
 
 
 class QiitaOAuth2(BaseOAuth2):
@@ -55,8 +63,16 @@ class QiitaOAuth2(BaseOAuth2):
     def auth_headers(self):
         return {"Content-Type": "application/json"}
 
-    def request_access_token(self, *args, **kwargs):
-        data = super().request_access_token(*args, **kwargs)
+    def request_access_token(
+        self,
+        url: str,
+        method: Literal["GET", "POST", "DELETE"] = "GET",
+        headers: Mapping[str, str | bytes] | None = None,
+        data: dict | bytes | str | None = None,
+        auth: tuple[str, str] | AuthBase | None = None,
+        params: dict | None = None,
+    ) -> dict[Any, Any]:
+        data = super().request_access_token(url, method, headers, data, auth, params)
         data.update({"access_token": data["token"]})
         return data
 
