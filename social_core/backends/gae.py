@@ -2,7 +2,7 @@
 Google App Engine support using User API
 """
 
-from google.appengine.api import users
+from google.appengine.api import users  # ty: ignore[unresolved-import]
 
 from social_core.exceptions import AuthException
 

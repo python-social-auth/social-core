@@ -153,7 +153,7 @@ class OAuth2PkcePlainTest(OAuth2Test):
         auth_request = next(
             r.request
             for r in responses.calls
-            if r.request.url.startswith(self.backend.authorization_url())
+            if cast("str", r.request.url).startswith(self.backend.authorization_url())
         )
         code_challenge = get_querystring(cast("str", auth_request.url)).get(
             "code_challenge"
@@ -167,7 +167,7 @@ class OAuth2PkcePlainTest(OAuth2Test):
         auth_complete = next(
             r.request
             for r in responses.calls
-            if r.request.url.startswith(self.backend.access_token_url())
+            if cast("str", r.request.url).startswith(self.backend.access_token_url())
         )
         code_verifier = parse_qs(auth_complete.body).get("code_verifier")
         self.assertEqual(code_challenge, code_verifier)
@@ -183,7 +183,7 @@ class OAuth2PkceS256Test(OAuth2Test):
         auth_request = next(
             r.request
             for r in responses.calls
-            if r.request.url.startswith(self.backend.authorization_url())
+            if cast("str", r.request.url).startswith(self.backend.authorization_url())
         )
         code_challenge = get_querystring(cast("str", auth_request.url)).get(
             "code_challenge"
@@ -197,7 +197,7 @@ class OAuth2PkceS256Test(OAuth2Test):
         auth_complete = next(
             r.request
             for r in responses.calls
-            if r.request.url.startswith(self.backend.access_token_url())
+            if cast("str", r.request.url).startswith(self.backend.access_token_url())
         )
         code_verifier = parse_qs(auth_complete.body).get("code_verifier")
         self.assertEqual(
