@@ -10,7 +10,7 @@ from urllib.parse import parse_qs, urlencode, urlparse
 import jwt
 from requests_oauthlib import OAuth1
 
-from social_core.exceptions import AuthException
+from social_core.exceptions import AuthException, AuthMissingParameter
 
 from .oauth import BaseOAuth1
 
@@ -156,7 +156,10 @@ class MediaWiki(BaseOAuth1):
             )
 
         authorization_header = force_unicode(req_resp.request.headers["Authorization"])
-        request_nonce = re.search(r'oauth_nonce="(.*?)"', authorization_header).group(1)
+        match = re.search(r'oauth_nonce="(.*?)"', authorization_header)
+        if match is None:
+            raise AuthMissingParameter(self, "oauth_nonce")
+        request_nonce = match.group(1)
 
         if identity["nonce"] != request_nonce:
             raise AuthException(
