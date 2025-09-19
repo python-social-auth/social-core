@@ -48,7 +48,7 @@ class BeatsOAuth2(BaseOAuth2):
             if response is None:
                 raise AuthUnknownError(self, "Invalid authentication response")
         return self.do_auth(
-            response["access_token"], response=response, *args, **kwargs
+            response["access_token"], *args, response=response, **kwargs
         )
 
     def get_user_details(self, response):

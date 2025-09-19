@@ -33,7 +33,7 @@ class MicrosoftOAuth2(BaseOAuth2):
 
         self.process_error(response)
         return self.do_auth(
-            response["access_token"], response=response, *args, **kwargs
+            response["access_token"], *args, response=response, **kwargs
         )
 
     def get_user_id(self, details, response):

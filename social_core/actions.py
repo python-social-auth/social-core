@@ -47,7 +47,7 @@ def do_complete(backend, login, user=None, redirect_name="next", *args, **kwargs
         # clean partial data after usage
         backend.strategy.clean_partial_pipeline(partial.token)
     else:
-        user = backend.complete(user=user, redirect_name=redirect_name, *args, **kwargs)
+        user = backend.complete(*args, user=user, redirect_name=redirect_name, **kwargs)
 
     # pop redirect value before the session is trashed on login(), but after
     # the pipeline so that the pipeline can change the redirect if needed
@@ -134,7 +134,7 @@ def do_disconnect(
         backend.strategy.clean_partial_pipeline(partial.token)
     else:
         response = backend.disconnect(
-            user=user, association_id=association_id, *args, **kwargs
+            *args, user=user, association_id=association_id, **kwargs
         )
 
     if isinstance(response, dict):

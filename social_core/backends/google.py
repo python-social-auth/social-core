@@ -112,7 +112,7 @@ class GooglePlusAuth(BaseGoogleOAuth2API, BaseOAuth2):
                 params={"access_token": token},
             )
             self.process_error(response)
-            return self.do_auth(token, response=response, *args, **kwargs)
+            return self.do_auth(token, *args, response=response, **kwargs)
         if "code" in self.data:  # Server-side workflow
             response = self.request_access_token(
                 self.ACCESS_TOKEN_URL,
@@ -122,7 +122,7 @@ class GooglePlusAuth(BaseGoogleOAuth2API, BaseOAuth2):
             )
             self.process_error(response)
             return self.do_auth(
-                response["access_token"], response=response, *args, **kwargs
+                response["access_token"], *args, response=response, **kwargs
             )
         if "id_token" in self.data:  # Client-side workflow
             token = self.data.get("id_token")

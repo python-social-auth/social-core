@@ -101,7 +101,7 @@ class WeixinOAuth2(BaseOAuth2):
             raise AuthCanceled(self)
         self.process_error(response)
         return self.do_auth(
-            response["access_token"], response=response, *args, **kwargs
+            response["access_token"], *args, response=response, **kwargs
         )
 
 
@@ -172,5 +172,5 @@ class WeixinOAuth2APP(WeixinOAuth2):
             raise AuthCanceled(self)
         self.process_error(response)
         return self.do_auth(
-            response["access_token"], response=response, *args, **kwargs
+            response["access_token"], *args, response=response, **kwargs
         )
