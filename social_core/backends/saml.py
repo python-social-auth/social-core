@@ -36,8 +36,9 @@ OID_USERID = "urn:oid:0.9.2342.19200300.100.1.1"
 class SAMLIdentityProvider:
     """Wrapper around configuration for a SAML Identity provider"""
 
-    def __init__(self, name, **kwargs) -> None:
+    def __init__(self, backend: BaseAuth, name: str, **kwargs) -> None:
         """Load and parse configuration"""
+        self.backend = backend
         self.name = name
         # name should be a slug and must not contain a colon, which
         # could conflict with uid prefixing:
@@ -54,7 +55,16 @@ class SAMLIdentityProvider:
         If you want to use the NameID, it's available via
         attributes['name_id']
         """
-        uid = attributes[self.conf.get("attr_user_permanent_id", OID_USERID)]
+        setting = "attr_user_permanent_id"
+        key = self.conf.get(setting, OID_USERID)
+        try:
+            uid = attributes[key]
+        except KeyError as error:
+            raise AuthMissingParameter(
+                self.backend,
+                f"{key} (configured by {setting})",
+            ) from error
+
         if isinstance(uid, list):
             uid = uid[0]
         return uid
@@ -134,24 +144,6 @@ class SAMLIdentityProvider:
         raise KeyError("IDP must contain x509cert or x509certMulti")
 
 
-class DummySAMLIdentityProvider(SAMLIdentityProvider):
-    """
-    A placeholder IdP used when we must specify something, e.g. when
-    generating SP metadata.
-
-    If OneLogin_Saml2_Auth is modified to not always require IdP
-    config, this can be removed.
-    """
-
-    def __init__(self) -> None:
-        super().__init__(
-            "dummy",
-            entity_id="https://dummy.none/saml2",
-            url="https://dummy.none/SSO",
-            x509cert="",
-        )
-
-
 class SAMLAuth(BaseAuth):
     """
     PSA Backend that implements SAML 2.0 Service Provider (SP) functionality.
@@ -199,12 +191,12 @@ class SAMLAuth(BaseAuth):
     name = "saml"
     EXTRA_DATA = []
 
-    def get_idp(self, idp_name):
+    def get_idp(self, idp_name: str) -> SAMLIdentityProvider:
         """Given the name of an IdP, get a SAMLIdentityProvider instance"""
         idp_config = self.setting("ENABLED_IDPS")[idp_name]
-        return SAMLIdentityProvider(idp_name, **idp_config)
+        return SAMLIdentityProvider(self, idp_name, **idp_config)
 
-    def generate_saml_config(self, idp=None):
+    def generate_saml_config(self, idp: SAMLIdentityProvider | None = None):
         """
         Generate the configuration required to instantiate OneLogin_Saml2_Auth
         """
@@ -265,7 +257,7 @@ class SAMLAuth(BaseAuth):
         errors = saml_settings.validate_metadata(metadata)
         return metadata, errors
 
-    def _create_saml_auth(self, idp):
+    def _create_saml_auth(self, idp: SAMLIdentityProvider):
         """Get an instance of OneLogin_Saml2_Auth"""
         config = self.generate_saml_config(idp)
         request_info = {
