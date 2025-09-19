@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Literal, cast
 import requests
 
 from social_core.exceptions import AuthConnectionError, AuthUnknownError
-from social_core.utils import module_member, parse_qs, user_agent
+from social_core.utils import module_member, parse_qs, social_logger, user_agent
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -32,6 +32,12 @@ class BaseAuth:
         self.redirect_uri = redirect_uri
         self.data = self.strategy.request_data()
         self.redirect_uri = self.strategy.absolute_uri(self.redirect_uri)
+
+    def log_debug(self, message, *args) -> None:
+        social_logger.debug(f"{self.name}: {message}", *args)
+
+    def log_warning(self, message, *args) -> None:
+        social_logger.warning(f"{self.name}: {message}", *args)
 
     def setting(self, name, default=None):
         """Return setting value from strategy"""
