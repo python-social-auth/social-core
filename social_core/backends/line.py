@@ -64,7 +64,7 @@ class LineOAuth2(BaseOAuth2):
             self.process_error(response)
 
             return self.do_auth(
-                response["access_token"], response=response, *args, **kwargs
+                response["access_token"], *args, response=response, **kwargs
             )
         except requests.HTTPError as err:
             self.process_error(json.loads(err.response.content))

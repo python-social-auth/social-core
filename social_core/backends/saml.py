@@ -438,7 +438,7 @@ class SAMLAuth(BaseAuth):
 
     def extra_data(self, user, uid, response, details=None, *args, **kwargs):
         extra_data = super().extra_data(
-            user, uid, response["attributes"], details=details, *args, **kwargs
+            user, uid, response["attributes"], *args, details=details, **kwargs
         )
         extra_data["session_index"] = response["session_index"]
         extra_data["name_id"] = response["attributes"]["name_id"]

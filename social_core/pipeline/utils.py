@@ -46,7 +46,7 @@ def partial_store(
     strategy, backend, next_step, user=None, social=None, *args, **kwargs
 ):
     partial = partial_prepare(
-        strategy, backend, next_step, user=user, social=social, *args, **kwargs
+        strategy, backend, next_step, *args, user=user, social=social, **kwargs
     )
     return strategy.storage.partial.store(partial)
 

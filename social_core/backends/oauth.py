@@ -404,7 +404,7 @@ class BaseOAuth2(OAuthAuth):
     def extra_data(self, user, uid, response, details, *args, **kwargs):
         """Return access_token, token_type, and extra defined names to store in
         extra_data field"""
-        data = super().extra_data(user, uid, response, details=details, *args, **kwargs)
+        data = super().extra_data(user, uid, response, *args, details=details, **kwargs)
         data["token_type"] = response.get("token_type") or kwargs.get("token_type")
         return data
 
@@ -451,7 +451,7 @@ class BaseOAuth2(OAuthAuth):
         )
         self.process_error(response)
         return self.do_auth(
-            response["access_token"], response=response, *args, **kwargs
+            response["access_token"], *args, response=response, **kwargs
         )
 
     @handle_http_errors

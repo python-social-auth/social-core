@@ -37,11 +37,11 @@ class LoginRadiusAuth(BaseOAuth2):
     def request_access_token(self, *args, **kwargs):
         with wrap_access_token_error(self):
             return self.get_json(
+                *args,
                 params={
                     "token": self.data.get("token"),
                     "secret": self.setting("SECRET"),
                 },
-                *args,
                 **kwargs,
             )
 

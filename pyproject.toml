@@ -159,7 +159,6 @@ ignore = [
   "ARG001",  # TODO: Unused function argument (mostly for API compatibility)
   "ARG002",  # TODO: Unused method argument (mostly for API compatibility)
   "ARG003",  # TODO: Unused class method argument
-  "B026",  # TODO: Star-arg unpacking after a keyword argument is strongly discouraged
   "B904",  # TODO: use raise from
   "COM",  # CONFIG: No trailing commas
   "D",  # TODO: Missing documentation

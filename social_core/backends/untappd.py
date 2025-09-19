@@ -73,8 +73,8 @@ class UntappdOAuth2(BaseOAuth2):
         # buried in the 'response' key
         return self.do_auth(
             response["response"]["access_token"],
-            response=response["response"],
             *args,
+            response=response["response"],
             **kwargs,
         )
 

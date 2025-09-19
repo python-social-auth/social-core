@@ -177,9 +177,9 @@ class OpenIdAuth(BaseAuth):
         )
         return self.strategy.authenticate(
             self,
+            *partial.args,
             response=response,
             pipeline_index=partial.next_step,
-            *partial.args,
             **partial.kwargs,
         )
 
@@ -191,7 +191,7 @@ class OpenIdAuth(BaseAuth):
         self.process_error(response)
         if session_id := self.data.get(self.strategy.SESSION_SAVE_KEY):
             self.strategy.restore_session(session_id, kwargs)
-        return self.strategy.authenticate(self, response=response, *args, **kwargs)
+        return self.strategy.authenticate(self, *args, response=response, **kwargs)
 
     def process_error(self, data) -> None:
         if not data:

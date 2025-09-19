@@ -32,11 +32,11 @@ def partial_step(save_to_session):
 
             out = (
                 func(
+                    *args,
                     strategy=strategy,
                     backend=backend,
                     pipeline_index=pipeline_index,
                     current_partial=current_partial,
-                    *args,
                     **kwargs,
                 )
                 or {}

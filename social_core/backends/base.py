@@ -227,7 +227,7 @@ class BaseAuth:
     def continue_pipeline(self, partial):
         """Continue previous halted pipeline"""
         return self.strategy.authenticate(
-            self, pipeline_index=partial.next_step, *partial.args, **partial.kwargs
+            self, *partial.args, pipeline_index=partial.next_step, **partial.kwargs
         )
 
     def auth_extra_arguments(self) -> dict[str, str]:
