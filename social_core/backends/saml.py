@@ -33,13 +33,62 @@ OID_SURNAME = "urn:oid:2.5.4.4"
 OID_USERID = "urn:oid:0.9.2342.19200300.100.1.1"
 
 
+FULLNAME_FIELDS = (
+    OID_COMMON_NAME,
+    "http://schemas.xmlsoap.org/claims/CommonName",
+    "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/fullname",
+    "http://schemas.microsoft.com/identity/claims/displayname",
+    "full_name",
+    "fullname",
+    "fullName",
+)
+
+FIRST_NAME_FIELDS = (
+    OID_GIVEN_NAME,
+    "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname",
+    "first_name",
+    "firstname",
+    "firstName",
+    "given_name",
+    "givenname",
+    "givenName",
+)
+LAST_NAME_FIELDS = (
+    OID_SURNAME,
+    "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname",
+    "last_name",
+    "lastname",
+    "lastName",
+    "surname",
+)
+EMAIL_FIELDS = (
+    OID_MAIL,
+    "http://schemas.xmlsoap.org/claims/EmailAddress",
+    "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+    "email",
+    "mail",
+)
+
+USERNAME_FIELDS = (
+    OID_USERID,
+    "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name",
+    "subjectNameID",
+    "username",
+)
+
+PERSISTENT_FIELDS = (
+    OID_USERID,
+    "name_id",
+)
+
+
 class SAMLIdentityProvider:
     """Wrapper around configuration for a SAML Identity provider"""
 
     def __init__(self, backend: BaseAuth, name: str, **kwargs) -> None:
         """Load and parse configuration"""
-        self.backend = backend
-        self.name = name
+        self.backend: BaseAuth = backend
+        self.name: str = name
         # name should be a slug and must not contain a colon, which
         # could conflict with uid prefixing:
         assert ":" not in self.name and " " not in self.name, (
@@ -47,7 +96,9 @@ class SAMLIdentityProvider:
         )
         self.conf = kwargs
 
-    def get_user_permanent_id(self, attributes):
+    def get_user_permanent_id(
+        self, attributes: dict[str, str | list[str] | None]
+    ) -> str:
         """
         The most important method: Get a permanent, unique identifier
         for this user from the attributes supplied by the IdP.
@@ -56,44 +107,76 @@ class SAMLIdentityProvider:
         attributes['name_id']
         """
         setting = "attr_user_permanent_id"
-        key = self.conf.get(setting, OID_USERID)
-        try:
-            uid = attributes[key]
-        except KeyError as error:
-            raise AuthMissingParameter(
-                self.backend,
-                f"{key} (configured by {setting})",
-            ) from error
-
-        if isinstance(uid, list):
-            uid = uid[0]
+        uid = self.get_attr(attributes, setting, PERSISTENT_FIELDS)
+        if not uid:
+            raise AuthInvalidParameter(self.backend, "attr_user_permanent_id")
         return uid
 
     # Attributes processing:
-    def get_user_details(self, attributes):
+    def get_user_details(
+        self, attributes: dict[str, str | list[str] | None]
+    ) -> dict[str, str | None]:
         """
         Given the SAML attributes extracted from the SSO response, get
         the user data like name.
         """
         return {
-            "fullname": self.get_attr(attributes, "attr_full_name", OID_COMMON_NAME),
-            "first_name": self.get_attr(attributes, "attr_first_name", OID_GIVEN_NAME),
-            "last_name": self.get_attr(attributes, "attr_last_name", OID_SURNAME),
-            "username": self.get_attr(attributes, "attr_username", OID_USERID),
-            "email": self.get_attr(attributes, "attr_email", OID_MAIL),
+            "fullname": self.get_attr(attributes, "attr_full_name", FULLNAME_FIELDS),
+            "first_name": self.get_attr(
+                attributes, "attr_first_name", FIRST_NAME_FIELDS
+            ),
+            "last_name": self.get_attr(attributes, "attr_last_name", LAST_NAME_FIELDS),
+            "username": self.get_attr(attributes, "attr_username", USERNAME_FIELDS),
+            "email": self.get_attr(attributes, "attr_email", EMAIL_FIELDS),
         }
 
-    def get_attr(self, attributes, conf_key, default_attribute):
+    def get_attr(
+        self,
+        attributes: dict[str, str | list[str] | None],
+        conf_key: str,
+        default_attributes: tuple[str, ...],
+        *,
+        validate_defaults: bool = False,
+    ) -> str | None:
         """
         Internal helper method.
         Get the attribute 'default_attribute' out of the attributes,
         unless self.conf[conf_key] overrides the default by specifying
         another attribute to use.
         """
-        key = self.conf.get(conf_key, default_attribute)
-        value = attributes.get(key, None)
+        validate = True
+
+        try:
+            # Use configured value
+            attribute_name = self.conf[conf_key]
+        except KeyError:
+            # Find first matching attribute from default ones
+            for attribute_name in default_attributes:
+                if attribute_name in attributes:
+                    break
+            else:
+                return None
+            validate = validate_defaults
+        else:
+            # Value explicitly set to None, ignore the attribute
+            if attribute_name is None:
+                return None
+
+        try:
+            value = attributes[attribute_name]
+        except KeyError as error:
+            if validate:
+                # Fail if configured or required attribute is not present
+                raise AuthMissingParameter(
+                    self.backend,
+                    f"{attribute_name} (configured by {conf_key})",
+                ) from error
+            return None
+
+        # Convert values list to the first value (if present)
         if isinstance(value, list):
             value = value[0] if value else None
+
         return value
 
     @property
