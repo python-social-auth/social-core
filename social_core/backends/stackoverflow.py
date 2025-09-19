@@ -3,9 +3,18 @@ Stackoverflow OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/stackoverflow.html
 """
 
-from social_core.utils import wrap_access_token_error
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, Literal
+
+from social_core.utils import parse_qs, wrap_access_token_error
 
 from .oauth import BaseOAuth2
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
+    from requests.auth import AuthBase
 
 
 class StackoverflowOAuth2(BaseOAuth2):
@@ -41,6 +50,17 @@ class StackoverflowOAuth2(BaseOAuth2):
             },
         )["items"][0]
 
-    def request_access_token(self, *args, **kwargs):
+    def request_access_token(
+        self,
+        url: str,
+        method: Literal["GET", "POST", "DELETE"] = "GET",
+        headers: Mapping[str, str | bytes] | None = None,
+        data: dict | bytes | str | None = None,
+        auth: tuple[str, str] | AuthBase | None = None,
+        params: dict | None = None,
+    ) -> dict[Any, Any]:
         with wrap_access_token_error(self):
-            return self.get_querystring(*args, **kwargs)
+            response = self.request(
+                url, method=method, headers=headers, data=data, auth=auth, params=params
+            )
+        return parse_qs(response.content)

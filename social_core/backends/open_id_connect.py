@@ -4,7 +4,7 @@ import base64
 import datetime
 import json
 from calendar import timegm
-from typing import Any
+from typing import TYPE_CHECKING, Any, Literal
 
 import jwt
 from jwt import (
@@ -22,7 +22,12 @@ from social_core.exceptions import (
     AuthNotImplementedParameter,
     AuthTokenError,
 )
-from social_core.utils import cache, wrap_access_token_error
+from social_core.utils import cache
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
+    from requests.auth import AuthBase
 
 
 class OpenIdConnectAssociation:
@@ -326,13 +331,22 @@ class OpenIdConnectAuth(BaseOAuth2):
 
         return claims
 
-    def request_access_token(self, *args, **kwargs):
+    def request_access_token(
+        self,
+        url: str,
+        method: Literal["GET", "POST", "DELETE"] = "GET",
+        headers: Mapping[str, str | bytes] | None = None,
+        data: dict | bytes | str | None = None,
+        auth: tuple[str, str] | AuthBase | None = None,
+        params: dict | None = None,
+    ) -> dict[Any, Any]:
         """
         Retrieve the access token. Also, validate the id_token and
         store it (temporarily).
         """
-        with wrap_access_token_error(self):
-            response = self.get_json(*args, **kwargs)
+        response = super().request_access_token(
+            url, method, headers, data, auth, params
+        )
         self.id_token = self.validate_and_return_id_token(
             response["id_token"], response["access_token"]
         )

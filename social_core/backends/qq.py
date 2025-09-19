@@ -4,11 +4,19 @@ Created on May 13, 2014
 @author: Yong Zhang (zyfyfe@gmail.com)
 """
 
+from __future__ import annotations
+
 import json
+from typing import TYPE_CHECKING, Any, Literal
 
 from social_core.utils import parse_qs, wrap_access_token_error
 
 from .oauth import BaseOAuth2
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
+    from requests.auth import AuthBase
 
 
 class QQOAuth2(BaseOAuth2):
@@ -66,7 +74,17 @@ class QQOAuth2(BaseOAuth2):
         response["openid"] = openid
         return response
 
-    def request_access_token(self, url, data, *args, **kwargs):
+    def request_access_token(
+        self,
+        url: str,
+        method: Literal["GET", "POST", "DELETE"] = "GET",
+        headers: Mapping[str, str | bytes] | None = None,
+        data: dict | bytes | str | None = None,
+        auth: tuple[str, str] | AuthBase | None = None,
+        params: dict | None = None,
+    ) -> dict[Any, Any]:
         with wrap_access_token_error(self):
-            response = self.request(url, *args, **kwargs)
+            response = self.request(
+                url, method=method, headers=headers, data=data, auth=auth, params=params
+            )
         return parse_qs(response.content)

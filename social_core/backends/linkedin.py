@@ -3,13 +3,21 @@ LinkedIn OAuth1 and OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/linkedin.html
 """
 
+from __future__ import annotations
+
 import datetime
 from calendar import timegm
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 from social_core.exceptions import AuthCanceled, AuthTokenError
 
 from .oauth import BaseOAuth2
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
+    from requests.auth import AuthBase
 
 
 class LinkedinOpenIdConnect(OpenIdConnectAuth):
@@ -144,11 +152,20 @@ class LinkedinOAuth2(BaseOAuth2):
         headers["Authorization"] = f"Bearer {access_token}"
         return headers
 
-    def request_access_token(self, *args, **kwargs):
+    def request_access_token(
+        self,
+        url: str,
+        method: Literal["GET", "POST", "DELETE"] = "GET",
+        headers: Mapping[str, str | bytes] | None = None,
+        data: dict | bytes | str | None = None,
+        auth: tuple[str, str] | AuthBase | None = None,
+        params: dict | None = None,
+    ) -> dict[Any, Any]:
         # LinkedIn expects a POST request with querystring parameters, despite
         # the spec http://tools.ietf.org/html/rfc6749#section-4.1.3
-        kwargs["params"] = kwargs.pop("data")
-        return super().request_access_token(*args, **kwargs)
+        return super().request_access_token(
+            url, method, headers, data, auth, cast("dict", data)
+        )
 
     def process_error(self, data) -> None:
         super().process_error(data)

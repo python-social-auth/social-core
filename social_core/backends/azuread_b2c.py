@@ -27,7 +27,10 @@ See https://nicksnettravels.builttoroam.com/post/2017/01/24/Verifying-Azure-Acti
     for verifying JWT tokens.
 """
 
+from __future__ import annotations
+
 import json
+from typing import TYPE_CHECKING, Any, Literal
 
 from cryptography.hazmat.primitives import serialization
 from jwt import DecodeError, ExpiredSignatureError, get_unverified_header
@@ -37,6 +40,11 @@ from jwt.algorithms import RSAAlgorithm  # ty: ignore[possibly-unbound-import]
 from social_core.exceptions import AuthException, AuthTokenError
 
 from .azuread import AzureADOAuth2
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
+    from requests.auth import AuthBase
 
 
 class AzureADB2COAuth2(AzureADOAuth2):
@@ -103,14 +111,24 @@ class AzureADB2COAuth2(AzureADOAuth2):
     def jwks_url(self):
         return self.JWKS_URL.format(base_url=self.base_url, policy=self.policy)
 
-    def request_access_token(self, *args, **kwargs):
+    def request_access_token(
+        self,
+        url: str,
+        method: Literal["GET", "POST", "DELETE"] = "GET",
+        headers: Mapping[str, str | bytes] | None = None,
+        data: dict | bytes | str | None = None,
+        auth: tuple[str, str] | AuthBase | None = None,
+        params: dict | None = None,
+    ) -> dict[Any, Any]:
         """
         This is probably a hack, but otherwise AzureADOAuth2 expects
         `access_token`.
 
         However, B2C backends provides `id_token`.
         """
-        response = super().request_access_token(*args, **kwargs)
+        response = super().request_access_token(
+            url, method, headers, data, auth, params
+        )
         if "access_token" not in response:
             response["access_token"] = response["id_token"]
         return response
