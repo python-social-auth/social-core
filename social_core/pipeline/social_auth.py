@@ -7,6 +7,21 @@ def social_details(backend, details, response, *args, **kwargs):
     return {"details": dict(backend.get_user_details(response), **details)}
 
 
+def social_names(backend, details, response, *args, **kwargs):
+    # If first+last are both missing, populate from full
+    if details.get("fullname") and backend.setting("FIRSTLAST_FROM_FULL", True):
+        if not (details.get("first_name") or details.get("last_name")):
+            first, _space, last = details["fullname"].rpartition(" ")
+            details["first_name"] = first.strip()
+            details["last_name"] = last.strip()
+            print(f"end social_names {details=}")
+
+    # If first+last are both present, populate full if that's missing
+    if not details.get("fullname") and backend.setting("FULL_FROM_FIRSTLAST", True):
+        if details.get("first_name") and details.get("last_name"):
+            details["fullname"] = details["first_name"] + " " + details["last_name"]
+
+
 def social_uid(backend, details, response, *args, **kwargs):
     return {"uid": str(backend.get_user_id(details, response))}
 
