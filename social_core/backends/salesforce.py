@@ -32,7 +32,7 @@ class SalesforceOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
-        user_id_url = kwargs.get("response").get("id")
+        user_id_url = kwargs["response"]["id"]
         url = user_id_url + "?" + urlencode({"access_token": access_token})
         try:
             return self.get_json(url)

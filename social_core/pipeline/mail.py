@@ -20,7 +20,7 @@ def mail_validation(backend, details, is_new=False, *args, **kwargs):
             ):
                 raise InvalidEmail(backend)
             return None
-        current_partial = kwargs.get("current_partial")
+        current_partial = kwargs["current_partial"]
         backend.strategy.send_email_validation(
             backend, details["email"], current_partial.token
         )
