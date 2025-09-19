@@ -42,12 +42,8 @@ def partial_prepare(
     )
 
 
-def partial_store(
-    strategy, backend, next_step, user=None, social=None, *args, **kwargs
-):
-    partial = partial_prepare(
-        strategy, backend, next_step, *args, user=user, social=social, **kwargs
-    )
+def partial_store(strategy, backend, next_step, *args, **kwargs):
+    partial = partial_prepare(strategy, backend, next_step, *args, **kwargs)
     return strategy.storage.partial.store(partial)
 
 
