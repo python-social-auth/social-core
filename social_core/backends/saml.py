@@ -275,8 +275,15 @@ class SAMLAuth(BaseAuth):
     name = "saml"
     EXTRA_DATA = []
 
-    def get_idp(self, idp_name: str) -> SAMLIdentityProvider:
+    def get_idp(self, idp_name: str | None) -> SAMLIdentityProvider:
         """Given the name of an IdP, get a SAMLIdentityProvider instance"""
+        enabled_idps: dict[str, dict] = self.setting("ENABLED_IDPS")
+        if idp_name is None:
+            # RelayState was missing, perhaps an IdP initiated flow
+            if len(enabled_idps) != 1:
+                raise AuthMissingParameter(self, "RelayState.idp")
+            # Use the only configured IDP
+            idp_name = next(iter(enabled_idps))
         idp_config = self.setting("ENABLED_IDPS")[idp_name]
         return SAMLIdentityProvider(self, idp_name, **idp_config)
 
@@ -394,29 +401,33 @@ class SAMLAuth(BaseAuth):
         The user has been redirected back from the IdP and we should
         now log them in, if everything checks out.
         """
+        idp_name: str | None
         try:
             relay_state_str = self.strategy.request_data()["RelayState"]
-        except KeyError as error:
-            raise AuthMissingParameter(self, "RelayState") from error
+        except KeyError:
+            idp_name = None
+        else:
+            # Parse RelayState JSON
+            try:
+                relay_state: dict = json.loads(relay_state_str)
+            except json.JSONDecodeError as error:
+                raise AuthInvalidParameter(self, "RelayState") from error
 
-        try:
-            relay_state: dict = json.loads(relay_state_str)
-        except json.JSONDecodeError as error:
-            raise AuthInvalidParameter(self, "RelayState") from error
+            # Validate that the data is dict
+            if not isinstance(relay_state, dict):
+                raise AuthInvalidParameter(self, "RelayState")
 
-        if not isinstance(relay_state, dict):
-            raise AuthInvalidParameter(self, "RelayState")
+            # Get IdP name
+            idp_name = relay_state.get("idp")
 
-        idp_name: str | None = relay_state.get("idp")
+            if not idp_name:
+                raise AuthInvalidParameter(self, "RelayState.idp")
 
-        if not idp_name:
-            raise AuthInvalidParameter(self, "RelayState.idp")
-
-        if session_id := relay_state.get(self.strategy.SESSION_SAVE_KEY):
-            self.strategy.restore_session(session_id, kwargs)
-        elif next_url := relay_state.get("next"):
-            # The do_complete action expects the "next" URL to be in session state or the request params.
-            self.strategy.session_set(kwargs.get("redirect_name", "next"), next_url)
+            if session_id := relay_state.get(self.strategy.SESSION_SAVE_KEY):
+                self.strategy.restore_session(session_id, kwargs)
+            elif next_url := relay_state.get("next"):
+                # The do_complete action expects the "next" URL to be in session state or the request params.
+                self.strategy.session_set(kwargs.get("redirect_name", "next"), next_url)
 
         idp = self.get_idp(idp_name)
         auth = self._create_saml_auth(idp)
