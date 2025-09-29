@@ -284,7 +284,7 @@ class SAMLAuth(BaseAuth):
                 raise AuthMissingParameter(self, "RelayState.idp")
             # Use the only configured IDP
             idp_name = next(iter(enabled_idps))
-        idp_config = self.setting("ENABLED_IDPS")[idp_name]
+        idp_config = enabled_idps[idp_name]
         return SAMLIdentityProvider(self, idp_name, **idp_config)
 
     def generate_saml_config(self, idp: SAMLIdentityProvider | None = None):
