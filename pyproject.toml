@@ -92,7 +92,7 @@ dev = [
   "types-requests==2.32.4.20250913"
 ]
 google-onetap = [
-  "google-auth~=2.40.0"
+  "google-auth>=2.40.0,<2.42"
 ]
 ping = [
   "python-jose>=3.4.0,<4.0"
