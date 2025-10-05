@@ -424,7 +424,7 @@ class OpenIdConnectAuth(BaseOAuth2):
         """
 
         if not custom_at_hash_algo:
-            # pyjwt used 2 different crypto backends, keep the original pyjwt hash logic.
+            # pyjwt uses 2 different crypto backends, keep the original pyjwt hash logic
             alg_obj = jwt.get_algorithm_by_name(algorithm)
             digest = alg_obj.compute_hash_digest(access_token.encode("utf-8"))
             return (
@@ -437,16 +437,17 @@ class OpenIdConnectAuth(BaseOAuth2):
         if custom_at_hash_algo not in hash_algorithm_mapping:
             raise NotImplementedError(f"Unsupported custom at hash algorithm: {custom_at_hash_algo}")
 
-        hasher_cls = hash_algorithm_mapping[custom_at_hash_algo]
-
         # Try to use cryptography implementation if available in mapping
         if has_crypto:
             # Use cryptography's hasher
+            hasher_cls = hash_algorithm_mapping[custom_at_hash_algo]
             hasher = hashes.Hash(hasher_cls(), backend=default_backend())
             hasher.update(access_token.encode("utf-8"))
             digest = hasher.finalize()
         else:
-            digest = hasher_cls(access_token.encode("utf-8")).digest()
+            # Use hashlib's hasher
+            hasher_func = hash_algorithm_mapping[custom_at_hash_algo]
+            digest = hasher_func(access_token.encode("utf-8")).digest()
 
         half = digest[: (len(digest) // 2)]
         return base64.urlsafe_b64encode(half).decode("utf-8").rstrip("=")
