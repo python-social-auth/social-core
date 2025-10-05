@@ -140,7 +140,6 @@ class ExampleOpenIdConnectCustomAtHashTest(OpenIdConnectTest):
     )
 
     expected_username = "cartman"
-    allow_invalid_at_hash = True
 
     def pre_complete_callback(self, start_url) -> None:
         super().pre_complete_callback(start_url)
@@ -153,9 +152,10 @@ class ExampleOpenIdConnectCustomAtHashTest(OpenIdConnectTest):
         )
 
     def prepare_access_token_body(self, **kwargs):
-        kwargs["at_hash"] = OpenIdConnectAuth.calc_at_hash(
-            "foobar", "RS256", "sha512"
-        )
+        if "at_hash" not in kwargs:
+            kwargs["at_hash"] = OpenIdConnectAuth.calc_at_hash(
+                "foobar", "RS256", "sha512"
+            )
         return super().prepare_access_token_body(**kwargs)
 
     def test_everything_works(self) -> None:
@@ -174,3 +174,9 @@ class ExampleOpenIdConnectCustomAtHashTest(OpenIdConnectTest):
             self.do_login()
         else:
             self.authtoken_raised("Token error: Invalid access token", at_hash=at_hash)
+
+    def test_invalid_custom_at_hash_algo(self) -> None:
+        with self.assertRaisesRegex(NotImplementedError, "Unsupported custom at hash algorithm"):
+            OpenIdConnectAuth.calc_at_hash(
+                "foobar", "RS256", "INVALID_ALGO"
+            )
