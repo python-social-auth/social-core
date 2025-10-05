@@ -29,6 +29,16 @@ if TYPE_CHECKING:
 
     from requests.auth import AuthBase
 
+import hashlib
+
+try:
+    from cryptography.hazmat.backends import default_backend
+    from cryptography.hazmat.primitives import hashes
+
+    has_crypto = True
+except ModuleNotFoundError:
+    has_crypto = False
+
 
 class OpenIdConnectAssociation:
     """Use Association model to save the nonce by force."""
@@ -39,6 +49,25 @@ class OpenIdConnectAssociation:
         self.issued = issued  # not use
         self.lifetime = lifetime  # not use
         self.assoc_type = assoc_type  # as state
+
+
+def generate_hash_algorithm_mapping():
+    ret = {
+        "sha256": hashlib.sha256,
+        "sha384": hashlib.sha384,
+        "sha512": hashlib.sha512,
+    }
+
+    if has_crypto:
+        ret = {
+            "sha256": hashes.SHA256,
+            "sha384": hashes.SHA384,
+            "sha512": hashes.SHA512,
+        }
+    return ret
+
+
+hash_algorithm_mapping = generate_hash_algorithm_mapping()
 
 
 class OpenIdConnectAuth(BaseOAuth2):
@@ -68,6 +97,7 @@ class OpenIdConnectAuth(BaseOAuth2):
     JWT_DECODE_OPTIONS: dict[str, Any] = {}
     JWT_LEEWAY: float = 1.0  # seconds
     VALIDATE_AT_HASH: bool = True
+    CUSTOM_AT_HASH_ALGO: str | None = None
     # When these options are unspecified, server will choose via openid autoconfiguration
     ID_TOKEN_ISSUER = ""
     ACCESS_TOKEN_URL = ""
@@ -316,15 +346,7 @@ class OpenIdConnectAuth(BaseOAuth2):
 
         # pyjwt does not validate OIDC claims
         # see https://github.com/jpadilla/pyjwt/pull/296
-        if (
-            self.VALIDATE_AT_HASH
-            and "at_hash" in claims
-            and claims["at_hash"]
-            != self.calc_at_hash(
-                access_token,
-                key["alg"],
-            )
-        ):
+        if not self.validate_at_hash(claims, access_token, key):
             raise AuthTokenError(self, "Invalid access token")
 
         self.validate_claims(claims)
@@ -375,17 +397,56 @@ class OpenIdConnectAuth(BaseOAuth2):
             "last_name": get_value("family_name"),
         }
 
+    def validate_at_hash(self, claims, access_token, key):
+        """
+        Validate the 'at_hash' claim according to OpenID Connect specs.
+
+        See: https://openid.net/specs/openid-connect-core-1_0.html#CodeIDToken
+        """
+
+        if not self.VALIDATE_AT_HASH:
+            return True
+        if "at_hash" not in claims:
+            return True
+
+        expected_hash = claims["at_hash"]
+        calculated_hash = self.calc_at_hash(access_token, key["alg"], self.CUSTOM_AT_HASH_ALGO)
+        return expected_hash == calculated_hash
+
     @staticmethod
-    def calc_at_hash(access_token, algorithm):
+    def calc_at_hash(access_token, algorithm, custom_at_hash_algo: str | None = None):
         """
         Calculates "at_hash" claim which is not done by pyjwt.
+        Custom "at_hash" algorithm is used for non-standard token.
 
         See https://pyjwt.readthedocs.io/en/stable/usage.html#oidc-login-flow
+        See https://github.com/python-social-auth/social-core/issues/1306
         """
-        alg_obj = jwt.get_algorithm_by_name(algorithm)
-        digest = alg_obj.compute_hash_digest(access_token.encode("utf-8"))
-        return (
-            base64.urlsafe_b64encode(digest[: (len(digest) // 2)])
-            .decode("utf-8")
-            .rstrip("=")
-        )
+
+        if not custom_at_hash_algo:
+            # pyjwt used 2 different crypto backends, keep the original pyjwt hash logic.
+            alg_obj = jwt.get_algorithm_by_name(algorithm)
+            digest = alg_obj.compute_hash_digest(access_token.encode("utf-8"))
+            return (
+                base64.urlsafe_b64encode(digest[: (len(digest) // 2)])
+                .decode("utf-8")
+                .rstrip("=")
+            )
+
+        custom_at_hash_algo = custom_at_hash_algo.lower()
+        if custom_at_hash_algo not in hash_algorithm_mapping:
+            raise NotImplementedError(f"Unsupported custom at hash algorithm: {custom_at_hash_algo}")
+
+        hasher_cls = hash_algorithm_mapping[custom_at_hash_algo]
+
+        # Try to use cryptography implementation if available in mapping
+        if has_crypto:
+            # Use cryptography's hasher
+            hasher = hashes.Hash(hasher_cls(), backend=default_backend())
+            hasher.update(access_token.encode("utf-8"))
+            digest = hasher.finalize()
+        else:
+            digest = hasher_cls(access_token.encode("utf-8")).digest()
+
+        half = digest[: (len(digest) // 2)]
+        return base64.urlsafe_b64encode(half).decode("utf-8").rstrip("=")

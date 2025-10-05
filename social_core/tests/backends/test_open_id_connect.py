@@ -119,3 +119,58 @@ class ExampleOpenIdConnectNoValidateAtHashTest(OpenIdConnectTest):
 
     def test_everything_works(self) -> None:
         self.do_login()
+
+
+class OpenIdConnectCustomAtHash(ExampleOpenIdConnectAuth):
+    CUSTOM_AT_HASH_ALGO = "SHA512"
+
+
+class ExampleOpenIdConnectCustomAtHashTest(OpenIdConnectTest):
+    backend_path = "social_core.tests.backends.test_open_id_connect.OpenIdConnectCustomAtHash"
+    issuer = "https://example.com"
+    openid_config_body = json.dumps(
+        {
+            "issuer": "https://example.com",
+            "authorization_endpoint": "https://example.com/oidc/auth",
+            "token_endpoint": "https://example.com/oidc/token",
+            "userinfo_endpoint": "https://example.com/oidc/userinfo",
+            "revocation_endpoint": "https://example.com/oidc/revoke",
+            "jwks_uri": "https://example.com/oidc/certs",
+        }
+    )
+
+    expected_username = "cartman"
+    allow_invalid_at_hash = True
+
+    def pre_complete_callback(self, start_url) -> None:
+        super().pre_complete_callback(start_url)
+        responses.add(
+            responses.GET,
+            url=self.backend.userinfo_url(),
+            status=200,
+            body=json.dumps({"preferred_username": self.expected_username}),
+            content_type="text/json",
+        )
+
+    def prepare_access_token_body(self, **kwargs):
+        kwargs["at_hash"] = OpenIdConnectAuth.calc_at_hash(
+            "foobar", "RS256", "sha512"
+        )
+        return super().prepare_access_token_body(**kwargs)
+
+    def test_everything_works(self) -> None:
+        self.do_login()
+
+    def test_mismatch_custom_at_hash_algo(self) -> None:
+        if self.skip_invalid_at_hash:
+            self.skipTest("the call doesn't match any registered mock.")
+
+        at_hash = OpenIdConnectAuth.calc_at_hash(
+            "foobar", "RS256", "sha256"
+        )
+
+        if self.allow_invalid_at_hash:
+            self.access_token_kwargs = {"at_hash": at_hash}
+            self.do_login()
+        else:
+            self.authtoken_raised("Token error: Invalid access token", at_hash=at_hash)
