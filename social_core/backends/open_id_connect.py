@@ -29,15 +29,8 @@ if TYPE_CHECKING:
 
     from requests.auth import AuthBase
 
-import hashlib
-
-try:
-    from cryptography.hazmat.backends import default_backend
-    from cryptography.hazmat.primitives import hashes
-
-    has_crypto = True
-except ModuleNotFoundError:
-    has_crypto = False
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
 
 
 class OpenIdConnectAssociation:
@@ -49,25 +42,6 @@ class OpenIdConnectAssociation:
         self.issued = issued  # not use
         self.lifetime = lifetime  # not use
         self.assoc_type = assoc_type  # as state
-
-
-def generate_hash_algorithm_mapping():
-    ret = {
-        "sha256": hashlib.sha256,
-        "sha384": hashlib.sha384,
-        "sha512": hashlib.sha512,
-    }
-
-    if has_crypto:
-        ret = {
-            "sha256": hashes.SHA256,
-            "sha384": hashes.SHA384,
-            "sha512": hashes.SHA512,
-        }
-    return ret
-
-
-hash_algorithm_mapping = generate_hash_algorithm_mapping()
 
 
 class OpenIdConnectAuth(BaseOAuth2):
@@ -424,7 +398,6 @@ class OpenIdConnectAuth(BaseOAuth2):
         """
 
         if not custom_at_hash_algo:
-            # pyjwt uses 2 different crypto backends, keep the original pyjwt hash logic
             alg_obj = jwt.get_algorithm_by_name(algorithm)
             digest = alg_obj.compute_hash_digest(access_token.encode("utf-8"))
             return (
@@ -433,21 +406,13 @@ class OpenIdConnectAuth(BaseOAuth2):
                 .rstrip("=")
             )
 
-        custom_at_hash_algo = custom_at_hash_algo.lower()
-        if custom_at_hash_algo not in hash_algorithm_mapping:
+        algo_class_name = custom_at_hash_algo.upper()
+        algo_class = getattr(hashes, algo_class_name, None)
+        if algo_class is None:
             raise NotImplementedError(f"Unsupported custom at hash algorithm: {custom_at_hash_algo}")
 
-        # Try to use cryptography implementation if available in mapping
-        if has_crypto:
-            # Use cryptography's hasher
-            hasher_cls = hash_algorithm_mapping[custom_at_hash_algo]
-            hasher = hashes.Hash(hasher_cls(), backend=default_backend())
-            hasher.update(access_token.encode("utf-8"))
-            digest = hasher.finalize()
-        else:
-            # Use hashlib's hasher
-            hasher_func = hash_algorithm_mapping[custom_at_hash_algo]
-            digest = hasher_func(access_token.encode("utf-8")).digest()
-
+        hasher = hashes.Hash(algo_class(), backend=default_backend())
+        hasher.update(access_token.encode("utf-8"))
+        digest = hasher.finalize()
         half = digest[: (len(digest) // 2)]
         return base64.urlsafe_b64encode(half).decode("utf-8").rstrip("=")
