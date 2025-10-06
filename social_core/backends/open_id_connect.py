@@ -384,7 +384,9 @@ class OpenIdConnectAuth(BaseOAuth2):
             return True
 
         expected_hash = claims["at_hash"]
-        calculated_hash = self.calc_at_hash(access_token, key["alg"], self.CUSTOM_AT_HASH_ALGO)
+        calculated_hash = self.calc_at_hash(
+            access_token, key["alg"], self.CUSTOM_AT_HASH_ALGO
+        )
         return expected_hash == calculated_hash
 
     @staticmethod
@@ -409,7 +411,9 @@ class OpenIdConnectAuth(BaseOAuth2):
         algo_class_name = custom_at_hash_algo.upper()
         algo_class = getattr(hashes, algo_class_name, None)
         if algo_class is None:
-            raise NotImplementedError(f"Unsupported custom at hash algorithm: {custom_at_hash_algo}")
+            raise NotImplementedError(
+                f"Unsupported custom at hash algorithm: {custom_at_hash_algo}"
+            )
 
         hasher = hashes.Hash(algo_class(), backend=default_backend())
         hasher.update(access_token.encode("utf-8"))

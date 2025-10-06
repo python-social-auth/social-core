@@ -126,7 +126,9 @@ class OpenIdConnectCustomAtHash(ExampleOpenIdConnectAuth):
 
 
 class ExampleOpenIdConnectCustomAtHashTest(OpenIdConnectTest):
-    backend_path = "social_core.tests.backends.test_open_id_connect.OpenIdConnectCustomAtHash"
+    backend_path = (
+        "social_core.tests.backends.test_open_id_connect.OpenIdConnectCustomAtHash"
+    )
     issuer = "https://example.com"
     openid_config_body = json.dumps(
         {
@@ -165,9 +167,7 @@ class ExampleOpenIdConnectCustomAtHashTest(OpenIdConnectTest):
         if self.skip_invalid_at_hash:
             self.skipTest("the call doesn't match any registered mock.")
 
-        at_hash = OpenIdConnectAuth.calc_at_hash(
-            "foobar", "RS256", "sha256"
-        )
+        at_hash = OpenIdConnectAuth.calc_at_hash("foobar", "RS256", "sha256")
 
         if self.allow_invalid_at_hash:
             self.access_token_kwargs = {"at_hash": at_hash}
@@ -176,7 +176,7 @@ class ExampleOpenIdConnectCustomAtHashTest(OpenIdConnectTest):
             self.authtoken_raised("Token error: Invalid access token", at_hash=at_hash)
 
     def test_invalid_custom_at_hash_algo(self) -> None:
-        with self.assertRaisesRegex(NotImplementedError, "Unsupported custom at hash algorithm"):
-            OpenIdConnectAuth.calc_at_hash(
-                "foobar", "RS256", "INVALID_ALGO"
-            )
+        with self.assertRaisesRegex(
+            NotImplementedError, "Unsupported custom at hash algorithm"
+        ):
+            OpenIdConnectAuth.calc_at_hash("foobar", "RS256", "INVALID_ALGO")
