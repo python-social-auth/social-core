@@ -29,6 +29,9 @@ if TYPE_CHECKING:
 
     from requests.auth import AuthBase
 
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+
 
 class OpenIdConnectAssociation:
     """Use Association model to save the nonce by force."""
@@ -68,6 +71,7 @@ class OpenIdConnectAuth(BaseOAuth2):
     JWT_DECODE_OPTIONS: dict[str, Any] = {}
     JWT_LEEWAY: float = 1.0  # seconds
     VALIDATE_AT_HASH: bool = True
+    CUSTOM_AT_HASH_ALGO: str | None = None
     # When these options are unspecified, server will choose via openid autoconfiguration
     ID_TOKEN_ISSUER = ""
     ACCESS_TOKEN_URL = ""
@@ -316,15 +320,7 @@ class OpenIdConnectAuth(BaseOAuth2):
 
         # pyjwt does not validate OIDC claims
         # see https://github.com/jpadilla/pyjwt/pull/296
-        if (
-            self.VALIDATE_AT_HASH
-            and "at_hash" in claims
-            and claims["at_hash"]
-            != self.calc_at_hash(
-                access_token,
-                key["alg"],
-            )
-        ):
+        if not self.validate_at_hash(claims, access_token, key):
             raise AuthTokenError(self, "Invalid access token")
 
         self.validate_claims(claims)
@@ -375,17 +371,52 @@ class OpenIdConnectAuth(BaseOAuth2):
             "last_name": get_value("family_name"),
         }
 
+    def validate_at_hash(self, claims, access_token, key):
+        """
+        Validate the 'at_hash' claim according to OpenID Connect specs.
+
+        See: https://openid.net/specs/openid-connect-core-1_0.html#CodeIDToken
+        """
+
+        if not self.VALIDATE_AT_HASH:
+            return True
+        if "at_hash" not in claims:
+            return True
+
+        expected_hash = claims["at_hash"]
+        calculated_hash = self.calc_at_hash(
+            access_token, key["alg"], self.CUSTOM_AT_HASH_ALGO
+        )
+        return expected_hash == calculated_hash
+
     @staticmethod
-    def calc_at_hash(access_token, algorithm):
+    def calc_at_hash(access_token, algorithm, custom_at_hash_algo: str | None = None):
         """
         Calculates "at_hash" claim which is not done by pyjwt.
+        Custom "at_hash" algorithm is used for non-standard token.
 
         See https://pyjwt.readthedocs.io/en/stable/usage.html#oidc-login-flow
+        See https://github.com/python-social-auth/social-core/issues/1306
         """
-        alg_obj = jwt.get_algorithm_by_name(algorithm)
-        digest = alg_obj.compute_hash_digest(access_token.encode("utf-8"))
-        return (
-            base64.urlsafe_b64encode(digest[: (len(digest) // 2)])
-            .decode("utf-8")
-            .rstrip("=")
-        )
+
+        if not custom_at_hash_algo:
+            alg_obj = jwt.get_algorithm_by_name(algorithm)
+            digest = alg_obj.compute_hash_digest(access_token.encode("utf-8"))
+            return (
+                base64.urlsafe_b64encode(digest[: (len(digest) // 2)])
+                .decode("utf-8")
+                .rstrip("=")
+            )
+
+        algo_class_name = custom_at_hash_algo.upper()
+        algo_class = getattr(hashes, algo_class_name, None)
+        if algo_class is None:
+            raise NotImplementedError(
+                f"Unsupported custom at hash algorithm: {custom_at_hash_algo}"
+            )
+
+        hasher = hashes.Hash(algo_class(), backend=default_backend())
+        hasher.update(access_token.encode("utf-8"))
+        digest = hasher.finalize()
+        half = digest[: (len(digest) // 2)]
+        return base64.urlsafe_b64encode(half).decode("utf-8").rstrip("=")
