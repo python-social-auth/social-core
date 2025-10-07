@@ -47,13 +47,11 @@ class FacebookOAuth2(BaseOAuth2):
         params["return_scopes"] = "true"
         return params
 
-    def authorization_url(self):
-        version = self.setting("API_VERSION", API_VERSION)
-        return self.AUTHORIZATION_URL.format(version=version)
+    def get_authorization_url_format(self) -> dict[str, str]:
+        return {"version": self.setting("API_VERSION", API_VERSION)}
 
-    def access_token_url(self):
-        version = self.setting("API_VERSION", API_VERSION)
-        return self.ACCESS_TOKEN_URL.format(version=version)
+    def get_access_token_url_format(self) -> dict[str, str]:
+        return {"version": self.setting("API_VERSION", API_VERSION)}
 
     def get_user_details(self, response):
         """Return user details from Facebook account"""

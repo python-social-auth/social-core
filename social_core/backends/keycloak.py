@@ -99,12 +99,6 @@ class KeycloakOAuth2(BaseOAuth2):  # pylint: disable=abstract-method
     ID_KEY = "username"
     REDIRECT_STATE = False
 
-    def authorization_url(self):
-        return self.setting("AUTHORIZATION_URL")
-
-    def access_token_url(self):
-        return self.setting("ACCESS_TOKEN_URL")
-
     def audience(self):
         return self.setting("KEY")
 
