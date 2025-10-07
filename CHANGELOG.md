@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.8.0](https://github.com/python-social-auth/social-core/releases/tag/4.8.0) - 2025-10-07
+
+### Changed
+
+- Fixed Gitea backend API authentication headers
+- Improved `RelayState` and attributes handling in the SAML backend
+- Changed domains for VK backend
+- All API calls now include User-Agent header
+- OIDC uses info from `id_token` when not present in the response
+- Bring back option to skip and customize `at_hash` validation in OIDC
+- Dropped support for Python 3.9 and added support for Python 3.14
+- Invalid API token will now raise `AuthTokenError`
+- The `extra_data` method of backends now receives pipeline arguments as `pipeline_kwargs`
+
+### Added
+
+- Auth0 OIDC backend
+- Inactive users can be allowed to authenticate using `ALLOW_INACTIVE_USERS_LOGIN`
+- Support group whitelisting in CAS
+
 ## [4.7.0](https://github.com/python-social-auth/social-core/releases/tag/4.7.0) - 2025-06-27
 
 ### Changed
