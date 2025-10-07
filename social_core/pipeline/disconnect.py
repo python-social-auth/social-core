@@ -1,15 +1,35 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from social_core.exceptions import NotAllowedToDisconnect
+
+if TYPE_CHECKING:
+    from social_core.storage import UserProtocol
+    from social_core.strategy import BaseStrategy
 
 
 def allowed_to_disconnect(
-    strategy, user, name, user_storage, association_id=None, *args, **kwargs
+    strategy: BaseStrategy,
+    user: UserProtocol | None,
+    name,
+    user_storage,
+    association_id=None,
+    *args,
+    **kwargs,
 ) -> None:
     if not user_storage.allowed_to_disconnect(user, name, association_id):
         raise NotAllowedToDisconnect
 
 
 def get_entries(
-    strategy, user, name, user_storage, association_id=None, *args, **kwargs
+    strategy: BaseStrategy,
+    user: UserProtocol | None,
+    name,
+    user_storage,
+    association_id=None,
+    *args,
+    **kwargs,
 ):
     return {
         "entries": user_storage.get_social_auth_for_user(user, name, association_id)
@@ -25,6 +45,6 @@ def revoke_tokens(strategy, entries, *args, **kwargs) -> None:
                 backend.revoke_token(entry.extra_data["access_token"], entry.uid)
 
 
-def disconnect(strategy, entries, user_storage, *args, **kwargs) -> None:
+def disconnect(strategy: BaseStrategy, entries, user_storage, *args, **kwargs) -> None:
     for entry in entries:
         user_storage.disconnect(entry)

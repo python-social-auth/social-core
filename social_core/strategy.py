@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import secrets
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 from .backends.utils import get_backend
 from .exceptions import StrategyMissingFeatureError
@@ -12,6 +12,7 @@ from .utils import PARTIAL_TOKEN_SESSION_NAME, module_member, setting_name
 
 if TYPE_CHECKING:
     from .backends.base import BaseAuth
+    from .storage import BaseStorage, CodeMixin
 
 
 class BaseTemplateStrategy:
@@ -43,7 +44,9 @@ class BaseStrategy:
     DEFAULT_TEMPLATE_STRATEGY = BaseTemplateStrategy
     SESSION_SAVE_KEY = "psa_session_id"
 
-    def __init__(self, storage=None, tpl=None) -> None:
+    def __init__(
+        self, storage: type[BaseStorage], tpl: type[BaseTemplateStrategy] | None = None
+    ) -> None:
         self.storage = storage
         self.tpl = (tpl or self.DEFAULT_TEMPLATE_STRATEGY)(self)
 
@@ -116,11 +119,16 @@ class BaseStrategy:
     def openid_store(self):
         return OpenIdStore(self)
 
-    def get_pipeline(self, backend: BaseAuth | None = None):
-        return self.setting("PIPELINE", DEFAULT_AUTH_PIPELINE, backend)
+    def get_pipeline(self, backend: BaseAuth | None = None) -> list[str]:
+        return cast(
+            "list[str]", self.setting("PIPELINE", DEFAULT_AUTH_PIPELINE, backend)
+        )
 
-    def get_disconnect_pipeline(self, backend: BaseAuth | None = None):
-        return self.setting("DISCONNECT_PIPELINE", DEFAULT_DISCONNECT_PIPELINE, backend)
+    def get_disconnect_pipeline(self, backend: BaseAuth | None = None) -> list[str]:
+        return cast(
+            "list[str]",
+            self.setting("DISCONNECT_PIPELINE", DEFAULT_DISCONNECT_PIPELINE, backend),
+        )
 
     def random_string(self, length: int = 12, chars: str = ALLOWED_CHARS) -> str:
         return "".join([secrets.choice(chars) for i in range(length)])
@@ -137,7 +145,7 @@ class BaseStrategy:
 
     def send_email_validation(
         self, backend: BaseAuth, email: str, partial_token: str | None = None
-    ) -> str:
+    ) -> CodeMixin:
         email_validation = self.setting("EMAIL_VALIDATION_FUNCTION")
         send_email = module_member(email_validation)
         code = self.storage.code.make_code(email)
@@ -178,15 +186,17 @@ class BaseStrategy:
         of them"""
         return args, kwargs
 
-    def get_backends(self):
+    def get_backends(self) -> list[str]:
         """Return configured backends"""
-        return self.setting("AUTHENTICATION_BACKENDS", [])
+        return cast("list[str]", self.setting("AUTHENTICATION_BACKENDS", []))
 
-    def get_backend_class(self, name):
+    def get_backend_class(self, name: str) -> type[BaseAuth]:
         """Return a configured backend class"""
         return get_backend(self.get_backends(), name)
 
-    def get_backend(self, name, redirect_uri=None, *args, **kwargs):
+    def get_backend(
+        self, name: str, redirect_uri: str | None = None, *args, **kwargs
+    ) -> BaseAuth:
         """Return a configured backend instance"""
         Backend = self.get_backend_class(name)
         return Backend(self, *args, redirect_uri=redirect_uri, **kwargs)
