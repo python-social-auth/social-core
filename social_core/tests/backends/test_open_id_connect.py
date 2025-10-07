@@ -153,12 +153,29 @@ class ExampleOpenIdConnectCustomAtHashTest(OpenIdConnectTest):
             content_type="text/json",
         )
 
-    def prepare_access_token_body(self, **kwargs):
-        if "at_hash" not in kwargs:
-            kwargs["at_hash"] = OpenIdConnectAuth.calc_at_hash(
-                "foobar", "RS256", "sha512"
-            )
-        return super().prepare_access_token_body(**kwargs)
+    def prepare_access_token_body(  # NOQA: PLR0913
+        self,
+        client_key=None,
+        tamper_message=False,
+        expiration_datetime=None,
+        kid=None,
+        issue_datetime=None,
+        nonce=None,
+        issuer=None,
+        at_hash=None,
+    ):
+        if at_hash is None:
+            at_hash = OpenIdConnectAuth.calc_at_hash("foobar", "RS256", "sha512")
+        return super().prepare_access_token_body(
+            client_key=client_key,
+            tamper_message=tamper_message,
+            expiration_datetime=expiration_datetime,
+            kid=kid,
+            issue_datetime=issue_datetime,
+            nonce=nonce,
+            issuer=issuer,
+            at_hash=at_hash,
+        )
 
     def test_everything_works(self) -> None:
         self.do_login()
