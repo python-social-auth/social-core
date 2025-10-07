@@ -16,11 +16,11 @@ class NationBuilderOAuth2(BaseOAuth2):
     SCOPE_SEPARATOR = ","
     EXTRA_DATA = [("id", "id"), ("expires", "expires")]
 
-    def authorization_url(self):
-        return self.AUTHORIZATION_URL.format(slug=self.slug)
+    def get_authorization_url_format(self) -> dict[str, str]:
+        return {"slug": self.slug}
 
-    def access_token_url(self):
-        return self.ACCESS_TOKEN_URL.format(slug=self.slug)
+    def get_access_token_url_format(self) -> dict[str, str]:
+        return {"slug": self.slug}
 
     @property
     def slug(self):

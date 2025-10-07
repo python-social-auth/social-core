@@ -147,13 +147,25 @@ class OAuthAuth(BaseAuth):
         return {}
 
     def authorization_url(self) -> str:
-        return self.AUTHORIZATION_URL
+        url = self.setting("AUTHORIZATION_URL", self.AUTHORIZATION_URL)
+        if format_params := self.get_authorization_url_format():
+            return url.format(**format_params)
+        return url
+
+    def get_authorization_url_format(self) -> dict[str, str]:
+        return {}
 
     def access_token_url(self) -> str:
-        return self.ACCESS_TOKEN_URL
+        url = self.setting("ACCESS_TOKEN_URL", self.ACCESS_TOKEN_URL)
+        if format_params := self.get_access_token_url_format():
+            return url.format(**format_params)
+        return url
+
+    def get_access_token_url_format(self) -> dict[str, str]:
+        return {}
 
     def revoke_token_url(self, token, uid) -> str:
-        return self.REVOKE_TOKEN_URL
+        return self.setting("REVOKE_TOKEN_URL", self.REVOKE_TOKEN_URL)
 
     def revoke_token_params(self, token, uid) -> dict[str, Any]:
         return {}

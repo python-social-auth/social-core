@@ -5,8 +5,8 @@ class MineIDOAuth2(BaseOAuth2):
     """MineID OAuth2 authentication backend"""
 
     name = "mineid"
-    _AUTHORIZATION_URL = "%(scheme)s://%(host)s/oauth/authorize"
-    _ACCESS_TOKEN_URL = "%(scheme)s://%(host)s/oauth/access_token"
+    AUTHORIZATION_URL = "{scheme}://{host}/oauth/authorize"
+    ACCESS_TOKEN_URL = "{scheme}://{host}/oauth/access_token"
     SCOPE_SEPARATOR = ","
     EXTRA_DATA = []
 
@@ -21,15 +21,13 @@ class MineIDOAuth2(BaseOAuth2):
         url = "{scheme}://{host}/api/user".format(**self.get_mineid_url_params())
         return self.get_json(url, params={"access_token": access_token})
 
-    @property
-    def AUTHORIZATION_URL(self):
-        return self._AUTHORIZATION_URL % self.get_mineid_url_params()
+    def get_authorization_url_format(self) -> dict[str, str]:
+        return self.get_mineid_url_params()
 
-    @property
-    def ACCESS_TOKEN_URL(self):
-        return self._ACCESS_TOKEN_URL % self.get_mineid_url_params()
+    def get_access_token_url_format(self) -> dict[str, str]:
+        return self.get_mineid_url_params()
 
-    def get_mineid_url_params(self):
+    def get_mineid_url_params(self) -> dict[str, str]:
         return {
             "host": self.setting("HOST", "www.mineid.org"),
             "scheme": self.setting("SCHEME", "https"),

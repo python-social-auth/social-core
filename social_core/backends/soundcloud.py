@@ -57,4 +57,4 @@ class SoundcloudOAuth2(BaseOAuth2):
         params = self.auth_params(state)
         params.update(self.get_scope_argument())
         params.update(self.auth_extra_arguments())
-        return url_add_parameters(self.AUTHORIZATION_URL, params, True)
+        return url_add_parameters(self.authorization_url(), params, True)

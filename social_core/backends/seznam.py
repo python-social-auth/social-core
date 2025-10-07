@@ -20,12 +20,6 @@ class SeznamOAuth2(BaseOAuth2):
     def api_url(self):
         return self.setting("API_URL") or self.API_URL
 
-    def authorization_url(self):
-        return self.setting("AUTHORIZATION_URL") or self.AUTHORIZATION_URL
-
-    def access_token_url(self):
-        return self.setting("ACCESS_TOKEN_URL") or self.ACCESS_TOKEN_URL
-
     def get_user_id(self, details, response):
         return response.get(self.setting("ID_KEY") or self.ID_KEY)
 

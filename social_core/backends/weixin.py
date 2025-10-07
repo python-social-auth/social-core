@@ -137,7 +137,7 @@ class WeixinOAuth2APP(WeixinOAuth2):
         params.update(self.get_scope_argument())
         params.update(self.auth_extra_arguments())
         params = urlencode(sorted(params.items()))
-        return "{}#wechat_redirect".format(self.AUTHORIZATION_URL + "?" + params)
+        return f"{self.authorization_url()}?{params}#wechat_redirect"
 
     def auth_complete_params(self, state=None):
         appid, secret = self.get_key_and_secret()

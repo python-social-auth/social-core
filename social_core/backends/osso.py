@@ -16,11 +16,11 @@ class OssoOAuth2(BaseOAuth2):
     def osso_base_url(self):
         return self.setting("OSSO_BASE_URL", "https://demo.ossoapp.com")
 
-    def authorization_url(self):
-        return self.AUTHORIZATION_URL.format(osso_base_url=self.osso_base_url)
+    def get_authorization_url_format(self) -> dict[str, str]:
+        return {"osso_base_url": self.osso_base_url}
 
-    def access_token_url(self):
-        return self.ACCESS_TOKEN_URL.format(osso_base_url=self.osso_base_url)
+    def get_access_token_url_format(self) -> dict[str, str]:
+        return {"osso_base_url": self.osso_base_url}
 
     def auth_params(self, state=None):
         client_id, _client_secret = self.get_key_and_secret()

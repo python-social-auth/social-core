@@ -41,7 +41,7 @@ class BaseAuth:
     def log_warning(self, message, *args) -> None:
         social_logger.warning(f"{self.name}: {message}", *args)
 
-    def setting(self, name, default=None):
+    def setting(self, name: str, default=None):
         """Return setting value from strategy"""
         return self.strategy.setting(name, default=default, backend=self)
 

@@ -68,16 +68,16 @@ class AzureADOAuth2(BaseOAuth2):
         return "common"
 
     @property
-    def base_url(self):
+    def base_url(self) -> str:
         return self.BASE_URL.format(
             authority_host=self.authority_host, tenant_id=self.tenant_id
         )
 
-    def authorization_url(self):
-        return self.AUTHORIZATION_URL.format(base_url=self.base_url)
+    def get_authorization_url_format(self) -> dict[str, str]:
+        return {"base_url": self.base_url}
 
-    def access_token_url(self):
-        return self.ACCESS_TOKEN_URL.format(base_url=self.base_url)
+    def get_access_token_url_format(self) -> dict[str, str]:
+        return {"base_url": self.base_url}
 
     def get_user_id(self, details, response):
         """Use upn as unique id"""

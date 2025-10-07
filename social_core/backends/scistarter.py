@@ -24,9 +24,6 @@ class SciStarterOAuth2(BaseOAuth2):
         """Build redirect with redirect_state parameter."""
         return self.redirect_uri.rstrip("/")
 
-    def authorization_url(self):
-        return self.AUTHORIZATION_URL
-
     def get_user_details(self, response):
         return {
             "username": response.get("handle"),
@@ -52,6 +49,6 @@ class SciStarterOAuth2(BaseOAuth2):
             method=self.ACCESS_TOKEN_METHOD,
         )
 
-    def access_token_url(self):
+    def get_access_token_url_format(self) -> dict[str, str]:
         _client_id, client_secret = self.get_key_and_secret()
-        return self.ACCESS_TOKEN_URL.format(key=client_secret)
+        return {"key": client_secret}

@@ -101,12 +101,10 @@ class AzureADB2COAuth2(AzureADOAuth2):
             base_url=self.base_url, policy=self.policy
         )
 
-    def authorization_url(self):
-        # Policy is required, but added later by `auth_extra_arguments()`
-        return self.AUTHORIZATION_URL.format(base_url=self.base_url)
-
-    def access_token_url(self):
-        return self.ACCESS_TOKEN_URL.format(base_url=self.base_url, policy=self.policy)
+    def get_access_token_url_format(self) -> dict[str, str]:
+        params = super().get_access_token_url_format()
+        params["policy"] = self.policy
+        return params
 
     def jwks_url(self):
         return self.JWKS_URL.format(base_url=self.base_url, policy=self.policy)
