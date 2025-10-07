@@ -18,7 +18,6 @@ dev = [
   "ty==0.0.1a21",
   "types-defusedxml==0.7.0.20250822",
   "types-oauthlib==3.3.0.20250822",
-  "types-python-jose==3.5.0.20250531",
   "types-requests-oauthlib==2.0.0.20250809",
   "types-requests==2.32.4.20250913"
 ]
@@ -88,15 +87,11 @@ dev = [
   "ty==0.0.1a21",
   "types-defusedxml==0.7.0.20250822",
   "types-oauthlib==3.3.0.20250822",
-  "types-python-jose==3.5.0.20250531",
   "types-requests-oauthlib==2.0.0.20250809",
   "types-requests==2.32.4.20250913"
 ]
 google-onetap = [
   "google-auth>=2.40.0,<2.42"
-]
-ping = [
-  "python-jose>=3.4.0,<4.0"
 ]
 saml = [
   "python3-saml>=1.16.0"

@@ -2,9 +2,14 @@
 Ping Auth OpenID Connect backend
 """
 
-from jose import jwk, jwt
-from jose.exceptions import ExpiredSignatureError, JWTClaimsError, JWTError
-from jose.utils import base64url_decode
+import jwt
+from jwt import (
+    ExpiredSignatureError,
+    InvalidAudienceError,
+    InvalidTokenError,
+    PyJWTError,
+)
+from jwt.utils import base64url_decode
 
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 from social_core.exceptions import AuthTokenError
@@ -20,10 +25,14 @@ class PingOpenIdConnect(OpenIdConnectAuth):
 
     def find_valid_key(self, id_token):
         for key in self.get_jwks_keys():
-            rsakey = jwk.construct(key, algorithm="RS256")
+            if "alg" not in key:
+                key["alg"] = "RS256"
+            rsakey = jwt.PyJWK(key)
             message, encoded_sig = id_token.rsplit(".", 1)
             decoded_sig = base64url_decode(encoded_sig.encode("utf-8"))
-            if rsakey.verify(message.encode("utf-8"), decoded_sig):
+            if rsakey.Algorithm.verify(
+                message.encode("utf-8"), rsakey.key, decoded_sig
+            ):
                 return key
         return None
 
@@ -39,23 +48,28 @@ class PingOpenIdConnect(OpenIdConnectAuth):
         if not key:
             raise AuthTokenError(self, "Signature verification failed")
 
-        rsakey = jwk.construct(key, algorithm="RS256")
+        if "alg" not in key:
+            key["alg"] = "RS256"
+        rsakey = jwt.PyJWK(key)
 
         try:
             claims = jwt.decode(
                 id_token,
-                rsakey.to_pem().decode("utf-8"),
+                rsakey.key,
                 algorithms=self.JWT_ALGORITHMS,
                 audience=client_id,
                 issuer=self.id_token_issuer(),
-                access_token=access_token,
                 options=self.JWT_DECODE_OPTIONS,
+                leeway=self.setting("JWT_LEEWAY", self.JWT_LEEWAY),
             )
         except ExpiredSignatureError:
             raise AuthTokenError(self, "Signature has expired")
-        except JWTClaimsError as error:
+        except InvalidAudienceError:
+            # compatibility with jose error message
+            raise AuthTokenError(self, "Invalid audience")
+        except InvalidTokenError as error:
             raise AuthTokenError(self, str(error))
-        except JWTError:
+        except PyJWTError:
             raise AuthTokenError(self, "Invalid signature")
 
         self.validate_claims(claims)
