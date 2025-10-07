@@ -1,8 +1,11 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any, cast
 
 from social_core.strategy import BaseStrategy, BaseTemplateStrategy
+
+if TYPE_CHECKING:
+    from social_core.backends.base import BaseAuth
 
 TEST_URI = "http://myapp.com"
 TEST_HOST = "myapp.com"
@@ -117,20 +120,23 @@ class TestStrategy(BaseStrategy):
             self.session_set("username", user.username)
         return user
 
-    def get_pipeline(self, backend=None):
-        return self.setting(
-            "PIPELINE",
-            (
-                "social_core.pipeline.social_auth.social_details",
-                "social_core.pipeline.social_auth.social_uid",
-                "social_core.pipeline.social_auth.auth_allowed",
-                "social_core.pipeline.social_auth.social_user",
-                "social_core.pipeline.user.get_username",
-                "social_core.pipeline.social_auth.associate_by_email",
-                "social_core.pipeline.user.create_user",
-                "social_core.pipeline.social_auth.associate_user",
-                "social_core.pipeline.social_auth.load_extra_data",
-                "social_core.pipeline.user.user_details",
+    def get_pipeline(self, backend: BaseAuth | None = None) -> list[str]:
+        return cast(
+            "list[str]",
+            self.setting(
+                "PIPELINE",
+                (
+                    "social_core.pipeline.social_auth.social_details",
+                    "social_core.pipeline.social_auth.social_uid",
+                    "social_core.pipeline.social_auth.auth_allowed",
+                    "social_core.pipeline.social_auth.social_user",
+                    "social_core.pipeline.user.get_username",
+                    "social_core.pipeline.social_auth.associate_by_email",
+                    "social_core.pipeline.user.create_user",
+                    "social_core.pipeline.social_auth.associate_user",
+                    "social_core.pipeline.social_auth.load_extra_data",
+                    "social_core.pipeline.user.user_details",
+                ),
+                backend,
             ),
-            backend,
         )

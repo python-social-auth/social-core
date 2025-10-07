@@ -1,10 +1,17 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from social_core.exceptions import InvalidEmail
 
 from .partial import partial
 
+if TYPE_CHECKING:
+    from social_core.backends.base import BaseAuth
+
 
 @partial
-def mail_validation(backend, details, is_new=False, *args, **kwargs):
+def mail_validation(backend: BaseAuth, details, is_new=False, *args, **kwargs):
     requires_validation = backend.REQUIRES_EMAIL_VALIDATION or backend.setting(
         "FORCE_EMAIL_VALIDATION", False
     )

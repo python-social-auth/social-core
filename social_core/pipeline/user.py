@@ -1,11 +1,26 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, cast
 from uuid import uuid4
 
 from social_core.utils import module_member, slugify
 
+if TYPE_CHECKING:
+    from social_core.backends.base import BaseAuth
+    from social_core.storage import UserProtocol
+    from social_core.strategy import BaseStrategy
+
 USER_FIELDS = ["username", "email"]
 
 
-def get_username(strategy, details, backend, user=None, *args, **kwargs):
+def get_username(
+    strategy: BaseStrategy,
+    details,
+    backend: BaseAuth,
+    user: UserProtocol | None = None,
+    *args,
+    **kwargs,
+):
     if "username" not in backend.setting("USER_FIELDS", USER_FIELDS):
         return None
     storage = strategy.storage
@@ -59,7 +74,14 @@ def get_username(strategy, details, backend, user=None, *args, **kwargs):
     return {"username": final_username}
 
 
-def create_user(strategy, details, backend, user=None, *args, **kwargs):
+def create_user(
+    strategy: BaseStrategy,
+    details,
+    backend: BaseAuth,
+    user: UserProtocol | None = None,
+    *args,
+    **kwargs,
+):
     if user:
         return {"is_new": False}
 
@@ -79,7 +101,14 @@ def create_user(strategy, details, backend, user=None, *args, **kwargs):
     return {"is_new": True, "user": strategy.create_user(**fields)}
 
 
-def user_details(strategy, details, backend, user=None, *args, **kwargs) -> None:
+def user_details(
+    strategy: BaseStrategy,
+    details,
+    backend: BaseAuth | None,
+    user: UserProtocol | None = None,
+    *args,
+    **kwargs,
+) -> None:
     """Update user details using data from provider."""
     if not user:
         return
@@ -88,6 +117,7 @@ def user_details(strategy, details, backend, user=None, *args, **kwargs) -> None
 
     # Default protected user fields (username, id, pk and email) can be ignored
     # by setting the SOCIAL_AUTH_NO_DEFAULT_PROTECTED_USER_FIELDS to True
+    protected: tuple[str, ...]
     if strategy.setting("NO_DEFAULT_PROTECTED_USER_FIELDS", backend=backend) is True:
         protected = ()
     else:
@@ -103,7 +133,9 @@ def user_details(strategy, details, backend, user=None, *args, **kwargs) -> None
         )
 
     protected = protected + tuple(
-        strategy.setting("PROTECTED_USER_FIELDS", [], backend=backend)
+        cast(
+            "list[str]", strategy.setting("PROTECTED_USER_FIELDS", [], backend=backend)
+        )
     )
 
     # Update user model attributes with the new data sent by the current
@@ -122,7 +154,10 @@ def user_details(strategy, details, backend, user=None, *args, **kwargs) -> None
             continue
 
         immutable_fields = tuple(
-            strategy.setting("IMMUTABLE_USER_FIELDS", [], backend=backend)
+            cast(
+                "list[str]",
+                strategy.setting("IMMUTABLE_USER_FIELDS", [], backend=backend),
+            )
         )
         if name in immutable_fields and current_value:
             continue

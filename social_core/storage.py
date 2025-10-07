@@ -7,14 +7,23 @@ import re
 import uuid
 from abc import abstractmethod
 from datetime import datetime, timedelta, timezone
-from typing import Any
+from typing import TYPE_CHECKING, Any, Protocol
 
 from openid.association import Association as OpenIdAssociation
 
 from .exceptions import MissingBackend
 
+if TYPE_CHECKING:
+    from social_core.backends.base import BaseAuth
+    from social_core.strategy import BaseStrategy
+
 NO_ASCII_REGEX = re.compile(r"[^\x00-\x7F]+")
 NO_SPECIAL_REGEX = re.compile(r"[^\w.@+_-]+", re.UNICODE)
+
+
+class UserProtocol(Protocol):
+    id: int
+    username: str
 
 
 class UserMixin:
@@ -22,35 +31,36 @@ class UserMixin:
     ACCESS_TOKEN_EXPIRED_THRESHOLD = 5
 
     provider = ""
-    uid = None
+    uid: str
+    user: UserProtocol
     extra_data: dict[str, Any] | None = None
 
     @abstractmethod
     def save(self): ...
 
-    def get_backend(self, strategy):
+    def get_backend(self, strategy: BaseStrategy) -> type[BaseAuth]:
         return strategy.get_backend_class(self.provider)
 
-    def get_backend_instance(self, strategy):
+    def get_backend_instance(self, strategy: BaseStrategy) -> BaseAuth | None:
         try:
             return strategy.get_backend(self.provider)
         except MissingBackend:
             return None
 
     @property
-    def access_token(self):
+    def access_token(self) -> str | None:
         """Return access_token stored in extra_data or None"""
         return self.extra_data.get("access_token")
 
-    def refresh_token(self, strategy, *args, **kwargs) -> None:
+    def refresh_token(self, strategy: BaseStrategy, *args, **kwargs) -> None:
         token = self.extra_data.get("refresh_token") or self.extra_data.get(
             "access_token"
         )
         backend = self.get_backend_instance(strategy)
         if token and backend and hasattr(backend, "refresh_token"):
-            response = backend.refresh_token(token, *args, **kwargs)
+            response = backend.refresh_token(token, *args, **kwargs)  # type: ignore[attr-defined]
             extra_data = backend.extra_data(
-                self, self.uid, response, self.extra_data, {}
+                self.user, self.uid, response, self.extra_data or {}, {}
             )
             if self.set_extra_data(extra_data):
                 self.save()
@@ -98,7 +108,7 @@ class UserMixin:
             and expiration.total_seconds() <= self.ACCESS_TOKEN_EXPIRED_THRESHOLD
         )
 
-    def get_access_token(self, strategy):
+    def get_access_token(self, strategy: BaseStrategy) -> str | None:
         """Returns a valid access token."""
         if self.access_token_expired():
             self.refresh_token(strategy)
@@ -114,23 +124,23 @@ class UserMixin:
         return False
 
     @classmethod
-    def clean_username(cls, value):
+    def clean_username(cls, value: str) -> str:
         """Clean username removing any unsupported character"""
         value = NO_ASCII_REGEX.sub("", value)
         return NO_SPECIAL_REGEX.sub("", value)
 
     @classmethod
-    def changed(cls, user) -> None:
+    def changed(cls, user: UserProtocol) -> None:
         """The given user instance is ready to be saved"""
         raise NotImplementedError("Implement in subclass")
 
     @classmethod
-    def get_username(cls, user) -> str:
+    def get_username(cls, user: UserProtocol) -> str:
         """Return the username for given user"""
         raise NotImplementedError("Implement in subclass")
 
     @classmethod
-    def user_model(cls):
+    def user_model(cls) -> type[UserProtocol]:
         """Return the user model"""
         raise NotImplementedError("Implement in subclass")
 
@@ -140,7 +150,9 @@ class UserMixin:
         raise NotImplementedError("Implement in subclass")
 
     @classmethod
-    def allowed_to_disconnect(cls, user, backend_name, association_id=None) -> bool:
+    def allowed_to_disconnect(
+        cls, user: UserProtocol, backend_name: str, association_id=None
+    ) -> bool:
         """Return if it's safe to disconnect the social account for the
         given user"""
         raise NotImplementedError("Implement in subclass")
@@ -181,7 +193,7 @@ class UserMixin:
     @classmethod
     def get_social_auth_for_user(
         cls,
-        user,
+        user: UserProtocol,
         provider: str | None = None,
         id: int | None = None,  # noqa: A002
     ):
@@ -189,7 +201,7 @@ class UserMixin:
         raise NotImplementedError("Implement in subclass")
 
     @classmethod
-    def create_social_auth(cls, user, uid: int, provider: str):
+    def create_social_auth(cls, user: UserProtocol, uid: int, provider: str):
         """Create a UserSocialAuth instance for given user"""
         raise NotImplementedError("Implement in subclass")
 
@@ -284,7 +296,7 @@ class CodeMixin:
         return uuid.uuid4().hex
 
     @classmethod
-    def make_code(cls, email):
+    def make_code(cls, email: str) -> CodeMixin:
         code = cls()
         code.email = email
         code.code = cls.generate_code()

@@ -14,6 +14,8 @@ if TYPE_CHECKING:
     from requests import Response
     from requests.auth import AuthBase
 
+    from social_core.storage import UserProtocol
+
 
 class BaseAuth:
     """A authentication backend that authenticates the user based on
@@ -110,7 +112,7 @@ class BaseAuth:
         kwargs["user_storage"] = self.strategy.storage.user
         return self.run_pipeline(pipeline, *args, **kwargs)
 
-    def run_pipeline(self, pipeline, pipeline_index=0, *args, **kwargs):
+    def run_pipeline(self, pipeline: list[str], pipeline_index=0, *args, **kwargs):
         out = kwargs.copy()
         out.setdefault("strategy", self.strategy)
         out.setdefault("backend", out.pop(self.name, None) or self)
@@ -135,7 +137,7 @@ class BaseAuth:
 
     def extra_data(
         self,
-        user,
+        user: UserProtocol | None,
         uid: str,
         response: dict[str, Any],
         details: dict[str, Any],

@@ -13,6 +13,7 @@ from social_core.storage import (
     NonceMixin,
     PartialMixin,
     UserMixin,
+    UserProtocol,
 )
 
 ModelT = TypeVar("ModelT", bound="BaseModel")
@@ -33,7 +34,7 @@ class BaseModel:
         cls.cache = {}
 
 
-class User(BaseModel):
+class User(BaseModel, UserProtocol):
     NEXT_ID = 1
     cache = {}
     _is_active = True
@@ -107,7 +108,7 @@ class TestUserSocialAuth(UserMixin, BaseModel):
         return user.username
 
     @classmethod
-    def user_model(cls):
+    def user_model(cls) -> type[UserProtocol]:
         return User
 
     @classmethod
@@ -146,7 +147,7 @@ class TestUserSocialAuth(UserMixin, BaseModel):
         return None
 
     @classmethod
-    def get_social_auth_for_user(
+    def get_social_auth_for_user(  # type: ignore[override]
         cls,
         user: User,
         provider: str | None = None,
@@ -159,7 +160,7 @@ class TestUserSocialAuth(UserMixin, BaseModel):
         ]
 
     @classmethod
-    def create_social_auth(cls, user: User, uid: int, provider: str):
+    def create_social_auth(cls, user: User, uid: int, provider: str):  # type: ignore[override]
         return cls(user=user, provider=provider, uid=uid)
 
     @classmethod

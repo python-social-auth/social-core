@@ -1,22 +1,30 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from social_core.exceptions import AuthAlreadyAssociated, AuthException, AuthForbidden
 
+if TYPE_CHECKING:
+    from social_core.backends.base import BaseAuth
+    from social_core.storage import UserProtocol
 
-def social_details(backend, details, response, *args, **kwargs):
+
+def social_details(backend: BaseAuth, details, response, *args, **kwargs):
     return {"details": dict(backend.get_user_details(response), **details)}
 
 
-def social_uid(backend, details, response, *args, **kwargs):
+def social_uid(backend: BaseAuth, details, response, *args, **kwargs):
     return {"uid": str(backend.get_user_id(details, response))}
 
 
-def auth_allowed(backend, details, response, *args, **kwargs) -> None:
+def auth_allowed(backend: BaseAuth, details, response, *args, **kwargs) -> None:
     if not backend.auth_allowed(response, details):
         raise AuthForbidden(backend)
 
 
-def social_user(backend, uid, user=None, *args, **kwargs):
+def social_user(
+    backend: BaseAuth, uid, user: UserProtocol | None = None, *args, **kwargs
+):
     provider = backend.name
     social = backend.strategy.storage.user.get_social_auth(provider, uid)
     if social:
@@ -32,7 +40,14 @@ def social_user(backend, uid, user=None, *args, **kwargs):
     }
 
 
-def associate_user(backend, uid, user=None, social=None, *args, **kwargs):
+def associate_user(
+    backend: BaseAuth,
+    uid,
+    user: UserProtocol | None = None,
+    social=None,
+    *args,
+    **kwargs,
+):
     if user and not social:
         try:
             social = backend.strategy.storage.user.create_social_auth(
@@ -56,7 +71,9 @@ def associate_user(backend, uid, user=None, social=None, *args, **kwargs):
     return None
 
 
-def associate_by_email(backend, details, user=None, *args, **kwargs):
+def associate_by_email(
+    backend: BaseAuth, details, user: UserProtocol | None = None, *args, **kwargs
+):
     """
     Associate current auth with a user with the same email address in the DB.
 
@@ -85,7 +102,15 @@ def associate_by_email(backend, details, user=None, *args, **kwargs):
     return None
 
 
-def load_extra_data(backend, details, response, uid, user, *args, **kwargs) -> None:
+def load_extra_data(
+    backend: BaseAuth,
+    details,
+    response,
+    uid,
+    user: UserProtocol | None = None,
+    *args,
+    **kwargs,
+) -> None:
     social = kwargs.get("social") or backend.strategy.storage.user.get_social_auth(
         backend.name, uid
     )
