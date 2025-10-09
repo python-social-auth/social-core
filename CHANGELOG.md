@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.8.1](https://github.com/python-social-auth/social-core/releases/tag/4.8.1) - 2025-10-09
+
+### Changed
+
+- Fixed `extra_data()` invocation from `refresh_token()`
+- Replaced jose with PyJWT in Ping backend
+- Dropped OAuth1 backend for OpenStreetMap
+
+### Added
+
+- OAuth2 URLs can now be overridden in the configuration
+
 ## [4.8.0](https://github.com/python-social-auth/social-core/releases/tag/4.8.0) - 2025-10-07
 
 ### Changed
