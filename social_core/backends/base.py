@@ -263,7 +263,9 @@ class BaseAuth:
         verify = self.setting("VERIFY_SSL", True)
 
         if timeout is None:
-            timeout = self.setting("REQUESTS_TIMEOUT") or self.setting("URLOPEN_TIMEOUT")
+            timeout = self.setting("REQUESTS_TIMEOUT") or self.setting(
+                "URLOPEN_TIMEOUT"
+            )
 
         if self.SEND_USER_AGENT and "User-Agent" not in headers:
             headers["User-Agent"] = self.setting("USER_AGENT") or user_agent()
@@ -296,7 +298,13 @@ class BaseAuth:
         timeout: float | None = None,
     ) -> dict[Any, Any]:
         return self.request(
-            url, method=method, headers=headers, data=data, auth=auth, params=params, timeout=timeout
+            url,
+            method=method,
+            headers=headers,
+            data=data,
+            auth=auth,
+            params=params,
+            timeout=timeout,
         ).json()
 
     def get_querystring(self, url, *args, **kwargs) -> dict[str, str]:
