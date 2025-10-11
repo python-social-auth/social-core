@@ -256,12 +256,14 @@ class BaseAuth:
         data: dict | bytes | str | None = None,
         auth: tuple[str, str] | AuthBase | None = None,
         params: dict | None = None,
+        timeout: float | None = None,
     ) -> Response:
         headers = {} if headers is None else dict(headers)
         proxies = self.setting("PROXIES")
         verify = self.setting("VERIFY_SSL", True)
-        #        if timeout is None:
-        timeout = self.setting("REQUESTS_TIMEOUT") or self.setting("URLOPEN_TIMEOUT")
+
+        if timeout is None:
+            timeout = self.setting("REQUESTS_TIMEOUT") or self.setting("URLOPEN_TIMEOUT")
 
         if self.SEND_USER_AGENT and "User-Agent" not in headers:
             headers["User-Agent"] = self.setting("USER_AGENT") or user_agent()
@@ -291,9 +293,10 @@ class BaseAuth:
         data: dict | bytes | str | None = None,
         auth: tuple[str, str] | AuthBase | None = None,
         params: dict | None = None,
+        timeout: float | None = None,
     ) -> dict[Any, Any]:
         return self.request(
-            url, method=method, headers=headers, data=data, auth=auth, params=params
+            url, method=method, headers=headers, data=data, auth=auth, params=params, timeout=timeout
         ).json()
 
     def get_querystring(self, url, *args, **kwargs) -> dict[str, str]:
