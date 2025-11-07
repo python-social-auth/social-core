@@ -1,5 +1,3 @@
-import base64
-
 from .oauth import BaseOAuth2
 
 
@@ -48,8 +46,7 @@ class PayPalOAuth2(BaseOAuth2):
         }
 
     def auth_headers(self):
-        auth = ("{}:{}".format(*self.get_key_and_secret())).encode()
-        return {"Authorization": b"Basic " + base64.urlsafe_b64encode(auth)}
+        return {"Authorization": self.get_key_and_secret_basic_auth()}
 
     def refresh_token_params(self, token, *args, **kwargs):
         return {"refresh_token": token, "grant_type": "refresh_token"}

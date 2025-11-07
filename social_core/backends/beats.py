@@ -3,8 +3,6 @@ Beats backend, docs at:
     https://developer.beatsmusic.com/docs
 """
 
-import base64
-
 from social_core.exceptions import AuthUnknownError
 from social_core.utils import handle_http_errors
 
@@ -23,13 +21,7 @@ class BeatsOAuth2(BaseOAuth2):
         return response["result"][BeatsOAuth2.ID_KEY]
 
     def auth_headers(self):
-        return {
-            "Authorization": "Basic {}".format(
-                base64.urlsafe_b64encode(
-                    "{}:{}".format(*self.get_key_and_secret()).encode()
-                )
-            )
-        }
+        return {"Authorization": self.get_key_and_secret_basic_auth()}
 
     @handle_http_errors
     def auth_complete(self, *args, **kwargs):

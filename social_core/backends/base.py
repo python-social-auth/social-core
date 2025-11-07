@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import time
 from typing import TYPE_CHECKING, Any, Literal, cast
 
@@ -315,3 +316,14 @@ class BaseAuth:
         service provider. Must return (key, secret), order *must* be respected.
         """
         return self.setting("KEY"), self.setting("SECRET")
+
+    def get_key_and_secret_basic_auth(self) -> bytes:
+        """Generate HTTP Basic Authentication header value from KEY and SECRET.
+
+        Returns:
+            Basic authentication value in the format b"Basic <base64-encoded-credentials>"
+        """
+        key, secret = self.get_key_and_secret()
+        credentials = f"{key}:{secret}".encode()
+        encoded = base64.b64encode(credentials)
+        return b"Basic " + encoded

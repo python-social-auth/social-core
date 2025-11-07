@@ -1,6 +1,8 @@
+import base64
 import unittest
 from unittest.mock import Mock
 
+from social_core.backends.base import BaseAuth
 from social_core.utils import (
     build_absolute_uri,
     partial_pipeline_data,
@@ -192,3 +194,18 @@ class PartialPipelineData(unittest.TestCase):
 
         backend.strategy = strategy
         return backend
+
+
+class GetKeyAndSecretBasicAuthTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.backend = BaseAuth(strategy=Mock())
+        self.backend.setting = Mock(
+            side_effect=lambda x: "test_key" if x == "KEY" else "test_secret"
+        )
+
+    def test_basic_auth_returns_bytes(self) -> None:
+        """Test that method returns bytes with base64 encoding"""
+        result = self.backend.get_key_and_secret_basic_auth()
+        expected = b"Basic " + base64.b64encode(b"test_key:test_secret")
+        self.assertEqual(result, expected)
+        self.assertIsInstance(result, bytes)
