@@ -72,28 +72,71 @@ class UserMixin:
         If provider returns a timestamp instead of session seconds to live, the
         timedelta is inferred from current time (using UTC timezone). None is
         returned if there's no value stored or it's invalid.
+
+        Handles three types of expiration data:
+        - expires_on: Always treated as absolute timestamp
+        - expires_in: Always treated as relative seconds from auth_time
+        - expires: Uses heuristic (>31536000 = 1 year) to distinguish timestamp vs relative
         """
-        if self.extra_data and (expires := self.extra_data.get("expires")) is not None:
+        if not self.extra_data:
+            return None
+
+        now = datetime.now(timezone.utc)
+
+        # Check for expires_on (absolute timestamp)
+        if (expires_on := self.extra_data.get("expires_on")) is not None:
+            try:
+                expires_on = int(expires_on)
+                expiry_time = datetime.fromtimestamp(expires_on, tz=timezone.utc)
+                return expiry_time - now
+            except (ValueError, TypeError, OSError):
+                pass
+
+        # Check for expires_in (relative seconds from auth_time)
+        if (expires_in := self.extra_data.get("expires_in")) is not None:
+            try:
+                expires_in = int(expires_in)
+                auth_time = self.extra_data.get("auth_time")
+                if auth_time:
+                    reference = datetime.fromtimestamp(auth_time, tz=timezone.utc)
+                    return (reference + timedelta(seconds=expires_in)) - now
+                # If no auth_time, treat as seconds from now
+                return timedelta(seconds=expires_in)
+            except (ValueError, TypeError, OSError):
+                pass
+
+        # Check for expires (use heuristic to determine type)
+        if (expires := self.extra_data.get("expires")) is not None:
             try:
                 expires = int(expires)
             except (ValueError, TypeError):
                 return None
 
-            now = datetime.now(timezone.utc)
+            # Use 1 year (31536000 seconds) as threshold to distinguish
+            # absolute timestamps from relative seconds
+            # Most tokens expire in hours/days, timestamps are much larger
+            TIMESTAMP_THRESHOLD = 31536000
 
-            # Detect if expires is a timestamp
-            if expires > now.timestamp():
-                # expires is a datetime, return the remaining difference
-                expiry_time = datetime.fromtimestamp(expires, tz=timezone.utc)
-                return expiry_time - now
-            # expires is the time to live seconds since creation,
-            # check against auth_time if present, otherwise return
-            # the value
+            if expires > TIMESTAMP_THRESHOLD:
+                # Likely an absolute timestamp
+                try:
+                    expiry_time = datetime.fromtimestamp(expires, tz=timezone.utc)
+                    return expiry_time - now
+                except (OSError, ValueError):
+                    # Invalid timestamp, fall through to relative handling
+                    pass
+
+            # Treat as relative seconds from auth_time
             auth_time = self.extra_data.get("auth_time")
             if auth_time:
-                reference = datetime.fromtimestamp(auth_time, tz=timezone.utc)
-                return (reference + timedelta(seconds=expires)) - now
+                try:
+                    reference = datetime.fromtimestamp(auth_time, tz=timezone.utc)
+                    return (reference + timedelta(seconds=expires)) - now
+                except (OSError, ValueError):
+                    pass
+            # If no auth_time, treat as seconds from now
             return timedelta(seconds=expires)
+
         return None
 
     def expiration_datetime(self):
