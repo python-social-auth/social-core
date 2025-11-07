@@ -2,8 +2,6 @@
 Chatwork OAuth2 backend
 """
 
-import base64
-
 from .oauth import BaseOAuth2
 
 
@@ -24,10 +22,7 @@ class ChatworkOAuth2(BaseOAuth2):
         return "{}{}".format(api_url.rstrip("/"), path)
 
     def auth_headers(self):
-        return {
-            "Authorization": b"Basic "
-            + base64.b64encode("{}:{}".format(*self.get_key_and_secret()).encode())
-        }
+        return {"Authorization": self.get_key_and_secret_basic_auth(urlsafe=False)}
 
     def auth_complete_params(self, state=None):
         return {

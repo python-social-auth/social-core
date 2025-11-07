@@ -3,8 +3,6 @@ Fitbit OAuth backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/fitbit.html
 """
 
-import base64
-
 from .oauth import BaseOAuth1, BaseOAuth2
 
 
@@ -59,7 +57,4 @@ class FitbitOAuth2(BaseOAuth2):
         )["user"]
 
     def auth_headers(self):
-        tokens = "{}:{}".format(*self.get_key_and_secret())
-        tokens = base64.urlsafe_b64encode(tokens.encode())
-        tokens = tokens.decode()
-        return {"Authorization": f"Basic {tokens}"}
+        return {"Authorization": self.get_key_and_secret_basic_auth(as_str=True)}

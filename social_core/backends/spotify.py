@@ -4,8 +4,6 @@ Spotify backend, docs at:
     https://developer.spotify.com/spotify-web-api/authorization-guide/
 """
 
-import base64
-
 from .oauth import BaseOAuth2
 
 
@@ -23,9 +21,7 @@ class SpotifyOAuth2(BaseOAuth2):
     ]
 
     def auth_headers(self):
-        auth_str = "{}:{}".format(*self.get_key_and_secret())
-        b64_auth_str = base64.urlsafe_b64encode(auth_str.encode()).decode()
-        return {"Authorization": f"Basic {b64_auth_str}"}
+        return {"Authorization": self.get_key_and_secret_basic_auth(as_str=True)}
 
     def get_user_details(self, response):
         """Return user details from Spotify account"""
