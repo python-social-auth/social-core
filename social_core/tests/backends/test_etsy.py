@@ -1,25 +1,20 @@
 # pyright: reportAttributeAccessIssue=false
 
 import json
-from typing import TYPE_CHECKING, Any, Protocol
+from typing import Any, Protocol
 
 from .oauth import OAuth2PkceS256Test
 
-if TYPE_CHECKING:
 
-    class _OAuth2PkceS256TestProtocol(Protocol):
-        """Protocol for OAuth2PkceS256Test methods used by mixins."""
+class _OAuth2PkceS256TestProtocol(Protocol):
+    """Protocol for OAuth2PkceS256Test methods used by mixins."""
 
-        def assertEqual(self, first: Any, second: Any, msg: Any = None) -> None: ...
-        def do_login(self) -> Any: ...
-        def do_refresh_token(self) -> Any: ...
-
-    _EtsyOAuth2MixinBase = _OAuth2PkceS256TestProtocol
-else:
-    _EtsyOAuth2MixinBase = object
+    def assertEqual(self, first: Any, second: Any, msg: Any = None) -> None: ...
+    def do_login(self) -> Any: ...
+    def do_refresh_token(self) -> Any: ...
 
 
-class EtsyOAuth2Mixin(_EtsyOAuth2MixinBase):
+class EtsyOAuth2Mixin(_OAuth2PkceS256TestProtocol):
     backend_path = "social_core.backends.etsy.EtsyOAuth2"
     access_token_body = json.dumps(
         {

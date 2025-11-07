@@ -1,7 +1,7 @@
 # pyright: reportAttributeAccessIssue=false
 
 import json
-from typing import TYPE_CHECKING, Any, Protocol
+from typing import Any, Protocol
 
 from social_core.exceptions import AuthException
 
@@ -12,21 +12,16 @@ from .oauth import (
     OAuth2Test,
 )
 
-if TYPE_CHECKING:
 
-    class _OAuth2TestProtocol(Protocol):
-        """Protocol for OAuth2Test methods used by mixins."""
+class _OAuth2TestProtocol(Protocol):
+    """Protocol for OAuth2Test methods used by mixins."""
 
-        def assertEqual(self, first: Any, second: Any, msg: Any = None) -> None: ...
-        def do_login(self) -> Any: ...
-        def do_partial_pipeline(self) -> Any: ...
-
-    _TwitterOAuth2MixinBase = _OAuth2TestProtocol
-else:
-    _TwitterOAuth2MixinBase = object
+    def assertEqual(self, first: Any, second: Any, msg: Any = None) -> None: ...
+    def do_login(self) -> Any: ...
+    def do_partial_pipeline(self) -> Any: ...
 
 
-class TwitterOAuth2Mixin(_TwitterOAuth2MixinBase):
+class TwitterOAuth2Mixin(_OAuth2TestProtocol):
     backend_path = "social_core.backends.twitter_oauth2.TwitterOAuth2"
     user_data_url = "https://api.twitter.com/2/users/me"
     access_token_body = json.dumps(
