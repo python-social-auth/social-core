@@ -1,17 +1,21 @@
 # pyright: reportAttributeAccessIssue=false
 
 import json
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Protocol
 
 from .oauth import OAuth2PkceS256Test
 
 if TYPE_CHECKING:
-    _Base = OAuth2PkceS256Test
-else:
-    _Base = object
+
+    class _OAuth2PkceS256TestProtocol(Protocol):
+        """Protocol for OAuth2PkceS256Test methods used by mixins."""
+
+        def assertEqual(self, first: Any, second: Any, msg: Any = None) -> None: ...
+        def do_login(self) -> Any: ...
+        def do_refresh_token(self) -> Any: ...
 
 
-class EtsyOAuth2Mixin(_Base):  # type: ignore[misc]
+class EtsyOAuth2Mixin:
     backend_path = "social_core.backends.etsy.EtsyOAuth2"
     access_token_body = json.dumps(
         {
@@ -42,7 +46,7 @@ class EtsyOAuth2Mixin(_Base):  # type: ignore[misc]
     )
     expected_username = "dummy_user_id"
 
-    def test_login(self) -> None:
+    def test_login(self: "_OAuth2PkceS256TestProtocol") -> None:  # type: ignore[misc]
         user = self.do_login()
         self.assertEqual(len(user.social), 1)
 
@@ -64,7 +68,7 @@ class EtsyOAuth2Mixin(_Base):  # type: ignore[misc]
             social.extra_data["refresh_token"], "dummy_user_id.dummy_refresh_token"
         )
 
-    def test_refresh_token(self) -> None:
+    def test_refresh_token(self: "_OAuth2PkceS256TestProtocol") -> None:  # type: ignore[misc]
         _, social = self.do_refresh_token()
 
         self.assertEqual(social.uid, "dummy_user_id")

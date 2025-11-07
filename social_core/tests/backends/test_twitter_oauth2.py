@@ -1,7 +1,7 @@
 # pyright: reportAttributeAccessIssue=false
 
 import json
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Protocol
 
 from social_core.exceptions import AuthException
 
@@ -13,12 +13,16 @@ from .oauth import (
 )
 
 if TYPE_CHECKING:
-    _Base = OAuth2Test
-else:
-    _Base = object
+
+    class _OAuth2TestProtocol(Protocol):
+        """Protocol for OAuth2Test methods used by mixins."""
+
+        def assertEqual(self, first: Any, second: Any, msg: Any = None) -> None: ...
+        def do_login(self) -> Any: ...
+        def do_partial_pipeline(self) -> Any: ...
 
 
-class TwitterOAuth2Mixin(_Base):  # type: ignore[misc]
+class TwitterOAuth2Mixin:
     backend_path = "social_core.backends.twitter_oauth2.TwitterOAuth2"
     user_data_url = "https://api.twitter.com/2/users/me"
     access_token_body = json.dumps(
@@ -86,7 +90,7 @@ class TwitterOAuth2Mixin(_Base):  # type: ignore[misc]
 
     expected_username = "twitter_username"
 
-    def test_login(self) -> None:
+    def test_login(self: "_OAuth2TestProtocol") -> None:  # type: ignore[misc]
         user = self.do_login()
 
         self.assertEqual(len(user.social), 1)
@@ -112,7 +116,7 @@ class TwitterOAuth2Mixin(_Base):  # type: ignore[misc]
         self.assertEqual(social.extra_data["public_metrics"]["tweet_count"], 40)
         self.assertEqual(social.extra_data["public_metrics"]["listed_count"], 7)
 
-    def test_partial_pipeline(self) -> None:
+    def test_partial_pipeline(self: "_OAuth2TestProtocol") -> None:  # type: ignore[misc]
         user = self.do_partial_pipeline()
         self.assertEqual(len(user.social), 1)
 

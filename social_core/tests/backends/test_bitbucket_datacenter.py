@@ -1,21 +1,25 @@
 # pyright: reportAttributeAccessIssue=false
 
 import json
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Protocol
 
 import responses
 
 from .oauth import OAuth2PkcePlainTest, OAuth2PkceS256Test
 
 if TYPE_CHECKING:
-    from .oauth import OAuth2Test
 
-    _Base = OAuth2Test
-else:
-    _Base = object
+    class _OAuth2TestProtocol(Protocol):
+        """Protocol for OAuth2Test methods used by mixins."""
+
+        def assertEqual(self, first: Any, second: Any, msg: Any = None) -> None: ...
+        def do_login(self) -> Any: ...
+        def do_refresh_token(self) -> Any: ...
+        @property
+        def name(self) -> str: ...
 
 
-class BitbucketDataCenterOAuth2Mixin(_Base):  # type: ignore[misc]
+class BitbucketDataCenterOAuth2Mixin:
     backend_path = "social_core.backends.bitbucket_datacenter.BitbucketDataCenterOAuth2"
     application_properties_url = (
         "https://bachmanity.atlassian.net/rest/api/latest/application-properties"
@@ -69,14 +73,14 @@ class BitbucketDataCenterOAuth2Mixin(_Base):  # type: ignore[misc]
     )
     expected_username = "erlich-bachman"
 
-    def extra_settings(self):
+    def extra_settings(self: "_OAuth2TestProtocol"):  # type: ignore[misc]
         settings = super().extra_settings()
         settings.update(
             {f"SOCIAL_AUTH_{self.name}_URL": "https://bachmanity.atlassian.net"}
         )
         return settings
 
-    def auth_handlers(self, start_url):
+    def auth_handlers(self: "_OAuth2TestProtocol", start_url):  # type: ignore[misc]
         target_url = super().auth_handlers(start_url)
         responses.add(
             responses.GET,
@@ -87,7 +91,7 @@ class BitbucketDataCenterOAuth2Mixin(_Base):  # type: ignore[misc]
         )
         return target_url
 
-    def test_login(self) -> None:
+    def test_login(self: "_OAuth2TestProtocol") -> None:  # type: ignore[misc]
         user = self.do_login()
 
         self.assertEqual(len(user.social), 1)
@@ -116,7 +120,7 @@ class BitbucketDataCenterOAuth2Mixin(_Base):  # type: ignore[misc]
         self.assertEqual(social.extra_data["expires"], 3600)
         self.assertEqual(social.extra_data["refresh_token"], "dummy_refresh_token")
 
-    def test_refresh_token(self) -> None:
+    def test_refresh_token(self: "_OAuth2TestProtocol") -> None:  # type: ignore[misc]
         _, social = self.do_refresh_token()
 
         self.assertEqual(social.uid, "1")
