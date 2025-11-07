@@ -32,7 +32,7 @@ class FormHTMLParser(HTMLParser):
 
 
 class OpenIdTest(BaseBackendTest):
-    # Attributes that should be defined by subclasses
+    # These attributes must be defined by subclasses
     discovery_body: str
     server_response: str
 
