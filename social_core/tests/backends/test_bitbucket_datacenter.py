@@ -1,24 +1,13 @@
 # pyright: reportAttributeAccessIssue=false
 
 import json
-from typing import Any, Protocol
 
 import responses
 
-from .oauth import OAuth2PkcePlainTest, OAuth2PkceS256Test
+from .oauth import OAuth2PkcePlainTest, OAuth2PkceS256Test, OAuth2TestProtocol
 
 
-class _OAuth2TestProtocol(Protocol):
-    """Protocol for OAuth2Test methods used by mixins."""
-
-    def assertEqual(self, first: Any, second: Any, msg: Any = None) -> None: ...
-    def do_login(self) -> Any: ...
-    def do_refresh_token(self) -> Any: ...
-    @property
-    def name(self) -> str: ...
-
-
-class BitbucketDataCenterOAuth2Mixin(_OAuth2TestProtocol):
+class BitbucketDataCenterOAuth2Mixin(OAuth2TestProtocol):
     backend_path = "social_core.backends.bitbucket_datacenter.BitbucketDataCenterOAuth2"
     application_properties_url = (
         "https://bachmanity.atlassian.net/rest/api/latest/application-properties"
