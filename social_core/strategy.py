@@ -45,7 +45,9 @@ class BaseStrategy:
     SESSION_SAVE_KEY = "psa_session_id"
 
     def __init__(
-        self, storage: type[BaseStorage] | None = None, tpl: type[BaseTemplateStrategy] | None = None
+        self,
+        storage: type[BaseStorage] | None = None,
+        tpl: type[BaseTemplateStrategy] | None = None,
     ) -> None:
         self.storage = storage
         self.tpl = (tpl or self.DEFAULT_TEMPLATE_STRATEGY)(self)
@@ -63,12 +65,12 @@ class BaseStrategy:
 
     def create_user(self, *args, **kwargs):
         if self.storage is None:
-            raise StrategyMissingBackendError()
+            raise StrategyMissingBackendError
         return self.storage.user.create_user(*args, **kwargs)
 
     def get_user(self, *args, **kwargs):
         if self.storage is None:
-            raise StrategyMissingBackendError()
+            raise StrategyMissingBackendError
         return self.storage.user.get_user(*args, **kwargs)
 
     def session_setdefault(self, name, value):
@@ -116,7 +118,7 @@ class BaseStrategy:
 
     def clean_partial_pipeline(self, token) -> None:
         if self.storage is None:
-            raise StrategyMissingBackendError()
+            raise StrategyMissingBackendError
         self.storage.partial.destroy(token)
         current_token_in_session = self.session_get(PARTIAL_TOKEN_SESSION_NAME)
         if current_token_in_session == token:
@@ -153,7 +155,7 @@ class BaseStrategy:
         self, backend: BaseAuth, email: str, partial_token: str | None = None
     ) -> CodeMixin:
         if self.storage is None:
-            raise StrategyMissingBackendError()
+            raise StrategyMissingBackendError
         email_validation = self.setting("EMAIL_VALIDATION_FUNCTION")
         send_email = module_member(email_validation)
         code = self.storage.code.make_code(email)
@@ -162,7 +164,7 @@ class BaseStrategy:
 
     def validate_email(self, email: str, code: str) -> bool:
         if self.storage is None:
-            raise StrategyMissingBackendError()
+            raise StrategyMissingBackendError
         verification_code = self.storage.code.get_code(code)
         if not verification_code or verification_code.code != code:
             return False
@@ -186,7 +188,7 @@ class BaseStrategy:
         """Trigger the authentication mechanism tied to the current
         framework"""
         if self.storage is None:
-            raise StrategyMissingBackendError()
+            raise StrategyMissingBackendError
         kwargs["strategy"] = self
         kwargs["storage"] = self.storage
         kwargs["backend"] = backend
