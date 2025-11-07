@@ -25,6 +25,9 @@ class StrategyMissingFeatureError(SocialAuthBaseException):
 class StrategyMissingBackendError(SocialAuthBaseException):
     """Strategy storage backend is not configured."""
 
+    def __init__(self) -> None:
+        super().__init__()
+
     def __str__(self) -> str:
         return "Strategy storage backend is not configured"
 

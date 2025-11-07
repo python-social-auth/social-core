@@ -61,6 +61,6 @@ class StrategyNoneStorageTestCase(unittest.TestCase):
     def test_methods_without_storage_work(self):
         """Test that methods not requiring storage still work"""
         # These methods should work fine without storage
-        self.assertEqual(self.strategy.random_string(5).__len__(), 5)
+        self.assertEqual(len(self.strategy.random_string(5)), 5)
         self.assertEqual(self.strategy.get_language(), "")
         self.assertIsInstance(self.strategy.get_pipeline(), (list, tuple))
