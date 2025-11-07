@@ -511,7 +511,7 @@ class BaseOAuth2(OAuthAuth):
         method = self.REFRESH_TOKEN_METHOD
         key = "params" if method == "GET" else "data"
         request_args = {"headers": self.auth_headers(), "method": method, key: params}
-        request = self.request(url, **request_args)
+        request = self.request(url, **request_args)  # type: ignore[arg-type]
         return self.process_refresh_token_response(request, *args, **kwargs)
 
     def refresh_token_url(self):

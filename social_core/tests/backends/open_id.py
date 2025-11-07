@@ -32,6 +32,10 @@ class FormHTMLParser(HTMLParser):
 
 
 class OpenIdTest(BaseBackendTest):
+    # Attributes that should be defined by subclasses
+    discovery_body: str
+    server_response: str
+
     def setUp(self) -> None:
         responses.start()
         Backend = module_member(self.backend_path)
