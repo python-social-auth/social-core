@@ -21,7 +21,7 @@ class SpotifyOAuth2(BaseOAuth2):
     ]
 
     def auth_headers(self):
-        return {"Authorization": self.get_key_and_secret_basic_auth(as_str=True)}
+        return {"Authorization": self.get_key_and_secret_basic_auth()}
 
     def get_user_details(self, response):
         """Return user details from Spotify account"""

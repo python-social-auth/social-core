@@ -2,6 +2,7 @@ import base64
 import unittest
 from unittest.mock import Mock
 
+from social_core.backends.base import BaseAuth
 from social_core.utils import (
     build_absolute_uri,
     partial_pipeline_data,
@@ -197,35 +198,14 @@ class PartialPipelineData(unittest.TestCase):
 
 class GetKeyAndSecretBasicAuthTest(unittest.TestCase):
     def setUp(self) -> None:
-        from social_core.backends.base import BaseAuth
-
         self.backend = BaseAuth(strategy=Mock())
-        self.backend.setting = Mock(side_effect=lambda x: "test_key" if x == "KEY" else "test_secret")
+        self.backend.setting = Mock(
+            side_effect=lambda x: "test_key" if x == "KEY" else "test_secret"
+        )
 
-    def test_basic_auth_as_bytes_urlsafe(self) -> None:
-        """Test default behavior: returns bytes with urlsafe encoding"""
+    def test_basic_auth_returns_bytes(self) -> None:
+        """Test that method returns bytes with base64 encoding"""
         result = self.backend.get_key_and_secret_basic_auth()
-        expected = b"Basic " + base64.urlsafe_b64encode(b"test_key:test_secret")
-        self.assertEqual(result, expected)
-        self.assertIsInstance(result, bytes)
-
-    def test_basic_auth_as_string_urlsafe(self) -> None:
-        """Test string return with urlsafe encoding"""
-        result = self.backend.get_key_and_secret_basic_auth(as_str=True)
-        expected = "Basic " + base64.urlsafe_b64encode(b"test_key:test_secret").decode()
-        self.assertEqual(result, expected)
-        self.assertIsInstance(result, str)
-
-    def test_basic_auth_as_bytes_not_urlsafe(self) -> None:
-        """Test bytes return with standard base64 encoding"""
-        result = self.backend.get_key_and_secret_basic_auth(urlsafe=False)
         expected = b"Basic " + base64.b64encode(b"test_key:test_secret")
         self.assertEqual(result, expected)
         self.assertIsInstance(result, bytes)
-
-    def test_basic_auth_as_string_not_urlsafe(self) -> None:
-        """Test string return with standard base64 encoding"""
-        result = self.backend.get_key_and_secret_basic_auth(as_str=True, urlsafe=False)
-        expected = "Basic " + base64.b64encode(b"test_key:test_secret").decode()
-        self.assertEqual(result, expected)
-        self.assertIsInstance(result, str)

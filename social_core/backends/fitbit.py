@@ -57,4 +57,4 @@ class FitbitOAuth2(BaseOAuth2):
         )["user"]
 
     def auth_headers(self):
-        return {"Authorization": self.get_key_and_secret_basic_auth(as_str=True)}
+        return {"Authorization": self.get_key_and_secret_basic_auth()}
