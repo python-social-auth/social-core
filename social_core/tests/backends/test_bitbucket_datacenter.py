@@ -18,8 +18,12 @@ if TYPE_CHECKING:
         @property
         def name(self) -> str: ...
 
+    _BitbucketDataCenterOAuth2MixinBase = _OAuth2TestProtocol
+else:
+    _BitbucketDataCenterOAuth2MixinBase = object
 
-class BitbucketDataCenterOAuth2Mixin:
+
+class BitbucketDataCenterOAuth2Mixin(_BitbucketDataCenterOAuth2MixinBase):
     backend_path = "social_core.backends.bitbucket_datacenter.BitbucketDataCenterOAuth2"
     application_properties_url = (
         "https://bachmanity.atlassian.net/rest/api/latest/application-properties"
@@ -73,14 +77,14 @@ class BitbucketDataCenterOAuth2Mixin:
     )
     expected_username = "erlich-bachman"
 
-    def extra_settings(self: "_OAuth2TestProtocol"):  # type: ignore[misc]
+    def extra_settings(self):
         settings = super().extra_settings()
         settings.update(
             {f"SOCIAL_AUTH_{self.name}_URL": "https://bachmanity.atlassian.net"}
         )
         return settings
 
-    def auth_handlers(self: "_OAuth2TestProtocol", start_url):  # type: ignore[misc]
+    def auth_handlers(self, start_url):
         target_url = super().auth_handlers(start_url)
         responses.add(
             responses.GET,
@@ -91,7 +95,7 @@ class BitbucketDataCenterOAuth2Mixin:
         )
         return target_url
 
-    def test_login(self: "_OAuth2TestProtocol") -> None:  # type: ignore[misc]
+    def test_login(self) -> None:
         user = self.do_login()
 
         self.assertEqual(len(user.social), 1)
@@ -120,7 +124,7 @@ class BitbucketDataCenterOAuth2Mixin:
         self.assertEqual(social.extra_data["expires"], 3600)
         self.assertEqual(social.extra_data["refresh_token"], "dummy_refresh_token")
 
-    def test_refresh_token(self: "_OAuth2TestProtocol") -> None:  # type: ignore[misc]
+    def test_refresh_token(self) -> None:
         _, social = self.do_refresh_token()
 
         self.assertEqual(social.uid, "1")

@@ -14,8 +14,12 @@ if TYPE_CHECKING:
         def do_login(self) -> Any: ...
         def do_refresh_token(self) -> Any: ...
 
+    _EtsyOAuth2MixinBase = _OAuth2PkceS256TestProtocol
+else:
+    _EtsyOAuth2MixinBase = object
 
-class EtsyOAuth2Mixin:
+
+class EtsyOAuth2Mixin(_EtsyOAuth2MixinBase):
     backend_path = "social_core.backends.etsy.EtsyOAuth2"
     access_token_body = json.dumps(
         {
@@ -46,7 +50,7 @@ class EtsyOAuth2Mixin:
     )
     expected_username = "dummy_user_id"
 
-    def test_login(self: "_OAuth2PkceS256TestProtocol") -> None:  # type: ignore[misc]
+    def test_login(self) -> None:
         user = self.do_login()
         self.assertEqual(len(user.social), 1)
 
@@ -68,7 +72,7 @@ class EtsyOAuth2Mixin:
             social.extra_data["refresh_token"], "dummy_user_id.dummy_refresh_token"
         )
 
-    def test_refresh_token(self: "_OAuth2PkceS256TestProtocol") -> None:  # type: ignore[misc]
+    def test_refresh_token(self) -> None:
         _, social = self.do_refresh_token()
 
         self.assertEqual(social.uid, "dummy_user_id")

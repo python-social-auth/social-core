@@ -21,8 +21,12 @@ if TYPE_CHECKING:
         def do_login(self) -> Any: ...
         def do_partial_pipeline(self) -> Any: ...
 
+    _TwitterOAuth2MixinBase = _OAuth2TestProtocol
+else:
+    _TwitterOAuth2MixinBase = object
 
-class TwitterOAuth2Mixin:
+
+class TwitterOAuth2Mixin(_TwitterOAuth2MixinBase):
     backend_path = "social_core.backends.twitter_oauth2.TwitterOAuth2"
     user_data_url = "https://api.twitter.com/2/users/me"
     access_token_body = json.dumps(
@@ -90,7 +94,7 @@ class TwitterOAuth2Mixin:
 
     expected_username = "twitter_username"
 
-    def test_login(self: "_OAuth2TestProtocol") -> None:  # type: ignore[misc]
+    def test_login(self) -> None:
         user = self.do_login()
 
         self.assertEqual(len(user.social), 1)
@@ -116,7 +120,7 @@ class TwitterOAuth2Mixin:
         self.assertEqual(social.extra_data["public_metrics"]["tweet_count"], 40)
         self.assertEqual(social.extra_data["public_metrics"]["listed_count"], 7)
 
-    def test_partial_pipeline(self: "_OAuth2TestProtocol") -> None:  # type: ignore[misc]
+    def test_partial_pipeline(self) -> None:
         user = self.do_partial_pipeline()
         self.assertEqual(len(user.social), 1)
 
