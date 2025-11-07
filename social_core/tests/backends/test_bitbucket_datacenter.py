@@ -5,9 +5,11 @@ from typing import TYPE_CHECKING
 
 import responses
 
-from .oauth import OAuth2PkcePlainTest, OAuth2PkceS256Test, OAuth2Test
+from .oauth import OAuth2PkcePlainTest, OAuth2PkceS256Test
 
 if TYPE_CHECKING:
+    from .oauth import OAuth2Test
+
     _Base = OAuth2Test
 else:
     _Base = object

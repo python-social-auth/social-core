@@ -135,7 +135,9 @@ class YahooOAuth2(BaseOAuth2):
         key = "params" if method == "GET" else "data"
         request_args = {"headers": self.auth_headers(), "method": method, key: params}
         request = self.request(
-            url, auth=HTTPBasicAuth(*self.get_key_and_secret()), **request_args  # type: ignore[arg-type]
+            url,
+            auth=HTTPBasicAuth(*self.get_key_and_secret()),
+            **request_args,  # type: ignore[arg-type]
         )
         return self.process_refresh_token_response(request, *args, **kwargs)
 
