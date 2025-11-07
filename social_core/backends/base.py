@@ -192,10 +192,14 @@ class BaseAuth:
             allowed = email in emails or domain in domains
         return allowed
 
+    def id_key(self) -> str:
+        """Return the ID_KEY to use for this backend, checking settings first."""
+        return self.setting("ID_KEY") or self.ID_KEY
+
     def get_user_id(self, details, response):
         """Return a unique ID for the current user, by default from server
         response."""
-        return response.get(self.ID_KEY)
+        return response.get(self.id_key())
 
     def get_user_details(self, response) -> dict[str, Any]:
         """Must return user details in a know internal struct:

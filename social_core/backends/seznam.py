@@ -20,9 +20,6 @@ class SeznamOAuth2(BaseOAuth2):
     def api_url(self):
         return self.setting("API_URL") or self.API_URL
 
-    def get_user_id(self, details, response):
-        return response.get(self.setting("ID_KEY") or self.ID_KEY)
-
     def get_user_details(self, response):
         """Return user details from Seznam account"""
         fullname, first_name, last_name = self.get_user_names(

@@ -179,10 +179,24 @@ class PartialPipelineData(unittest.TestCase):
         self.assertEqual(partial.kwargs["user"], user)
         self.assertEqual(backend.strategy.clean_partial_pipeline.call_count, 0)
 
+    def test_configurable_id_key(self) -> None:
+        """Test that ID_KEY can be configured via settings"""
+        email = "foo@example.com"
+        backend = self._backend({"uid": email})
+        # Configure a different ID_KEY via id_key() method
+        backend.id_key.return_value = "custom_id"
+        backend.strategy.request_data.return_value = {"custom_id": email}
+        key, val = ("foo", "bar")
+        partial = partial_pipeline_data(backend, None, *(), **{key: val})
+        self.assertTrue(key in partial.kwargs)
+        self.assertEqual(partial.kwargs[key], val)
+        self.assertEqual(backend.strategy.clean_partial_pipeline.call_count, 0)
+
     def _backend(self, session_kwargs=None):
         backend = Mock()
         backend.ID_KEY = "email"
         backend.name = "mock-backend"
+        backend.id_key.return_value = "email"
 
         strategy = Mock()
         strategy.request = None
@@ -209,3 +223,44 @@ class GetKeyAndSecretBasicAuthTest(unittest.TestCase):
         expected = b"Basic " + base64.b64encode(b"test_key:test_secret")
         self.assertEqual(result, expected)
         self.assertIsInstance(result, bytes)
+
+
+class IdKeyConfigurabilityTest(unittest.TestCase):
+    """Test that ID_KEY is configurable via settings"""
+
+    def test_id_key_uses_class_attribute_by_default(self) -> None:
+        """Test that id_key() returns class attribute when no setting is provided"""
+        strategy = Mock()
+        strategy.setting = Mock(return_value=None)
+        backend = BaseAuth(strategy=strategy)
+        backend.ID_KEY = "default_id"
+
+        result = backend.id_key()
+
+        self.assertEqual(result, "default_id")
+        strategy.setting.assert_called_once_with("ID_KEY", default=None, backend=backend)
+
+    def test_id_key_uses_setting_when_provided(self) -> None:
+        """Test that id_key() returns setting value when provided"""
+        strategy = Mock()
+        strategy.setting = Mock(return_value="custom_id")
+        backend = BaseAuth(strategy=strategy)
+        backend.ID_KEY = "default_id"
+
+        result = backend.id_key()
+
+        self.assertEqual(result, "custom_id")
+        strategy.setting.assert_called_once_with("ID_KEY", default=None, backend=backend)
+
+    def test_get_user_id_uses_configurable_id_key(self) -> None:
+        """Test that get_user_id() uses the configurable id_key()"""
+        strategy = Mock()
+        strategy.setting = Mock(return_value="custom_user_id")
+        backend = BaseAuth(strategy=strategy)
+        backend.ID_KEY = "default_id"
+
+        response = {"custom_user_id": "12345", "default_id": "67890"}
+        result = backend.get_user_id({}, response)
+
+        self.assertEqual(result, "12345")
+        strategy.setting.assert_called_with("ID_KEY", default=None, backend=backend)
