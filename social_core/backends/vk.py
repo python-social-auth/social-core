@@ -207,7 +207,7 @@ class VKAppOAuth2(VKOAuth2):
             "backend": self,
             "request": self.strategy.request_data(),
             "response": {
-                self.ID_KEY: user_id,
+                self.id_key(): user_id,
             },
         }
         auth_data["response"].update(

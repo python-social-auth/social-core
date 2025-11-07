@@ -41,7 +41,7 @@ class NKOAuth2(BaseOAuth2):
     def get_user_id(self, details, response):
         """Return a unique ID for the current user, by default from server
         response."""
-        return details.get(self.ID_KEY)
+        return details.get(self.id_key())
 
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""

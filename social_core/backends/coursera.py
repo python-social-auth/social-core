@@ -31,7 +31,7 @@ class CourseraOAuth2(BaseOAuth2):
 
     def get_user_id(self, details, response):
         """Return a username prepared in get_user_details as uid"""
-        return details.get(self.ID_KEY)
+        return details.get(self.id_key())
 
     def user_data(self, access_token, *args, **kwargs):
         """Load user data from the service"""

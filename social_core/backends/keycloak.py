@@ -142,4 +142,4 @@ class KeycloakOAuth2(BaseOAuth2):  # pylint: disable=abstract-method
 
     def get_user_id(self, details, response):
         """Get and associate Django User by the field indicated by ID_KEY"""
-        return details.get(self.ID_KEY)
+        return details.get(self.id_key())
