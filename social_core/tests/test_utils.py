@@ -1,5 +1,6 @@
 import base64
 import unittest
+from typing import Any
 from unittest.mock import Mock
 
 from social_core.backends.base import BaseAuth
@@ -199,7 +200,7 @@ class PartialPipelineData(unittest.TestCase):
 class GetKeyAndSecretBasicAuthTest(unittest.TestCase):
     def setUp(self) -> None:
         self.backend = BaseAuth(strategy=Mock())
-        self.backend.setting = Mock(
+        self.backend.setting: Any = Mock(
             side_effect=lambda x: "test_key" if x == "KEY" else "test_secret"
         )
 
