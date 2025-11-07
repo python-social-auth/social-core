@@ -18,6 +18,7 @@ from social_core.exceptions import (
     MissingBackend,
     NotAllowedToDisconnect,
     SocialAuthBaseException,
+    StrategyMissingBackendError,
     WrongBackend,
 )
 
@@ -124,3 +125,8 @@ class InvalidEmailTest(BaseExceptionTestCase):
 class MissingBackendTest(BaseExceptionTestCase):
     exception = MissingBackend("backend")
     expected_message = 'Missing backend "backend" entry'
+
+
+class StrategyMissingBackendErrorTest(BaseExceptionTestCase):
+    exception = StrategyMissingBackendError()
+    expected_message = "Strategy storage backend is not configured"
