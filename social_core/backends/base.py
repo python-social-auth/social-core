@@ -199,7 +199,8 @@ class BaseAuth:
     def get_user_id(self, details, response):
         """Return a unique ID for the current user, by default from server
         response or details."""
-        return details.get(self.id_key()) or response.get(self.id_key())
+        id_key = self.id_key()
+        return (details.get(id_key) if details else None) or response.get(id_key)
 
     def get_user_details(self, response) -> dict[str, Any]:
         """Must return user details in a know internal struct:
