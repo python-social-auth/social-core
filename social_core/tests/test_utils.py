@@ -238,7 +238,9 @@ class IdKeyConfigurabilityTest(unittest.TestCase):
         result = backend.id_key()
 
         self.assertEqual(result, "default_id")
-        strategy.setting.assert_called_once_with("ID_KEY", default=None, backend=backend)
+        strategy.setting.assert_called_once_with(
+            "ID_KEY", default=None, backend=backend
+        )
 
     def test_id_key_uses_setting_when_provided(self) -> None:
         """Test that id_key() returns setting value when provided"""
@@ -250,7 +252,9 @@ class IdKeyConfigurabilityTest(unittest.TestCase):
         result = backend.id_key()
 
         self.assertEqual(result, "custom_id")
-        strategy.setting.assert_called_once_with("ID_KEY", default=None, backend=backend)
+        strategy.setting.assert_called_once_with(
+            "ID_KEY", default=None, backend=backend
+        )
 
     def test_get_user_id_uses_configurable_id_key(self) -> None:
         """Test that get_user_id() uses the configurable id_key()"""
