@@ -200,9 +200,9 @@ class PartialPipelineData(unittest.TestCase):
 class GetKeyAndSecretBasicAuthTest(unittest.TestCase):
     def setUp(self) -> None:
         self.backend = BaseAuth(strategy=Mock())
-        self.backend.setting = cast(
-            "Any",
-            Mock(side_effect=lambda x: "test_key" if x == "KEY" else "test_secret"),
+        # Assign Mock to setting method, bypassing type checking for this dynamic replacement
+        self.backend.setting = Mock(  # type: ignore[method-assign]
+            side_effect=lambda x: "test_key" if x == "KEY" else "test_secret"
         )
 
     def test_basic_auth_returns_bytes(self) -> None:
