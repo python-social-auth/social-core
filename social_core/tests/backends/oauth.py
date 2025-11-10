@@ -8,7 +8,7 @@ import requests
 import responses
 
 from social_core.backends.oauth import BaseOAuth1, BaseOAuth2, OAuthAuth
-from social_core.tests.models import User
+from social_core.tests.models import TestUserSocialAuth, User
 from social_core.utils import get_querystring, parse_qs, url_add_parameters
 
 from .base import BaseBackendTest
@@ -24,20 +24,20 @@ class OAuth2TestProtocol(Protocol):
     and OAuth2-specific test helper methods.
     """
 
-    def assertEqual(self, first: Any, second: Any, msg: Any = None) -> None:
+    def assertEqual(self, first: object, second: object, msg: object = None) -> None:
         """Assert that two values are equal."""
         ...
 
-    def do_login(self) -> Any:
+    def do_login(self) -> User:
         """Perform a login flow and return the user."""
         ...
 
-    def do_partial_pipeline(self) -> Any:
+    def do_partial_pipeline(self) -> User:
         """Perform a partial pipeline flow and return the user."""
         ...
 
-    def do_refresh_token(self) -> Any:
-        """Perform a token refresh flow."""
+    def do_refresh_token(self) -> tuple[User, TestUserSocialAuth]:
+        """Perform a token refresh flow and return user and social auth."""
         ...
 
     @property
