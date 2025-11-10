@@ -2,10 +2,10 @@
 
 import json
 
-from .oauth import OAuth2PkceS256Test, OAuth2TestProtocol
+from .oauth import OAuth2PkceS256Test
 
 
-class EtsyOAuth2Mixin(OAuth2TestProtocol):
+class EtsyOAuth2Mixin:
     backend_path = "social_core.backends.etsy.EtsyOAuth2"
     access_token_body = json.dumps(
         {

@@ -4,10 +4,10 @@ import json
 
 import responses
 
-from .oauth import OAuth2PkcePlainTest, OAuth2PkceS256Test, OAuth2TestProtocol
+from .oauth import OAuth2PkcePlainTest, OAuth2PkceS256Test
 
 
-class BitbucketDataCenterOAuth2Mixin(OAuth2TestProtocol):
+class BitbucketDataCenterOAuth2Mixin:
     backend_path = "social_core.backends.bitbucket_datacenter.BitbucketDataCenterOAuth2"
     application_properties_url = (
         "https://bachmanity.atlassian.net/rest/api/latest/application-properties"

@@ -9,11 +9,10 @@ from .oauth import (
     OAuth2PkcePlainTest,
     OAuth2PkceS256Test,
     OAuth2Test,
-    OAuth2TestProtocol,
 )
 
 
-class TwitterOAuth2Mixin(OAuth2TestProtocol):
+class TwitterOAuth2Mixin:
     backend_path = "social_core.backends.twitter_oauth2.TwitterOAuth2"
     user_data_url = "https://api.twitter.com/2/users/me"
     access_token_body = json.dumps(
