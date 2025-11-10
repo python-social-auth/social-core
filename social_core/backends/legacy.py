@@ -4,9 +4,6 @@ from .base import BaseAuth
 
 
 class LegacyAuth(BaseAuth):
-    def get_user_id(self, details, response):
-        return details.get(self.id_key()) or response.get(self.id_key())
-
     def auth_url(self):
         return self.setting("FORM_URL")
 
