@@ -85,13 +85,6 @@ class LineOAuth2(BaseOAuth2):
             "status_message": status_message,
         }
 
-    def get_user_id(self, details, response):
-        """
-        Return a unique ID for the current user, by default from
-        server response.
-        """
-        return response.get(self.ID_KEY)
-
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
         try:

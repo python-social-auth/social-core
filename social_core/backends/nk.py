@@ -38,11 +38,6 @@ class NKOAuth2(BaseOAuth2):
             "scope": self.get_scope_argument(),
         }
 
-    def get_user_id(self, details, response):
-        """Return a unique ID for the current user, by default from server
-        response."""
-        return details.get(self.ID_KEY)
-
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
         url = "http://opensocial.nk-net.pl/v09/social/rest/people/@me?" + urlencode(

@@ -23,7 +23,7 @@ class PayPalOAuth2(BaseOAuth2):
         return self.get_json(self.USER_DATA_URL, headers=auth_header)
 
     def get_user_details(self, response):
-        username = response.get(self.ID_KEY).split("/")[-1]
+        username = response.get(self.id_key()).split("/")[-1]
         fullname, first_name, last_name = self.get_user_names(
             response.get("name", ""),
             response.get("given_name", ""),

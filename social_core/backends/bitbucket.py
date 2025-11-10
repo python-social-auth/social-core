@@ -25,7 +25,7 @@ class BitbucketOAuth2(BaseOAuth2):
     ID_KEY = "uuid"
 
     def get_user_id(self, details, response):
-        id_key = self.ID_KEY
+        id_key = self.id_key()
         if self.setting("USERNAME_AS_ID", False):
             id_key = "username"
         return response.get(id_key)
