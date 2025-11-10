@@ -1,6 +1,5 @@
 import base64
 import unittest
-from typing import Any, cast
 from unittest.mock import Mock
 
 from social_core.backends.base import BaseAuth
