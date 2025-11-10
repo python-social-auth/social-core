@@ -201,7 +201,8 @@ class GetKeyAndSecretBasicAuthTest(unittest.TestCase):
     def setUp(self) -> None:
         self.backend = BaseAuth(strategy=Mock())
         self.backend.setting = cast(
-            Any, Mock(side_effect=lambda x: "test_key" if x == "KEY" else "test_secret")
+            "Any",
+            Mock(side_effect=lambda x: "test_key" if x == "KEY" else "test_secret"),
         )
 
     def test_basic_auth_returns_bytes(self) -> None:

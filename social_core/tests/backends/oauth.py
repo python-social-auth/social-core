@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Generic, Protocol, TypeVar, cast
+from typing import TYPE_CHECKING, Generic, Protocol, TypeVar, cast
 from unittest.mock import patch
 from urllib.parse import urlparse
 
@@ -8,17 +8,20 @@ import requests
 import responses
 
 from social_core.backends.oauth import BaseOAuth1, BaseOAuth2, OAuthAuth
-from social_core.tests.models import TestUserSocialAuth, User
+from social_core.tests.models import User
 from social_core.utils import get_querystring, parse_qs, url_add_parameters
 
 from .base import BaseBackendTest
+
+if TYPE_CHECKING:
+    from social_core.tests.models import TestUserSocialAuth
 
 OAuthBackendT = TypeVar("OAuthBackendT", bound=OAuthAuth)
 
 
 class OAuth2TestProtocol(Protocol):
     """Protocol for OAuth2 test methods used by mixins.
-    
+
     This protocol defines the interface that OAuth2 test mixins expect
     from test base classes. It includes common unittest.TestCase methods
     and OAuth2-specific test helper methods.
