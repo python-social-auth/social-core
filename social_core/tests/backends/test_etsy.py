@@ -1,11 +1,17 @@
-# pyright: reportAttributeAccessIssue=false
-
 import json
+from typing import TYPE_CHECKING
 
 from .oauth import OAuth2PkceS256Test
 
+if TYPE_CHECKING:
+    from .oauth import OAuth2TestProtocol
 
-class EtsyOAuth2Mixin:
+    _Base = OAuth2TestProtocol
+else:
+    _Base = object
+
+
+class EtsyOAuth2Mixin(_Base):  # type: ignore[misc]
     backend_path = "social_core.backends.etsy.EtsyOAuth2"
     access_token_body = json.dumps(
         {
