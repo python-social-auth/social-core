@@ -188,7 +188,7 @@ class PartialPipelineData(unittest.TestCase):
         backend.strategy.request_data.return_value = {"custom_id": email}
         key, val = ("foo", "bar")
         partial = partial_pipeline_data(backend, None, *(), **{key: val})
-        self.assertTrue(key in partial.kwargs)
+        self.assertIn(key, partial.kwargs)
         self.assertEqual(partial.kwargs[key], val)
         self.assertEqual(backend.strategy.clean_partial_pipeline.call_count, 0)
 
