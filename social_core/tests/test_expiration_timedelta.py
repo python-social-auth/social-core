@@ -218,7 +218,7 @@ class ExpirationTimedeltaTestCase(unittest.TestCase):
         self.assertAlmostEqual(result.total_seconds(), 3600, delta=2)
 
     def test_heuristic_threshold_boundary(self) -> None:
-        """Test the heuristic threshold (1 year = 31536000 seconds)."""
+        """Test the heuristic threshold (2 years = 63072000 seconds)."""
         # Value just above threshold should be treated as timestamp
         now = datetime.now(timezone.utc)
         # Use a timestamp value (year 2025)
