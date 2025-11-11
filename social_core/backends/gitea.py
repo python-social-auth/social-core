@@ -18,7 +18,7 @@ class GiteaOAuth2(BaseOAuth2):
     STATE_PARAMETER = True
     EXTRA_DATA = [
         ("id", "id"),
-        ("expires_in", "expires"),
+        ("expires_in", "expires_in"),
         ("refresh_token", "refresh_token"),
     ]
 

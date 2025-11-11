@@ -22,7 +22,7 @@ class GitLabOAuth2(BaseOAuth2):
     DEFAULT_SCOPE = ["read_user"]
     EXTRA_DATA = [
         ("id", "id"),
-        ("expires_in", "expires"),
+        ("expires_in", "expires_in"),
         ("refresh_token", "refresh_token"),
     ]
 

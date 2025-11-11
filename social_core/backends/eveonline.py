@@ -16,7 +16,7 @@ class EVEOnlineOAuth2(BaseOAuth2):
     ID_KEY = "CharacterID"
     EXTRA_DATA = [
         ("CharacterID", "id"),
-        ("expires_in", "expires"),
+        ("expires_in", "expires_in"),
         ("CharacterOwnerHash", "owner_hash", True),
         ("refresh_token", "refresh_token", True),
     ]

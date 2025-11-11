@@ -67,7 +67,7 @@ class YahooOAuth2(BaseOAuth2):
     EXTRA_DATA = [
         ("sub", "id"),
         ("access_token", "access_token"),
-        ("expires_in", "expires"),
+        ("expires_in", "expires_in"),
         ("refresh_token", "refresh_token"),
         ("token_type", "token_type"),
     ]

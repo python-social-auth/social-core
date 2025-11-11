@@ -15,7 +15,7 @@ class BungieOAuth2(BaseOAuth2):
     EXTRA_DATA = [
         ("refresh_token", "refresh_token", True),
         ("access_token", "access_token", True),
-        ("expires_in", "expires"),
+        ("expires_in", "expires_in"),
         ("membership_id", "membership_id"),
         ("refresh_expires_in", "refresh_expires_in"),
     ]

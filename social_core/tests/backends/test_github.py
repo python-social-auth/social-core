@@ -68,7 +68,7 @@ class GithubOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         user = super().do_login()
         social = user.social[0]
 
-        self.assertIsNotNone(social.extra_data["expires"])
+        self.assertIsNotNone(social.extra_data["expires_in"])
         self.assertIsNotNone(social.extra_data["refresh_token"])
 
         return user

@@ -14,7 +14,7 @@ class ZoomOAuth2(BaseOAuth2):
     DEFAULT_SCOPE = ["user:read"]
     REFRESH_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
-    EXTRA_DATA = [("expires_in", "expires")]
+    EXTRA_DATA = [("expires_in", "expires_in")]
 
     def user_data(self, access_token, *args, **kwargs):
         return self.get_json(

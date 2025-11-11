@@ -13,7 +13,7 @@ class MusicBrainzOAuth2(BaseOAuth2):
     REDIRECT_STATE = False
     EXTRA_DATA = [
         ("metabrainz_user_id", "id"),
-        ("expires_in", "expires"),
+        ("expires_in", "expires_in"),
     ]
 
     def get_user_details(self, response):

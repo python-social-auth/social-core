@@ -71,7 +71,7 @@ class GoogleOAuth2(BaseGoogleOAuth2API, BaseOAuth2):
     DEFAULT_SCOPE = ["openid", "email", "profile"]
     EXTRA_DATA = [
         ("refresh_token", "refresh_token", True),
-        ("expires_in", "expires"),
+        ("expires_in", "expires_in"),
         ("token_type", "token_type", True),
     ]
 
@@ -91,7 +91,7 @@ class GooglePlusAuth(BaseGoogleOAuth2API, BaseOAuth2):
     EXTRA_DATA = [
         ("id", "user_id"),
         ("refresh_token", "refresh_token", True),
-        ("expires_in", "expires"),
+        ("expires_in", "expires_in"),
         ("access_type", "access_type", True),
         ("code", "code"),
     ]

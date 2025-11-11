@@ -19,7 +19,7 @@ class StravaOAuth(BaseOAuth2):
     SCOPE_SEPARATOR = ","
     EXTRA_DATA = [
         ("refresh_token", "refresh_token"),
-        ("expires_in", "expires"),
+        ("expires_in", "expires_in"),
     ]
 
     def get_user_id(self, details, response):

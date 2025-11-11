@@ -26,7 +26,7 @@ class BitbucketDataCenterOAuth2(BaseOAuth2PKCE):
         ("token_type", "token_type"),
         ("access_token", "access_token"),
         ("refresh_token", "refresh_token"),
-        ("expires_in", "expires"),
+        ("expires_in", "expires_in"),
         ("scope", "scope"),
         # extra user profile fields
         ("first_name", "first_name"),

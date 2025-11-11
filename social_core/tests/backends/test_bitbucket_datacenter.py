@@ -105,7 +105,7 @@ class BitbucketDataCenterOAuth2Mixin:
         self.assertEqual(social.extra_data["scope"], "PUBLIC_REPOS")
         self.assertEqual(social.extra_data["access_token"], "dummy_access_token")
         self.assertEqual(social.extra_data["token_type"], "bearer")
-        self.assertEqual(social.extra_data["expires"], 3600)
+        self.assertEqual(social.extra_data["expires_in"], 3600)
         self.assertEqual(social.extra_data["refresh_token"], "dummy_refresh_token")
 
     def test_refresh_token(self) -> None:
@@ -133,7 +133,7 @@ class BitbucketDataCenterOAuth2Mixin:
             social.extra_data["access_token"], "dummy_access_token_refreshed"
         )
         self.assertEqual(social.extra_data["token_type"], "bearer")
-        self.assertEqual(social.extra_data["expires"], 3600)
+        self.assertEqual(social.extra_data["expires_in"], 3600)
         self.assertEqual(
             social.extra_data["refresh_token"], "dummy_refresh_token_refreshed"
         )

@@ -95,7 +95,7 @@ class VKOAuth2(BaseOAuth2):
     ID_KEY = "id"
     AUTHORIZATION_URL = "https://oauth.vk.ru/authorize"
     ACCESS_TOKEN_URL = "https://oauth.vk.ru/access_token"
-    EXTRA_DATA = [("id", "id"), ("expires_in", "expires")]
+    EXTRA_DATA = [("id", "id"), ("expires_in", "expires_in")]
 
     def get_user_details(self, response):
         """Return user details from VK.com account"""

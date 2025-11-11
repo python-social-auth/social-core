@@ -18,7 +18,7 @@ class MovesOAuth2(BaseOAuth2):
     ACCESS_TOKEN_URL = "https://api.moves-app.com/oauth/v1/access_token"
     EXTRA_DATA = [
         ("refresh_token", "refresh_token", True),
-        ("expires_in", "expires"),
+        ("expires_in", "expires_in"),
     ]
 
     def get_user_details(self, response):

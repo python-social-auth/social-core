@@ -20,7 +20,7 @@ class HubSpotOAuth2(BaseOAuth2):
         ("app_id", "app_id"),
         ("user_id", "user_id"),
         ("refresh_token", "refresh_token"),
-        ("expires_in", "expires"),
+        ("expires_in", "expires_in"),
     ]
 
     def get_user_details(self, response):

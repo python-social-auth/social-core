@@ -15,7 +15,7 @@ class PodioOAuth2(BaseOAuth2):
     EXTRA_DATA = [
         ("access_token", "access_token"),
         ("token_type", "token_type"),
-        ("expires_in", "expires"),
+        ("expires_in", "expires_in"),
         ("refresh_token", "refresh_token"),
     ]
 

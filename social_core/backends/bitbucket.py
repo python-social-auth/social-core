@@ -18,7 +18,7 @@ class BitbucketOAuth2(BaseOAuth2):
     REDIRECT_STATE = False
     EXTRA_DATA = [
         ("scopes", "scopes"),
-        ("expires_in", "expires"),
+        ("expires_in", "expires_in"),
         ("token_type", "token_type"),
         ("refresh_token", "refresh_token"),
     ]

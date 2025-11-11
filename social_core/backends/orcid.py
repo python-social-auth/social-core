@@ -18,7 +18,7 @@ class ORCIDOAuth2(BaseOAuth2):
     DEFAULT_SCOPE = ["/authenticate"]
     EXTRA_DATA = [
         ("orcid", "id"),
-        ("expires_in", "expires"),
+        ("expires_in", "expires_in"),
         ("refresh_token", "refresh_token"),
     ]
 

@@ -15,7 +15,7 @@ class ChatworkOAuth2(BaseOAuth2):
     REDIRECT_STATE = True
     DEFAULT_SCOPE = ["users.profile.me:read"]
     ID_KEY = "account_id"
-    EXTRA_DATA = [("expires_in", "expires"), ("refresh_token", "refresh_token")]
+    EXTRA_DATA = [("expires_in", "expires_in"), ("refresh_token", "refresh_token")]
 
     def api_url(self, path):
         api_url = self.setting("API_URL") or self.API_URL
