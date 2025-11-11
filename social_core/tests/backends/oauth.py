@@ -43,6 +43,14 @@ class OAuth2TestProtocol(Protocol):
         """Perform a token refresh flow and return user and social auth."""
         ...
 
+    def extra_settings(self) -> dict[str, str | list[str]]:
+        """Return extra settings for the backend."""
+        ...
+
+    def auth_handlers(self, start_url: str) -> str:
+        """Handle authentication flow and return target URL."""
+        ...
+
     @property
     def name(self) -> str:
         """Backend name for settings."""
