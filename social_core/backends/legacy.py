@@ -4,9 +4,6 @@ from .base import BaseAuth
 
 
 class LegacyAuth(BaseAuth):
-    def get_user_id(self, details, response):
-        return details.get(self.ID_KEY) or response.get(self.ID_KEY)
-
     def auth_url(self):
         return self.setting("FORM_URL")
 
@@ -18,8 +15,9 @@ class LegacyAuth(BaseAuth):
 
     def auth_complete(self, *args, **kwargs):
         """Completes login process, must return user instance"""
-        if self.ID_KEY not in self.data:
-            raise AuthMissingParameter(self, self.ID_KEY)
+        id_key = self.id_key()
+        if id_key not in self.data:
+            raise AuthMissingParameter(self, id_key)
         kwargs.update({"response": self.data, "backend": self})
         return self.strategy.authenticate(*args, **kwargs)
 

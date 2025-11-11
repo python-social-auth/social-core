@@ -148,7 +148,7 @@ class AppleIdAuth(BaseOAuth2):
         )
 
         email = response.get("email", "")
-        apple_id = response.get(self.ID_KEY, "")
+        apple_id = response.get(self.id_key(), "")
         # prevent updating User with empty strings
         user_details = {
             "fullname": fullname or None,
