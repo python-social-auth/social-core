@@ -78,11 +78,16 @@ class UserMixin:
         """
         try:
             timestamp = int(value)
+        except (ValueError, TypeError):
+            # Cannot convert value to int
+            return None
+
+        try:
             now = datetime.now(timezone.utc)
             expiry_time = datetime.fromtimestamp(timestamp, tz=timezone.utc)
             return expiry_time - now
-        except (OSError, ValueError, TypeError):
-            # Invalid timestamp (conversion error, out of range, or wrong type)
+        except (OSError, ValueError):
+            # Timestamp out of valid range
             return None
 
     def _compute_expiration_from_relative(
@@ -105,12 +110,18 @@ class UserMixin:
         auth_time = self.extra_data.get("auth_time")
         if auth_time:
             try:
-                now = datetime.now(timezone.utc)
-                reference = datetime.fromtimestamp(auth_time, tz=timezone.utc)
-                return (reference + timedelta(seconds=seconds)) - now
-            except (OSError, ValueError, TypeError):
-                # Invalid auth_time, fall back to treating as seconds from now
+                auth_timestamp = int(auth_time)
+            except (ValueError, TypeError):
+                # Invalid auth_time value, fall back to treating as seconds from now
                 pass
+            else:
+                try:
+                    now = datetime.now(timezone.utc)
+                    reference = datetime.fromtimestamp(auth_timestamp, tz=timezone.utc)
+                    return (reference + timedelta(seconds=seconds)) - now
+                except (OSError, ValueError):
+                    # auth_time timestamp out of range, fall back to treating as seconds from now
+                    pass
         # If no auth_time or invalid auth_time, treat as seconds from now
         return timedelta(seconds=seconds)
 
