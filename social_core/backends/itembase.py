@@ -21,7 +21,7 @@ class ItembaseOAuth2(BaseOAuth2):
         ("token_type", "token_type"),
         ("refresh_token", "refresh_token"),
         ("expires_in", "expires_in"),  # seconds to expiration
-        ("expires", "expires_on"),  # computed by add_expires() as absolute timestamp
+        ("expires", "expires_on"),  # expiration timestamp in UTC
         ("uuid", "uuid"),
         ("username", "username"),
         ("email", "email"),

@@ -65,17 +65,8 @@ class UserMixin:
             if self.set_extra_data(extra_data):
                 self.save()
 
-    def _compute_expiration_from_timestamp(
-        self, value: int | str
-    ) -> timedelta | None:
-        """Compute expiration timedelta from an absolute timestamp.
-        
-        Args:
-            value: Unix timestamp (seconds since epoch), as int or string
-            
-        Returns:
-            timedelta from now to the timestamp, or None if invalid
-        """
+    def _compute_expiration_from_timestamp(self, value: int | str) -> timedelta | None:
+        """Compute expiration timedelta from an absolute timestamp."""
         try:
             timestamp = int(value)
         except (ValueError, TypeError):
@@ -90,17 +81,8 @@ class UserMixin:
             # Timestamp out of valid range
             return None
 
-    def _compute_expiration_from_relative(
-        self, value: int | str
-    ) -> timedelta | None:
-        """Compute expiration timedelta from relative seconds.
-        
-        Args:
-            value: Seconds from auth_time (or from now if no auth_time), as int or string
-            
-        Returns:
-            timedelta from now to expiration, or None if invalid
-        """
+    def _compute_expiration_from_relative(self, value: int | str) -> timedelta | None:
+        """Compute expiration timedelta from relative seconds."""
         try:
             seconds = int(value)
         except (ValueError, TypeError):
@@ -125,13 +107,12 @@ class UserMixin:
         # If no auth_time or invalid auth_time, treat as seconds from now
         return timedelta(seconds=seconds)
 
-    def expiration_timedelta(self):
-        """Return provider session live seconds. Returns a timedelta ready to
-        use with session.set_expiry().
+    def expiration_timedelta(self) -> timedelta | None:
+        """Return provider session live seconds.
 
+        Returns a timedelta ready to use with session.set_expiry().
         If provider returns a timestamp instead of session seconds to live, the
-        timedelta is inferred from current time (using UTC timezone). None is
-        returned if there's no value stored or it's invalid.
+        timedelta is inferred from current time (using UTC timezone).
 
         Handles three types of expiration data:
         - expires_on: Always treated as absolute timestamp
@@ -142,42 +123,44 @@ class UserMixin:
             return None
 
         # Check for expires_on (absolute timestamp)
-        if (expires_on := self.extra_data.get("expires_on")) is not None:
+        expires_on = self.extra_data.get("expires_on")
+        if expires_on is not None:
             result = self._compute_expiration_from_timestamp(expires_on)
             if result is not None:
                 return result
-            # Invalid expires_on value, fall through to try expires_in
 
         # Check for expires_in (relative seconds from auth_time)
-        if (expires_in := self.extra_data.get("expires_in")) is not None:
-            result = self._compute_expiration_from_relative(expires_in)
-            if result is not None:
-                return result
-            # Invalid expires_in value, fall through to try expires
+        expires_in = self.extra_data.get("expires_in")
+        if expires_in is not None:
+            return self._compute_expiration_from_relative(expires_in)
 
         # Check for expires (use heuristic to determine type)
-        if (expires := self.extra_data.get("expires")) is not None:
-            try:
-                expires_int = int(expires)
-            except (ValueError, TypeError):
-                return None
+        return self._handle_expires_field()
 
-            # Use 2 years (63072000 seconds) as threshold to distinguish
-            # absolute timestamps from relative seconds
-            # Most tokens expire in hours/days/months, timestamps are much larger
-            TIMESTAMP_THRESHOLD = 63072000
+    def _handle_expires_field(self) -> timedelta | None:
+        """Handle the generic expires field using heuristic."""
+        expires = self.extra_data.get("expires")
+        if expires is None:
+            return None
 
-            if expires_int > TIMESTAMP_THRESHOLD:
-                # Likely an absolute timestamp, try treating as expires_on
-                result = self._compute_expiration_from_timestamp(expires_int)
-                if result is not None:
-                    return result
-                # Invalid timestamp, fall through to relative handling
+        try:
+            expires_int = int(expires)
+        except (ValueError, TypeError):
+            return None
 
-            # Treat as relative seconds (like expires_in)
-            return self._compute_expiration_from_relative(expires_int)
+        # Use 2 years (63072000 seconds) as threshold to distinguish
+        # absolute timestamps from relative seconds
+        # Most tokens expire in hours/days/months, timestamps are much larger
+        TIMESTAMP_THRESHOLD = 63072000
 
-        return None
+        if expires_int > TIMESTAMP_THRESHOLD:
+            # Likely an absolute timestamp, try treating as expires_on
+            result = self._compute_expiration_from_timestamp(expires_int)
+            if result is not None:
+                return result
+
+        # Treat as relative seconds (like expires_in)
+        return self._compute_expiration_from_relative(expires_int)
 
     def expiration_datetime(self):
         # backward compatible alias

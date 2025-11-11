@@ -1,4 +1,5 @@
 """Tests for UserMixin.expiration_timedelta() method."""
+
 from __future__ import annotations
 
 import time
@@ -283,7 +284,3 @@ class ExpirationTimedeltaTestCase(unittest.TestCase):
             extra_data={"expires_on": int(near_future.timestamp())},
         )
         self.assertTrue(social.access_token_expired())
-
-
-if __name__ == "__main__":
-    unittest.main()
