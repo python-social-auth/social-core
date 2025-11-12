@@ -19,7 +19,6 @@ from social_core.backends.oauth import BaseOAuth2
 from social_core.exceptions import (
     AuthInvalidParameter,
     AuthMissingParameter,
-    AuthNotImplementedParameter,
     AuthTokenError,
 )
 from social_core.utils import cache
@@ -160,7 +159,7 @@ class OpenIdConnectAuth(BaseOAuth2):
         response = self.request(self.jwks_uri())
         return json.loads(response.text)["keys"]
 
-    def auth_params(self, state=None):  # noqa: C901
+    def auth_params(self, state=None):  # noqa: C901, PLR0912
         """Return extra arguments needed on auth process."""
         params = super().auth_params(state)
         params["nonce"] = self.get_and_store_nonce(self.authorization_url(), state)
@@ -199,19 +198,31 @@ class OpenIdConnectAuth(BaseOAuth2):
 
         ui_locales = self.setting("UI_LOCALES", default=self.UI_LOCALES)
         if ui_locales is not None:
-            raise AuthNotImplementedParameter(self, "ui_locales")
+            if not ui_locales:
+                raise AuthInvalidParameter(self, "ui_locales")
+
+            params["ui_locales"] = ui_locales
 
         id_token_hint = self.setting("ID_TOKEN_HINT", default=self.ID_TOKEN_HINT)
         if id_token_hint is not None:
-            raise AuthNotImplementedParameter(self, "id_token_hint")
+            if not id_token_hint:
+                raise AuthInvalidParameter(self, "id_token_hint")
+
+            params["id_token_hint"] = id_token_hint
 
         login_hint = self.setting("LOGIN_HINT", default=self.LOGIN_HINT)
         if login_hint is not None:
-            raise AuthNotImplementedParameter(self, "login_hint")
+            if not login_hint:
+                raise AuthInvalidParameter(self, "login_hint")
+
+            params["login_hint"] = login_hint
 
         acr_values = self.setting("ACR_VALUES", default=self.ACR_VALUES)
         if acr_values is not None:
-            raise AuthNotImplementedParameter(self, "acr_values")
+            if not acr_values:
+                raise AuthInvalidParameter(self, "acr_values")
+
+            params["acr_values"] = acr_values
 
         return params
 
