@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import base64
-from typing import Any, TypeVar
+from typing import TypeVar
 
 from typing_extensions import Self
 
