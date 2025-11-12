@@ -17,7 +17,7 @@ class LiveOAuth2(BaseOAuth2):
         ("access_token", "access_token"),
         ("authentication_token", "authentication_token"),
         ("refresh_token", "refresh_token"),
-        ("expires_in", "expires"),
+        ("expires_in", "expires_in"),
         ("email", "email"),
         ("first_name", "first_name"),
         ("last_name", "last_name"),

@@ -18,7 +18,7 @@ class BattleNetOAuth2(BaseOAuth2):
     DEFAULT_SCOPE = ["wow.profile"]
     EXTRA_DATA = [
         ("refresh_token", "refresh_token", True),
-        ("expires_in", "expires"),
+        ("expires_in", "expires_in"),
         ("token_type", "token_type", True),
     ]
 

@@ -22,7 +22,7 @@ class KickOAuth2(BaseOAuth2PKCE):
     EXTRA_DATA = [
         ("access_token", "access_token"),
         ("refresh_token", "refresh_token"),
-        ("expires_in", "expires"),
+        ("expires_in", "expires_in"),
         ("token_type", "token_type"),
         ("scope", "scope"),
     ]

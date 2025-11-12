@@ -33,7 +33,7 @@ class OdnoklassnikiOAuth2(BaseOAuth2):
     SCOPE_SEPARATOR = ";"
     AUTHORIZATION_URL = "https://connect.ok.ru/oauth/authorize"
     ACCESS_TOKEN_URL = "https://api.ok.ru/oauth/token.do"
-    EXTRA_DATA = [("refresh_token", "refresh_token"), ("expires_in", "expires")]
+    EXTRA_DATA = [("refresh_token", "refresh_token"), ("expires_in", "expires_in")]
 
     def get_user_details(self, response):
         """Return user details from Odnoklassniki request"""

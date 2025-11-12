@@ -16,7 +16,7 @@ class DiscordOAuth2(BaseOAuth2):
     DEFAULT_SCOPE = ["identify"]
     SCOPE_SEPARATOR = "+"
     REDIRECT_STATE = False
-    EXTRA_DATA = [("expires_in", "expires"), ("refresh_token", "refresh_token")]
+    EXTRA_DATA = [("expires_in", "expires_in"), ("refresh_token", "refresh_token")]
 
     def get_user_details(self, response):
         return {

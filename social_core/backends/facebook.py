@@ -37,7 +37,7 @@ class FacebookOAuth2(BaseOAuth2):
     USER_DATA_URL = "https://graph.facebook.com/v{version}/me"
     EXTRA_DATA = [
         ("id", "id"),
-        ("expires", "expires"),
+        ("expires_in", "expires_in"),
         ("granted_scopes", "granted_scopes"),
         ("denied_scopes", "denied_scopes"),
     ]
@@ -152,7 +152,7 @@ class FacebookOAuth2(BaseOAuth2):
 
         data["access_token"] = access_token
         if "expires_in" in response:
-            data["expires"] = response["expires_in"]
+            data["expires_in"] = response["expires_in"]
 
         if self.data.get("granted_scopes"):
             data["granted_scopes"] = self.data["granted_scopes"].split(",")

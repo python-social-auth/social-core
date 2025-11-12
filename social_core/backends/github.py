@@ -24,7 +24,7 @@ class GithubOAuth2(BaseOAuth2):
     STATE_PARAMETER = True
     EXTRA_DATA = [
         ("id", "id"),
-        ("expires_in", "expires"),
+        ("expires_in", "expires_in"),
         ("login", "login"),
         ("refresh_token", "refresh_token"),
     ]

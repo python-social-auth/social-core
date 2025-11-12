@@ -21,7 +21,7 @@ class ItembaseOAuth2(BaseOAuth2):
         ("token_type", "token_type"),
         ("refresh_token", "refresh_token"),
         ("expires_in", "expires_in"),  # seconds to expiration
-        ("expires", "expires"),  # expiration timestamp in UTC
+        ("expires", "expires_on"),  # expiration timestamp in UTC
         ("uuid", "uuid"),
         ("username", "username"),
         ("email", "email"),
@@ -34,7 +34,7 @@ class ItembaseOAuth2(BaseOAuth2):
     ]
 
     def add_expires(self, data: dict[str, Any]) -> dict[str, Any]:
-        data["expires"] = int(time.time()) + data.get("expires_in", 0)
+        data["expires_on"] = int(time.time()) + data.get("expires_in", 0)
         return data
 
     def extra_data(

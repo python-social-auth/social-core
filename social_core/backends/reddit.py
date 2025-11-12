@@ -22,7 +22,7 @@ class RedditOAuth2(BaseOAuth2):
         ("link_karma", "link_karma"),
         ("comment_karma", "comment_karma"),
         ("refresh_token", "refresh_token"),
-        ("expires_in", "expires"),
+        ("expires_in", "expires_in"),
     ]
 
     def get_user_details(self, response):

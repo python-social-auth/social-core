@@ -14,7 +14,7 @@ class AsanaOAuth2(BaseOAuth2):
     REDIRECT_STATE = False
     USER_DATA_URL = "https://app.asana.com/api/1.0/users/me"
     EXTRA_DATA = [
-        ("expires_in", "expires"),
+        ("expires_in", "expires_in"),
         ("refresh_token", "refresh_token"),
         ("name", "name"),
     ]

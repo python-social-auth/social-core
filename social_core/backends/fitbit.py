@@ -39,7 +39,7 @@ class FitbitOAuth2(BaseOAuth2):
     ID_KEY = "encodedId"
     REDIRECT_STATE = False
     EXTRA_DATA = [
-        ("expires_in", "expires"),
+        ("expires_in", "expires_in"),
         ("refresh_token", "refresh_token", True),
         ("encodedId", "id"),
         ("displayName", "username"),

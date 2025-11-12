@@ -51,7 +51,7 @@ class AzureADOAuth2(BaseOAuth2):
         ("access_token", "access_token"),
         ("id_token", "id_token"),
         ("refresh_token", "refresh_token"),
-        ("expires_in", "expires"),
+        ("expires_in", "expires_in"),
         ("expires_on", "expires_on"),
         ("not_before", "not_before"),
         ("given_name", "first_name"),

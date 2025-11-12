@@ -65,7 +65,7 @@ class LinkedinOAuth2(BaseOAuth2):
     DEFAULT_SCOPE = ["r_liteprofile"]
     EXTRA_DATA = [
         ("id", "id"),
-        ("expires_in", "expires"),
+        ("expires_in", "expires_in"),
         ("firstName", "first_name"),
         ("lastName", "last_name"),
         ("refresh_token", "refresh_token"),
