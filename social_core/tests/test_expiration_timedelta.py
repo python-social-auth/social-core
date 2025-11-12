@@ -6,6 +6,7 @@ import time
 import unittest
 from datetime import datetime, timedelta, timezone
 
+from social_core.exceptions import InvalidExpiryValue
 from social_core.tests.models import TestUserSocialAuth, User
 
 
@@ -193,17 +194,20 @@ class ExpirationTimedeltaTestCase(unittest.TestCase):
         self.assertAlmostEqual(result.total_seconds(), 7200, delta=2)
 
     def test_invalid_expires_value(self) -> None:
-        """Test with invalid expires value."""
+        """Test with invalid expires value raises exception."""
         social = TestUserSocialAuth(
             self.user,
             "test-provider",
             "123",
             extra_data={"expires": "invalid"},
         )
-        self.assertIsNone(social.expiration_timedelta())
+        with self.assertRaises(InvalidExpiryValue) as cm:
+            social.expiration_timedelta()
+        self.assertEqual(cm.exception.field_name, "expires")
+        self.assertEqual(cm.exception.value, "invalid")
 
     def test_invalid_expires_on_value(self) -> None:
-        """Test with invalid expires_on value falls back to other fields."""
+        """Test with invalid expires_on value raises exception."""
         social = TestUserSocialAuth(
             self.user,
             "test-provider",
@@ -213,10 +217,10 @@ class ExpirationTimedeltaTestCase(unittest.TestCase):
                 "expires_in": 3600,
             },
         )
-        result = social.expiration_timedelta()
-        self.assertIsNotNone(result)
-        # Should fall back to expires_in
-        self.assertAlmostEqual(result.total_seconds(), 3600, delta=2)
+        with self.assertRaises(InvalidExpiryValue) as cm:
+            social.expiration_timedelta()
+        self.assertEqual(cm.exception.field_name, "expires_on")
+        self.assertEqual(cm.exception.value, "invalid")
 
     def test_heuristic_threshold_boundary(self) -> None:
         """Test the heuristic threshold (2 years = 63072000 seconds)."""

@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any, Protocol
 
 from openid.association import Association as OpenIdAssociation
 
-from .exceptions import MissingBackend
+from .exceptions import InvalidExpiryValue, MissingBackend
 
 if TYPE_CHECKING:
     from social_core.backends.base import BaseAuth
@@ -65,29 +65,30 @@ class UserMixin:
             if self.set_extra_data(extra_data):
                 self.save()
 
-    def _compute_expiration_from_timestamp(self, value: int | str) -> timedelta | None:
+    def _compute_expiration_from_timestamp(
+        self, value: int | str, field_name: str = "expires"
+    ) -> timedelta:
         """Compute expiration timedelta from an absolute timestamp."""
         try:
             timestamp = int(value)
-        except (ValueError, TypeError):
-            # Cannot convert value to int
-            return None
+        except (ValueError, TypeError) as e:
+            raise InvalidExpiryValue(field_name, value) from e
 
         try:
             now = datetime.now(timezone.utc)
             expiry_time = datetime.fromtimestamp(timestamp, tz=timezone.utc)
             return expiry_time - now
-        except (OSError, ValueError):
-            # Timestamp out of valid range
-            return None
+        except (OSError, ValueError) as e:
+            raise InvalidExpiryValue(field_name, value) from e
 
-    def _compute_expiration_from_relative(self, value: int | str) -> timedelta | None:
+    def _compute_expiration_from_relative(
+        self, value: int | str, field_name: str = "expires"
+    ) -> timedelta:
         """Compute expiration timedelta from relative seconds."""
         try:
             seconds = int(value)
-        except (ValueError, TypeError):
-            # Invalid value, cannot convert to int
-            return None
+        except (ValueError, TypeError) as e:
+            raise InvalidExpiryValue(field_name, value) from e
 
         auth_time = self.extra_data.get("auth_time")
         if auth_time:
@@ -125,14 +126,12 @@ class UserMixin:
         # Check for expires_on (absolute timestamp)
         expires_on = self.extra_data.get("expires_on")
         if expires_on is not None:
-            result = self._compute_expiration_from_timestamp(expires_on)
-            if result is not None:
-                return result
+            return self._compute_expiration_from_timestamp(expires_on, "expires_on")
 
         # Check for expires_in (relative seconds from auth_time)
         expires_in = self.extra_data.get("expires_in")
         if expires_in is not None:
-            return self._compute_expiration_from_relative(expires_in)
+            return self._compute_expiration_from_relative(expires_in, "expires_in")
 
         # Check for expires (use heuristic to determine type)
         return self._handle_expires_field()
@@ -145,8 +144,8 @@ class UserMixin:
 
         try:
             expires_int = int(expires)
-        except (ValueError, TypeError):
-            return None
+        except (ValueError, TypeError) as e:
+            raise InvalidExpiryValue("expires", expires) from e
 
         # Use 2 years (63072000 seconds) as threshold to distinguish
         # absolute timestamps from relative seconds
@@ -155,12 +154,10 @@ class UserMixin:
 
         if expires_int > TIMESTAMP_THRESHOLD:
             # Likely an absolute timestamp, try treating as expires_on
-            result = self._compute_expiration_from_timestamp(expires_int)
-            if result is not None:
-                return result
+            return self._compute_expiration_from_timestamp(expires_int, "expires")
 
         # Treat as relative seconds (like expires_in)
-        return self._compute_expiration_from_relative(expires_int)
+        return self._compute_expiration_from_relative(expires_int, "expires")
 
     def expiration_datetime(self):
         # backward compatible alias
