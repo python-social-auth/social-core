@@ -5,6 +5,7 @@ import json
 import responses
 
 from social_core.backends.open_id_connect import OpenIdConnectAuth
+from social_core.exceptions import AuthInvalidParameter
 
 from .oauth import BaseAuthUrlTestMixin
 from .open_id_connect import OpenIdConnectTest
@@ -197,3 +198,229 @@ class ExampleOpenIdConnectCustomAtHashTest(OpenIdConnectTest):
             NotImplementedError, "Unsupported custom at hash algorithm"
         ):
             OpenIdConnectAuth.calc_at_hash("foobar", "RS256", "INVALID_ALGO")
+
+
+class OpenIdConnectWithAcrValues(ExampleOpenIdConnectAuth):
+    ACR_VALUES = "urn:mace:incommon:iap:silver"
+
+
+class ExampleOpenIdConnectAcrValuesTest(OpenIdConnectTest):
+    backend_path = (
+        "social_core.tests.backends.test_open_id_connect.OpenIdConnectWithAcrValues"
+    )
+    issuer = "https://example.com"
+    openid_config_body = json.dumps(
+        {
+            "issuer": "https://example.com",
+            "authorization_endpoint": "https://example.com/oidc/auth",
+            "token_endpoint": "https://example.com/oidc/token",
+            "userinfo_endpoint": "https://example.com/oidc/userinfo",
+            "revocation_endpoint": "https://example.com/oidc/revoke",
+            "jwks_uri": "https://example.com/oidc/certs",
+        }
+    )
+
+    expected_username = "cartman"
+
+    def pre_complete_callback(self, start_url) -> None:
+        super().pre_complete_callback(start_url)
+        responses.add(
+            responses.GET,
+            url=self.backend.userinfo_url(),
+            status=200,
+            body=json.dumps({"preferred_username": self.expected_username}),
+            content_type="text/json",
+        )
+
+    def test_everything_works(self) -> None:
+        self.do_login()
+
+    def test_acr_values_in_auth_params(self) -> None:
+        params = self.backend.auth_params(state="test-state")
+        self.assertEqual(params["acr_values"], "urn:mace:incommon:iap:silver")
+
+
+class OpenIdConnectWithLoginHint(ExampleOpenIdConnectAuth):
+    LOGIN_HINT = "user@example.com"
+
+
+class ExampleOpenIdConnectLoginHintTest(OpenIdConnectTest):
+    backend_path = (
+        "social_core.tests.backends.test_open_id_connect.OpenIdConnectWithLoginHint"
+    )
+    issuer = "https://example.com"
+    openid_config_body = json.dumps(
+        {
+            "issuer": "https://example.com",
+            "authorization_endpoint": "https://example.com/oidc/auth",
+            "token_endpoint": "https://example.com/oidc/token",
+            "userinfo_endpoint": "https://example.com/oidc/userinfo",
+            "revocation_endpoint": "https://example.com/oidc/revoke",
+            "jwks_uri": "https://example.com/oidc/certs",
+        }
+    )
+
+    expected_username = "cartman"
+
+    def pre_complete_callback(self, start_url) -> None:
+        super().pre_complete_callback(start_url)
+        responses.add(
+            responses.GET,
+            url=self.backend.userinfo_url(),
+            status=200,
+            body=json.dumps({"preferred_username": self.expected_username}),
+            content_type="text/json",
+        )
+
+    def test_everything_works(self) -> None:
+        self.do_login()
+
+    def test_login_hint_in_auth_params(self) -> None:
+        params = self.backend.auth_params(state="test-state")
+        self.assertEqual(params["login_hint"], "user@example.com")
+
+
+class OpenIdConnectWithIdTokenHint(ExampleOpenIdConnectAuth):
+    ID_TOKEN_HINT = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.fake"
+
+
+class ExampleOpenIdConnectIdTokenHintTest(OpenIdConnectTest):
+    backend_path = (
+        "social_core.tests.backends.test_open_id_connect.OpenIdConnectWithIdTokenHint"
+    )
+    issuer = "https://example.com"
+    openid_config_body = json.dumps(
+        {
+            "issuer": "https://example.com",
+            "authorization_endpoint": "https://example.com/oidc/auth",
+            "token_endpoint": "https://example.com/oidc/token",
+            "userinfo_endpoint": "https://example.com/oidc/userinfo",
+            "revocation_endpoint": "https://example.com/oidc/revoke",
+            "jwks_uri": "https://example.com/oidc/certs",
+        }
+    )
+
+    expected_username = "cartman"
+
+    def pre_complete_callback(self, start_url) -> None:
+        super().pre_complete_callback(start_url)
+        responses.add(
+            responses.GET,
+            url=self.backend.userinfo_url(),
+            status=200,
+            body=json.dumps({"preferred_username": self.expected_username}),
+            content_type="text/json",
+        )
+
+    def test_everything_works(self) -> None:
+        self.do_login()
+
+    def test_id_token_hint_in_auth_params(self) -> None:
+        params = self.backend.auth_params(state="test-state")
+        self.assertEqual(
+            params["id_token_hint"],
+            "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.fake",
+        )
+
+
+class OpenIdConnectWithUiLocales(ExampleOpenIdConnectAuth):
+    UI_LOCALES = "en-US fr-CA"
+
+
+class ExampleOpenIdConnectUiLocalesTest(OpenIdConnectTest):
+    backend_path = (
+        "social_core.tests.backends.test_open_id_connect.OpenIdConnectWithUiLocales"
+    )
+    issuer = "https://example.com"
+    openid_config_body = json.dumps(
+        {
+            "issuer": "https://example.com",
+            "authorization_endpoint": "https://example.com/oidc/auth",
+            "token_endpoint": "https://example.com/oidc/token",
+            "userinfo_endpoint": "https://example.com/oidc/userinfo",
+            "revocation_endpoint": "https://example.com/oidc/revoke",
+            "jwks_uri": "https://example.com/oidc/certs",
+        }
+    )
+
+    expected_username = "cartman"
+
+    def pre_complete_callback(self, start_url) -> None:
+        super().pre_complete_callback(start_url)
+        responses.add(
+            responses.GET,
+            url=self.backend.userinfo_url(),
+            status=200,
+            body=json.dumps({"preferred_username": self.expected_username}),
+            content_type="text/json",
+        )
+
+    def test_everything_works(self) -> None:
+        self.do_login()
+
+    def test_ui_locales_in_auth_params(self) -> None:
+        params = self.backend.auth_params(state="test-state")
+        self.assertEqual(params["ui_locales"], "en-US fr-CA")
+
+
+class OpenIdConnectWithInvalidParams(ExampleOpenIdConnectAuth):
+    """Test invalid empty parameter values"""
+
+
+class ExampleOpenIdConnectInvalidParamsTest(OpenIdConnectTest):
+    backend_path = (
+        "social_core.tests.backends.test_open_id_connect.OpenIdConnectWithInvalidParams"
+    )
+    issuer = "https://example.com"
+    openid_config_body = json.dumps(
+        {
+            "issuer": "https://example.com",
+            "authorization_endpoint": "https://example.com/oidc/auth",
+            "token_endpoint": "https://example.com/oidc/token",
+            "userinfo_endpoint": "https://example.com/oidc/userinfo",
+            "revocation_endpoint": "https://example.com/oidc/revoke",
+            "jwks_uri": "https://example.com/oidc/certs",
+        }
+    )
+
+    expected_username = "cartman"
+
+    def test_empty_acr_values_raises_error(self) -> None:
+        with self.assertRaises(AuthInvalidParameter):
+            self.strategy.set_settings(
+                {
+                    **self.extra_settings(),
+                    f"SOCIAL_AUTH_{self.backend.name.upper().replace('-', '_')}_ACR_VALUES": "",
+                }
+            )
+            self.backend.auth_params(state="test-state")
+
+    def test_empty_login_hint_raises_error(self) -> None:
+        with self.assertRaises(AuthInvalidParameter):
+            self.strategy.set_settings(
+                {
+                    **self.extra_settings(),
+                    f"SOCIAL_AUTH_{self.backend.name.upper().replace('-', '_')}_LOGIN_HINT": "",
+                }
+            )
+            self.backend.auth_params(state="test-state")
+
+    def test_empty_id_token_hint_raises_error(self) -> None:
+        with self.assertRaises(AuthInvalidParameter):
+            self.strategy.set_settings(
+                {
+                    **self.extra_settings(),
+                    f"SOCIAL_AUTH_{self.backend.name.upper().replace('-', '_')}_ID_TOKEN_HINT": "",
+                }
+            )
+            self.backend.auth_params(state="test-state")
+
+    def test_empty_ui_locales_raises_error(self) -> None:
+        with self.assertRaises(AuthInvalidParameter):
+            self.strategy.set_settings(
+                {
+                    **self.extra_settings(),
+                    f"SOCIAL_AUTH_{self.backend.name.upper().replace('-', '_')}_UI_LOCALES": "",
+                }
+            )
+            self.backend.auth_params(state="test-state")
