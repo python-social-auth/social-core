@@ -81,7 +81,6 @@ class TestUserSocialAuth(UserMixin, BaseModel):
     NEXT_ID = 1
     cache = {}
     cache_by_uid = {}
-    extra_data: dict[str, Any]
 
     def __init__(self, user: User, provider, uid, extra_data=None) -> None:
         self.id = TestUserSocialAuth.next_id()
