@@ -1,13 +1,19 @@
-# pyright: reportAttributeAccessIssue=false
-
 import json
+from typing import TYPE_CHECKING
 
 import responses
 
 from .oauth import OAuth2PkcePlainTest, OAuth2PkceS256Test
 
+if TYPE_CHECKING:
+    from .oauth import OAuth2TestProtocol
 
-class BitbucketDataCenterOAuth2Mixin:
+    _Base = OAuth2TestProtocol
+else:
+    _Base = object
+
+
+class BitbucketDataCenterOAuth2Mixin(_Base):  # type: ignore[misc]
     backend_path = "social_core.backends.bitbucket_datacenter.BitbucketDataCenterOAuth2"
     application_properties_url = (
         "https://bachmanity.atlassian.net/rest/api/latest/application-properties"

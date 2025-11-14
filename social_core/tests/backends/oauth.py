@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Generic, TypeVar, cast
+from typing import TYPE_CHECKING, Generic, Protocol, TypeVar, cast
 from unittest.mock import patch
 from urllib.parse import urlparse
 
@@ -13,7 +13,48 @@ from social_core.utils import get_querystring, parse_qs, url_add_parameters
 
 from .base import BaseBackendTest
 
+if TYPE_CHECKING:
+    from social_core.tests.models import TestUserSocialAuth
+
 OAuthBackendT = TypeVar("OAuthBackendT", bound=OAuthAuth)
+
+
+class OAuth2TestProtocol(Protocol):
+    """Protocol for OAuth2 test methods used by mixins.
+
+    This protocol defines the interface that OAuth2 test mixins expect
+    from test base classes. It includes common unittest.TestCase methods
+    and OAuth2-specific test helper methods.
+    """
+
+    def assertEqual(self, first: object, second: object, msg: object = None) -> None:
+        """Assert that two values are equal."""
+        ...
+
+    def do_login(self) -> User:
+        """Perform a login flow and return the user."""
+        ...
+
+    def do_partial_pipeline(self) -> User:
+        """Perform a partial pipeline flow and return the user."""
+        ...
+
+    def do_refresh_token(self) -> tuple[User, TestUserSocialAuth]:
+        """Perform a token refresh flow and return user and social auth."""
+        ...
+
+    def extra_settings(self) -> dict[str, str | list[str]]:
+        """Return extra settings for the backend."""
+        ...
+
+    def auth_handlers(self, start_url: str) -> str:
+        """Handle authentication flow and return target URL."""
+        ...
+
+    @property
+    def name(self) -> str:
+        """Backend name for settings."""
+        ...
 
 
 class BaseOAuthTest(BaseBackendTest[OAuthBackendT], Generic[OAuthBackendT]):

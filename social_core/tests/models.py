@@ -88,6 +88,8 @@ class TestUserSocialAuth(UserMixin, BaseModel):
         self.provider = provider
         self.uid = uid
         self.extra_data = extra_data or {}
+        # Type narrowing: extra_data is always a dict in tests, never None
+        assert self.extra_data is not None
         self.user.social.append(self)
         TestUserSocialAuth.cache_by_uid[uid] = self
 

@@ -211,6 +211,6 @@ class VKAppOAuth2(VKOAuth2):
             },
         }
         auth_data["response"].update(
-            json.loads(auth_data["request"]["api_result"])["response"][0]
+            json.loads(auth_data["request"]["api_result"])["response"][0]  # type: ignore[index]
         )
         return self.strategy.authenticate(*args, **auth_data)
