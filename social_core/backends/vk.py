@@ -196,21 +196,20 @@ class VKAppOAuth2(VKOAuth2):
             if user_check == 1:
                 is_user = self.data.get("is_app_user")
             elif user_check == 2:
-                is_user = self.vk_api("isAppUser", {"user_id": user_id}).get(
-                    "response", 0
-                )
+                response = self.vk_api("isAppUser", {"user_id": user_id})
+                if response is None:
+                    return None
+                is_user = response.get("response", 0)
             if not int(is_user):
                 return None
 
-        auth_data = {
-            "auth": self,
-            "backend": self,
-            "request": self.strategy.request_data(),
-            "response": {
-                self.id_key(): user_id,
-            },
-        }
-        auth_data["response"].update(
-            json.loads(auth_data["request"]["api_result"])["response"][0]
+        request = self.strategy.request_data()
+        response = {self.id_key(): user_id}
+        response.update(json.loads(request["api_result"])["response"][0])
+        return self.strategy.authenticate(
+            *args,
+            auth=self,
+            backend=self,
+            request=request,
+            response=response,
         )
-        return self.strategy.authenticate(*args, **auth_data)
