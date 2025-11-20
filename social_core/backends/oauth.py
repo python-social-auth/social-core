@@ -493,7 +493,7 @@ class BaseOAuth2(OAuthAuth):
         kwargs.update({"response": response, "backend": self})
         return self.strategy.authenticate(*args, **kwargs)
 
-    def refresh_token_params(self, token, *args, **kwargs):
+    def refresh_token_params(self, token: str, *args, **kwargs) -> dict:
         client_id, client_secret = self.get_key_and_secret()
         return {
             "refresh_token": token,
@@ -502,16 +502,21 @@ class BaseOAuth2(OAuthAuth):
             "client_secret": client_secret,
         }
 
-    def process_refresh_token_response(self, response, *args, **kwargs):
+    def process_refresh_token_response(self, response, *args, **kwargs) -> dict:
         return response.json()
 
-    def refresh_token(self, token, *args, **kwargs):
+    def refresh_token(self, token: str, *args, **kwargs) -> dict:
         params = self.refresh_token_params(token, *args, **kwargs)
         url = self.refresh_token_url()
         method = self.REFRESH_TOKEN_METHOD
-        key = "params" if method == "GET" else "data"
-        request_args = {"headers": self.auth_headers(), "method": method, key: params}
-        request = self.request(url, **request_args)
+        is_get = method == "GET"
+        request = self.request(
+            url,
+            headers=self.auth_headers(),
+            method=method,
+            data=params if not is_get else None,
+            params=params if is_get else None,
+        )
         return self.process_refresh_token_response(request, *args, **kwargs)
 
     def refresh_token_url(self):
