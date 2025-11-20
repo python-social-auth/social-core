@@ -7,54 +7,7 @@ from requests.auth import HTTPBasicAuth
 
 from social_core.utils import handle_http_errors
 
-from .oauth import BaseOAuth1, BaseOAuth2
-
-
-class YahooOAuth(BaseOAuth1):
-    """Yahoo OAuth authentication backend. DEPRECATED"""
-
-    name = "yahoo-oauth"
-    ID_KEY = "guid"
-    AUTHORIZATION_URL = "https://api.login.yahoo.com/oauth/v2/request_auth"
-    REQUEST_TOKEN_URL = "https://api.login.yahoo.com/oauth/v2/get_request_token"
-    ACCESS_TOKEN_URL = "https://api.login.yahoo.com/oauth/v2/get_token"
-    EXTRA_DATA = [
-        ("guid", "id"),
-        ("access_token", "access_token"),
-        ("expires", "expires"),
-    ]
-
-    def get_user_details(self, response):
-        """Return user details from Yahoo Profile"""
-        fullname, first_name, last_name = self.get_user_names(
-            first_name=response.get("givenName"), last_name=response.get("familyName")
-        )
-        emails = [email for email in response.get("emails", []) if email.get("handle")]
-        emails.sort(key=lambda e: e.get("primary", False), reverse=True)
-        return {
-            "username": response.get("nickname"),
-            "email": emails[0]["handle"] if emails else "",
-            "fullname": fullname,
-            "first_name": first_name,
-            "last_name": last_name,
-        }
-
-    def user_data(self, access_token, *args, **kwargs):
-        """Loads user data from service"""
-        url = "https://social.yahooapis.com/v1/user/{0}/profile?format=json"
-        return self.get_json(
-            url.format(self._get_guid(access_token)), auth=self.oauth_auth(access_token)
-        )["profile"]
-
-    def _get_guid(self, access_token):
-        """
-        Because you have to provide GUID for every API request it's also
-        returned during one of OAuth calls
-        """
-        return self.get_json(
-            "https://social.yahooapis.com/v1/me/guid?format=json",
-            auth=self.oauth_auth(access_token),
-        )["guid"]["value"]
+from .oauth import BaseOAuth2
 
 
 class YahooOAuth2(BaseOAuth2):
@@ -89,7 +42,7 @@ class YahooOAuth2(BaseOAuth2):
 
         email = response.get("email")
         return {
-            "username": response.get("nickname"),
+            "username": response.get("preferred_username", response.get("nickname")),
             "email": email,
             "fullname": fullname,
             "first_name": first_name,
