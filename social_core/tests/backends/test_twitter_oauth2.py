@@ -1,6 +1,7 @@
 # pyright: reportAttributeAccessIssue=false
 
 import json
+from abc import ABC
 
 from social_core.exceptions import AuthException
 
@@ -12,7 +13,7 @@ from .oauth import (
 )
 
 
-class TwitterOAuth2Mixin:
+class TwitterOAuth2Mixin(OAuth2Test, ABC):
     backend_path = "social_core.backends.twitter_oauth2.TwitterOAuth2"
     user_data_url = "https://api.twitter.com/2/users/me"
     access_token_body = json.dumps(
