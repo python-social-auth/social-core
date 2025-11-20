@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, Literal, cast
 from urllib.parse import urlencode
 
 from oauthlib.oauth1 import SIGNATURE_TYPE_AUTH_HEADER
+from requests.auth import AuthBase
 from requests_oauthlib import OAuth1
 
 from social_core.exceptions import (
@@ -502,6 +503,9 @@ class BaseOAuth2(OAuthAuth):
             "client_secret": client_secret,
         }
 
+    def refresh_token_auth(self) -> AuthBase | None:
+        return None
+
     def process_refresh_token_response(self, response, *args, **kwargs) -> dict:
         return response.json()
 
@@ -514,6 +518,7 @@ class BaseOAuth2(OAuthAuth):
             url,
             headers=self.auth_headers(),
             method=method,
+            auth=self.refresh_token_auth(),
             data=params if not is_get else None,
             params=params if is_get else None,
         )

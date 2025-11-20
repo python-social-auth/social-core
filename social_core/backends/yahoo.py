@@ -3,11 +3,18 @@ Yahoo OpenId, OAuth1 and OAuth2 backends, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/yahoo.html
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from requests.auth import HTTPBasicAuth
 
 from social_core.utils import handle_http_errors
 
 from .oauth import BaseOAuth2
+
+if TYPE_CHECKING:
+    from requests.auth import AuthBase
 
 
 class YahooOAuth2(BaseOAuth2):
@@ -64,7 +71,7 @@ class YahooOAuth2(BaseOAuth2):
         self.process_error(self.data)
         response = self.request_access_token(
             self.ACCESS_TOKEN_URL,
-            auth=HTTPBasicAuth(*self.get_key_and_secret()),
+            auth=self.refresh_token_auth(),
             data=self.auth_complete_params(self.validate_state()),
             headers=self.auth_headers(),
             method=self.ACCESS_TOKEN_METHOD,
@@ -81,16 +88,8 @@ class YahooOAuth2(BaseOAuth2):
             "redirect_uri": "oob",  # out of bounds
         }
 
-    def refresh_token(self, token, *args, **kwargs):
-        params = self.refresh_token_params(token, *args, **kwargs)
-        url = self.REFRESH_TOKEN_URL or self.ACCESS_TOKEN_URL
-        method = self.REFRESH_TOKEN_METHOD
-        key = "params" if method == "GET" else "data"
-        request_args = {"headers": self.auth_headers(), "method": method, key: params}
-        request = self.request(
-            url, auth=HTTPBasicAuth(*self.get_key_and_secret()), **request_args
-        )
-        return self.process_refresh_token_response(request, *args, **kwargs)
+    def refresh_token_auth(self) -> AuthBase | None:
+        return HTTPBasicAuth(*self.get_key_and_secret())
 
     def auth_complete_params(self, state=None):
         return {
