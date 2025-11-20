@@ -1,7 +1,7 @@
 import base64
 import unittest
 from typing import TYPE_CHECKING, cast
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from social_core.backends.base import BaseAuth
 from social_core.utils import (
@@ -211,18 +211,15 @@ class PartialPipelineData(unittest.TestCase):
 
 
 class GetKeyAndSecretBasicAuthTest(unittest.TestCase):
-    def setUp(self) -> None:
-        self.backend = BaseAuth(strategy=Mock())
-        self.backend.setting = Mock(
-            side_effect=lambda x: "test_key" if x == "KEY" else "test_secret"
-        )
-
     def test_basic_auth_returns_bytes(self) -> None:
         """Test that method returns bytes with base64 encoding"""
-        result = self.backend.get_key_and_secret_basic_auth()
-        expected = b"Basic " + base64.b64encode(b"test_key:test_secret")
-        self.assertEqual(result, expected)
-        self.assertIsInstance(result, bytes)
+        test_setting = {"KEY": "test_key", "SECRET": "test_secret"}
+        backend = BaseAuth(strategy=Mock())
+        with patch("social_core.backends.base.BaseAuth.setting", new=test_setting.get):
+            result = backend.get_key_and_secret_basic_auth()
+            expected = b"Basic " + base64.b64encode(b"test_key:test_secret")
+            self.assertEqual(result, expected)
+            self.assertIsInstance(result, bytes)
 
 
 class IdKeyConfigurabilityTest(unittest.TestCase):
