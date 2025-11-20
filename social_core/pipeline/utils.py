@@ -2,9 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from social_core.exceptions import (
+    StrategyMissingBackendError,
+)
+
 if TYPE_CHECKING:
     from social_core.backends.base import BaseAuth
-    from social_core.storage import UserProtocol
+    from social_core.storage import PartialMixin, UserProtocol
     from social_core.strategy import BaseStrategy
 
 SERIALIZABLE_TYPES = (dict, list, tuple, set, bool, type(None), int, str, bytes)
@@ -28,7 +32,9 @@ def partial_prepare(
     social=None,
     *args,
     **kwargs,
-):
+) -> PartialMixin:
+    if strategy.storage is None:
+        raise StrategyMissingBackendError
     kwargs.update(
         {
             "response": kwargs.get("response") or {},
@@ -59,12 +65,16 @@ def partial_prepare(
 
 def partial_store(
     strategy: BaseStrategy, backend: BaseAuth, next_step, *args, **kwargs
-):
+) -> PartialMixin:
+    if strategy.storage is None:
+        raise StrategyMissingBackendError
     partial = partial_prepare(strategy, backend, next_step, *args, **kwargs)
     return strategy.storage.partial.store(partial)
 
 
-def partial_load(strategy: BaseStrategy, token):
+def partial_load(strategy: BaseStrategy, token: str) -> PartialMixin | None:
+    if strategy.storage is None:
+        raise StrategyMissingBackendError
     partial = strategy.storage.partial.load(token)
 
     if partial:

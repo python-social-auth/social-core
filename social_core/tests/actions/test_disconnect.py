@@ -16,7 +16,8 @@ from .actions import BaseActionTest
 class DisconnectActionTest(BaseActionTest):
     def test_not_allowed_to_disconnect(self) -> None:
         self.do_login()
-        user = User.get(self.expected_username)
+        user = cast("User", User.get(self.expected_username))
+        self.assertIsNotNone(user)
         with self.assertRaisesRegex(
             NotAllowedToDisconnect, "This account is not allowed to be disconnected."
         ):

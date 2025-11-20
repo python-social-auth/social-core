@@ -12,8 +12,9 @@ TEST_HOST = "myapp.com"
 
 
 class Redirect:
-    def __init__(self, url) -> None:
+    def __init__(self, url, content=None) -> None:
         self.url = url
+        self.content = content
 
 
 class TestTemplateStrategy(BaseTemplateStrategy):
@@ -46,7 +47,7 @@ class TestStrategy(BaseStrategy):
 
     def html(self, content):
         """Return HTTP response with given content"""
-        return content
+        return Redirect("", content=content)
 
     def render_html(
         self,

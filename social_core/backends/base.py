@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from requests.auth import AuthBase
 
     from social_core.storage import UserProtocol
+    from social_core.strategy import HttpResponseProtocol
 
 
 class BaseAuth:
@@ -46,12 +47,12 @@ class BaseAuth:
         """Return setting value from strategy"""
         return self.strategy.setting(name, default=default, backend=self)
 
-    def start(self):
+    def start(self) -> HttpResponseProtocol:
         if self.uses_redirect():
             return self.strategy.redirect(self.auth_url())
         return self.strategy.html(self.auth_html())
 
-    def complete(self, *args, **kwargs):
+    def complete(self, *args, **kwargs) -> UserProtocol | None:
         return self.auth_complete(*args, **kwargs)
 
     def auth_url(self) -> str:
@@ -62,7 +63,7 @@ class BaseAuth:
         """Must return login HTML content returned by provider"""
         return "Implement in subclass"
 
-    def auth_complete(self, *args, **kwargs):
+    def auth_complete(self, *args, **kwargs) -> UserProtocol | None:
         """Completes login process, must return user instance"""
         raise NotImplementedError("Implement in subclass")
 
@@ -70,7 +71,9 @@ class BaseAuth:
         """Process data for errors, raise exception if needed.
         Call this method on any override of auth_complete."""
 
-    def authenticate(self, *args, **kwargs):
+    def authenticate(
+        self, *args, **kwargs
+    ) -> UserProtocol | HttpResponseProtocol | None:
         """Authenticate user using social credentials
 
         Authentication is made if this is the correct backend, backend
@@ -97,23 +100,27 @@ class BaseAuth:
         args, kwargs = self.strategy.clean_authenticate_args(*args, **kwargs)
         return self.pipeline(pipeline, *args, **kwargs)
 
-    def pipeline(self, pipeline, pipeline_index=0, *args, **kwargs):
+    def pipeline(
+        self, pipeline, pipeline_index: int = 0, *args, **kwargs
+    ) -> UserProtocol | HttpResponseProtocol | None:
         out = self.run_pipeline(pipeline, pipeline_index, *args, **kwargs)
         if not isinstance(out, dict):
-            return out
-        user = out.get("user")
+            return cast("HttpResponseProtocol", out)
+        user = cast("UserProtocol | None", out.get("user"))
         if user:
-            user.social_user = out.get("social")
-            user.is_new = out.get("is_new")
+            user.social_user = out.get("social")  # type: ignore[attr-defined]
+            user.is_new = out.get("is_new")  # type: ignore[attr-defined]
         return user
 
-    def disconnect(self, *args, **kwargs):
+    def disconnect(self, *args, **kwargs) -> dict:
         pipeline = self.strategy.get_disconnect_pipeline(self)
         kwargs["name"] = self.name
         kwargs["user_storage"] = self.strategy.storage.user
         return self.run_pipeline(pipeline, *args, **kwargs)
 
-    def run_pipeline(self, pipeline: list[str], pipeline_index=0, *args, **kwargs):
+    def run_pipeline(
+        self, pipeline: list[str], pipeline_index=0, *args, **kwargs
+    ) -> dict:
         out = kwargs.copy()
         out.setdefault("strategy", self.strategy)
         out.setdefault("backend", out.pop(self.name, None) or self)

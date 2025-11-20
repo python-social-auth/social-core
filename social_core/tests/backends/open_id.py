@@ -63,7 +63,7 @@ class OpenIdTest(BaseBackendTest):
 
     def get_form_data(self, html):
         parser = FormHTMLParser()
-        parser.feed(html)
+        parser.feed(html.content)
         return parser.form, parser.inputs
 
     def openid_url(self):
