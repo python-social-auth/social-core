@@ -63,7 +63,7 @@ def url_add_parameters(
         fragments[4] = urlencode(value)
         if _unquote_query:
             fragments[4] = unquote(fragments[4])
-        url = urlunparse(fragments)  # ty: ignore[invalid-assignment]
+        url = urlunparse(fragments)
     return url
 
 
