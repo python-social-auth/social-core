@@ -72,3 +72,5 @@ class DisconnectActionTest(BaseActionTest):
 
         redirect = do_disconnect(self.backend, user)
         self.assertEqual(len(user.social), 0)
+        url = self.strategy.build_absolute_uri("/success")
+        self.assertEqual(redirect.url, url)
