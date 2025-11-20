@@ -171,4 +171,4 @@ class BrokenStrategyTests(unittest.TestCase):
             cast("BrokenStorage", self.strategy.storage).is_integrity_error(None)
 
     def test_random_string(self) -> None:
-        self.assertTrue(isinstance(self.strategy.random_string(), str))
+        self.assertIsInstance(self.strategy.random_string(), str)

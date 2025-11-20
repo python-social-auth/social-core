@@ -41,12 +41,12 @@ class EvernoteOAuth1CanceledTest(EvernoteOAuth1Test):
     def test_login(self) -> None:
         with self.assertRaises(AuthCanceled) as cm:
             self.do_login()
-        self.assertTrue(cm.exception.response is not None)
+        self.assertIsNotNone(cm.exception.response)
 
     def test_partial_pipeline(self) -> None:
         with self.assertRaises(AuthCanceled) as cm:
             self.do_partial_pipeline()
-        self.assertTrue(cm.exception.response is not None)
+        self.assertIsNotNone(cm.exception.response)
 
 
 class EvernoteOAuth1ErrorTest(EvernoteOAuth1Test):

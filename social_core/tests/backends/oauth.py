@@ -192,7 +192,7 @@ class OAuth2PkceS256Test(OAuth2Test):
             "code_challenge_method"
         )
         self.assertIsNotNone(code_challenge)
-        self.assertTrue(code_challenge_method in ["s256", "S256"])
+        self.assertIn(code_challenge_method, ["s256", "S256"])
 
         auth_complete = next(
             r.request
