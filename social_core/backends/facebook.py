@@ -192,9 +192,8 @@ class FacebookAppOAuth2(FacebookOAuth2):
         if "signed_request" in self.data:
             _key, _secret = self.get_key_and_secret()
             response = self.load_signed_request(self.data["signed_request"])
-            assert response, "Missing signed_request response"
             if "user_id" not in response and "oauth_token" not in response:
-                raise AuthException(self)
+                raise AuthException(self, "Missing user_id or oauth_token")
 
             if response is not None:
                 access_token = (
@@ -204,9 +203,10 @@ class FacebookAppOAuth2(FacebookOAuth2):
                 )
 
         if access_token is None:
-            if self.data.get("error") == "access_denied":
+            access_error = self.data.get("error")
+            if access_error == "access_denied":
                 raise AuthCanceled(self)
-            raise AuthException(self)
+            raise AuthException(self, access_error)
         return self.do_auth(access_token, response, *args, **kwargs)
 
     def auth_html(self):
@@ -224,7 +224,7 @@ class FacebookAppOAuth2(FacebookOAuth2):
         tpl = self.setting("LOCAL_HTML", "facebook.html")
         return self.strategy.render_html(tpl=tpl, context=ctx)
 
-    def load_signed_request(self, signed_request):
+    def load_signed_request(self, signed_request) -> dict:
         def base64_url_decode(data):
             data = data.encode("ascii")
             data += b"=" * (4 - (len(data) % 4))
@@ -233,19 +233,20 @@ class FacebookAppOAuth2(FacebookOAuth2):
         _key, secret = self.get_key_and_secret()
         try:
             sig, payload = signed_request.split(".", 1)
-        except ValueError:
-            pass  # ignore if can't split on dot
-        else:
-            sig = base64_url_decode(sig)
-            payload_json_bytes = base64_url_decode(payload)
-            data = json.loads(payload_json_bytes.decode("utf-8", "replace"))
-            expected_sig = hmac.new(
-                secret.encode("ascii"),
-                msg=payload.encode("ascii"),
-                digestmod=hashlib.sha256,
-            ).digest()
-            # allow the signed_request to function for upto 1 day
-            if constant_time_compare(sig, expected_sig) and data["issued_at"] > (
-                time.time() - 86400
-            ):
-                return data
+        except ValueError as error:
+            # ignore if can't split on dot
+            raise AuthException(self, "Invalid signed request") from error
+        sig = base64_url_decode(sig)
+        payload_json_bytes = base64_url_decode(payload)
+        data = json.loads(payload_json_bytes.decode("utf-8", "replace"))
+        expected_sig = hmac.new(
+            secret.encode("ascii"),
+            msg=payload.encode("ascii"),
+            digestmod=hashlib.sha256,
+        ).digest()
+        # allow the signed_request to function for upto 1 day
+        if constant_time_compare(sig, expected_sig) and data["issued_at"] > (
+            time.time() - 86400
+        ):
+            return data
+        raise AuthException(self, "Invalid signature")
