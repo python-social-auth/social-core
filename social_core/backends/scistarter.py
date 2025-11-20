@@ -1,5 +1,7 @@
 """SciStarter OAuth2 Auth"""
 
+from typing import cast
+
 from .oauth import BaseOAuth2
 
 
@@ -22,7 +24,7 @@ class SciStarterOAuth2(BaseOAuth2):
 
     def get_redirect_uri(self, state=None):
         """Build redirect with redirect_state parameter."""
-        return self.redirect_uri.rstrip("/")
+        return cast("str", self.redirect_uri).rstrip("/")
 
     def get_user_details(self, response):
         return {

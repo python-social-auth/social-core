@@ -41,7 +41,7 @@ class UserMixin:
     provider = ""
     uid: str
     user: UserProtocol
-    extra_data: dict[str, Any] | None = None
+    extra_data: dict[str, Any]
 
     @abstractmethod
     def save(self): ...

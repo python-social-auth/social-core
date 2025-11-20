@@ -10,11 +10,13 @@ class BrokenBackendAuth(BaseAuth):
 
 
 class BrokenBackendTest(unittest.TestCase):
+    backend: BrokenBackendAuth
+
     def setUp(self) -> None:
         self.backend = BrokenBackendAuth(TestStrategy(TestStorage))
 
     def tearDown(self) -> None:
-        self.backend = None
+        del self.backend
 
     def test_auth_url(self) -> None:
         with self.assertRaisesRegex(NotImplementedError, "Implement in subclass"):

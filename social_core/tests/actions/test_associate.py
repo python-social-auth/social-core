@@ -10,6 +10,7 @@ from .actions import BaseActionTest
 
 class AssociateActionTest(BaseActionTest):
     expected_username = "foobar"
+    user: User
 
     def setUp(self) -> None:
         super().setUp()
