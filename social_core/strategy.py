@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import secrets
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, Protocol, cast
 
 from .backends.utils import get_backend
 from .exceptions import StrategyMissingBackendError, StrategyMissingFeatureError
@@ -12,7 +12,11 @@ from .utils import PARTIAL_TOKEN_SESSION_NAME, module_member, setting_name
 
 if TYPE_CHECKING:
     from .backends.base import BaseAuth
-    from .storage import BaseStorage, CodeMixin
+    from .storage import BaseStorage, CodeMixin, PartialMixin, UserProtocol
+
+
+class HttpResponseProtocol(Protocol):
+    url: str
 
 
 class BaseTemplateStrategy:
@@ -73,7 +77,7 @@ class BaseStrategy:
             raise StrategyMissingBackendError
         return self.storage.user.get_user(*args, **kwargs)
 
-    def session_setdefault(self, name, value):
+    def session_setdefault(self, name: str, value):
         self.session_set(name, value)
         return self.session_get(name)
 
@@ -91,7 +95,7 @@ class BaseStrategy:
         """
         raise StrategyMissingFeatureError(self.__class__.__name__, "session restore")
 
-    def openid_session_dict(self, name):
+    def openid_session_dict(self, name: str) -> OpenIdSessionWrapper:
         # Many frameworks are switching the session serialization from Pickle
         # to JSON to avoid code execution risks. Flask did this from Flask
         # 0.10, Django is switching to JSON by default from version 1.6.
@@ -113,7 +117,7 @@ class BaseStrategy:
     def from_session_value(self, val):
         return val
 
-    def partial_load(self, token):
+    def partial_load(self, token: str) -> PartialMixin | None:
         return partial_load(self, token)
 
     def clean_partial_pipeline(self, token) -> None:
@@ -124,7 +128,7 @@ class BaseStrategy:
         if current_token_in_session == token:
             self.session_pop(PARTIAL_TOKEN_SESSION_NAME)
 
-    def openid_store(self):
+    def openid_store(self) -> OpenIdStore:
         return OpenIdStore(self)
 
     def get_pipeline(self, backend: BaseAuth | None = None) -> list[str]:
@@ -141,7 +145,7 @@ class BaseStrategy:
     def random_string(self, length: int = 12, chars: str = ALLOWED_CHARS) -> str:
         return "".join([secrets.choice(chars) for i in range(length)])
 
-    def absolute_uri(self, path=None):
+    def absolute_uri(self, path: str | None = None) -> str | None:
         uri = self.build_absolute_uri(path)
         if uri and self.setting("REDIRECT_IS_HTTPS"):
             uri = uri.replace("http://", "https://")
@@ -184,7 +188,9 @@ class BaseStrategy:
         """Render given template or raw html with given context"""
         return self.tpl.render(tpl, html, context)
 
-    def authenticate(self, backend: BaseAuth, *args, **kwargs):
+    def authenticate(
+        self, backend: BaseAuth, *args, **kwargs
+    ) -> UserProtocol | HttpResponseProtocol | None:
         """Trigger the authentication mechanism tied to the current
         framework"""
         if self.storage is None:
@@ -217,19 +223,19 @@ class BaseStrategy:
 
     # Implement the following methods on strategies sub-classes
 
-    def redirect(self, url):
+    def redirect(self, url: str) -> HttpResponseProtocol:
         """Return a response redirect to the given URL"""
         raise NotImplementedError("Implement in subclass")
 
-    def get_setting(self, name):
+    def get_setting(self, name: str):
         """Return value for given setting name"""
         raise NotImplementedError("Implement in subclass")
 
-    def html(self, content):
+    def html(self, content: str) -> HttpResponseProtocol:
         """Return HTTP response with given content"""
         raise NotImplementedError("Implement in subclass")
 
-    def request_data(self, merge=True):
+    def request_data(self, merge: bool = True):
         """Return current request data (POST or GET)"""
         raise NotImplementedError("Implement in subclass")
 
@@ -237,19 +243,19 @@ class BaseStrategy:
         """Return current host value"""
         raise NotImplementedError("Implement in subclass")
 
-    def session_get(self, name, default=None):
+    def session_get(self, name: str, default=None):
         """Return session value for given key"""
         raise NotImplementedError("Implement in subclass")
 
-    def session_set(self, name, value):
+    def session_set(self, name: str, value):
         """Set session value for given key"""
         raise NotImplementedError("Implement in subclass")
 
-    def session_pop(self, name):
+    def session_pop(self, name: str):
         """Pop session value for given key"""
         raise NotImplementedError("Implement in subclass")
 
-    def build_absolute_uri(self, path: str | None = None) -> str:
+    def build_absolute_uri(self, path: str | None = None) -> str | None:
         """Build absolute URI with given (optional) path"""
         raise NotImplementedError("Implement in subclass")
 

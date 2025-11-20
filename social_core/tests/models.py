@@ -38,6 +38,7 @@ class User(BaseModel, UserProtocol):
     NEXT_ID = 1
     cache = {}
     _is_active = True
+    is_authenticated = True
     username: str
     email: str | None
     first_name: str | None
@@ -61,7 +62,7 @@ class User(BaseModel, UserProtocol):
         self.extra_user_fields = extra_user_fields
         self.save()
 
-    def is_active(self):
+    def is_active(self):  # pyright: ignore[reportIncompatibleVariableOverride]
         return self._is_active
 
     @classmethod
@@ -263,7 +264,7 @@ class TestPartial(PartialMixin, BaseModel):
     __test__ = False
 
     NEXT_ID = 1
-    cache = {}
+    cache: dict[str, TestPartial] = {}
 
     def save(self) -> None:
         TestPartial.cache[self.token] = self

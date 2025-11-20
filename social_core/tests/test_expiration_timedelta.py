@@ -5,6 +5,7 @@ from __future__ import annotations
 import time
 import unittest
 from datetime import datetime, timedelta, timezone
+from typing import cast
 
 from social_core.exceptions import InvalidExpiryValue
 from social_core.tests.models import TestUserSocialAuth, User
@@ -46,7 +47,7 @@ class ExpirationTimedeltaTestCase(unittest.TestCase):
             "123",
             extra_data={"expires_on": int(future_time.timestamp())},
         )
-        result = social.expiration_timedelta()
+        result = cast("timedelta", social.expiration_timedelta())
         self.assertIsNotNone(result)
         # Should be approximately 1 hour (with some tolerance)
         self.assertAlmostEqual(result.total_seconds(), 3600, delta=2)
@@ -61,7 +62,7 @@ class ExpirationTimedeltaTestCase(unittest.TestCase):
             "123",
             extra_data={"expires_on": int(past_time.timestamp())},
         )
-        result = social.expiration_timedelta()
+        result = cast("timedelta", social.expiration_timedelta())
         self.assertIsNotNone(result)
         # Should be negative (approximately -1 hour)
         self.assertLess(result.total_seconds(), 0)
@@ -77,7 +78,7 @@ class ExpirationTimedeltaTestCase(unittest.TestCase):
             "123",
             extra_data={"expires_in": expires_in, "auth_time": auth_time},
         )
-        result = social.expiration_timedelta()
+        result = cast("timedelta", social.expiration_timedelta())
         self.assertIsNotNone(result)
         # Should be approximately 30 minutes remaining (1 hour - 30 minutes)
         self.assertAlmostEqual(result.total_seconds(), 1800, delta=2)
@@ -91,7 +92,7 @@ class ExpirationTimedeltaTestCase(unittest.TestCase):
             "123",
             extra_data={"expires_in": expires_in},
         )
-        result = social.expiration_timedelta()
+        result = cast("timedelta", social.expiration_timedelta())
         self.assertIsNotNone(result)
         # Should be approximately 1 hour
         self.assertAlmostEqual(result.total_seconds(), 3600, delta=2)
@@ -107,7 +108,7 @@ class ExpirationTimedeltaTestCase(unittest.TestCase):
             "123",
             extra_data={"expires": int(future_time.timestamp())},
         )
-        result = social.expiration_timedelta()
+        result = cast("timedelta", social.expiration_timedelta())
         self.assertIsNotNone(result)
         # Should be approximately 2 hours
         self.assertAlmostEqual(result.total_seconds(), 7200, delta=2)
@@ -123,7 +124,7 @@ class ExpirationTimedeltaTestCase(unittest.TestCase):
             "123",
             extra_data={"expires": int(past_time.timestamp())},
         )
-        result = social.expiration_timedelta()
+        result = cast("timedelta", social.expiration_timedelta())
         self.assertIsNotNone(result)
         # Should be negative (approximately -1 hour)
         self.assertLess(result.total_seconds(), 0)
@@ -139,7 +140,7 @@ class ExpirationTimedeltaTestCase(unittest.TestCase):
             "123",
             extra_data={"expires": expires, "auth_time": auth_time},
         )
-        result = social.expiration_timedelta()
+        result = cast("timedelta", social.expiration_timedelta())
         self.assertIsNotNone(result)
         # Should be approximately 30 minutes remaining
         self.assertAlmostEqual(result.total_seconds(), 1800, delta=2)
@@ -153,7 +154,7 @@ class ExpirationTimedeltaTestCase(unittest.TestCase):
             "123",
             extra_data={"expires": expires},
         )
-        result = social.expiration_timedelta()
+        result = cast("timedelta", social.expiration_timedelta())
         self.assertIsNotNone(result)
         # Should be approximately 2 hours
         self.assertAlmostEqual(result.total_seconds(), 7200, delta=2)
@@ -172,7 +173,7 @@ class ExpirationTimedeltaTestCase(unittest.TestCase):
                 "expires": 3600,  # 1 hour
             },
         )
-        result = social.expiration_timedelta()
+        result = cast("timedelta", social.expiration_timedelta())
         self.assertIsNotNone(result)
         # Should use expires_on (3 hours), not expires_in or expires
         self.assertAlmostEqual(result.total_seconds(), 10800, delta=2)
@@ -188,7 +189,7 @@ class ExpirationTimedeltaTestCase(unittest.TestCase):
                 "expires": 3600,  # 1 hour
             },
         )
-        result = social.expiration_timedelta()
+        result = cast("timedelta", social.expiration_timedelta())
         self.assertIsNotNone(result)
         # Should use expires_in (2 hours), not expires
         self.assertAlmostEqual(result.total_seconds(), 7200, delta=2)
@@ -234,7 +235,7 @@ class ExpirationTimedeltaTestCase(unittest.TestCase):
             "123",
             extra_data={"expires": timestamp_value},
         )
-        result1 = social1.expiration_timedelta()
+        result1 = cast("timedelta", social1.expiration_timedelta())
         self.assertIsNotNone(result1)
         # Should be close to 0 (current time)
         self.assertAlmostEqual(result1.total_seconds(), 0, delta=2)
@@ -247,7 +248,7 @@ class ExpirationTimedeltaTestCase(unittest.TestCase):
             "456",
             extra_data={"expires": relative_value},
         )
-        result2 = social2.expiration_timedelta()
+        result2 = cast("timedelta", social2.expiration_timedelta())
         self.assertIsNotNone(result2)
         # Should be approximately 1 day
         self.assertAlmostEqual(result2.total_seconds(), 86400, delta=2)

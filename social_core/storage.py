@@ -14,6 +14,8 @@ from openid.association import Association as OpenIdAssociation
 from .exceptions import InvalidExpiryValue, MissingBackend
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from social_core.backends.base import BaseAuth
     from social_core.strategy import BaseStrategy
 
@@ -24,6 +26,12 @@ NO_SPECIAL_REGEX = re.compile(r"[^\w.@+_-]+", re.UNICODE)
 class UserProtocol(Protocol):
     id: int
     username: str
+    is_active: bool | Callable[[], bool]
+    is_authenticated: bool | Callable[[], bool]
+
+    # Set in BaseAuth.pipeline
+    # social_user: UserMixin
+    # is_new: bool
 
 
 class UserMixin:
@@ -386,6 +394,9 @@ class PartialMixin:
     def args(self, value) -> None:
         self.data["args"] = value
 
+    @abstractmethod
+    def save(self): ...
+
     @property
     def kwargs(self):
         return self.data.get("kwargs", {})
@@ -398,19 +409,21 @@ class PartialMixin:
         self.data["kwargs"].update(values)
 
     @classmethod
-    def generate_token(cls):
+    def generate_token(cls) -> str:
         return uuid.uuid4().hex
 
     @classmethod
-    def load(cls, token):
+    def load(cls, token: str) -> PartialMixin | None:
         raise NotImplementedError("Implement in subclass")
 
     @classmethod
-    def destroy(cls, token):
+    def destroy(cls, token: str):
         raise NotImplementedError("Implement in subclass")
 
     @classmethod
-    def prepare(cls, backend, next_step: int, data: dict[str, Any]):
+    def prepare(
+        cls, backend: str, next_step: int, data: dict[str, Any]
+    ) -> PartialMixin:
         partial = cls()
         partial.backend = backend
         partial.next_step = next_step
@@ -419,7 +432,7 @@ class PartialMixin:
         return partial
 
     @classmethod
-    def store(cls, partial):
+    def store(cls, partial: PartialMixin) -> PartialMixin:
         partial.save()
         return partial
 

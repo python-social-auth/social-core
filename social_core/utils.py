@@ -24,7 +24,9 @@ from .exceptions import (
 )
 
 if TYPE_CHECKING:
-    from social_core.backends.base import BaseAuth
+    from .backends.base import BaseAuth
+    from .storage import UserProtocol
+    from .strategy import BaseStrategy
 
 SETTING_PREFIX = "SOCIAL_AUTH"
 
@@ -98,7 +100,7 @@ def sanitize_redirect(hosts, redirect_to):
             return redirect_to
 
 
-def user_is_authenticated(user):
+def user_is_authenticated(user: UserProtocol | None) -> bool:
     if user and hasattr(user, "is_authenticated"):
         if callable(user.is_authenticated):
             authenticated = user.is_authenticated()
@@ -111,7 +113,7 @@ def user_is_authenticated(user):
     return authenticated
 
 
-def user_is_active(user):
+def user_is_active(user: UserProtocol | None) -> bool:
     if user and hasattr(user, "is_active"):
         is_active = user.is_active() if callable(user.is_active) else user.is_active
     elif user:
@@ -205,7 +207,7 @@ def partial_pipeline_data(backend, user=None, partial_token=None, *args, **kwarg
     return None
 
 
-def build_absolute_uri(host_url, path=None):
+def build_absolute_uri(host_url: str, path: str | None = None) -> str:
     """Build absolute URI with given (optional) path"""
     path = path or ""
     if path.startswith(("http://", "https://")):
@@ -215,7 +217,7 @@ def build_absolute_uri(host_url, path=None):
     return host_url + path
 
 
-def constant_time_compare(val1, val2):
+def constant_time_compare(val1: str | bytes, val2: str | bytes) -> bool:
     """Compare two values and prevent timing attacks for cryptographic use."""
     if isinstance(val1, str):
         val1 = val1.encode("utf-8")
@@ -224,11 +226,11 @@ def constant_time_compare(val1, val2):
     return hmac.compare_digest(val1, val2)
 
 
-def is_url(value):
-    return value and (value.startswith(("http://", "https://", "/")))
+def is_url(value: str | None) -> bool:
+    return bool(value) and value.startswith(("http://", "https://", "/"))
 
 
-def setting_url(backend, *names: str | None) -> str | None:
+def setting_url(backend: BaseAuth, *names: str | None) -> str | None:
     for name in names:
         # Name can actually None, value or setting name
         if not name:
@@ -274,7 +276,7 @@ def wrap_access_token_error(backend: BaseAuth):
         raise
 
 
-def append_slash(url):
+def append_slash(url: str) -> str:
     """Make sure we append a slash at the end of the URL otherwise we
     have issues with urljoin Example:
     >>> urlparse.urljoin('http://www.example.com/api/v3', 'user/1/')
@@ -285,7 +287,7 @@ def append_slash(url):
     return url
 
 
-def get_strategy(strategy, storage, *args, **kwargs):
+def get_strategy(strategy: str, storage: str, *args, **kwargs) -> BaseStrategy:
     Strategy = module_member(strategy)
     Storage = module_member(storage)
     return Strategy(Storage, *args, **kwargs)

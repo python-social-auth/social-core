@@ -11,7 +11,7 @@ Terminology:
 from __future__ import annotations
 
 import json
-from typing import Any
+from typing import Any, cast
 
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
 from onelogin.saml2.settings import OneLogin_Saml2_Settings
@@ -318,8 +318,10 @@ class SAMLAuth(BaseAuth):
             },
             "strict": True,  # We must force strict mode - for security
         }
-        config["security"].update(self.setting("SECURITY_CONFIG", {}))
-        config["sp"].update(self.setting("SP_EXTRA", {}))
+        cast("dict", config["security"]).update(
+            cast("dict", self.setting("SECURITY_CONFIG", {}))
+        )
+        cast("dict", config["sp"]).update(cast("dict", self.setting("SP_EXTRA", {})))
         return config
 
     def generate_metadata_xml(self):

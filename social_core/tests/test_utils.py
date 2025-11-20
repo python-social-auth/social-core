@@ -1,5 +1,6 @@
 import base64
 import unittest
+from typing import TYPE_CHECKING, cast
 from unittest.mock import Mock
 
 from social_core.backends.base import BaseAuth
@@ -13,6 +14,9 @@ from social_core.utils import (
 )
 
 from .models import TestPartial
+
+if TYPE_CHECKING:
+    from social_core.storage import UserProtocol
 
 
 class SanitizeRedirectTest(unittest.TestCase):
@@ -65,20 +69,20 @@ class UserIsAuthenticatedTest(unittest.TestCase):
         self.assertEqual(user_is_authenticated(None), False)
 
     def test_user_is_not_none(self) -> None:
-        self.assertEqual(user_is_authenticated(object()), True)
+        self.assertEqual(user_is_authenticated(cast("UserProtocol", object())), True)
 
     def test_user_has_is_authenticated(self) -> None:
         class User:
             is_authenticated = True
 
-        self.assertEqual(user_is_authenticated(User()), True)
+        self.assertEqual(user_is_authenticated(cast("UserProtocol", User())), True)
 
     def test_user_has_is_authenticated_callable(self) -> None:
         class User:
             def is_authenticated(self) -> bool:
                 return True
 
-        self.assertEqual(user_is_authenticated(User()), True)
+        self.assertEqual(user_is_authenticated(cast("UserProtocol", User())), True)
 
 
 class UserIsActiveTest(unittest.TestCase):
@@ -86,20 +90,20 @@ class UserIsActiveTest(unittest.TestCase):
         self.assertEqual(user_is_active(None), False)
 
     def test_user_is_not_none(self) -> None:
-        self.assertEqual(user_is_active(object()), True)
+        self.assertEqual(user_is_active(cast("UserProtocol", object())), True)
 
     def test_user_has_is_active(self) -> None:
         class User:
             is_active = True
 
-        self.assertEqual(user_is_active(User()), True)
+        self.assertEqual(user_is_active(cast("UserProtocol", User())), True)
 
     def test_user_has_is_active_callable(self) -> None:
         class User:
             def is_active(self) -> bool:
                 return True
 
-        self.assertEqual(user_is_active(User()), True)
+        self.assertEqual(user_is_active(cast("UserProtocol", User())), True)
 
 
 class SlugifyTest(unittest.TestCase):
@@ -110,11 +114,7 @@ class SlugifyTest(unittest.TestCase):
 
 
 class BuildAbsoluteURITest(unittest.TestCase):
-    def setUp(self) -> None:
-        self.host = "http://foobar.com"
-
-    def tearDown(self) -> None:
-        self.host = None
+    host = "http://foobar.com"
 
     def test_path_none(self) -> None:
         self.assertEqual(build_absolute_uri(self.host), self.host)

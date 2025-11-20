@@ -3,6 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, cast
 from uuid import uuid4
 
+from social_core.exceptions import (
+    StrategyMissingBackendError,
+)
 from social_core.utils import module_member, slugify
 
 if TYPE_CHECKING:
@@ -21,6 +24,8 @@ def get_username(
     *args,
     **kwargs,
 ):
+    if strategy.storage is None:
+        raise StrategyMissingBackendError
     if "username" not in backend.setting("USER_FIELDS", USER_FIELDS):
         return None
     storage = strategy.storage
@@ -110,6 +115,8 @@ def user_details(
     **kwargs,
 ) -> None:
     """Update user details using data from provider."""
+    if strategy.storage is None:
+        raise StrategyMissingBackendError
     if not user:
         return
 

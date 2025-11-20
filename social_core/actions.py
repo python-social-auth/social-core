@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, cast
 from urllib.parse import quote
 
 from .utils import (
@@ -8,8 +11,13 @@ from .utils import (
     user_is_authenticated,
 )
 
+if TYPE_CHECKING:
+    from .backends.base import BaseAuth
+    from .storage import UserProtocol
+    from .strategy import HttpResponseProtocol
 
-def do_auth(backend, redirect_name="next"):
+
+def do_auth(backend: BaseAuth, redirect_name: str = "next") -> HttpResponseProtocol:
     # Save any defined next value into session
     data = backend.strategy.request_data(merge=False)
 
@@ -35,7 +43,14 @@ def do_auth(backend, redirect_name="next"):
     return backend.start()
 
 
-def do_complete(backend, login, user=None, redirect_name="next", *args, **kwargs):
+def do_complete(
+    backend: BaseAuth,
+    login,
+    user: UserProtocol | None = None,
+    redirect_name: str = "next",
+    *args,
+    **kwargs,
+) -> HttpResponseProtocol:
     data = backend.strategy.request_data()
 
     is_authenticated = user_is_authenticated(user)
@@ -59,7 +74,7 @@ def do_complete(backend, login, user=None, redirect_name="next", *args, **kwargs
     # return it to the client
     user_model = backend.strategy.storage.user.user_model()
     if user and not isinstance(user, user_model):
-        return user
+        return cast("HttpResponseProtocol", user)
 
     if is_authenticated:
         if not user:
@@ -78,8 +93,9 @@ def do_complete(backend, login, user=None, redirect_name="next", *args, **kwargs
         )
         if bypass_inactivation or user_is_active(user):
             # catch is_new/social_user in case login() resets the instance
+            # These attributes are set in BaseAuth.pipeline()
             is_new = getattr(user, "is_new", False)
-            social_user = user.social_user
+            social_user = user.social_user  # type: ignore[union-attr]
             login(backend, user, social_user)
             # store last login backend name in session
             backend.strategy.session_set(
@@ -97,7 +113,8 @@ def do_complete(backend, login, user=None, redirect_name="next", *args, **kwargs
                 url = setting_url(backend, redirect_value, "LOGIN_REDIRECT_URL")
         else:
             if backend.setting("INACTIVE_USER_LOGIN", False):
-                social_user = user.social_user
+                # This attribute is set in BaseAuth.pipeline()
+                social_user = user.social_user  # type: ignore[union-attr]
                 login(backend, user, social_user)
             url = setting_url(
                 backend, "INACTIVE_USER_URL", "LOGIN_ERROR_URL", "LOGIN_URL"
@@ -123,7 +140,12 @@ def do_complete(backend, login, user=None, redirect_name="next", *args, **kwargs
 
 
 def do_disconnect(
-    backend, user, association_id=None, redirect_name="next", *args, **kwargs
+    backend: BaseAuth,
+    user: UserProtocol,
+    association_id=None,
+    redirect_name: str = "next",
+    *args,
+    **kwargs,
 ):
     partial = partial_pipeline_data(backend, user, *args, **kwargs)
     if partial:
