@@ -88,9 +88,9 @@ class OpenIdConnectAuth(BaseOAuth2):
     LOGIN_HINT = None
     ACR_VALUES = None
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, strategy, redirect_uri=None) -> None:
+        super().__init__(strategy, redirect_uri=redirect_uri)
         self.id_token = None
-        super().__init__(*args, **kwargs)
 
     def get_setting_config(
         self, setting_name: str, oidc_name: str, default: str
