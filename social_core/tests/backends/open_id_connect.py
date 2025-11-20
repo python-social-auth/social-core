@@ -79,9 +79,6 @@ class OpenIdConnectTest(
         )
         oidc_config = json.loads(self.openid_config_body)
 
-        def jwks(_request, _uri, headers):
-            return 200, headers, json.dumps({"keys": [self.key]})
-
         responses.add(
             responses.GET,
             oidc_config.get("jwks_uri"),
