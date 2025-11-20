@@ -54,7 +54,6 @@ class NKOAuth2(BaseOAuth2):
     ):
         key, secret = self.get_key_and_secret()
         oauth_verifier = oauth_verifier or self.data.get("oauth_verifier")
-        token = token or {}
         state = self.get_or_create_state()
         return OAuth1(
             key,
