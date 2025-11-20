@@ -81,56 +81,41 @@ class TwitterOAuth2Mixin(OAuth2Test, ABC):
 
     expected_username = "twitter_username"
 
+    def _assert_social_attributes(self, social):
+        self.assertEqual(social.uid, "1234567890123456789")
+        self.assertEqual(social.extra_data["first_name"], "first")
+        self.assertEqual(social.extra_data["last_name"], "last")
+        self.assertEqual(social.extra_data["fullname"], "first last")
+        self.assertEqual(social.extra_data["created_at"], "2023-03-06T06:18:59.000Z")
+        self.assertEqual(social.extra_data["verified"], False)
+        self.assertEqual(social.extra_data["verified_type"], "none")
+        self.assertEqual(social.extra_data["protected"], True)
+        self.assertEqual(social.extra_data["description"], "description str")
+        self.assertEqual(social.extra_data["url"], "https://social-core-test-url.com")
+        self.assertEqual(social.extra_data["pinned_tweet_id"], "9876543210987654321")
+        self.assertEqual(
+            social.extra_data["profile_image_url"],
+            "https://social-core-test-url.com/image.png",
+        )
+        self.assertEqual(social.extra_data["public_metrics"]["followers_count"], 69)
+        self.assertEqual(social.extra_data["public_metrics"]["following_count"], 129)
+        self.assertEqual(social.extra_data["public_metrics"]["tweet_count"], 40)
+        self.assertEqual(social.extra_data["public_metrics"]["listed_count"], 7)
+
     def test_login(self) -> None:
         user = self.do_login()
 
         self.assertEqual(len(user.social), 1)
 
         social = user.social[0]
-        self.assertEqual(social.uid, "1234567890123456789")
-        self.assertEqual(social.extra_data["first_name"], "first")
-        self.assertEqual(social.extra_data["last_name"], "last")
-        self.assertEqual(social.extra_data["fullname"], "first last")
-        self.assertEqual(social.extra_data["created_at"], "2023-03-06T06:18:59.000Z")
-        self.assertEqual(social.extra_data["verified"], False)
-        self.assertEqual(social.extra_data["verified_type"], "none")
-        self.assertEqual(social.extra_data["protected"], True)
-        self.assertEqual(social.extra_data["description"], "description str")
-        self.assertEqual(social.extra_data["url"], "https://social-core-test-url.com")
-        self.assertEqual(social.extra_data["pinned_tweet_id"], "9876543210987654321")
-        self.assertEqual(
-            social.extra_data["profile_image_url"],
-            "https://social-core-test-url.com/image.png",
-        )
-        self.assertEqual(social.extra_data["public_metrics"]["followers_count"], 69)
-        self.assertEqual(social.extra_data["public_metrics"]["following_count"], 129)
-        self.assertEqual(social.extra_data["public_metrics"]["tweet_count"], 40)
-        self.assertEqual(social.extra_data["public_metrics"]["listed_count"], 7)
+        self._assert_social_attributes(social)
 
     def test_partial_pipeline(self) -> None:
         user = self.do_partial_pipeline()
         self.assertEqual(len(user.social), 1)
 
         social = user.social[0]
-        self.assertEqual(social.uid, "1234567890123456789")
-        self.assertEqual(social.extra_data["first_name"], "first")
-        self.assertEqual(social.extra_data["last_name"], "last")
-        self.assertEqual(social.extra_data["fullname"], "first last")
-        self.assertEqual(social.extra_data["created_at"], "2023-03-06T06:18:59.000Z")
-        self.assertEqual(social.extra_data["verified"], False)
-        self.assertEqual(social.extra_data["verified_type"], "none")
-        self.assertEqual(social.extra_data["protected"], True)
-        self.assertEqual(social.extra_data["description"], "description str")
-        self.assertEqual(social.extra_data["url"], "https://social-core-test-url.com")
-        self.assertEqual(social.extra_data["pinned_tweet_id"], "9876543210987654321")
-        self.assertEqual(
-            social.extra_data["profile_image_url"],
-            "https://social-core-test-url.com/image.png",
-        )
-        self.assertEqual(social.extra_data["public_metrics"]["followers_count"], 69)
-        self.assertEqual(social.extra_data["public_metrics"]["following_count"], 129)
-        self.assertEqual(social.extra_data["public_metrics"]["tweet_count"], 40)
-        self.assertEqual(social.extra_data["public_metrics"]["listed_count"], 7)
+        self._assert_social_attributes(social)
 
 
 class TwitterOAuth2TestMissingOptionalValue(OAuth2Test, BaseAuthUrlTestMixin):
