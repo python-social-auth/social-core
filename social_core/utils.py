@@ -227,7 +227,7 @@ def constant_time_compare(val1: str | bytes, val2: str | bytes) -> bool:
 
 
 def is_url(value: str | None) -> bool:
-    return bool(value) and value.startswith(("http://", "https://", "/"))
+    return value is not None and value.startswith(("http://", "https://", "/"))
 
 
 def setting_url(backend: BaseAuth, *names: str | None) -> str | None:
