@@ -48,7 +48,6 @@ class CleverOAuth2(BaseOAuth2):
     def user_data(self, token, *args, **kwargs):
         """Loads user data from service"""
         identity_url = "https://api.clever.com/v3.0/me"
-        user_details_url = "https://api.clever.com/v3.0/users"
         auth_header = {"Authorization": f"Bearer {token}"}
         try:
             response = self.get_json(identity_url, headers=auth_header)
