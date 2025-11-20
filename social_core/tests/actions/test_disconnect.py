@@ -41,6 +41,7 @@ class DisconnectActionTest(BaseActionTest):
         self.assertEqual(len(user.social), 1)
         self.assertEqual(user.social[0], second_usa)
 
+    @responses.activate
     def test_disconnect_with_partial_pipeline(self) -> None:
         self.strategy.set_settings(
             {
