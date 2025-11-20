@@ -215,11 +215,12 @@ class BaseStrategy:
         return get_backend(self.get_backends(), name)
 
     def get_backend(
-        self, name: str, redirect_uri: str | None = None, *args, **kwargs
+        self, name: str, redirect_uri: str | None = None, **kwargs
     ) -> BaseAuth:
         """Return a configured backend instance"""
         Backend = self.get_backend_class(name)
-        return Backend(self, *args, redirect_uri=redirect_uri, **kwargs)
+        kwargs["redirect_uri"] = redirect_uri
+        return Backend(self, **kwargs)
 
     # Implement the following methods on strategies sub-classes
 
