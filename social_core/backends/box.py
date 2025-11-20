@@ -47,13 +47,3 @@ class BoxOAuth2(BaseOAuth2):
         params = self.setting("PROFILE_EXTRA_PARAMS", {})
         params["access_token"] = access_token
         return self.get_json("https://api.box.com/2.0/users/me", params=params)
-
-    def refresh_token(self, token, *args, **kwargs):
-        params = self.refresh_token_params(token, *args, **kwargs)
-        request = self.request(
-            self.REFRESH_TOKEN_URL or self.ACCESS_TOKEN_URL,
-            data=params,
-            headers=self.auth_headers(),
-            method="POST",
-        )
-        return self.process_refresh_token_response(request, *args, **kwargs)
