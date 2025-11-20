@@ -228,8 +228,11 @@ def is_url(value):
     return value and (value.startswith(("http://", "https://", "/")))
 
 
-def setting_url(backend, *names):
+def setting_url(backend, *names: str | None) -> str | None:
     for name in names:
+        # Name can actually None, value or setting name
+        if not name:
+            continue
         if is_url(name):
             return name
         value = backend.setting(name)
