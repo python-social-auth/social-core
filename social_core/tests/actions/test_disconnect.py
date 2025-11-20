@@ -26,14 +26,14 @@ class DisconnectActionTest(BaseActionTest):
     def test_disconnect(self) -> None:
         self.do_login()
         user = cast("User", User.get(self.expected_username))
-        user.password = "password"
+        user.password = "test-user-strong-password-123!"
         do_disconnect(self.backend, user)
         self.assertEqual(len(user.social), 0)
 
     def test_disconnect_with_association_id(self) -> None:
         self.do_login()
         user = cast("User", User.get(self.expected_username))
-        user.password = "password"
+        user.password = "test-user-strong-password-123!"
         association_id = user.social[0].id
         second_usa = TestUserSocialAuth(user, user.social[0].provider, "uid2")
         self.assertEqual(len(user.social), 2)
