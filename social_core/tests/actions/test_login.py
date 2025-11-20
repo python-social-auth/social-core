@@ -1,10 +1,13 @@
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 from social_core.backends.oauth import BaseOAuth2
 from social_core.tests.models import TestUserSocialAuth, User
 from social_core.utils import PARTIAL_TOKEN_SESSION_NAME
 
 from .actions import BaseActionTest
+
+if TYPE_CHECKING:
+    from social_core.tests.models import TestStorage
 
 
 class BackendThatControlsRedirect(BaseOAuth2):
@@ -76,7 +79,9 @@ class LoginActionTest(BaseActionTest):
             partial_token = cast(
                 "str", self.strategy.session_get(PARTIAL_TOKEN_SESSION_NAME)
             )
-            partial = self.strategy.storage.partial.load(partial_token)
+            partial = cast("TestStorage", self.strategy.storage).partial.load(
+                partial_token
+            )
             partial.data["backend"] = "foobar"
 
         self.do_login_with_partial_pipeline(before_complete)

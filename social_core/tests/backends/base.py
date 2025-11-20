@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import unittest
-from typing import Generic, TypeVar
+from typing import TYPE_CHECKING, Generic, TypeVar, cast
 
 import requests
 import responses
@@ -19,11 +19,15 @@ from social_core.tests.models import (
 from social_core.tests.strategy import TestStrategy
 from social_core.utils import PARTIAL_TOKEN_SESSION_NAME, module_member, parse_qs
 
+if TYPE_CHECKING:
+    from social_core.storage import PartialMixin
+
 BackendT = TypeVar("BackendT", bound=BaseAuth)
 
 
 class BaseBackendTest(unittest.TestCase, Generic[BackendT]):
     backend: BackendT
+    strategy: TestStrategy
     backend_path: str = ""
     name: str = ""
     complete_url = ""
@@ -55,7 +59,7 @@ class BaseBackendTest(unittest.TestCase, Generic[BackendT]):
 
     def tearDown(self) -> None:
         del self.backend
-        self.strategy = None
+        del self.strategy
         self.name = ""
         self.complete_url = None
         User.reset_cache()
@@ -148,7 +152,8 @@ class BaseBackendTest(unittest.TestCase, Generic[BackendT]):
 
         password = self.pipeline_password_handling(url)
         token = self.strategy.session_pop(PARTIAL_TOKEN_SESSION_NAME)
-        partial = self.strategy.partial_load(token)
+        partial = cast("PartialMixin", self.strategy.partial_load(token))
+        self.assertIsNotNone(partial)
         self.assertEqual(partial.backend, self.backend.name)
         redirect = self.backend.continue_pipeline(partial)
 
@@ -158,7 +163,8 @@ class BaseBackendTest(unittest.TestCase, Generic[BackendT]):
         slug = self.pipeline_slug_handling(url)
 
         token = self.strategy.session_pop(PARTIAL_TOKEN_SESSION_NAME)
-        partial = self.strategy.partial_load(token)
+        partial = cast("PartialMixin", self.strategy.partial_load(token))
+        self.assertIsNotNone(partial)
         self.assertEqual(partial.backend, self.backend.name)
         user = self.backend.continue_pipeline(partial)
 
