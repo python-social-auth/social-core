@@ -4,7 +4,7 @@ from social_core.utils import module_member, user_is_authenticated
 from .base import BaseAuth
 
 # Cache for discovered backends.
-BACKENDSCACHE = {}
+BACKENDSCACHE: dict[str, type[BaseAuth]] = {}
 
 
 def load_backends(backends, force_load=False):

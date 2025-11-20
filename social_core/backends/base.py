@@ -175,7 +175,7 @@ class BaseAuth:
             elif len(entry) == 3:
                 name, alias, discard = entry
             elif len(entry) == 2:
-                name, alias = entry
+                name, alias = entry  # ty: ignore[invalid-assignment]
             elif len(entry) == 1:
                 name = alias = entry[0]
             else:
