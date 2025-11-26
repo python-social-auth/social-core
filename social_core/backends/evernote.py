@@ -76,7 +76,7 @@ class EvernoteOAuth(BaseOAuth1):
             data["expires"] = int(data["expires"]) / 1000
         return data
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: dict, *args, **kwargs) -> dict[str, Any] | None:
         """Return user data provided"""
         return access_token.copy()
 

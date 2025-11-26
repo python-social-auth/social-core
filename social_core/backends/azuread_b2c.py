@@ -183,7 +183,7 @@ class AzureADB2COAuth2(AzureADOAuth2):
                 return self.jwt_key_to_pem(key)
         raise DecodeError(f"Cannot find kid={kid}")
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         response = kwargs["response"]
 
         id_token = response["id_token"]

@@ -1,3 +1,5 @@
+from typing import Any
+
 from requests.auth import HTTPBasicAuth
 
 from social_core.utils import handle_http_errors
@@ -28,7 +30,7 @@ class JustGivingOAuth2(BaseOAuth2):
             "last_name": last_name,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         key, secret = self.get_key_and_secret()
         return self.get_json(

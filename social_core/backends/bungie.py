@@ -2,6 +2,8 @@
 Bungie OAuth2 backend
 """
 
+from typing import Any
+
 from social_core.backends.oauth import BaseOAuth2
 
 
@@ -61,7 +63,7 @@ class BungieOAuth2(BaseOAuth2):
         kwargs.update({"response": response, "backend": self})
         return self.strategy.authenticate(*args, **kwargs)
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Grab user profile information from Bunige"""
         membership_id = kwargs["response"]["membership_id"]
         url = "https://www.bungie.net/Platform/User/GetBungieNetUser/"

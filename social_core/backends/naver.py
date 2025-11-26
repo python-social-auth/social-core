@@ -1,3 +1,5 @@
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -22,7 +24,7 @@ class NaverOAuth2(BaseOAuth2):
             "fullname": response.get("username"),
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         response = self.request(
             "https://openapi.naver.com/v1/nid/me",

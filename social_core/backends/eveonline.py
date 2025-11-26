@@ -3,6 +3,8 @@ EVE Online Single Sign-On (SSO) OAuth2 backend
 Documentation at https://eveonline-third-party-documentation.readthedocs.io/en/latest/sso/index.html
 """
 
+from typing import Any, cast
+
 from .oauth import BaseOAuth2
 
 
@@ -23,7 +25,7 @@ class EVEOnlineOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from EVE Online account"""
-        user_data = self.user_data(response["access_token"])
+        user_data = cast("dict", self.user_data(response["access_token"]))
         fullname, first_name, last_name = self.get_user_names(
             user_data["CharacterName"]
         )
@@ -35,7 +37,7 @@ class EVEOnlineOAuth2(BaseOAuth2):
             "last_name": last_name,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Get Character data from EVE server"""
         return self.get_json(
             "https://login.eveonline.com/oauth/verify",

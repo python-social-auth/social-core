@@ -3,6 +3,8 @@ Appsfueld OAuth2 backend (with sandbox mode support), docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/appsfuel.html
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -28,7 +30,7 @@ class AppsfuelOAuth2(BaseOAuth2):
             "email": email,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         return self.get_json(
             self.USER_DETAILS_URL, params={"access_token": access_token}

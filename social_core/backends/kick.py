@@ -3,6 +3,8 @@ Kick OAuth2 backend, docs at:
     https://docs.kick.com/getting-started/generating-tokens-oauth2-flow
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth2PKCE
 
 
@@ -47,7 +49,7 @@ class KickOAuth2(BaseOAuth2PKCE):
             "user_id": response.get("user_id"),
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         url = f"https://{self.API_HOSTNAME}/public/v1/users"
         auth_header = {"Authorization": f"Bearer {access_token}"}

@@ -7,6 +7,8 @@ Docs at:
 
 from __future__ import annotations
 
+from typing import Any
+
 from social_core.exceptions import AuthMissingParameter
 
 from .oauth import BaseOAuth2
@@ -28,7 +30,7 @@ class UdataBaseOAuth2(BaseOAuth2):
             "first_name": response.get("first_name"),
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Load user data from service."""
         if self.USER_DATA_URL is None:
             raise AuthMissingParameter(self, "USER_DATA_URL")

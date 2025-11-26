@@ -35,7 +35,7 @@ class UffdOAuth2(BaseOAuth2):
             "last_name": last_name,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         url = self.userinfo_url() + "?" + urlencode({"access_token": access_token})
         try:

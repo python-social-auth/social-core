@@ -1,3 +1,5 @@
+from typing import Any
+
 import requests
 
 from social_core.exceptions import AuthFailed
@@ -104,7 +106,7 @@ class UntappdOAuth2(BaseOAuth2):
         """
         return response["user"].get(self.id_key())
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         response = self.get_json(
             self.USER_INFO_URL, params={"access_token": access_token, "compact": "true"}

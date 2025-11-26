@@ -3,6 +3,8 @@ Readability OAuth1 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/readability.html
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth1
 
 READABILITY_API = "https://www.readability.com/api/rest/v1"
@@ -34,7 +36,7 @@ class ReadabilityOAuth(BaseOAuth1):
             "last_name": last_name,
         }
 
-    def user_data(self, access_token):
+    def user_data(self, access_token: dict, *args, **kwargs) -> dict[str, Any] | None:
         return self.get_json(
             READABILITY_API + "/users/_current", auth=self.oauth_auth(access_token)
         )

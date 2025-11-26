@@ -47,7 +47,7 @@ class VKontakteOpenAPI(BaseAuth):
             "last_name": last_name,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         return self.data
 
     def auth_html(self) -> str:
@@ -110,7 +110,7 @@ class VKOAuth2(BaseOAuth2):
             "last_name": last_name,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         request_data = [
             "first_name",

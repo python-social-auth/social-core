@@ -1,3 +1,5 @@
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -33,10 +35,10 @@ class ClasslinkOAuth(BaseOAuth2):
             "last_name": last_name,
         }
 
-    def user_data(self, token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         url = "https://nodeapi.classlink.com/v2/my/info"
-        auth_header = {"Authorization": f"Bearer {token}"}
+        auth_header = {"Authorization": f"Bearer {access_token}"}
         try:
             return self.get_json(url, headers=auth_header)
         except ValueError:

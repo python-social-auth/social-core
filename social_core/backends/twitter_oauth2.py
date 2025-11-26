@@ -4,6 +4,8 @@ Twitter OAuth2 backend, docs at:
     https://developer.twitter.com/en/docs/authentication/oauth-2-0/authorization-code
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth2PKCE
 
 
@@ -75,7 +77,7 @@ class TwitterOAuth2(BaseOAuth2PKCE):
             "public_metrics": public_metrics,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         # https://developer.twitter.com/en/docs/twitter-api/users/lookup/api-reference/get-users-me
         fields = [

@@ -1,3 +1,5 @@
+from typing import Any
+
 from social_core.backends.oauth import BaseOAuth2
 
 
@@ -24,7 +26,7 @@ class MusicBrainzOAuth2(BaseOAuth2):
             "first_name": response.get("sub"),
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         return self.get_json(
             "https://musicbrainz.org/oauth2/userinfo",

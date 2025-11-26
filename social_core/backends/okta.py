@@ -3,6 +3,7 @@ Okta OAuth2 and OpenIdConnect:
     https://python-social-auth.readthedocs.io/en/latest/backends/okta.html
 """
 
+from typing import Any
 from urllib.parse import urljoin, urlparse, urlunparse
 
 from social_core.utils import append_slash
@@ -68,7 +69,7 @@ class OktaOAuth2(OktaMixin, BaseOAuth2):
             "last_name": response.get("family_name"),
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from Okta"""
         return self.get_json(
             self._url("v1/userinfo"),

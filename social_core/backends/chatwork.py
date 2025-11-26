@@ -2,6 +2,8 @@
 Chatwork OAuth2 backend
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -48,7 +50,7 @@ class ChatworkOAuth2(BaseOAuth2):
             "last_name": last_name,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         headers = {"Authorization": "Bearer " + access_token}
         return self.get_json(self.api_url("/me"), headers=headers)

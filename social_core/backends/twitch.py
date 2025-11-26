@@ -3,6 +3,8 @@ Twitch OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/twitch.html
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth2
 from .open_id_connect import OpenIdConnectAuth
 
@@ -61,7 +63,7 @@ class TwitchOAuth2(BaseOAuth2):
             "last_name": "",
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         client_id, _ = self.get_key_and_secret()
         auth_headers = {
             "Authorization": f"Bearer {access_token}",

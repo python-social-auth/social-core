@@ -3,6 +3,8 @@ Docker Hub OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/docker.html
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -37,7 +39,7 @@ class DockerOAuth2(BaseOAuth2):
             "email": response.get("email", ""),
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Grab user profile information from Docker Hub."""
         username = kwargs["response"]["username"]
         return self.get_json(

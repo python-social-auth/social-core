@@ -9,6 +9,8 @@ must be defined with the corresponding values.
 More info: https://wiki.openstreetmap.org/wiki/OAuth
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth2PKCE
 
 
@@ -39,7 +41,7 @@ class OpenStreetMapOAuth2(BaseOAuth2PKCE):
             "last_name": "",
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Return user data provided"""
 
         headers = {"Authorization": f"Bearer {access_token}"}

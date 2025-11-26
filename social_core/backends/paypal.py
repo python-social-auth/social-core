@@ -1,3 +1,5 @@
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -18,7 +20,7 @@ class PayPalOAuth2(BaseOAuth2):
     REFRESH_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         auth_header = {"Authorization": f"Bearer {access_token}"}
         return self.get_json(self.USER_DATA_URL, headers=auth_header)
 

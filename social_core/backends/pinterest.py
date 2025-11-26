@@ -3,6 +3,8 @@ Pinterest OAuth2 backend, docs at:
     https://developers.pinterest.com/docs/api/authentication/
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -13,7 +15,7 @@ class PinterestOAuth2(BaseOAuth2):
     ACCESS_TOKEN_URL = "https://api.pinterest.com/v1/oauth/token"
     REDIRECT_STATE = False
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         response = self.get_json(
             "https://api.pinterest.com/v1/me/", params={"access_token": access_token}
         )

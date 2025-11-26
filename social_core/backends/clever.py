@@ -1,3 +1,5 @@
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -45,10 +47,10 @@ class CleverOAuth2(BaseOAuth2):
             "user_type": self.get_user_type(response),
         }
 
-    def user_data(self, token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         identity_url = "https://api.clever.com/v3.0/me"
-        auth_header = {"Authorization": f"Bearer {token}"}
+        auth_header = {"Authorization": f"Bearer {access_token}"}
         try:
             response = self.get_json(identity_url, headers=auth_header)
             user_id = response.get("data", {}).get("id")

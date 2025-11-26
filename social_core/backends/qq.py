@@ -61,7 +61,7 @@ class QQOAuth2(BaseOAuth2):
         data = json.loads(content[10:-3])
         return data["openid"]
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         openid = self.get_openid(access_token)
         response = self.get_json(
             "https://graph.qq.com/user/get_user_info",

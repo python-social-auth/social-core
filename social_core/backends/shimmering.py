@@ -2,6 +2,8 @@
 Shimmering Oauth
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -28,7 +30,7 @@ class ShimmeringOAuth2(BaseOAuth2):
             "email": email,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         headers = {"Authorization": f"Bearer {access_token}"}
         return self.get_json(

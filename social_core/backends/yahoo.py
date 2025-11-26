@@ -5,7 +5,7 @@ Yahoo OpenId, OAuth1 and OAuth2 backends, docs at:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from requests.auth import HTTPBasicAuth
 
@@ -56,7 +56,7 @@ class YahooOAuth2(BaseOAuth2):
             "last_name": last_name,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
 
         url = "https://api.login.yahoo.com/openid/v1/userinfo"

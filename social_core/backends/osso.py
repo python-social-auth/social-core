@@ -1,3 +1,4 @@
+from typing import Any
 from urllib.parse import urlencode
 
 from .oauth import BaseOAuth2
@@ -39,7 +40,7 @@ class OssoOAuth2(BaseOAuth2):
         """Return user details from Osso"""
         return {"username": response.get("email"), "email": response.get("email")}
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads normalized user profile from Osso"""
         url = f"{self.osso_base_url}/oauth/me?" + urlencode(
             {"access_token": access_token}

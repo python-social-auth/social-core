@@ -3,6 +3,8 @@ DailyMotion OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/dailymotion.html
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -19,7 +21,7 @@ class DailymotionOAuth2(BaseOAuth2):
     def get_user_details(self, response):
         return {"username": response.get("screenname")}
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Return user data provided"""
         return self.get_json(
             "https://api.dailymotion.com/auth/", params={"access_token": access_token}

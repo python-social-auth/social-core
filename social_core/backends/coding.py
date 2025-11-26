@@ -2,6 +2,7 @@
 Coding OAuth2 backend, docs at:
 """
 
+from typing import Any
 from urllib.parse import urljoin
 
 from .oauth import BaseOAuth2
@@ -32,7 +33,7 @@ class CodingOAuth2(BaseOAuth2):
             "last_name": last_name,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         data = self._user_data(access_token)
         if data.get("code") != 0:

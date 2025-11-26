@@ -3,6 +3,7 @@ Github OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/github.html
 """
 
+from typing import Any
 from urllib.parse import urljoin
 
 from requests import HTTPError
@@ -43,7 +44,7 @@ class GithubOAuth2(BaseOAuth2):
             "last_name": last_name,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         data = self._user_data(access_token)
         if not data.get("email"):
@@ -72,7 +73,7 @@ class GithubOAuth2(BaseOAuth2):
 class GithubMemberOAuth2(GithubOAuth2):
     no_member_string = ""
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         user_data = super().user_data(access_token, *args, **kwargs)
         headers = {"Authorization": f"token {access_token}"}

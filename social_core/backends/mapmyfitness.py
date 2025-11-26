@@ -3,6 +3,8 @@ MapMyFitness OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/mapmyfitness.html
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -37,7 +39,7 @@ class MapMyFitnessOAuth2(BaseOAuth2):
             "last_name": last,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         key = self.get_key_and_secret()[0]
         url = "https://oauth2-api.mapmyapi.com/v7.0/user/self/"
         headers = {"Authorization": f"Bearer {access_token}", "Api-Key": key}

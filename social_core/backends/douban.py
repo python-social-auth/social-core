@@ -3,6 +3,8 @@ Douban OAuth1 and OAuth2 backends, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/douban.html
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth1, BaseOAuth2
 
 
@@ -22,7 +24,7 @@ class DoubanOAuth(BaseOAuth1):
         """Return user details from Douban"""
         return {"username": response["db:uid"]["$t"], "email": ""}
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: dict, *args, **kwargs) -> dict[str, Any] | None:
         """Return user data provided"""
         return self.get_json(
             "http://api.douban.com/people/%40me?&alt=json",
@@ -54,7 +56,7 @@ class DoubanOAuth2(BaseOAuth2):
             "email": "",
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Return user data provided"""
         return self.get_json(
             "https://api.douban.com/v2/user/~me",

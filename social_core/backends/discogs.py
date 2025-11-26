@@ -3,6 +3,8 @@ Discogs OAuth1 backend, docs at:
     https://www.discogs.com/developers/
 """
 
+from typing import Any
+
 from social_core.backends.oauth import BaseOAuth1
 
 
@@ -27,7 +29,7 @@ class DiscogsOAuth1(BaseOAuth1):
             "name": user_data["name"],
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: dict, *args, **kwargs) -> dict[str, Any] | None:
         identity = self.get_json(
             "https://api.discogs.com/oauth/identity", auth=self.oauth_auth(access_token)
         )

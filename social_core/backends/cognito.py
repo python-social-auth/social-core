@@ -1,3 +1,5 @@
+from typing import Any
+
 from social_core.backends.oauth import BaseOAuth2
 
 
@@ -35,7 +37,7 @@ class CognitoOAuth2(BaseOAuth2):
             "last_name": last_name,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Grab user profile information from cognito."""
         response = self.get_json(
             url=self.user_data_url(),

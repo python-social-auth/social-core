@@ -1,3 +1,5 @@
+from typing import Any
+
 from .oauth import BaseOAuth2PKCE
 
 
@@ -23,7 +25,7 @@ class EtsyOAuth2(BaseOAuth2PKCE):
         ("image_url_75x75", "image_url_75x75"),
     ]
 
-    def user_data(self, access_token, *args, **kwargs) -> dict:
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         client_id, _ = self.get_key_and_secret()
         user_id = access_token.split(".")[0]
         headers = {"Authorization": f"Bearer {access_token}", "x-api-key": client_id}

@@ -3,6 +3,8 @@ Meetup OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/meetup.html
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -29,7 +31,7 @@ class MeetupOAuth2(BaseOAuth2):
             "last_name": last_name,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         return self.get_json(
             "https://api.meetup.com/2/member/self",

@@ -3,6 +3,8 @@ Flickr OAuth1 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/flickr.html
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth1
 
 
@@ -26,7 +28,7 @@ class FlickrOAuth(BaseOAuth1):
             "last_name": last_name,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: dict, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         return {
             "id": access_token["user_nsid"],

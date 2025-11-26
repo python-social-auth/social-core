@@ -3,6 +3,8 @@ Coursera OAuth2 backend, docs at:
     https://tech.coursera.org/app-platform/oauth2/
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -29,7 +31,7 @@ class CourseraOAuth2(BaseOAuth2):
         """Return user details from Coursera account"""
         return {"username": self._get_username_from_response(response)}
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Load user data from the service"""
         return self.get_json(
             "https://api.coursera.org/api/externalBasicProfiles.v1?q=me",

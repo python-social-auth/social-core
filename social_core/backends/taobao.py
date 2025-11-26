@@ -1,3 +1,5 @@
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -9,7 +11,7 @@ class TAOBAOAuth(BaseOAuth2):
     AUTHORIZATION_URL = "https://oauth.taobao.com/authorize"
     ACCESS_TOKEN_URL = "https://oauth.taobao.com/token"
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Return user data provided"""
         try:
             return self.get_json(

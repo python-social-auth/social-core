@@ -3,6 +3,8 @@ Reddit OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/reddit.html
 """
 
+from typing import Any, cast
+
 from .oauth import BaseOAuth2
 
 
@@ -35,7 +37,7 @@ class RedditOAuth2(BaseOAuth2):
             "last_name": "",
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         return self.get_json(
             "https://oauth.reddit.com/api/v1/me.json",
@@ -45,9 +47,11 @@ class RedditOAuth2(BaseOAuth2):
     def auth_headers(self):
         return {"Authorization": self.get_key_and_secret_basic_auth()}
 
-    def refresh_token_params(self, token, redirect_uri=None, *args, **kwargs):
+    def refresh_token_params(self, token: str, *args, **kwargs) -> dict[str, str]:
         params = super().refresh_token_params(token)
-        params["redirect_uri"] = self.redirect_uri or redirect_uri
+        params["redirect_uri"] = self.redirect_uri or cast(
+            "str", kwargs.get("redirect_uri")
+        )
         return params
 
     def auth_complete_credentials(self):

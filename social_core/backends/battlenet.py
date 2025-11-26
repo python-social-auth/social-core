@@ -1,3 +1,5 @@
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 # This provides a backend for python-social-auth. This should not be confused
@@ -40,7 +42,7 @@ class BattleNetOAuth2(BaseOAuth2):
         """Return user details from Battle.net account"""
         return {"battletag": response.get("battletag")}
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         return self.get_json(
             "https://eu.api.battle.net/account/user",

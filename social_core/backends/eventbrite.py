@@ -1,3 +1,5 @@
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -22,7 +24,7 @@ class EventbriteOAuth2(BaseOAuth2):
             "last_name": response["last_name"],
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data and datacenter information from service"""
         return self.get_json(
             self.METADATA_URL, headers={"Authorization": "Bearer " + access_token}

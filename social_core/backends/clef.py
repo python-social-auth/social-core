@@ -6,6 +6,8 @@ SOCIAL_AUTH_CLEF_KEY and SOCIAL_AUTH_CLEF_SECRET must be defined with the
 values given by Clef application registration process.
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -45,7 +47,7 @@ class ClefOAuth2(BaseOAuth2):
             "phone_number": info.get("phone_number", ""),
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         return self.get_json(
             "https://clef.io/api/v1/info", params={"access_token": access_token}
         )

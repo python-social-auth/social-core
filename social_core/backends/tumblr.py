@@ -3,6 +3,8 @@ Tumblr OAuth1 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/tumblr.html
 """
 
+from typing import Any
+
 from social_core.utils import first
 
 from .oauth import BaseOAuth1
@@ -28,7 +30,7 @@ class TumblrOAuth(BaseOAuth1):
             data["fullname"] = blog["title"]
         return data
 
-    def user_data(self, access_token):
+    def user_data(self, access_token: dict, *args, **kwargs) -> dict[str, Any] | None:
         return self.get_json(
             "http://api.tumblr.com/v2/user/info", auth=self.oauth_auth(access_token)
         )

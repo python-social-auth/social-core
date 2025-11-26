@@ -2,6 +2,8 @@
 Upwork OAuth1 backend
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth1
 
 
@@ -32,7 +34,7 @@ class UpworkOAuth(BaseOAuth1):
             "last_name": last_name,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: dict, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         return self.get_json(
             "https://www.upwork.com/api/auth/v1/info.json",

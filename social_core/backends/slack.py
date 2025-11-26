@@ -4,6 +4,8 @@ Slack OAuth2 backend, docs at:
     https://api.slack.com/docs/oauth
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -46,7 +48,7 @@ class SlackOAuth2(BaseOAuth2):
             "last_name": last_name,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         response = self.get_json(
             "https://slack.com/api/users.identity",

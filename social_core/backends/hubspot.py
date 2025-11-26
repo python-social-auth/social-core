@@ -3,6 +3,8 @@ HubSpot OAuth2 backend, docs at:
     https://developers.hubspot.com/docs/methods/oauth2/oauth2-overview
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -28,7 +30,7 @@ class HubSpotOAuth2(BaseOAuth2):
         response["email"] = response["user"]
         return response
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data information from service"""
         return self.get_json(
             self.USER_DATA_URL + access_token,

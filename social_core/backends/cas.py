@@ -7,6 +7,8 @@ the minor implementation differences between the Apereo CAS OIDC server
 implementation and the standard OIDC implementation in Python Social Auth.
 """
 
+from typing import Any, cast
+
 from .open_id_connect import OpenIdConnectAuth
 
 
@@ -36,7 +38,7 @@ class CASOpenIdConnectAuth(OpenIdConnectAuth):
         self.log_debug("method: get_user_id, details: %s, %s", details, response)
         return details.get("username")
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         data = self.get_json(
             self.userinfo_url(), headers={"Authorization": f"Bearer {access_token}"}
         )
@@ -46,7 +48,7 @@ class CASOpenIdConnectAuth(OpenIdConnectAuth):
     def get_user_details(self, response):
         username_key = self.setting("USERNAME_KEY", self.USERNAME_KEY)
         self.log_debug("username_key: %s", username_key)
-        attributes = self.user_data(response.get("access_token"))
+        attributes = cast("dict", self.user_data(response.get("access_token")))
         return {
             "username": attributes.get(username_key),
             "email": attributes.get("email"),

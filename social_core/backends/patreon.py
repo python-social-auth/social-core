@@ -3,6 +3,8 @@ Patreon OAuth2 backend
 https://www.patreon.com/platform/documentation/oauth
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -29,7 +31,7 @@ class PatreonOAuth2(BaseOAuth2):
             "last_name": details.get("last_name"),
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         return self.get_api(access_token, "identity")["data"]
 
     def get_api(self, access_token, suffix):

@@ -85,7 +85,7 @@ class LinkedinOAuth2(BaseOAuth2):
     def user_emails_url(self):
         return self.USER_EMAILS_URL
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         response = self.get_json(
             self.user_details_url(), headers=self.user_data_headers(access_token)
         )
