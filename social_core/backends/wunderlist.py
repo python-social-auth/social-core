@@ -1,3 +1,5 @@
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -20,7 +22,7 @@ class WunderlistOAuth2(BaseOAuth2):
             "last_name": last_name,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         headers = {"X-Access-Token": access_token, "X-Client-ID": self.setting("KEY")}
         return self.get_json("https://a.wunderlist.com/api/v1/user", headers=headers)

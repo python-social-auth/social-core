@@ -6,6 +6,8 @@ Written by Avi Alkalay <avi at unix dot sh>
 Certified to work with Django 1.6
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -25,7 +27,7 @@ class MovesOAuth2(BaseOAuth2):
         """Return user details Moves account"""
         return {"username": str(response.get("user_id"))}
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         return self.get_json(
             "https://api.moves-app.com/api/1.1/user/profile",

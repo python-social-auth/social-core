@@ -53,7 +53,7 @@ class DisqusOAuth2(BaseOAuth2):
         meta_response = dict(response, **response.get("response", {}))
         return super().extra_data(user, uid, meta_response, details, pipeline_kwargs)
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         _key, secret = self.get_key_and_secret()
         return self.get_json(

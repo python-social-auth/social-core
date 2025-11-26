@@ -3,6 +3,8 @@ RunKeeper OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/runkeeper.html
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -38,7 +40,7 @@ class RunKeeperOAuth2(BaseOAuth2):
             "last_name": last_name,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         # We need to use the /user endpoint to get the user id, the /profile
         # endpoint contains name, user name, location, gender
         user_data = self._user_data(access_token, "/user")

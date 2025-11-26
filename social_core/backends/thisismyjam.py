@@ -3,6 +3,8 @@ ThisIsMyJam OAuth1 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/thisismyjam.html
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth1
 
 
@@ -27,7 +29,7 @@ class ThisIsMyJamOAuth1(BaseOAuth1):
             "last_name": last_name,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: dict, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         return self.get_json(
             "http://api.thisismyjam.com/1/verify.json",

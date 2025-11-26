@@ -1,6 +1,6 @@
 """SciStarter OAuth2 Auth"""
 
-from typing import cast
+from typing import Any, cast
 
 from .oauth import BaseOAuth2
 
@@ -34,7 +34,7 @@ class SciStarterOAuth2(BaseOAuth2):
             "last_name": response.get("last_name"),
         }
 
-    def user_data(self, access_token, *args, **kwards):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         client_id, client_secret = self.get_key_and_secret()
         return self.get_json(
             self.USER_ACCESS_URL.format(clientid=client_id, key=client_secret),

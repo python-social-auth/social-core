@@ -3,6 +3,8 @@ XING OAuth1 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/xing.html
 """
 
+from typing import Any
+
 from oauthlib.oauth1 import SIGNATURE_TYPE_AUTH_HEADER
 from requests_oauthlib import OAuth1
 
@@ -53,7 +55,7 @@ class XingOAuth(BaseOAuth1):
             signature_type=SIGNATURE_TYPE_AUTH_HEADER,
         )
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: dict, *args, **kwargs) -> dict[str, Any] | None:
         """Return user data provided"""
         profile = self.get_json(
             "https://api.xing.com/v1/users/me.json",

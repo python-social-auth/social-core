@@ -3,6 +3,8 @@ Mixcloud OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/mixcloud.html
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -22,7 +24,7 @@ class MixcloudOAuth2(BaseOAuth2):
             "last_name": last_name,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         return self.get_json(
             "https://api.mixcloud.com/me/",
             params={"access_token": access_token, "alt": "json"},

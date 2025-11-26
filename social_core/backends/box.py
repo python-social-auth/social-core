@@ -3,6 +3,8 @@ Box.net OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/box.html
 """
 
+from typing import Any, cast
+
 from .oauth import BaseOAuth2
 
 
@@ -23,7 +25,7 @@ class BoxOAuth2(BaseOAuth2):
 
     def do_auth(self, access_token, response=None, *args, **kwargs):
         response = response or {}
-        data = self.user_data(access_token)
+        data = cast("dict[str, Any]", self.user_data(access_token))
 
         data["access_token"] = response.get("access_token")
         data["refresh_token"] = response.get("refresh_token")
@@ -42,7 +44,7 @@ class BoxOAuth2(BaseOAuth2):
             "last_name": last_name,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         params = self.setting("PROFILE_EXTRA_PARAMS", {})
         params["access_token"] = access_token

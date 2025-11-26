@@ -3,6 +3,8 @@ Discord Auth OAuth2 backend, docs at:
     https://discord.com/developers/docs/topics/oauth2
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -24,7 +26,7 @@ class DiscordOAuth2(BaseOAuth2):
             "email": response.get("email") or "",
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         url = f"https://{self.HOSTNAME}/api/users/@me"
         auth_header = {"Authorization": f"Bearer {access_token}"}
         return self.get_json(url, headers=auth_header)

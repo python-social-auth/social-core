@@ -3,6 +3,8 @@ Fitbit OAuth backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/fitbit.html
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth1, BaseOAuth2
 
 
@@ -20,7 +22,7 @@ class FitbitOAuth1(BaseOAuth1):
         """Return user details from Fitbit account"""
         return {"username": response.get("displayName"), "email": ""}
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: dict, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         return self.get_json(
             "https://api.fitbit.com/1/user/-/profile.json",
@@ -49,7 +51,7 @@ class FitbitOAuth2(BaseOAuth2):
         """Return user details from Fitbit account"""
         return {"username": response.get("displayName"), "email": ""}
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         auth_header = {"Authorization": f"Bearer {access_token}"}
         return self.get_json(

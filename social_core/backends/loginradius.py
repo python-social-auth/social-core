@@ -62,7 +62,7 @@ class LoginRadiusAuth(BaseOAuth2):
             },
         )
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service. Implement in subclass."""
         return self.get_json(
             self.PROFILE_URL,

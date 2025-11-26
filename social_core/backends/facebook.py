@@ -8,6 +8,7 @@ import hashlib
 import hmac
 import json
 import time
+from typing import Any
 
 from social_core.exceptions import (
     AuthCanceled,
@@ -68,7 +69,7 @@ class FacebookOAuth2(BaseOAuth2):
             "last_name": last_name,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         params = self.setting("PROFILE_EXTRA_PARAMS", {}).copy()
         params["access_token"] = access_token

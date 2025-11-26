@@ -1,3 +1,5 @@
+from typing import Any
+
 from social_core.backends.oauth import BaseOAuth2
 
 
@@ -28,7 +30,7 @@ class AtlassianOAuth2(BaseOAuth2):
             "last_name": last_name,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         resources = self.get_json(
             "https://api.atlassian.com/oauth/token/accessible-resources",
             headers={"Authorization": f"Bearer {access_token}"},

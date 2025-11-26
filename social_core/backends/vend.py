@@ -2,6 +2,8 @@
 Vend  OAuth2 backend:
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -29,7 +31,7 @@ class VendOAuth2(BaseOAuth2):
             "last_name": "",
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         prefix = kwargs["response"]["domain_prefix"]
         url = f"https://{prefix}.vendhq.com/api/users"

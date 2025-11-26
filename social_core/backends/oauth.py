@@ -145,7 +145,7 @@ class OAuthAuth(BaseAuth):
 
     def user_data(self, access_token, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service. Implement in subclass"""
-        return {}
+        raise NotImplementedError
 
     def authorization_url(self) -> str:
         url = self.setting("AUTHORIZATION_URL", self.AUTHORIZATION_URL)
@@ -354,6 +354,10 @@ class BaseOAuth1(OAuthAuth):
             method=self.ACCESS_TOKEN_METHOD,
         )
 
+    def user_data(self, access_token: dict, *args, **kwargs) -> dict[str, Any] | None:
+        """Loads user data from service. Implement in subclass"""
+        return {}
+
 
 class BaseOAuth2(OAuthAuth):
     """Base class for OAuth2 providers.
@@ -494,7 +498,7 @@ class BaseOAuth2(OAuthAuth):
         kwargs.update({"response": response, "backend": self})
         return self.strategy.authenticate(*args, **kwargs)
 
-    def refresh_token_params(self, token: str, *args, **kwargs) -> dict:
+    def refresh_token_params(self, token: str, *args, **kwargs) -> dict[str, str]:
         client_id, client_secret = self.get_key_and_secret()
         return {
             "refresh_token": token,
@@ -526,6 +530,10 @@ class BaseOAuth2(OAuthAuth):
 
     def refresh_token_url(self):
         return self.REFRESH_TOKEN_URL or self.access_token_url()
+
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
+        """Loads user data from service. Implement in subclass"""
+        return {}
 
 
 class BaseOAuth2PKCE(BaseOAuth2):

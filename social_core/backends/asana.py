@@ -30,7 +30,7 @@ class AsanaOAuth2(BaseOAuth2):
             "first_name": first_name,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         return self.get_json(
             self.USER_DATA_URL, headers={"Authorization": f"Bearer {access_token}"}
         )

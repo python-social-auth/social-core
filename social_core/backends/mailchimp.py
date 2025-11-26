@@ -1,3 +1,5 @@
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -25,7 +27,7 @@ class MailChimpOAuth2(BaseOAuth2):
             "email": response["login"]["email"],
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data and datacenter information from service"""
         return self.get_json(
             self.METADATA_URL, headers={"Authorization": "OAuth " + access_token}

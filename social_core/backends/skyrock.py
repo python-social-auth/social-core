@@ -3,6 +3,8 @@ Skyrock OAuth1 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/skyrock.html
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth1
 
 
@@ -29,7 +31,7 @@ class SkyrockOAuth(BaseOAuth1):
             "last_name": last_name,
         }
 
-    def user_data(self, access_token):
+    def user_data(self, access_token: dict, *args, **kwargs) -> dict[str, Any] | None:
         """Return user data provided"""
         return self.get_json(
             "https://api.skyrock.com/v2/user/get.json",

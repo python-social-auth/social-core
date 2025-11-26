@@ -2,6 +2,7 @@
 Openshift OAuth2 backend
 """
 
+from typing import Any
 from urllib.parse import urljoin
 
 from social_core.utils import append_slash
@@ -27,7 +28,7 @@ class OpenshiftOAuth2(BaseOAuth2):
         email = response["metadata"]["name"]
         return {"username": username, "email": email}
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         headers = {"Authorization": "Bearer " + access_token}
 

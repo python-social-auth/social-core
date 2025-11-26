@@ -3,6 +3,7 @@ OAuth2 Backend to work with microsoft graph.
 """
 
 import time
+from typing import Any
 
 from social_core.exceptions import AuthMissingParameter
 
@@ -61,7 +62,7 @@ class MicrosoftOAuth2(BaseOAuth2):
             "last_name": response.get("surname", ""),
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Return user data by querying Microsoft service"""
         return self.get_json(
             "https://graph.microsoft.com/v1.0/me",

@@ -3,6 +3,8 @@ Soundcloud OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/soundcloud.html
 """
 
+from typing import Any
+
 from social_core.utils import url_add_parameters
 
 from .oauth import BaseOAuth2
@@ -33,7 +35,7 @@ class SoundcloudOAuth2(BaseOAuth2):
             "last_name": last_name,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         return self.get_json(
             "https://api.soundcloud.com/me",

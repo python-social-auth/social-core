@@ -50,7 +50,7 @@ class OdnoklassnikiOAuth2(BaseOAuth2):
             "last_name": last_name,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Return user data from Odnoklassniki REST API"""
         data = {"access_token": access_token, "method": "users.getCurrentUser"}
         _key, secret = self.get_key_and_secret()

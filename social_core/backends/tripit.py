@@ -5,7 +5,7 @@ Tripit OAuth2 backend, docs at:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from defusedxml import minidom
 
@@ -35,7 +35,7 @@ class TripItOAuth(BaseOAuth1):
             "last_name": last_name,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: dict, *args, **kwargs) -> dict[str, Any] | None:
         """Return user data provided"""
         content: str = self.oauth_request(
             access_token, "https://api.tripit.com/v1/get/profile"

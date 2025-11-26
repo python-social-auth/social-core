@@ -2,6 +2,8 @@
 ArcGIS OAuth2 backend
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -22,7 +24,7 @@ class ArcGISOAuth2(BaseOAuth2):
             "last_name": response.get("lastName"),
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         return self.get_json(
             "https://www.arcgis.com/sharing/rest/community/self",

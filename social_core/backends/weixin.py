@@ -3,6 +3,7 @@
 Weixin OAuth2 backend
 """
 
+from typing import Any
 from urllib.parse import urlencode
 
 from requests import HTTPError
@@ -39,7 +40,7 @@ class WeixinOAuth2(BaseOAuth2):
             "profile_image_url": response.get("headimgurl", ""),
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         data = self.get_json(
             "https://api.weixin.qq.com/sns/userinfo",
             params={

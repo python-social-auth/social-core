@@ -3,6 +3,8 @@ Amazon OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/amazon.html
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -31,7 +33,7 @@ class AmazonOAuth2(BaseOAuth2):
             "last_name": last_name,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Grab user profile information from amazon."""
         response = self.get_json(
             "https://api.amazon.com/user/profile", params={"access_token": access_token}

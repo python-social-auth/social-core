@@ -3,6 +3,8 @@
     https://python-social-auth.readthedocs.io/en/latest/backends/five_hundred_px.html
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth1
 
 
@@ -25,7 +27,7 @@ class FiveHundredPxOAuth(BaseOAuth1):
             "last_name": last_name,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: dict, *args, **kwargs) -> dict[str, Any] | None:
         """Return user data provided"""
         response = self.get_json(
             "https://api.500px.com/v1/users", auth=self.oauth_auth(access_token)

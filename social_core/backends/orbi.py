@@ -2,6 +2,8 @@
 Orbi OAuth2 backend
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -36,7 +38,7 @@ class OrbiOAuth2(BaseOAuth2):
             "last_name": last_name,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Load user data from orbi"""
         return self.get_json(
             "https://login.orbi.kr/oauth/user/get",

@@ -3,6 +3,8 @@ Mendeley OAuth1 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/mendeley.html
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth1, BaseOAuth2
 
 BASE_EXTRA_DATA = [("profile_id", "profile_id"), ("name", "name"), ("bio", "bio")]
@@ -21,7 +23,7 @@ class MendeleyMixin:
         bio = response["link"]
         return {"profile_id": profile_id, "name": name, "bio": bio}
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Return user data provided"""
         values = self.get_user_data(access_token)
         values.update(values)

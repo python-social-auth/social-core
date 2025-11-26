@@ -83,7 +83,7 @@ class QiitaOAuth2(BaseOAuth2):
             "fullname": response["name"],
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         return self.get_json(
             "https://qiita.com/api/v2/authenticated_user",

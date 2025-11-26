@@ -3,6 +3,8 @@ Coinbase OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/coinbase.html
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -33,7 +35,7 @@ class CoinbaseOAuth2(BaseOAuth2):
             "email": email,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         return self.get_json(
             "https://api.coinbase.com/v2/user",

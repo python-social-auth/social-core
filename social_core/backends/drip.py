@@ -3,6 +3,8 @@ Drip OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/drip.html
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -21,7 +23,7 @@ class DripOAuth(BaseOAuth2):
             "username": response["users"][0]["email"],
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         return self.get_json(
             "https://api.getdrip.com/v2/user",
             headers={"Authorization": f"Bearer {access_token}"},

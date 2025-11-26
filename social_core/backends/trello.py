@@ -3,6 +3,8 @@ Trello OAuth1 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/trello.html
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth1
 
 
@@ -32,7 +34,7 @@ class TrelloOAuth(BaseOAuth1):
             "last_name": last_name,
         }
 
-    def user_data(self, access_token):
+    def user_data(self, access_token: dict, *args, **kwargs) -> dict[str, Any] | None:
         """Return user data provided"""
         url = "https://trello.com/1/members/me"
         try:

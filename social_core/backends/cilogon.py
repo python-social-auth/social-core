@@ -1,3 +1,5 @@
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -15,10 +17,10 @@ class CILogonOAuth2(BaseOAuth2):
     REDIRECT_STATE = False
     SCOPE_SEPARATOR = "+"
 
-    def user_data(self, token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from endpoint"""
         url = "https://cilogon.org/oauth2/userinfo"
-        data = {"access_token": token}
+        data = {"access_token": access_token}
         try:
             return self.get_json(url, method="POST", data=data)
         except ValueError:

@@ -5,6 +5,8 @@ Bitbucket OAuth2 and OAuth1 backends, docs at:
 
 from __future__ import annotations
 
+from typing import Any
+
 from social_core.exceptions import AuthForbidden
 
 from .oauth import BaseOAuth2
@@ -42,7 +44,7 @@ class BitbucketOAuth2(BaseOAuth2):
             "last_name": last_name,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Return user data provided"""
         emails = self._get_emails(access_token)
         email = None

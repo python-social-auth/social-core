@@ -1,3 +1,5 @@
+from typing import Any
+
 import jwt
 
 from social_core.backends.oauth import BaseOAuth2
@@ -114,7 +116,7 @@ class KeycloakOAuth2(BaseOAuth2):  # pylint: disable=abstract-method
             ]
         )
 
-    def user_data(self, access_token, *args, **kwargs):  # pylint: disable=unused-argument
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Decode user data from the access_token
 
         You can specialize this method to e.g. get information

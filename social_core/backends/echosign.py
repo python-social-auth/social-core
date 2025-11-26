@@ -1,3 +1,5 @@
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -17,7 +19,7 @@ class EchosignOAuth2(BaseOAuth2):
     def get_user_id(self, details, response):
         return details["userInfoList"][0]["userId"]
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         return self.get_json(
             "https://api.echosign.com/api/rest/v3/users",
             headers={"Access-Token": access_token},

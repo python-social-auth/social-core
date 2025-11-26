@@ -3,6 +3,8 @@ Google OpenIdConnect:
     https://python-social-auth.readthedocs.io/en/latest/backends/google.html
 """
 
+from typing import Any
+
 from .google import GoogleOAuth2
 from .open_id_connect import OpenIdConnectAuth
 
@@ -14,7 +16,7 @@ class GoogleOpenIdConnect(GoogleOAuth2, OpenIdConnectAuth):
     # http://openid.net/specs/openid-connect-core-1_0.html#rfc.section.15.6.2
     ID_TOKEN_ISSUER = "accounts.google.com"
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Return user data from Google API"""
         return self.get_json(
             "https://openidconnect.googleapis.com/v1/userinfo",

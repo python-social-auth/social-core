@@ -1,3 +1,5 @@
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -16,7 +18,7 @@ class ZoomOAuth2(BaseOAuth2):
     REDIRECT_STATE = False
     EXTRA_DATA = [("expires_in", "expires_in")]
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         return self.get_json(
             self.USER_DETAILS_URL,
             headers={"Authorization": f"Bearer {access_token}"},

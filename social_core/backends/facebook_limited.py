@@ -3,6 +3,8 @@ Facebook Limited Login backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/facebook.html
 """
 
+from typing import Any
+
 from social_core.exceptions import AuthTokenError
 
 from .open_id_connect import OpenIdConnectAuth
@@ -37,7 +39,7 @@ class FacebookLimitedLogin(OpenIdConnectAuth):
             "picture": response.get("picture"),
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         # We don't have an access token to call any API for the user details.
         return {}
 

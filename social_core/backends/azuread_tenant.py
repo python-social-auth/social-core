@@ -1,4 +1,5 @@
 import base64
+from typing import Any
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.x509 import load_der_x509_certificate
@@ -85,7 +86,7 @@ class AzureADTenantOAuth2(AzureADOAuth2):
         """Use subject (sub) claim as unique id."""
         return response.get("sub")
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         response = kwargs.get("response")
         if response and response.get("id_token"):
             id_token = response.get("id_token")

@@ -3,6 +3,8 @@ Lyft OAuth2 backend. Read more about the
     API at https://developer.lyft.com/docs
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -31,7 +33,7 @@ class LyftOAuth2(BaseOAuth2):
         """Return user details from Lyft account"""
         return {"id": response["id"], "username": response["id"]}
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         return self.get_json(
             self.USER_DATA_URL, headers={"Authorization": f"Bearer {access_token}"}
@@ -44,5 +46,5 @@ class LyftOAuth2(BaseOAuth2):
     def auth_complete_credentials(self):
         return self.get_key_and_secret()
 
-    def refresh_token_params(self, refresh_token, *args, **kwargs):
-        return {"refresh_token": refresh_token, "grant_type": "refresh_token"}
+    def refresh_token_params(self, token: str, *args, **kwargs) -> dict[str, str]:
+        return {"refresh_token": token, "grant_type": "refresh_token"}

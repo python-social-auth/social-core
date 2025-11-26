@@ -3,6 +3,8 @@ Beats backend, docs at:
     https://developer.beatsmusic.com/docs
 """
 
+from typing import Any
+
 from social_core.exceptions import AuthUnknownError
 from social_core.utils import handle_http_errors
 
@@ -57,7 +59,7 @@ class BeatsOAuth2(BaseOAuth2):
             "last_name": last_name,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         return self.get_json(
             "https://partner.api.beatsmusic.com/v1/api/me",

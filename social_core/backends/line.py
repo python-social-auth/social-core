@@ -4,6 +4,7 @@ LINE Login OAuth2 backend, docs at:
 """
 
 import json
+from typing import Any
 
 import requests
 
@@ -85,7 +86,7 @@ class LineOAuth2(BaseOAuth2):
             "status_message": status_message,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         try:
             response = self.get_json(

@@ -3,6 +3,8 @@ Twitter OAuth1 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/twitter.html
 """
 
+from typing import Any
+
 from social_core.exceptions import AuthCanceled
 
 from .oauth import BaseOAuth1
@@ -35,7 +37,7 @@ class TwitterOAuth(BaseOAuth1):
             "last_name": last_name,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: dict, *args, **kwargs) -> dict[str, Any] | None:
         """Return user data provided"""
         return self.get_json(
             "https://api.twitter.com/1.1/account/verify_credentials.json",

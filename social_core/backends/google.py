@@ -3,6 +3,8 @@ Google OpenId, OAuth2, OAuth1, Google+ Sign-in backends, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/google.html
 """
 
+from typing import Any
+
 from social_core.backends.base import BaseAuth
 from social_core.exceptions import AuthMissingParameter
 from social_core.utils import handle_http_errors
@@ -42,7 +44,7 @@ class BaseGoogleAuth(BaseAuth):
 
 
 class BaseGoogleOAuth2API(BaseGoogleAuth):
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Return user data from Google API"""
         return self.get_json(
             "https://www.googleapis.com/oauth2/v3/userinfo",
@@ -129,7 +131,7 @@ class GooglePlusAuth(BaseGoogleOAuth2API, BaseOAuth2):
             return self.do_auth(token, *args, **kwargs)
         raise AuthMissingParameter(self, "access_token, id_token, or code")
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         if "id_token" not in self.data:
             return super().user_data(access_token, *args, **kwargs)
         response = self.get_json(
@@ -149,7 +151,7 @@ class GoogleOAuth(BaseGoogleAuth, BaseOAuth1):
     ACCESS_TOKEN_URL = "https://www.google.com/accounts/OAuthGetAccessToken"
     DEFAULT_SCOPE = ["https://www.googleapis.com/auth/userinfo#email"]
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: dict, *args, **kwargs) -> dict[str, Any] | None:
         """Return user data from Google API"""
         return self.get_querystring(
             "https://www.googleapis.com/userinfo/email",

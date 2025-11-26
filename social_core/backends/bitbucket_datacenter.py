@@ -4,6 +4,8 @@ Bitbucket Data Center OAuth2 backend, docs at:
     https://confluence.atlassian.com/bitbucketserver/bitbucket-oauth-2-0-provider-api-1108483661.html
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth2PKCE
 
 
@@ -81,7 +83,7 @@ class BitbucketDataCenterOAuth2(BaseOAuth2PKCE):
             "avatar_url": user_data["avatarUrl"],
         }
 
-    def user_data(self, access_token, *args, **kwargs) -> dict:
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Fetch user data from Bitbucket Data Center REST API"""
         # At this point, we don't know the current user's username
         # and Bitbucket doesn't provide any API to do so.

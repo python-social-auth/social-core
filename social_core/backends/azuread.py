@@ -101,7 +101,7 @@ class AzureADOAuth2(BaseOAuth2):
             "last_name": last_name,
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         response = kwargs.get("response")
         if response and response.get("id_token"):
             id_token = response.get("id_token")

@@ -3,6 +3,8 @@ NationBuilder OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/nationbuilder.html
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth2
 
 
@@ -38,7 +40,7 @@ class NationBuilderOAuth2(BaseOAuth2):
             "last_name": response.get("last_name") or "",
         }
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         url = f"https://{self.slug}.nationbuilder.com/api/v1/people/me"
         return self.get_json(url, params={"access_token": access_token})["person"]

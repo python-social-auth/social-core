@@ -3,6 +3,8 @@ Rdio OAuth1 and OAuth2 backends, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/rdio.html
 """
 
+from typing import Any
+
 from .oauth import BaseOAuth1, BaseOAuth2, OAuthAuth
 
 RDIO_API = "https://www.rdio.com/api/1/"
@@ -40,7 +42,7 @@ class RdioOAuth1(BaseRdio, BaseOAuth1):
         ("streamRegion", "rdio_stream_region"),
     ]
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: dict, *args, **kwargs) -> dict[str, Any] | None:
         """Return user data provided"""
         params = {
             "method": "currentUser",
@@ -67,7 +69,7 @@ class RdioOAuth2(BaseRdio, BaseOAuth2):
         ("token_type", "token_type", True),
     ]
 
-    def user_data(self, access_token, *args, **kwargs):
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         return self.get_json(
             RDIO_API,
             method="POST",
