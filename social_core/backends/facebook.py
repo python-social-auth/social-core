@@ -20,7 +20,7 @@ from social_core.utils import constant_time_compare, handle_http_errors, parse_q
 
 from .oauth import BaseOAuth2
 
-API_VERSION = 18.0
+API_VERSION = 24.0
 
 
 class FacebookOAuth2(BaseOAuth2):
