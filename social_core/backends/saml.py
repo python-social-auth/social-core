@@ -398,6 +398,22 @@ class SAMLAuth(BaseAuth):
         uid = idp.get_user_permanent_id(response["attributes"])
         return f"{idp.name}:{uid}"
 
+    def parse_relay_state(self, relay_state_str: str) -> dict:
+        """Parse RelayState JSON or simple string into a dict"""
+        try:
+            relay_state: dict = json.loads(relay_state_str)
+        except json.JSONDecodeError:
+            # this is for backward compatibility; also some identity providers
+            # (like Okta) send a simple string with the IdP name in RelayState
+            # during IdP-initiated SSO:
+            relay_state = {"idp": relay_state_str}
+
+        # Validate that the data is dict
+        if not isinstance(relay_state, dict):
+            raise AuthInvalidParameter(self, "RelayState")
+
+        return relay_state
+
     def auth_complete(self, *args, **kwargs):
         """
         The user has been redirected back from the IdP and we should
@@ -409,15 +425,7 @@ class SAMLAuth(BaseAuth):
         except KeyError:
             idp_name = None
         else:
-            # Parse RelayState JSON
-            try:
-                relay_state: dict = json.loads(relay_state_str)
-            except json.JSONDecodeError as error:
-                raise AuthInvalidParameter(self, "RelayState") from error
-
-            # Validate that the data is dict
-            if not isinstance(relay_state, dict):
-                raise AuthInvalidParameter(self, "RelayState")
+            relay_state = self.parse_relay_state(relay_state_str)
 
             # Get IdP name
             idp_name = relay_state.get("idp")
