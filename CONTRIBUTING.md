@@ -1,6 +1,6 @@
 ## Contributing to `social-core`
 
-Thank you for your interest in contributing to `social-auth-core` (the `social_core` package)!  
+Thank you for your interest in contributing to `social-auth-core` (the `social_core` package)!
 This document explains how to set up your environment, make changes, run tests, and propose them for inclusion.
 
 The short version:
@@ -10,7 +10,7 @@ The short version:
 - **Install the project in editable mode with dev extras**
 - **Run tests and type checks before opening a PR**
 
----
+______________________________________________________________________
 
 ## 1. Project overview
 
@@ -25,7 +25,7 @@ If you are changing authentication behaviour or adding/updating a backend, you w
 - Touch code in `social_core/backends/...`
 - Add or adjust tests in `social_core/tests/backends/...`
 
----
+______________________________________________________________________
 
 ## 2. Environment setup
 
@@ -59,7 +59,7 @@ This installs the library in editable mode along with the development and “all
 - `flake8`, `ruff`
 - type stubs and related tooling
 
----
+______________________________________________________________________
 
 ## 3. Running tests
 
@@ -132,7 +132,7 @@ tox -e py310-pyright
 tox -e py313-pyright
 ```
 
----
+______________________________________________________________________
 
 ## 4. Linting and type checking
 
@@ -177,13 +177,14 @@ mypy social_core
 To match CI’s behaviour you can either:
 
 - Use **tox** (see above): `tox -e py310-pyright` / `tox -e py313-pyright`, or
+
 - Run pyright directly:
 
   ```bash
   pyright
   ```
 
----
+______________________________________________________________________
 
 ## 5. Coding style and guidelines
 
@@ -193,7 +194,7 @@ To match CI’s behaviour you can either:
 - **Type hints**: New or significantly refactored code should include type annotations where reasonable. Do not introduce type errors in `mypy` or `pyright`.
 - **Documentation**: If your change affects behaviour that is user‑facing or visible in docs, make sure to update relevant docstrings or external documentation as appropriate.
 
----
+______________________________________________________________________
 
 ## 6. Adding or modifying backends
 
@@ -205,30 +206,36 @@ If you are contributing a new backend or updating an existing one:
   - Use existing backend tests as a template.
   - Ensure your tests do not rely on real external services (use mocks/responses).
 
----
+______________________________________________________________________
 
 ## 7. Submitting changes
 
 1. **Fork** the repository on GitHub.
-2. **Create a branch** for your work:
+
+1. **Create a branch** for your work:
 
    ```bash
    git checkout -b feature/my-change
    ```
 
-3. **Make your changes** in small, logical commits.
-4. **Run tests and checks** locally:
+1. **Make your changes** in small, logical commits.
+
+1. **Run tests and checks** locally:
+
    - At minimum: `pytest`.
    - Ideally: `tox` to run the full matrix and type checks.
-5. **Push your branch** to your fork.
-6. **Open a pull request** against the main repository:
+
+1. **Push your branch** to your fork.
+
+1. **Open a pull request** against the main repository:
+
    - Describe what the change does and why it is needed.
    - Reference any related issues.
    - Mention potential breaking changes or migration notes, if any.
 
 Maintainers may request adjustments (tests, documentation, code style) before merging. Please be patient and responsive during review.
 
----
+______________________________________________________________________
 
 ## 8. Reporting issues and requesting features
 
@@ -243,11 +250,9 @@ If you have found a bug or would like to request a feature:
 
 Clear reports make it much easier for maintainers and contributors to help.
 
----
+______________________________________________________________________
 
 ## 9. Code of conduct
 
-Please be respectful and constructive in all interactions.  
+Please be respectful and constructive in all interactions.
 Be welcoming to new contributors, and assume good faith. The goal is to make `social-auth-core` better for everyone.
-
-
