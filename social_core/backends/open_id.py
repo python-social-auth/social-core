@@ -5,6 +5,7 @@ from typing import Any
 from openid.consumer.consumer import CANCEL, FAILURE, SUCCESS, Consumer
 from openid.consumer.discover import DiscoveryFailure
 from openid.extensions import ax, pape, sreg
+from openid.fetchers import HTTPFetchingError
 
 from social_core.exceptions import (
     AuthCanceled,
@@ -12,6 +13,7 @@ from social_core.exceptions import (
     AuthFailed,
     AuthMissingParameter,
     AuthUnknownError,
+    AuthUnreachableProvider,
 )
 from social_core.utils import url_add_parameters
 
@@ -194,9 +196,13 @@ class OpenIdAuth(BaseAuth):
 
     def auth_complete(self, *args, **kwargs):
         """Complete auth process"""
-        response = self.consumer().complete(
-            dict(self.data.items()), self.get_return_to()
-        )
+        try:
+            response = self.consumer().complete(
+                dict(self.data.items()), self.get_return_to()
+            )
+        except HTTPFetchingError as error:
+            raise AuthUnreachableProvider(self) from error
+
         self.process_error(response)
         if session_id := self.data.get(self.strategy.SESSION_SAVE_KEY):
             self.strategy.restore_session(session_id, kwargs)
