@@ -55,7 +55,7 @@ license-files = ["LICENSE"]
 name = "social-auth-core"
 readme = "README.md"
 requires-python = ">=3.10"
-version = "4.8.2"
+version = "4.8.3"
 
 [project.optional-dependencies]
 all = [

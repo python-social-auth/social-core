@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.8.3](https://github.com/python-social-auth/social-core/releases/tag/4.8.3) - 2025-12-18
+
+### Changed
+
+- Added registry to configured default strategy
+
 ## [4.8.2](https://github.com/python-social-auth/social-core/releases/tag/4.8.2) - 2025-12-18
 
 ### Changed
