@@ -1,4 +1,5 @@
 import json
+from typing import TYPE_CHECKING, cast
 
 from social_core.exceptions import AuthException
 from social_core.pipeline.user import user_details
@@ -7,6 +8,9 @@ from social_core.utils import PARTIAL_TOKEN_SESSION_NAME
 from .actions.actions import BaseActionTest
 from .models import TestStorage, TestUserSocialAuth, User
 from .strategy import TestStrategy
+
+if TYPE_CHECKING:
+    from social_core.storage import PartialMixin
 
 
 class IntegrityError(Exception):
@@ -211,7 +215,8 @@ class UserPersistsInPartialPipeline(BaseActionTest):
         # Handle the partial pipeline
         self.strategy.session_set("attribute", "testing")
         token = self.strategy.session_pop(PARTIAL_TOKEN_SESSION_NAME)
-        partial = self.strategy.partial_load(token)
+        partial = cast("PartialMixin", self.strategy.partial_load(token))
+        self.assertIsNotNone(partial)
         self.backend.continue_pipeline(partial)
 
     def test_user_persists_in_partial_pipeline(self) -> None:
@@ -234,7 +239,8 @@ class UserPersistsInPartialPipeline(BaseActionTest):
         # Handle the partial pipeline
         self.strategy.session_set("attribute", "testing")
         token = self.strategy.session_pop(PARTIAL_TOKEN_SESSION_NAME)
-        partial = self.strategy.partial_load(token)
+        partial = cast("PartialMixin", self.strategy.partial_load(token))
+        self.assertIsNotNone(partial)
         self.backend.continue_pipeline(partial)
 
 

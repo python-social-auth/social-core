@@ -30,7 +30,7 @@ See https://nicksnettravels.builttoroam.com/post/2017/01/24/Verifying-Azure-Acti
 from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 from cryptography.hazmat.primitives import serialization
 from jwt import DecodeError, ExpiredSignatureError, get_unverified_header
@@ -198,7 +198,7 @@ class AzureADB2COAuth2(AzureADOAuth2):
                 key=key,
                 algorithms=["RS256"],
                 audience=self.setting("KEY"),
-                leeway=self.setting("JWT_LEEWAY", default=0),
+                leeway=cast("int", self.setting("JWT_LEEWAY", default=0)),
             )
         except (DecodeError, ExpiredSignatureError) as error:
             raise AuthTokenError(self, error)

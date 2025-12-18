@@ -25,7 +25,7 @@ from .exceptions import (
 
 if TYPE_CHECKING:
     from .backends.base import BaseAuth
-    from .storage import UserProtocol
+    from .storage import PartialMixin, UserProtocol
     from .strategy import BaseStrategy
 
 SETTING_PREFIX = "SOCIAL_AUTH"
@@ -75,7 +75,7 @@ def setting_name(*names: str) -> str:
     return to_setting_name(*((SETTING_PREFIX, *names)))
 
 
-def sanitize_redirect(hosts, redirect_to):
+def sanitize_redirect(hosts: list[str], redirect_to: str | Any) -> str | None:
     """
     Given a list of hostnames and an untrusted URL to redirect to,
     this method tests it to make sure it isn't garbage/harmful
@@ -85,7 +85,7 @@ def sanitize_redirect(hosts, redirect_to):
     # Avoid redirect on evil URLs like ///evil.com
     if (
         not redirect_to
-        or not hasattr(redirect_to, "startswith")
+        or not isinstance(redirect_to, str)
         or redirect_to.startswith("///")
     ):
         return None
@@ -166,7 +166,13 @@ def drop_lists(value):
     return out
 
 
-def partial_pipeline_data(backend, user=None, partial_token=None, *args, **kwargs):
+def partial_pipeline_data(
+    backend: BaseAuth,
+    user: UserProtocol | None = None,
+    partial_token: str | None = None,
+    *args,
+    **kwargs,
+) -> PartialMixin | None:
     request_data = backend.strategy.request_data()
 
     partial_argument_name = backend.setting(
@@ -179,7 +185,7 @@ def partial_pipeline_data(backend, user=None, partial_token=None, *args, **kwarg
     )
 
     if partial_token:
-        partial = backend.strategy.partial_load(partial_token)
+        partial: PartialMixin | None = backend.strategy.partial_load(partial_token)
         partial_matches_request = False
 
         if partial and partial.backend == backend.name:
@@ -196,7 +202,7 @@ def partial_pipeline_data(backend, user=None, partial_token=None, *args, **kwarg
                 if id_from_partial != id_from_request:
                     partial_matches_request = False
 
-        if partial_matches_request:
+        if partial and partial_matches_request:
             if user:  # don't update user if it's None
                 kwargs.setdefault("user", user)
             kwargs.setdefault("request", request_data)

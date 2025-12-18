@@ -8,6 +8,7 @@ import responses
 
 from social_core.backends.base import BaseAuth
 from social_core.backends.utils import load_backends, user_backends_data
+from social_core.storage import PartialMixin
 from social_core.tests.models import (
     TestAssociation,
     TestCode,
@@ -21,6 +22,7 @@ from social_core.utils import PARTIAL_TOKEN_SESSION_NAME, module_member, parse_q
 
 if TYPE_CHECKING:
     from social_core.storage import PartialMixin
+    from social_core.strategy import HttpResponseProtocol
 
 BackendT = TypeVar("BackendT", bound=BaseAuth)
 
@@ -155,7 +157,7 @@ class BaseBackendTest(unittest.TestCase, Generic[BackendT]):
         partial = cast("PartialMixin", self.strategy.partial_load(token))
         self.assertIsNotNone(partial)
         self.assertEqual(partial.backend, self.backend.name)
-        redirect = self.backend.continue_pipeline(partial)
+        redirect = cast("HttpResponseProtocol", self.backend.continue_pipeline(partial))
 
         url = self.strategy.build_absolute_uri("/slug")
         self.assertEqual(redirect.url, url)
@@ -166,7 +168,7 @@ class BaseBackendTest(unittest.TestCase, Generic[BackendT]):
         partial = cast("PartialMixin", self.strategy.partial_load(token))
         self.assertIsNotNone(partial)
         self.assertEqual(partial.backend, self.backend.name)
-        user = self.backend.continue_pipeline(partial)
+        user = cast("User", self.backend.continue_pipeline(partial))
 
         self.assertEqual(user.username, self.expected_username)
         self.assertEqual(user.slug, slug)

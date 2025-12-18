@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from social_core.exceptions import AuthAlreadyAssociated, AuthException, AuthForbidden
 
 if TYPE_CHECKING:
     from social_core.backends.base import BaseAuth
-    from social_core.storage import UserProtocol
+    from social_core.storage import BaseStorage, UserProtocol
 
 
 def social_details(backend: BaseAuth, details, response, *args, **kwargs):
@@ -26,7 +26,9 @@ def social_user(
     backend: BaseAuth, uid, user: UserProtocol | None = None, *args, **kwargs
 ):
     provider = backend.name
-    social = backend.strategy.storage.user.get_social_auth(provider, uid)
+    social = cast("type[BaseStorage]", backend.strategy.storage).user.get_social_auth(
+        provider, uid
+    )
     if social:
         if user and social.user != user:
             raise AuthAlreadyAssociated(backend)
@@ -50,11 +52,13 @@ def associate_user(
 ):
     if user and not social:
         try:
-            social = backend.strategy.storage.user.create_social_auth(
-                user, uid, backend.name
-            )
+            social = cast(
+                "type[BaseStorage]", backend.strategy.storage
+            ).user.create_social_auth(user, uid, backend.name)
         except Exception as err:
-            if not backend.strategy.storage.is_integrity_error(err):
+            if not cast(
+                "type[BaseStorage]", backend.strategy.storage
+            ).is_integrity_error(err):
                 raise
             # Protect for possible race condition, those bastard with FTL
             # clicking capabilities, check issue #131:
@@ -91,7 +95,11 @@ def associate_by_email(
         # Try to associate accounts registered with the same email address,
         # only if it's a single object. AuthException is raised if multiple
         # objects are returned.
-        users = list(backend.strategy.storage.user.get_users_by_email(email))
+        users = list(
+            cast("type[BaseStorage]", backend.strategy.storage).user.get_users_by_email(
+                email
+            )
+        )
         if len(users) == 0:
             return None
         if len(users) > 1:
@@ -111,9 +119,9 @@ def load_extra_data(
     *args,
     **kwargs,
 ) -> None:
-    social = kwargs.get("social") or backend.strategy.storage.user.get_social_auth(
-        backend.name, uid
-    )
+    social = kwargs.get("social") or cast(
+        "type[BaseStorage]", backend.strategy.storage
+    ).user.get_social_auth(backend.name, uid)
     if social:
         extra_data = backend.extra_data(user, uid, response, details, kwargs)
         social.set_extra_data(extra_data)

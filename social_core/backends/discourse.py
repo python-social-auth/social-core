@@ -2,12 +2,16 @@ import hmac
 import time
 from base64 import urlsafe_b64decode, urlsafe_b64encode
 from hashlib import sha256
+from typing import TYPE_CHECKING, cast
 from urllib.parse import urlencode
 
 from social_core.exceptions import AuthException, AuthTokenError
 from social_core.utils import parse_qs
 
 from .base import BaseAuth
+
+if TYPE_CHECKING:
+    from social_core.storage import BaseStorage
 
 
 class DiscourseAuth(BaseAuth):
@@ -51,13 +55,17 @@ class DiscourseAuth(BaseAuth):
         }
 
     def add_nonce(self, nonce) -> None:
-        self.strategy.storage.nonce.use(self.setting("SERVER_URL"), time.time(), nonce)
+        cast("type[BaseStorage]", self.strategy.storage).nonce.use(
+            self.setting("SERVER_URL"), time.time(), nonce
+        )
 
     def get_nonce(self, nonce):
-        return self.strategy.storage.nonce.get(self.setting("SERVER_URL"), nonce)
+        return cast("type[BaseStorage]", self.strategy.storage).nonce.get(
+            self.setting("SERVER_URL"), nonce
+        )
 
     def delete_nonce(self, nonce) -> None:
-        self.strategy.storage.nonce.delete(nonce)
+        cast("type[BaseStorage]", self.strategy.storage).nonce.delete(nonce)
 
     def auth_complete(self, *args, **kwargs):
         """
