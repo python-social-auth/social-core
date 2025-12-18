@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, cast
 from urllib.parse import urlencode
 
 from .oauth import BaseOAuth2
@@ -45,10 +45,10 @@ class UffdOAuth2(BaseOAuth2):
         return user_data
 
     def authorization_url(self):
-        return self.setting("BASE_URL") + "/oauth2/authorize"
+        return cast("str", self.setting("BASE_URL")) + "/oauth2/authorize"
 
     def access_token_url(self):
-        return self.setting("BASE_URL") + "/oauth2/token"
+        return cast("str", self.setting("BASE_URL")) + "/oauth2/token"
 
     def userinfo_url(self):
-        return self.setting("BASE_URL") + "/oauth2/userinfo"
+        return cast("str", self.setting("BASE_URL")) + "/oauth2/userinfo"

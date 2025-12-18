@@ -1,8 +1,12 @@
 import json
+from typing import TYPE_CHECKING, cast
 
 from social_core.exceptions import AuthException
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
+
+if TYPE_CHECKING:
+    from social_core.tests.models import User
 
 
 class QiitaOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
@@ -45,7 +49,7 @@ class QiitaOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         self.assertEqual(social.extra_data["permanent_id"], 12345)
 
     def test_partial_pipeline(self) -> None:
-        user = self.do_partial_pipeline()
+        user = cast("User", self.do_partial_pipeline())
         self.assertEqual(len(user.social), 1)
 
         social = user.social[0]
@@ -71,7 +75,7 @@ class QiitaOAuth2TestIdentifiedByPermanentId(QiitaOAuth2Test):
             {"SOCIAL_AUTH_QIITA_IDENTIFIED_BY_PERMANENT_ID": True}
         )
 
-        user = self.do_partial_pipeline()
+        user = cast("User", self.do_partial_pipeline())
         self.assertEqual(len(user.social), 1)
 
         social = user.social[0]

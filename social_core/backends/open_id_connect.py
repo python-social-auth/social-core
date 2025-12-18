@@ -4,7 +4,7 @@ import base64
 import datetime
 import json
 from calendar import timegm
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 import jwt
 from cryptography.hazmat.backends import default_backend
@@ -29,6 +29,9 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
     from requests.auth import AuthBase
+
+    from social_core.storage import BaseStorage
+    from social_core.strategy import BaseStrategy
 
 
 class OpenIdConnectAssociation:
@@ -87,7 +90,9 @@ class OpenIdConnectAuth(BaseOAuth2):
     LOGIN_HINT = None
     ACR_VALUES = None
 
-    def __init__(self, strategy=None, redirect_uri: str | None = None) -> None:
+    def __init__(
+        self, strategy: BaseStrategy | None = None, redirect_uri: str | None = None
+    ) -> None:
         super().__init__(strategy, redirect_uri=redirect_uri)
         self.id_token = None
 
@@ -230,19 +235,21 @@ class OpenIdConnectAuth(BaseOAuth2):
         nonce = self.strategy.random_string(64)
         # Store the nonce
         association = OpenIdConnectAssociation(nonce, assoc_type=state)
-        self.strategy.storage.association.store(url, association)
+        cast("type[BaseStorage]", self.strategy.storage).association.store(
+            url, association
+        )
         return nonce
 
     def get_nonce(self, nonce):
         try:
-            return self.strategy.storage.association.get(
+            return cast("type[BaseStorage]", self.strategy.storage).association.get(
                 server_url=self.authorization_url(), handle=nonce
             )[0]
         except IndexError:
             pass
 
     def remove_nonce(self, nonce_id) -> None:
-        self.strategy.storage.association.remove([nonce_id])
+        cast("type[BaseStorage]", self.strategy.storage).association.remove([nonce_id])
 
     def validate_claims(self, id_token) -> None:
         utc_timestamp = timegm(datetime.datetime.now(datetime.timezone.utc).timetuple())

@@ -10,7 +10,7 @@ from social_core.utils import module_member, slugify
 
 if TYPE_CHECKING:
     from social_core.backends.base import BaseAuth
-    from social_core.storage import UserProtocol
+    from social_core.storage import BaseStorage, UserProtocol
     from social_core.strategy import BaseStrategy
 
 USER_FIELDS = ["username", "email"]
@@ -173,4 +173,4 @@ def user_details(
         setattr(user, name, value)
 
     if changed:
-        strategy.storage.user.changed(user)
+        cast("type[BaseStorage]", strategy.storage).user.changed(user)

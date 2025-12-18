@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from social_core.exceptions import (
     StrategyMissingBackendError,
@@ -8,7 +8,7 @@ from social_core.exceptions import (
 
 if TYPE_CHECKING:
     from social_core.backends.base import BaseAuth
-    from social_core.storage import PartialMixin, UserProtocol
+    from social_core.storage import BaseStorage, PartialMixin, UserProtocol
     from social_core.strategy import BaseStrategy
 
 SERIALIZABLE_TYPES = (dict, list, tuple, set, bool, type(None), int, str, bytes)
@@ -84,10 +84,14 @@ def partial_load(strategy: BaseStrategy, token: str) -> PartialMixin | None:
         social = kwargs.get("social")
 
         if isinstance(social, dict):
-            kwargs["social"] = strategy.storage.user.get_social_auth(**social)  # type: ignore[missing-argument]
+            kwargs["social"] = cast(
+                "type[BaseStorage]", strategy.storage
+            ).user.get_social_auth(**social)  # type: ignore[missing-argument]
 
         if user:
-            kwargs["user"] = strategy.storage.user.get_user(user)
+            kwargs["user"] = cast("type[BaseStorage]", strategy.storage).user.get_user(
+                user
+            )
 
         partial.args = [strategy.from_session_value(val) for val in args]
         partial.kwargs = {

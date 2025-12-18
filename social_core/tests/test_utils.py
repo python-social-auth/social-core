@@ -16,7 +16,7 @@ from social_core.utils import (
 from .models import TestPartial
 
 if TYPE_CHECKING:
-    from social_core.storage import UserProtocol
+    from social_core.storage import PartialMixin, UserProtocol
 
 
 class SanitizeRedirectTest(unittest.TestCase):
@@ -150,7 +150,10 @@ class PartialPipelineData(unittest.TestCase):
         backend = self._backend({"uid": email})
         backend.strategy.request_data.return_value = {backend.ID_KEY: email}
         key, val = ("foo", "bar")
-        partial = partial_pipeline_data(backend, None, *(), **{key: val})
+        partial = cast(
+            "PartialMixin", partial_pipeline_data(backend, None, *(), **{key: val})
+        )
+        self.assertIsNotNone(partial)
         self.assertIn(key, partial.kwargs)
         self.assertEqual(partial.kwargs[key], val)
         self.assertEqual(backend.strategy.clean_partial_pipeline.call_count, 0)
@@ -166,15 +169,19 @@ class PartialPipelineData(unittest.TestCase):
     def test_kwargs_included_in_result(self) -> None:
         backend = self._backend()
         key, val = ("foo", "bar")
-        partial = partial_pipeline_data(backend, None, *(), **{key: val})
+        partial = cast(
+            "PartialMixin", partial_pipeline_data(backend, None, *(), **{key: val})
+        )
+        self.assertIsNotNone(partial)
         self.assertIn(key, partial.kwargs)
         self.assertEqual(partial.kwargs[key], val)
         self.assertEqual(backend.strategy.clean_partial_pipeline.call_count, 0)
 
     def test_update_user(self) -> None:
-        user = object()
+        user = cast("UserProtocol", object())
         backend = self._backend(session_kwargs={"user": None})
-        partial = partial_pipeline_data(backend, user)
+        partial = cast("PartialMixin", partial_pipeline_data(backend, user))
+        self.assertIsNotNone(partial)
         self.assertIn("user", partial.kwargs)
         self.assertEqual(partial.kwargs["user"], user)
         self.assertEqual(backend.strategy.clean_partial_pipeline.call_count, 0)
@@ -187,7 +194,10 @@ class PartialPipelineData(unittest.TestCase):
         backend.id_key.return_value = "custom_id"
         backend.strategy.request_data.return_value = {"custom_id": email}
         key, val = ("foo", "bar")
-        partial = partial_pipeline_data(backend, None, *(), **{key: val})
+        partial = cast(
+            "PartialMixin", partial_pipeline_data(backend, None, *(), **{key: val})
+        )
+        self.assertIsNotNone(partial)
         self.assertIn(key, partial.kwargs)
         self.assertEqual(partial.kwargs[key], val)
         self.assertEqual(backend.strategy.clean_partial_pipeline.call_count, 0)

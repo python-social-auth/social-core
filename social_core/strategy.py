@@ -145,7 +145,7 @@ class BaseStrategy:
     def random_string(self, length: int = 12, chars: str = ALLOWED_CHARS) -> str:
         return "".join([secrets.choice(chars) for i in range(length)])
 
-    def absolute_uri(self, path: str | None = None) -> str | None:
+    def absolute_uri(self, path: str | None = None) -> str:
         uri = self.build_absolute_uri(path)
         if uri and self.setting("REDIRECT_IS_HTTPS"):
             uri = uri.replace("http://", "https://")
@@ -256,7 +256,7 @@ class BaseStrategy:
         """Pop session value for given key"""
         raise NotImplementedError("Implement in subclass")
 
-    def build_absolute_uri(self, path: str | None = None) -> str | None:
+    def build_absolute_uri(self, path: str | None = None) -> str:
         """Build absolute URI with given (optional) path"""
         raise NotImplementedError("Implement in subclass")
 

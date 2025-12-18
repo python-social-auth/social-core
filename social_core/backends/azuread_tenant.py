@@ -1,5 +1,5 @@
 import base64
-from typing import Any
+from typing import Any, cast
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.x509 import load_der_x509_certificate
@@ -51,8 +51,8 @@ class AzureADTenantOAuth2(AzureADOAuth2):
     JWKS_URL = "{base_url}/discovery/keys{appid}"
 
     @property
-    def tenant_id(self):
-        return self.setting("TENANT_ID", "common")
+    def tenant_id(self) -> str:
+        return cast("str", self.setting("TENANT_ID", "common"))
 
     def openid_configuration_url(self):
         return self.OPENID_CONFIGURATION_URL.format(

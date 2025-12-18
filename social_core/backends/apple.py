@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import json
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import jwt
 from jwt.algorithms import RSAAlgorithm  # ty: ignore[possibly-missing-import]
@@ -71,12 +71,12 @@ class AppleIdAuth(BaseOAuth2):
             params["response_mode"] = "form_post"
         return params
 
-    def get_private_key(self):
+    def get_private_key(self) -> str:
         """
         Return contents of the private key file. Override this method to provide
         secret key from another source if needed.
         """
-        return self.setting("SECRET")
+        return cast("str", self.setting("SECRET"))
 
     def generate_client_secret(self):
         now = int(time.time())

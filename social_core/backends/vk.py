@@ -64,7 +64,9 @@ class VKontakteOpenAPI(BaseAuth):
     def auth_complete(self, *args, **kwargs):
         """Performs check of authentication in VKontakte, returns User if
         succeeded"""
-        session_value = self.strategy.session_get("vk_app_" + self.setting("APP_ID"))
+        session_value = self.strategy.session_get(
+            "vk_app_" + cast("str", self.setting("APP_ID"))
+        )
         if "id" not in self.data or not session_value:
             raise ValueError("VK.com authentication is not completed")
 
@@ -118,7 +120,7 @@ class VKOAuth2(BaseOAuth2):
             "screen_name",
             "nickname",
             "photo",
-            *self.setting("EXTRA_DATA", []),
+            *cast("list[str]", self.setting("EXTRA_DATA", [])),
         ]
 
         fields = ",".join(set(request_data))
@@ -207,7 +209,6 @@ class VKAppOAuth2(VKOAuth2):
         response = {self.id_key(): user_id}
         response.update(json.loads(request["api_result"])["response"][0])
         return self.strategy.authenticate(
-            *args,
             auth=self,
             backend=self,
             request=request,

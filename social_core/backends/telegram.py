@@ -3,12 +3,16 @@ from __future__ import annotations
 import hashlib
 import hmac
 import time
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from social_core.exceptions import AuthFailed, AuthMissingParameter
 from social_core.utils import handle_http_errors
 
 from .base import BaseAuth
+
+if TYPE_CHECKING:
+    from social_core.storage import UserProtocol
+    from social_core.strategy import HttpResponseProtocol
 
 
 class TelegramAuth(BaseAuth):
@@ -61,7 +65,9 @@ class TelegramAuth(BaseAuth):
         }
 
     @handle_http_errors
-    def auth_complete(self, *args, **kwargs):
+    def auth_complete(
+        self, *args, **kwargs
+    ) -> HttpResponseProtocol | UserProtocol | None:
         response = self.data
         self.verify_data(response)
         kwargs.update({"response": self.data, "backend": self})
