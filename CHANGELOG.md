@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.8.2](https://github.com/python-social-auth/social-core/releases/tag/4.8.2) - 2025-12-18
+
+### Changed
+
+- The timeout parameter can be again configured
+- Refactored HTTP authentication code
+- Loosened some type checks for better downstream compatibility
+- `ID_KEY` is now configurable
+- Improved token expiry validation
+- Additional OIDC parameters are now supported
+- Improved refresh token logic
+- Extended type annotations
+- String RelayState in SAML is again supported
+- Better handle OpenID exceptions
+
+### Removed
+
+- itembase backend
+- nk backend
+- OAuth1 backend for Yahoo
+- *Do you see more backends where matching service is no longer available? Tell us to help identify unused code.*
+
 ## [4.8.1](https://github.com/python-social-auth/social-core/releases/tag/4.8.1) - 2025-10-09
 
 ### Changed
