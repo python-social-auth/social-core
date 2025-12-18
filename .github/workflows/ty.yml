@@ -27,7 +27,7 @@ jobs:
     - name: Install System dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -qq -y --no-install-recommends libxmlsec1-dev swig
+        sudo apt-get install -qq -y --no-install-recommends libxmlsec1-dev
 
     - name: Type check ty
       run: uv run --all-extras ty check --output-format=github
