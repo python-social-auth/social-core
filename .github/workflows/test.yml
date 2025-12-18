@@ -78,7 +78,7 @@ jobs:
     - name: Install System dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -qq -y --no-install-recommends libxmlsec1-dev swig
+        sudo apt-get install -qq -y --no-install-recommends libxmlsec1-dev
 
     - name: Test with tox
       run: uvx tox -e "py${PYTHON_VERSION/\./}"
