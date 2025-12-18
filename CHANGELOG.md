@@ -137,7 +137,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - SteamOpenId validation of identify URL
-- Box state redirestion
+- Box state redirection
 - The `uid` is automatically converted to string in the pipeline
 - Mediawiki error handling
 
