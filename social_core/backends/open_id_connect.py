@@ -7,6 +7,8 @@ from calendar import timegm
 from typing import TYPE_CHECKING, Any, Literal
 
 import jwt
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
 from jwt import (
     ExpiredSignatureError,
     InvalidAudienceError,
@@ -27,9 +29,6 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
     from requests.auth import AuthBase
-
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes
 
 
 class OpenIdConnectAssociation:
@@ -88,7 +87,7 @@ class OpenIdConnectAuth(BaseOAuth2):
     LOGIN_HINT = None
     ACR_VALUES = None
 
-    def __init__(self, strategy, redirect_uri=None) -> None:
+    def __init__(self, strategy=None, redirect_uri: str | None = None) -> None:
         super().__init__(strategy, redirect_uri=redirect_uri)
         self.id_token = None
 

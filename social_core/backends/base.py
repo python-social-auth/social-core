@@ -7,6 +7,8 @@ from typing import TYPE_CHECKING, Any, Literal, cast
 import requests
 
 from social_core.exceptions import AuthConnectionError, AuthUnknownError
+from social_core.registry import REGISTRY
+from social_core.storage import UserProtocol
 from social_core.utils import module_member, parse_qs, social_logger, user_agent
 
 if TYPE_CHECKING:
@@ -31,8 +33,11 @@ class BaseAuth:
     REQUIRES_EMAIL_VALIDATION = False
     SEND_USER_AGENT = True
 
-    def __init__(self, strategy, redirect_uri=None) -> None:
-        self.strategy = strategy
+    def __init__(self, strategy=None, redirect_uri: str | None = None) -> None:
+        # TODO: temporary type override
+        self.strategy: Any = (
+            strategy if strategy is not None else REGISTRY.default_strategy
+        )
         self.redirect_uri = redirect_uri
         self.data = self.strategy.request_data()
         self.redirect_uri = self.strategy.absolute_uri(self.redirect_uri)

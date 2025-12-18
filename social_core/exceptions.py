@@ -22,6 +22,13 @@ class StrategyMissingFeatureError(SocialAuthBaseException):
         return f"Strategy {self.strategy_name} does not support {self.feature_name}"
 
 
+class DefaultStrategyMissingError(SocialAuthBaseException):
+    """Default strategy is not configured."""
+
+    def __str__(self) -> str:
+        return "Default strategy is not configured"
+
+
 class StrategyMissingBackendError(SocialAuthBaseException):
     """Strategy storage backend is not configured."""
 
