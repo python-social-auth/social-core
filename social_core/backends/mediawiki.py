@@ -66,17 +66,15 @@ class MediaWiki(BaseOAuth1):
         oauth_token = token.get(self.OAUTH_TOKEN_PARAMETER_NAME)[0]  # type: ignore[reportOptionalSubscript]
         state = self.get_or_create_state()
         base_url = self.setting("MEDIAWIKI_URL")
-
-        return "{}?{}".format(
-            base_url,
-            urlencode(
-                {
-                    "title": "Special:Oauth/authenticate",
-                    self.OAUTH_TOKEN_PARAMETER_NAME: oauth_token,
-                    self.REDIRECT_URI_PARAMETER_NAME: self.get_redirect_uri(state),
-                }
-            ),
+        params = urlencode(
+            {
+                "title": "Special:Oauth/authenticate",
+                self.OAUTH_TOKEN_PARAMETER_NAME: oauth_token,
+                self.REDIRECT_URI_PARAMETER_NAME: self.get_redirect_uri(state),
+            }
         )
+
+        return f"{base_url}?{params}"
 
     def access_token(self, token):
         """
@@ -164,9 +162,7 @@ class MediaWiki(BaseOAuth1):
         if identity["nonce"] != request_nonce:
             raise AuthException(
                 self,
-                "Replay attack detected: {} != {}".format(
-                    identity["nonce"], request_nonce
-                ),
+                f"Replay attack detected: {identity['nonce']} != {request_nonce}",
             )
 
         return {

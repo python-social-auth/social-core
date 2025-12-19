@@ -106,7 +106,7 @@ class OdnoklassnikiApp(BaseAuth):
         )
         data = {
             "method": "users.getInfo",
-            "uids": "{}".format(response["logged_user_id"]),
+            "uids": str(response["logged_user_id"]),
             "fields": ",".join(fields),
         }
         _client_key, client_secret = self.get_key_and_secret()
@@ -142,11 +142,7 @@ class OdnoklassnikiApp(BaseAuth):
 
     def get_auth_sig(self):
         return odnoklassniki_sig(
-            "{:s}{:s}{:s}".format(
-                self.data["logged_user_id"],
-                self.data["session_key"],
-                self.setting("SECRET"),
-            )
+            f"{self.data['logged_user_id']:s}{self.data['session_key']:s}{self.setting('SECRET'):s}"
         )
 
     def get_response(self):
@@ -175,7 +171,7 @@ def odnoklassniki_oauth_sig(data, client_secret):
         https://apiok.ru/wiki/pages/viewpage.action?pageId=12878032,
     search for "little bit different way"
     """
-    suffix = odnoklassniki_sig("{:s}{:s}".format(data["access_token"], client_secret))
+    suffix = odnoklassniki_sig(f"{data['access_token']}{client_secret}")
     check_list = sorted(
         f"{key:s}={value:s}" for key, value in data.items() if key != "access_token"
     )

@@ -19,9 +19,7 @@ class Auth0OpenIdConnectAuth(OpenIdConnectAuth):
 
     def api_path(self, path=""):
         """Build API path for Auth0 domain"""
-        return "https://{domain}/{path}".format(
-            domain=self.setting("DOMAIN"), path=path.lstrip("/")
-        )
+        return f"https://{self.setting('DOMAIN')}/{path.lstrip('/')}"
 
     def oidc_endpoint(self) -> str:
         """Override to use Auth0 domain instead of OIDC_ENDPOINT setting"""

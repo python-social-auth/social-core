@@ -21,7 +21,7 @@ class ChatworkOAuth2(BaseOAuth2):
 
     def api_url(self, path):
         api_url = self.setting("API_URL") or self.API_URL
-        return "{}{}".format(api_url.rstrip("/"), path)
+        return f"{api_url.rstrip('/')}{path}"
 
     def auth_headers(self):
         return {"Authorization": self.get_key_and_secret_basic_auth()}
