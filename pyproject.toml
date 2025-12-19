@@ -152,7 +152,6 @@ disable = [
   "missing-module-docstring",
   "no-else-raise",  # TODO
   "no-member",  # TODO
-  "pointless-string-statement",  # TODO: prio
   "possibly-used-before-assignment",  # TODO: prio
   "raise-missing-from",  # TODO
   "redefined-builtin",  # TODO

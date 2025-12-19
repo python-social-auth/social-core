@@ -1,15 +1,3 @@
-import base64
-from typing import Any, cast
-
-from cryptography.hazmat.backends import default_backend
-from cryptography.x509 import load_der_x509_certificate
-from jwt import DecodeError, ExpiredSignatureError, get_unverified_header
-from jwt import decode as jwt_decode
-
-from social_core.exceptions import AuthTokenError
-
-from .azuread import AzureADOAuth2
-
 """
 Copyright (c) 2015 Microsoft Open Technologies, Inc.
 
@@ -34,15 +22,25 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-"""
 
-"""
 Azure AD OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/azuread.html
 
 See https://nicksnettravels.builttoroam.com/post/2017/01/24/Verifying-Azure-Active-Directory-JWT-Tokens.aspx
 for verifying JWT tokens.
 """
+
+import base64
+from typing import Any, cast
+
+from cryptography.hazmat.backends import default_backend
+from cryptography.x509 import load_der_x509_certificate
+from jwt import DecodeError, ExpiredSignatureError, get_unverified_header
+from jwt import decode as jwt_decode
+
+from social_core.exceptions import AuthTokenError
+
+from .azuread import AzureADOAuth2
 
 
 class AzureADTenantOAuth2(AzureADOAuth2):
