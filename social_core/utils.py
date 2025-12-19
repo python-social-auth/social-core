@@ -329,6 +329,7 @@ class cache:
                 try:
                     cached_value = fn(this)
                     self.cache[this.__class__] = (now, cached_value)
+                # pylint: disable-next=broad-exception-caught
                 except Exception:
                     # Use previously cached value when call fails, if available
                     if not cached_value:
