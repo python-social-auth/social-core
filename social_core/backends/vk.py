@@ -195,8 +195,9 @@ class VKAppOAuth2(VKOAuth2):
         user_id = self.data.get("viewer_id")
         if user_check is not None:
             user_check = int(user_check)
+            is_user = 0
             if user_check == 1:
-                is_user = self.data.get("is_app_user")
+                is_user = self.data.get("is_app_user", 0)
             elif user_check == 2:
                 response = self.vk_api("isAppUser", {"user_id": user_id})
                 if response is None:
