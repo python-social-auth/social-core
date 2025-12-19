@@ -26,6 +26,7 @@ class QiitaOAuth2(BaseOAuth2):
 
     AUTHORIZATION_URL = "https://qiita.com/api/v2/oauth/authorize"
     ACCESS_TOKEN_URL = "https://qiita.com/api/v2/access_tokens"
+    ACCESS_TOKEN_PAYLOAD = "json"
     SCOPE_SEPARATOR = " "
     REDIRECT_STATE = True
     EXTRA_DATA = [
@@ -57,19 +58,25 @@ class QiitaOAuth2(BaseOAuth2):
             del data["redirect_uri"]
         return data
 
-    def auth_headers(self):
-        return {"Content-Type": "application/json"}
-
     def request_access_token(
         self,
         url: str,
         method: Literal["GET", "POST", "DELETE"] = "GET",
         headers: Mapping[str, str | bytes] | None = None,
-        data: dict | bytes | str | None = None,
+        data: dict | None = None,
+        json: dict | None = None,
         auth: tuple[str, str] | AuthBase | None = None,
         params: dict | None = None,
     ) -> dict[Any, Any]:
-        data = super().request_access_token(url, method, headers, data, auth, params)
+        data = super().request_access_token(
+            url=url,
+            method=method,
+            headers=headers,
+            data=data,
+            json=json,
+            auth=auth,
+            params=params,
+        )
         data.update({"access_token": data["token"]})
         return data
 

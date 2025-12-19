@@ -6,7 +6,7 @@ Created on May 13, 2014
 
 from __future__ import annotations
 
-import json
+from json import loads
 from typing import TYPE_CHECKING, Any, Literal
 
 from social_core.utils import parse_qs, wrap_access_token_error
@@ -58,7 +58,7 @@ class QQOAuth2(BaseOAuth2):
     def get_openid(self, access_token):
         response = self.request(self.OPENID_URL, params={"access_token": access_token})
         content = response.content.decode()
-        data = json.loads(content[10:-3])
+        data = loads(content[10:-3])
         return data["openid"]
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
@@ -79,12 +79,19 @@ class QQOAuth2(BaseOAuth2):
         url: str,
         method: Literal["GET", "POST", "DELETE"] = "GET",
         headers: Mapping[str, str | bytes] | None = None,
-        data: dict | bytes | str | None = None,
+        data: dict | None = None,
+        json: dict | None = None,
         auth: tuple[str, str] | AuthBase | None = None,
         params: dict | None = None,
     ) -> dict[Any, Any]:
         with wrap_access_token_error(self):
             response = self.request(
-                url, method=method, headers=headers, data=data, auth=auth, params=params
+                url,
+                method=method,
+                headers=headers,
+                data=data,
+                json=json,
+                auth=auth,
+                params=params,
             )
         return parse_qs(response.content)

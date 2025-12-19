@@ -3,7 +3,6 @@ from __future__ import annotations
 import base64
 import hashlib
 from typing import TYPE_CHECKING, Any, Literal, cast
-from urllib.parse import urlencode
 
 from oauthlib.oauth1 import SIGNATURE_TYPE_AUTH_HEADER
 from requests_oauthlib import OAuth1
@@ -52,6 +51,7 @@ class OAuthAuth(BaseAuth):
     AUTHORIZATION_URL = ""
     ACCESS_TOKEN_URL = ""
     ACCESS_TOKEN_METHOD: Literal["GET", "POST"] = "POST"
+    ACCESS_TOKEN_PAYLOAD: Literal["form", "json"] = "form"
     REVOKE_TOKEN_URL: str = ""
     REVOKE_TOKEN_METHOD: Literal["GET", "POST", "DELETE"] = "POST"
     ID_KEY = "id"
@@ -180,7 +180,7 @@ class OAuthAuth(BaseAuth):
         if revoke_token_url := self.revoke_token_url(token, uid):
             params = self.revoke_token_params(token, uid)
             headers = self.revoke_token_headers(token, uid)
-            data = urlencode(params) if self.REVOKE_TOKEN_METHOD != "GET" else None
+            data = params if self.REVOKE_TOKEN_METHOD != "GET" else None
             response = self.request(
                 revoke_token_url,
                 params=params,
@@ -420,7 +420,9 @@ class BaseOAuth2(OAuthAuth):
 
     def auth_headers(self) -> Mapping[str, str | bytes]:
         return {
-            "Content-Type": "application/x-www-form-urlencoded",
+            "Content-Type": "application/json"
+            if self.ACCESS_TOKEN_PAYLOAD == "json"
+            else "application/x-www-form-urlencoded",
             "Accept": "application/json",
         }
 
@@ -445,13 +447,20 @@ class BaseOAuth2(OAuthAuth):
         url: str,
         method: Literal["GET", "POST", "DELETE"] = "GET",
         headers: Mapping[str, str | bytes] | None = None,
-        data: dict | bytes | str | None = None,
+        data: dict | None = None,
+        json: dict | None = None,
         auth: tuple[str, str] | AuthBase | None = None,
         params: dict | None = None,
     ) -> dict[Any, Any]:
         with wrap_access_token_error(self):
             return self.get_json(
-                url, method=method, headers=headers, data=data, auth=auth, params=params
+                url,
+                method=method,
+                headers=headers,
+                data=data,
+                auth=auth,
+                params=params,
+                json=json,
             )
 
     def process_error(self, data) -> None:
@@ -467,15 +476,19 @@ class BaseOAuth2(OAuthAuth):
         """Completes login process, must return user instance"""
         self.process_error(self.data)
         state = self.validate_state()
-        data, params = None, None
+        data = params = json = None
+        auth_params = self.auth_complete_params(state)
         if self.ACCESS_TOKEN_METHOD == "GET":
-            params = self.auth_complete_params(state)
+            params = auth_params
+        elif self.ACCESS_TOKEN_PAYLOAD == "json":
+            json = auth_params
         else:
-            data = self.auth_complete_params(state)
+            data = auth_params
 
         response = self.request_access_token(
             self.access_token_url(),
             data=data,
+            json=json,
             params=params,
             headers=self.auth_headers(),
             auth=self.auth_complete_credentials(),
