@@ -86,6 +86,7 @@ class SoundcloudOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
                 params={"format": "json"},
                 method="GET",
                 data=None,
+                json=None,
                 auth=None,
                 timeout=None,
             )

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import base64
 import datetime
-import json
 from calendar import timegm
+from json import loads
 from typing import TYPE_CHECKING, Any, Literal, cast
 
 import jwt
@@ -161,7 +161,7 @@ class OpenIdConnectAuth(BaseOAuth2):
 
     def get_remote_jwks_keys(self):
         response = self.request(self.jwks_uri())
-        return json.loads(response.text)["keys"]
+        return loads(response.text)["keys"]
 
     def auth_params(self, state=None):  # noqa: C901, PLR0912
         """Return extra arguments needed on auth process."""
@@ -349,7 +349,8 @@ class OpenIdConnectAuth(BaseOAuth2):
         url: str,
         method: Literal["GET", "POST", "DELETE"] = "GET",
         headers: Mapping[str, str | bytes] | None = None,
-        data: dict | bytes | str | None = None,
+        data: dict | None = None,
+        json: dict | None = None,
         auth: tuple[str, str] | AuthBase | None = None,
         params: dict | None = None,
     ) -> dict[Any, Any]:
@@ -358,7 +359,13 @@ class OpenIdConnectAuth(BaseOAuth2):
         store it (temporarily).
         """
         response = super().request_access_token(
-            url, method, headers, data, auth, params
+            url,
+            method=method,
+            headers=headers,
+            data=data,
+            json=json,
+            auth=auth,
+            params=params,
         )
         self.id_token = self.validate_and_return_id_token(
             response["id_token"], response["access_token"]

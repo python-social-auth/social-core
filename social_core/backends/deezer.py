@@ -42,13 +42,20 @@ class DeezerOAuth2(BaseOAuth2):
         url: str,
         method: Literal["GET", "POST", "DELETE"] = "GET",
         headers: Mapping[str, str | bytes] | None = None,
-        data: dict | bytes | str | None = None,
+        data: dict | None = None,
+        json: dict | None = None,
         auth: tuple[str, str] | AuthBase | None = None,
         params: dict | None = None,
     ) -> dict[Any, Any]:
         with wrap_access_token_error(self):
             response = self.request(
-                url, method=method, headers=headers, data=data, auth=auth, params=params
+                url,
+                method=method,
+                headers=headers,
+                data=data,
+                json=json,
+                auth=auth,
+                params=params,
             )
         return dict(parse_qsl(response.text))
 

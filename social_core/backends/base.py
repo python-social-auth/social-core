@@ -279,13 +279,14 @@ class BaseAuth:
         otherwise return false."""
         return True
 
-    def request(
+    def request(  # noqa: PLR0913
         self,
         url: str,
         *,
         method: Literal["GET", "POST", "DELETE"] = "GET",
         headers: Mapping[str, str | bytes] | None = None,
-        data: dict | bytes | str | None = None,
+        data: dict | None = None,
+        json: dict | None = None,
         auth: tuple[str, str] | AuthBase | None = None,
         params: dict | None = None,
         timeout: float | None = None,
@@ -308,6 +309,7 @@ class BaseAuth:
                 url,
                 headers=headers,
                 data=data,
+                json=json,
                 auth=auth,
                 params=params,
                 timeout=timeout,
@@ -319,12 +321,13 @@ class BaseAuth:
         response.raise_for_status()
         return response
 
-    def get_json(
+    def get_json(  # noqa: PLR0913
         self,
         url: str,
         method: Literal["GET", "POST", "DELETE"] = "GET",
         headers: Mapping[str, str | bytes] | None = None,
-        data: dict | bytes | str | None = None,
+        data: dict | None = None,
+        json: dict | None = None,
         auth: tuple[str, str] | AuthBase | None = None,
         params: dict | None = None,
         timeout: float | None = None,
@@ -334,6 +337,7 @@ class BaseAuth:
             method=method,
             headers=headers,
             data=data,
+            json=json,
             auth=auth,
             params=params,
             timeout=timeout,
