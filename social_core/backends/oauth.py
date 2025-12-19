@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING, Any, Literal, cast
 from urllib.parse import urlencode
 
 from oauthlib.oauth1 import SIGNATURE_TYPE_AUTH_HEADER
-from requests.auth import AuthBase
 from requests_oauthlib import OAuth1
 
 from social_core.exceptions import (
