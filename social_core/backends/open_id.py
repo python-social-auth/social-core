@@ -46,6 +46,8 @@ class OpenIdAuth(BaseAuth):
     URL: str | None = None
     USERNAME_KEY = "username"
 
+    _consumer = None
+
     def get_user_id(self, details, response):
         """Return user unique id provided by service"""
         return response.identity_url
@@ -253,10 +255,13 @@ class OpenIdAuth(BaseAuth):
             request.addExtension(pape_request)
         return request
 
+    def get_consumer_store(self):
+        return self.strategy.openid_store()
+
     def consumer(self):
         """Create an OpenID Consumer object for the given Django request."""
-        if not hasattr(self, "_consumer"):
-            self._consumer = self.create_consumer(self.strategy.openid_store())
+        if self._consumer is None:
+            self._consumer = self.create_consumer(self.get_consumer_store())
         return self._consumer
 
     def create_consumer(self, store=None):
