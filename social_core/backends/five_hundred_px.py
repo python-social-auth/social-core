@@ -16,12 +16,12 @@ class FiveHundredPxOAuth(BaseOAuth1):
     REQUEST_TOKEN_URL = "https://api.500px.com/v1/oauth/request_token"
     ACCESS_TOKEN_URL = "https://api.500px.com/v1/oauth/access_token"
 
-    def get_user_details(self, user):  # type: ignore[reportIncompatibleMethodOverride]
+    def get_user_details(self, response) -> dict[str, Any]:
         """Return user details from 500px account"""
-        fullname, first_name, last_name = self.get_user_names(user.get("fullname"))
+        fullname, first_name, last_name = self.get_user_names(response.get("fullname"))
         return {
-            "username": user.get("username") or user.get("id"),
-            "email": user.get("email"),
+            "username": response.get("username") or response.get("id"),
+            "email": response.get("email"),
             "fullname": fullname,
             "first_name": first_name,
             "last_name": last_name,
