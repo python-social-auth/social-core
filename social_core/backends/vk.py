@@ -152,7 +152,7 @@ class VKOAuth2(BaseOAuth2):
             http://goo.gl/yLcaa
         """
         # We need to perform server-side call if no access_token
-        data["v"] = self.setting("API_VERSION", "5.131")
+        data["v"] = cast("str", self.setting("API_VERSION", "5.131"))
         if "access_token" not in data:
             key, secret = self.get_key_and_secret()
             if "api_id" not in data:

@@ -3,7 +3,7 @@ Okta OAuth2 and OpenIdConnect:
     https://python-social-auth.readthedocs.io/en/latest/backends/okta.html
 """
 
-from typing import Any
+from typing import Any, cast
 from urllib.parse import urljoin, urlparse, urlunparse
 
 from social_core.utils import append_slash
@@ -12,8 +12,8 @@ from .oauth import BaseOAuth2
 
 
 class OktaMixin(BaseOAuth2):
-    def api_url(self):
-        return append_slash(self.setting("API_URL"))
+    def api_url(self) -> str:
+        return append_slash(cast("str", self.setting("API_URL")))
 
     def authorization_url(self):
         return self._url("v1/authorize")
@@ -22,7 +22,7 @@ class OktaMixin(BaseOAuth2):
         return self._url("v1/token")
 
     def _url(self, path):
-        return urljoin(append_slash(self.setting("API_URL")), path)
+        return urljoin(self.api_url(), path)
 
     def oidc_config_url(self):
         # https://developer.okta.com/docs/reference/api/oidc/#well-known-openid-configuration

@@ -8,7 +8,7 @@ import hashlib
 import hmac
 import json
 import time
-from typing import Any
+from typing import Any, cast
 
 from social_core.exceptions import (
     AuthCanceled,
@@ -49,10 +49,10 @@ class FacebookOAuth2(BaseOAuth2):
         return params
 
     def get_authorization_url_format(self) -> dict[str, str]:
-        return {"version": self.setting("API_VERSION", API_VERSION)}
+        return {"version": cast("str", self.setting("API_VERSION", API_VERSION))}
 
     def get_access_token_url_format(self) -> dict[str, str]:
-        return {"version": self.setting("API_VERSION", API_VERSION)}
+        return {"version": cast("str", self.setting("API_VERSION", API_VERSION))}
 
     def get_user_details(self, response):
         """Return user details from Facebook account"""

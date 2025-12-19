@@ -3,7 +3,7 @@ NationBuilder OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/nationbuilder.html
 """
 
-from typing import Any
+from typing import Any, cast
 
 from .oauth import BaseOAuth2
 
@@ -25,8 +25,8 @@ class NationBuilderOAuth2(BaseOAuth2):
         return {"slug": self.slug}
 
     @property
-    def slug(self):
-        return self.setting("SLUG")
+    def slug(self) -> str:
+        return cast("str", self.setting("SLUG"))
 
     def get_user_details(self, response):
         """Return user details from Github account"""

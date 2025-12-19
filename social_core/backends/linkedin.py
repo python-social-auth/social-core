@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import datetime
 from calendar import timegm
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 from social_core.exceptions import AuthCanceled, AuthTokenError
@@ -75,7 +75,12 @@ class LinkedinOAuth2(BaseOAuth2):
     def user_details_url(self):
         # use set() since LinkedIn fails when values are duplicated
         fields_selectors = list(
-            {"id", "firstName", "lastName", *self.setting("FIELD_SELECTORS", [])}
+            {
+                "id",
+                "firstName",
+                "lastName",
+                *cast("list[str]", self.setting("FIELD_SELECTORS", [])),
+            }
         )
         # user sort to ease the tests URL mocking
         fields_selectors.sort()
@@ -90,7 +95,9 @@ class LinkedinOAuth2(BaseOAuth2):
             self.user_details_url(), headers=self.user_data_headers(access_token)
         )
 
-        if "emailAddress" in set(self.setting("FIELD_SELECTORS", [])):
+        if "emailAddress" in set(
+            cast("list[str]", self.setting("FIELD_SELECTORS", []))
+        ):
             emails = self.email_data(access_token, *args, **kwargs)
             if emails:
                 response["emailAddress"] = emails[0]

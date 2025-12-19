@@ -4,7 +4,7 @@ Slack OAuth2 backend, docs at:
     https://api.slack.com/docs/oauth
 """
 
-from typing import Any
+from typing import Any, cast
 
 from .oauth import BaseOAuth2
 
@@ -22,8 +22,8 @@ class SlackOAuth2(BaseOAuth2):
 
     def auth_extra_arguments(self):
         params = super().auth_extra_arguments() or {}
-        if self.setting("TEAM"):
-            params["team"] = self.setting("TEAM")
+        if team := self.setting("TEAM"):
+            params["team"] = cast("str", team)
         return params
 
     def get_user_details(self, response):

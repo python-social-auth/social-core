@@ -128,9 +128,9 @@ class OAuthAuth(BaseAuth):
             uri = url_add_parameters(uri, {"redirect_state": state})
         return uri
 
-    def get_scope(self):
+    def get_scope(self) -> list[str]:
         """Return list with needed access scope"""
-        scope = self.setting("SCOPE", [])
+        scope = cast("list[str]", self.setting("SCOPE", []))
         if not self.setting("IGNORE_DEFAULT_SCOPE", False):
             scope = scope + (self.DEFAULT_SCOPE or [])
         return scope
@@ -147,7 +147,7 @@ class OAuthAuth(BaseAuth):
         raise NotImplementedError
 
     def authorization_url(self) -> str:
-        url = self.setting("AUTHORIZATION_URL", self.AUTHORIZATION_URL)
+        url = cast("str", self.setting("AUTHORIZATION_URL", self.AUTHORIZATION_URL))
         if format_params := self.get_authorization_url_format():
             return url.format(**format_params)
         return url
@@ -156,7 +156,7 @@ class OAuthAuth(BaseAuth):
         return {}
 
     def access_token_url(self) -> str:
-        url = self.setting("ACCESS_TOKEN_URL", self.ACCESS_TOKEN_URL)
+        url = cast("str", self.setting("ACCESS_TOKEN_URL", self.ACCESS_TOKEN_URL))
         if format_params := self.get_access_token_url_format():
             return url.format(**format_params)
         return url
@@ -165,7 +165,7 @@ class OAuthAuth(BaseAuth):
         return {}
 
     def revoke_token_url(self, token, uid) -> str:
-        return self.setting("REVOKE_TOKEN_URL", self.REVOKE_TOKEN_URL)
+        return cast("str", self.setting("REVOKE_TOKEN_URL", self.REVOKE_TOKEN_URL))
 
     def revoke_token_params(self, token, uid) -> dict[str, Any]:
         return {}
@@ -272,9 +272,9 @@ class BaseOAuth1(OAuthAuth):
         self.strategy.session_set(name, tokens)
         return token
 
-    def request_token_extra_arguments(self):
+    def request_token_extra_arguments(self) -> dict[str, str]:
         """Return extra arguments needed on request-token process"""
-        return self.setting("REQUEST_TOKEN_EXTRA_ARGUMENTS", {})
+        return cast("dict[str, str]", self.setting("REQUEST_TOKEN_EXTRA_ARGUMENTS", {}))
 
     def unauthorized_token(self):
         """Return request for unauthorized token (first stage)"""
@@ -564,8 +564,12 @@ class BaseOAuth2PKCE(BaseOAuth2):
 
     def create_code_verifier(self):
         name = f"{self.name}_code_verifier"
-        code_verifier_len = self.setting(
-            "PKCE_CODE_VERIFIER_LENGTH", default=self.PKCE_DEFAULT_CODE_VERIFIER_LENGTH
+        code_verifier_len = cast(
+            "int",
+            self.setting(
+                "PKCE_CODE_VERIFIER_LENGTH",
+                default=self.PKCE_DEFAULT_CODE_VERIFIER_LENGTH,
+            ),
         )
         code_verifier = self.strategy.random_string(code_verifier_len)
         self.strategy.session_set(name, code_verifier)
@@ -589,9 +593,12 @@ class BaseOAuth2PKCE(BaseOAuth2):
         params = super().auth_params(state=state)
 
         if self.setting("USE_PKCE", default=self.DEFAULT_USE_PKCE):
-            code_challenge_method = self.setting(
-                "PKCE_CODE_CHALLENGE_METHOD",
-                default=self.PKCE_DEFAULT_CODE_CHALLENGE_METHOD,
+            code_challenge_method = cast(
+                "str",
+                self.setting(
+                    "PKCE_CODE_CHALLENGE_METHOD",
+                    default=self.PKCE_DEFAULT_CODE_CHALLENGE_METHOD,
+                ),
             )
             code_verifier = self.create_code_verifier()
             code_challenge = self.generate_code_challenge(

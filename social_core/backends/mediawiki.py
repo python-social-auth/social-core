@@ -5,6 +5,7 @@ MediaWiki OAuth1 backend, docs at:
 
 import re
 import time
+from typing import cast
 from urllib.parse import parse_qs, urlencode, urlparse
 
 import jwt
@@ -46,7 +47,7 @@ class MediaWiki(BaseOAuth1):
         params["title"] = "Special:OAuth/initiate"
         key, secret = self.get_key_and_secret()
         response = self.request(
-            self.setting("MEDIAWIKI_URL"),
+            cast("str", self.setting("MEDIAWIKI_URL")),
             params=params,
             auth=OAuth1(key, secret, callback_uri=self.setting("CALLBACK")),
             method=self.REQUEST_TOKEN_METHOD,
@@ -83,7 +84,7 @@ class MediaWiki(BaseOAuth1):
         auth_token = self.oauth_auth(token)
 
         response = self.request(
-            self.setting("MEDIAWIKI_URL"),
+            cast("str", self.setting("MEDIAWIKI_URL")),
             method="POST",
             params={"title": "Special:Oauth/token"},
             auth=auth_token,
@@ -116,7 +117,7 @@ class MediaWiki(BaseOAuth1):
         )
 
         req_resp = self.request(
-            self.setting("MEDIAWIKI_URL"),
+            cast("str", self.setting("MEDIAWIKI_URL")),
             method="POST",
             params={"title": "Special:OAuth/identify"},
             auth=auth,

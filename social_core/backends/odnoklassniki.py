@@ -6,7 +6,7 @@ Odnoklassniki OAuth2 and Iframe Application backends, docs at:
 from __future__ import annotations
 
 from hashlib import md5
-from typing import Any
+from typing import Any, cast
 from urllib.parse import unquote
 
 from social_core.exceptions import AuthFailed
@@ -102,7 +102,7 @@ class OdnoklassnikiApp(BaseAuth):
             "first_name",
             "last_name",
             "name",
-            *self.setting("EXTRA_USER_DATA_LIST", ()),
+            *cast("tuple[str, ...]", self.setting("EXTRA_USER_DATA_LIST", ())),
         )
         data = {
             "method": "users.getInfo",
@@ -121,14 +121,17 @@ class OdnoklassnikiApp(BaseAuth):
         )
         if len(details) == 1 and "uid" in details[0]:
             details = details[0]
-            auth_data_fields = self.setting(
-                "EXTRA_AUTH_DATA_LIST",
-                (
-                    "api_server",
-                    "apiconnection",
-                    "session_key",
-                    "authorized",
-                    "session_secret_key",
+            auth_data_fields = cast(
+                "tuple[str, ...]",
+                self.setting(
+                    "EXTRA_AUTH_DATA_LIST",
+                    (
+                        "api_server",
+                        "apiconnection",
+                        "session_key",
+                        "authorized",
+                        "session_secret_key",
+                    ),
                 ),
             )
 

@@ -3,7 +3,7 @@ ORCID OAuth2 Application backend, docs at:
 https://python-social-auth.readthedocs.io/en/latest/backends/orcid.html
 """
 
-from typing import Any
+from typing import Any, cast
 
 from .oauth import BaseOAuth2
 
@@ -102,7 +102,9 @@ class ORCIDOAuth2(BaseOAuth2):
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
-        params = self.setting("PROFILE_EXTRA_PARAMS", {})
+        params: dict[str, str] = cast(
+            "dict[str, str]", self.setting("PROFILE_EXTRA_PARAMS", {})
+        )
         params["access_token"] = access_token
 
         # Reference Docs: ORCID Auth Flow:

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from social_core.exceptions import InvalidEmail
 
@@ -33,6 +33,6 @@ def mail_validation(backend: BaseAuth, details, is_new=False, *args, **kwargs):
         )
         backend.strategy.session_set("email_validation_address", details["email"])
         return backend.strategy.redirect(
-            backend.strategy.setting("EMAIL_VALIDATION_URL")
+            cast("str", backend.strategy.setting("EMAIL_VALIDATION_URL"))
         )
     return None

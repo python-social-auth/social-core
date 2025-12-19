@@ -35,7 +35,7 @@ class BaseAuth:
     def __init__(
         self, strategy: BaseStrategy | None = None, redirect_uri: str | None = None
     ) -> None:
-        self.strategy: Any = (
+        self.strategy: BaseStrategy = (
             strategy if strategy is not None else REGISTRY.default_strategy
         )
         self.redirect_uri = redirect_uri
