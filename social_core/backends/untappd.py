@@ -92,9 +92,7 @@ class UntappdOAuth2(BaseOAuth2):
                 "email": user_data.get("settings", {}).get("email_address", ""),
                 "first_name": user_data.get("first_name"),
                 "last_name": user_data.get("last_name"),
-                "fullname": " ".join(
-                    [user_data.get("first_name"), user_data.get("last_name")]
-                ),
+                "fullname": f"{user_data.get('first_name')} {user_data.get('last_name')}",
             }
         )
         return user_data
