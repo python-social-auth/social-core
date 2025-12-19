@@ -187,7 +187,7 @@ class VKAppOAuth2(VKOAuth2):
         # Verify signature, if present
         key, secret = self.get_key_and_secret()
         if auth_key:
-            check_key = vk_sig("_".join([key, self.data.get("viewer_id"), secret]))
+            check_key = vk_sig(f"{key}_{self.data.get('viewer_id')}_{secret}")
             if check_key != auth_key:
                 raise ValueError("VK.com authentication failed: invalid auth key")
 
