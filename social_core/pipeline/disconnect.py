@@ -37,8 +37,8 @@ def get_entries(
 
 
 def revoke_tokens(strategy, entries, *args, **kwargs) -> None:
-    revoke_tokens = strategy.setting("REVOKE_TOKENS_ON_DISCONNECT", False)
-    if revoke_tokens:
+    revoke_tokens_on_disconnect = strategy.setting("REVOKE_TOKENS_ON_DISCONNECT", False)
+    if revoke_tokens_on_disconnect:
         for entry in entries:
             if "access_token" in entry.extra_data:
                 backend = entry.get_backend_instance(strategy)
