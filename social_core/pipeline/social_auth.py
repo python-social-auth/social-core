@@ -55,6 +55,7 @@ def associate_user(
             social = cast(
                 "type[BaseStorage]", backend.strategy.storage
             ).user.create_social_auth(user, uid, backend.name)
+        # pylint: disable-next=broad-exception-caught
         except Exception as err:
             if not cast(
                 "type[BaseStorage]", backend.strategy.storage

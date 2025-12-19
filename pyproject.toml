@@ -138,7 +138,6 @@ module = [
 disable = [
   "abstract-method",  # TODO
   "arguments-differ",  # TODO
-  "broad-exception-caught",  # TODO
   "consider-using-f-string",  # TODO
   "duplicate-code",  # TODO
   "fixme",
@@ -217,7 +216,6 @@ ignore = [
   "TD002",  # CONFIG: no detailed TODO documentation is required
   "TD003",  # CONFIG: no detailed TODO documentation is required
   "TRY003",  # TODO: Avoid specifying long messages outside the exception class
-  "TRY301",  # TODO: Abstract `raise` to an inner function
   'ISC001'  # CONFIG: formatter
 ]
 select = ["ALL"]
