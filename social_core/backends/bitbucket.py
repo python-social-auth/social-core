@@ -48,13 +48,15 @@ class BitbucketOAuth2(BaseOAuth2):
         """Return user data provided"""
         emails = self._get_emails(access_token)
         email = None
+        is_confirmed = False
 
         for address in reversed(emails["values"]):
             email = address["email"]
+            is_confirmed = address["is_confirmed"]
             if address["is_primary"]:
                 break
 
-        if self.setting("VERIFIED_EMAILS_ONLY", False) and not address["is_confirmed"]:
+        if self.setting("VERIFIED_EMAILS_ONLY", False) and not is_confirmed:
             raise AuthForbidden(self, "Bitbucket account has no verified email")
 
         user = self._get_user(access_token)

@@ -152,7 +152,6 @@ disable = [
   "missing-module-docstring",
   "no-else-raise",  # TODO
   "no-member",  # TODO
-  "possibly-used-before-assignment",  # TODO: prio
   "raise-missing-from",  # TODO
   "redefined-builtin",  # TODO
   "redefined-outer-name",  # TODO: prio
@@ -165,7 +164,6 @@ disable = [
   "too-many-nested-blocks",  # TODO
   "too-many-positional-arguments",  # TODO
   "too-many-public-methods",
-  "undefined-loop-variable",  # TODO: prio
   "unused-argument",
   "useless-parent-delegation"  # TODO: prio
 ]
