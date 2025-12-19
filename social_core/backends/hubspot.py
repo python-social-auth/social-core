@@ -34,5 +34,5 @@ class HubSpotOAuth2(BaseOAuth2):
         """Loads user data information from service"""
         return self.get_json(
             self.USER_DATA_URL + access_token,
-            headers={"Authorization": "Bearer " + access_token},
+            headers={"Authorization": f"Bearer {access_token}"},
         )

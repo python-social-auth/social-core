@@ -15,7 +15,7 @@ class UntappdOAuth2(BaseOAuth2):
     AUTHORIZATION_URL = "https://untappd.com/oauth/authenticate/"
     ACCESS_TOKEN_URL = "https://untappd.com/oauth/authorize/"
     BASE_API_URL = "https://api.untappd.com"
-    USER_INFO_URL = BASE_API_URL + "/v4/user/info/"
+    USER_INFO_URL = f"{BASE_API_URL}/v4/user/info/"
     ACCESS_TOKEN_METHOD = "GET"
     STATE_PARAMETER = False
     REDIRECT_STATE = False

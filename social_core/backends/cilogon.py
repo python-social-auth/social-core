@@ -30,7 +30,7 @@ class CILogonOAuth2(BaseOAuth2):
         """Return user unique id provided by service
         In this case it is a combination of the `sub`
         and `iss` respective values."""
-        return response.get("sub", "") + " " + response.get("iss", "")
+        return f"{response.get('sub', '')} {response.get('iss', '')}"
 
     def get_user_details(self, response):
         """Return user details from CI Logon service"""

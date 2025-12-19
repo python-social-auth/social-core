@@ -31,5 +31,5 @@ class FlatOAuth2(BaseOAuth2):
         """Loads user data from service"""
         return self.get_json(
             "https://api.flat.io/v2/me",
-            headers={"Authorization": "Bearer " + access_token},
+            headers={"Authorization": f"Bearer {access_token}"},
         )

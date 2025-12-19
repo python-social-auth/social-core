@@ -27,8 +27,8 @@ class BaseOAuthTest(BaseBackendTest[OAuthBackendT], Generic[OAuthBackendT]):
     def extra_settings(self) -> dict[str, str | list[str]]:
         assert self.name, "Subclasses must set the name attribute"
         return {
-            "SOCIAL_AUTH_" + self.name + "_KEY": "a-key",
-            "SOCIAL_AUTH_" + self.name + "_SECRET": "a-secret-key",
+            f"SOCIAL_AUTH_{self.name}_KEY": "a-key",
+            f"SOCIAL_AUTH_{self.name}_SECRET": "a-secret-key",
         }
 
     def _method(self, method):
@@ -227,12 +227,12 @@ class BaseAuthUrlTestMixin(Generic[OAuthBackendT]):
             patch.object(
                 self.backend,
                 "authorization_url",
-                return_value=original_url + "?param1=value1&param2=value2",
+                return_value=f"{original_url}?param1=value1&param2=value2",
             ),
             patch.object(
                 self.backend,
                 auth_url_key,
-                original_url + "?param1=value1&param2=value2",
+                f"{original_url}?param1=value1&param2=value2",
             ),
         ):
             # we expect an & symbol to join the different parameters

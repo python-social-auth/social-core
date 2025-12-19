@@ -108,12 +108,7 @@ class BaseActionTest(unittest.TestCase):
         target_url = self.strategy.build_absolute_uri("/complete/github/?code=foobar")
 
         start_query = parse_qs(urlparse(start_url).query)
-        location_url = (
-            target_url
-            + ("&" if "?" in target_url else "?")
-            + "state="
-            + start_query["state"]
-        )
+        location_url = f"{target_url}{'&' if '?' in target_url else '?'}state={start_query['state']}"
         location_query = parse_qs(urlparse(location_url).query)
 
         responses.add(
@@ -190,12 +185,7 @@ class BaseActionTest(unittest.TestCase):
         target_url = self.strategy.build_absolute_uri("/complete/github/?code=foobar")
 
         start_query = parse_qs(urlparse(start_url).query)
-        location_url = (
-            target_url
-            + ("&" if "?" in target_url else "?")
-            + "state="
-            + start_query["state"]
-        )
+        location_url = f"{target_url}{'&' if '?' in target_url else '?'}state={start_query['state']}"
         location_query = parse_qs(urlparse(location_url).query)
 
         responses.add(

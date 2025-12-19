@@ -138,7 +138,7 @@ def do_complete(  # noqa: C901,PLR0912
 
     if redirect_value and redirect_value != url:
         redirect_value = quote(redirect_value)
-        url += ("&" if "?" in url else "?") + f"{redirect_name}={redirect_value}"
+        url += f"{'&' if '?' in url else '?'}{redirect_name}={redirect_value}"
 
     if backend.setting("SANITIZE_REDIRECTS", True):
         allowed_hosts = [

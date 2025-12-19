@@ -34,7 +34,7 @@ class BungieOAuth2(BaseOAuth2):
     def make_bungie_request(self, url, access_token, kwargs):
         """Helper function to get username data keyed off displayName"""
         headers = self.auth_headers()
-        headers["Authorization"] = "Bearer " + access_token
+        headers["Authorization"] = f"Bearer {access_token}"
         return self.get_json(url, headers=headers)
 
     def auth_complete(self, *args, **kwargs):

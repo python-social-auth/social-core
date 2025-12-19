@@ -32,7 +32,5 @@ class WLCGOAuth2(BaseOAuth2):
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
-        url = "https://wlcg.cloud.cnaf.infn.it/userinfo?" + urlencode(
-            {"access_token": access_token}
-        )
+        url = f"https://wlcg.cloud.cnaf.infn.it/userinfo?{urlencode({'access_token': access_token})}"
         return self.get_json(url)

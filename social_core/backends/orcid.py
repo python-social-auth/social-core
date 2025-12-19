@@ -87,7 +87,7 @@ class ORCIDOAuth2(BaseOAuth2):
                 first_name = name.get("given-names", {}).get("value", "")
                 if (family_name := name.get("family-name", None)) is not None:
                     last_name = family_name.get("value", "")
-                fullname = first_name + " " + last_name
+                fullname = f"{first_name} {last_name}"
                 fullname = fullname.strip()
 
             email = self.get_user_email(person.get("emails"))

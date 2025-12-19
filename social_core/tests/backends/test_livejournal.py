@@ -32,9 +32,8 @@ class LiveJournalOpenIdTest(OpenIdTest):
             "openid.claimed_id": "http://foobar.livejournal.com/",
             "openid.identity": "http://foobar.livejournal.com/",
             "openid.op_endpoint": "http://www.livejournal.com/openid/server.bml",
-            "openid.return_to": "http://myapp.com/complete/livejournal/?"
-            "janrain_nonce=" + JANRAIN_NONCE,
-            "openid.response_nonce": JANRAIN_NONCE + "wGp2rj",
+            "openid.return_to": f"http://myapp.com/complete/livejournal/?janrain_nonce={JANRAIN_NONCE}",
+            "openid.response_nonce": f"{JANRAIN_NONCE}wGp2rj",
             "openid.assoc_handle": "1364932966:ZTiur8sem3r2jzZougMZ:4d1cc3b44e",
             "openid.ns": "http://specs.openid.net/auth/2.0",
             "openid.signed": "mode,claimed_id,identity,op_endpoint,return_to,"
@@ -52,7 +51,7 @@ session_type:DH-SHA1
 """
 
     def openid_url(self):
-        return super().openid_url() + "/data/yadis"
+        return f"{super().openid_url()}/data/yadis"
 
     def post_start(self) -> None:
         self.strategy.remove_from_request_data("openid_lj_user")

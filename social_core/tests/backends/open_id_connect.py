@@ -73,7 +73,7 @@ class OpenIdConnectTest(
 
         responses.add(
             responses.GET,
-            self.backend.oidc_endpoint() + "/.well-known/openid-configuration",
+            f"{self.backend.oidc_endpoint()}/.well-known/openid-configuration",
             status=200,
             body=self.openid_config_body,
         )

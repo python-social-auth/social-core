@@ -88,7 +88,7 @@ class OAuthAuth(BaseAuth):
             # but also added to redirect, that way we can still verify the
             # request if the provider doesn't implement the state parameter.
             # Reuse token if any.
-            name = self.name + "_state"
+            name = f"{self.name}_state"
             state = self.strategy.session_get(name)
             if state is None:
                 state = self.state_token()
@@ -98,7 +98,7 @@ class OAuthAuth(BaseAuth):
         return state
 
     def get_session_state(self):
-        return self.strategy.session_get(self.name + "_state")
+        return self.strategy.session_get(f"{self.name}_state")
 
     def get_request_state(self):
         request_state = self.data.get("state") or self.data.get("redirect_state")
@@ -216,7 +216,7 @@ class BaseOAuth1(OAuthAuth):
         if "oauth_problem" in data:
             if data["oauth_problem"] == "user_refused":
                 raise AuthCanceled(self, "User refused the access")
-            raise AuthUnknownError(self, "Error was " + data["oauth_problem"])
+            raise AuthUnknownError(self, f"Error was {data['oauth_problem']}")
 
     @handle_http_errors
     def auth_complete(self, *args, **kwargs):

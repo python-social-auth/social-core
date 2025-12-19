@@ -126,7 +126,7 @@ class WeixinOAuth2APP(WeixinOAuth2):
             # but also added to redirect, that way we can still verify the
             # request if the provider doesn't implement the state parameter.
             # Reuse token if any.
-            name = self.name + "_state"
+            name = f"{self.name}_state"
             state = self.strategy.session_get(name)
             if state is None:
                 state = self.state_token()

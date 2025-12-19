@@ -149,7 +149,7 @@ class OpenIdConnectAuth(BaseOAuth2):
 
     @cache(ttl=86400)
     def oidc_config(self) -> dict[Any, Any]:
-        return self.get_json(self.oidc_endpoint() + "/.well-known/openid-configuration")
+        return self.get_json(f"{self.oidc_endpoint()}/.well-known/openid-configuration")
 
     @cache(ttl=86400)
     def get_jwks_keys(self):

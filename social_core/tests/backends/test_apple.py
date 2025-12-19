@@ -32,11 +32,11 @@ class AppleIdTest(OAuth2Test, BaseAuthUrlTestMixin):
     def extra_settings(self):
         assert self.name, "Name must be set in subclasses"
         return {
-            "SOCIAL_AUTH_" + self.name + "_TEAM": "a-team-id",
-            "SOCIAL_AUTH_" + self.name + "_KEY": "a-key-id",
-            "SOCIAL_AUTH_" + self.name + "_CLIENT": "a-client-id",
-            "SOCIAL_AUTH_" + self.name + "_SECRET": TEST_KEY,
-            "SOCIAL_AUTH_" + self.name + "_SCOPE": ["name", "email"],
+            f"SOCIAL_AUTH_{self.name}_TEAM": "a-team-id",
+            f"SOCIAL_AUTH_{self.name}_KEY": "a-key-id",
+            f"SOCIAL_AUTH_{self.name}_CLIENT": "a-client-id",
+            f"SOCIAL_AUTH_{self.name}_SECRET": TEST_KEY,
+            f"SOCIAL_AUTH_{self.name}_SCOPE": ["name", "email"],
         }
 
     def test_login(self) -> None:

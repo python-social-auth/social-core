@@ -113,7 +113,7 @@ class OpenIdAuth(BaseAuth):
         email = values.get("email") or ""
 
         if not fullname and first_name and last_name:
-            fullname = first_name + " " + last_name
+            fullname = f"{first_name} {last_name}"
         elif fullname:
             try:
                 first_name, last_name = fullname.rsplit(" ", 1)

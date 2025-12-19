@@ -52,7 +52,7 @@ class NGPVANActionIDOpenIDTest(OpenIdTest):
             "openid.assoc_handle": "{635790678917902781}{GdSyFA==}{20}",
             "openid.op_endpoint": "https://accounts.ngpvan.com/OpenId/Provider",
             "openid.return_to": "http://myapp.com/complete/actionid-openid/",
-            "openid.response_nonce": JANRAIN_NONCE + "MMgBGEre",
+            "openid.response_nonce": f"{JANRAIN_NONCE}MMgBGEre",
             "openid.mode": "id_res",
             "openid.ns": "http://specs.openid.net/auth/2.0",
             "openid.ns.alias3": "http://openid.net/srv/ax/1.0",

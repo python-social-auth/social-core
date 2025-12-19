@@ -65,14 +65,14 @@ class VKontakteOpenAPI(BaseAuth):
         """Performs check of authentication in VKontakte, returns User if
         succeeded"""
         session_value = self.strategy.session_get(
-            "vk_app_" + cast("str", self.setting("APP_ID"))
+            f"vk_app_{cast('str', self.setting('APP_ID'))}"
         )
         if "id" not in self.data or not session_value:
             raise ValueError("VK.com authentication is not completed")
 
         mapping = parse_qs(session_value)
         check_str = "".join(
-            item + "=" + mapping[item] for item in ["expire", "mid", "secret", "sid"]
+            f"{item}={mapping[item]}" for item in ["expire", "mid", "secret", "sid"]
         )
 
         _key, secret = self.get_key_and_secret()
@@ -161,10 +161,10 @@ class VKOAuth2(BaseOAuth2):
             data["method"] = method
             data["format"] = "json"
             url = "https://api.vk.ru/api.php"
-            param_list = sorted(item + "=" + data[item] for item in data)
+            param_list = sorted(f"{item}={data[item]}" for item in data)
             data["sig"] = vk_sig("".join(param_list) + secret)
         else:
-            url = "https://api.vk.ru/method/" + method
+            url = f"https://api.vk.ru/method/{method}"
 
         try:
             return self.get_json(url, params=data)

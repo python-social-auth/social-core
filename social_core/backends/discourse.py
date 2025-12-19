@@ -38,7 +38,7 @@ class DiscourseAuth(BaseAuth):
         return f"{self.get_idp_url()}?{encoded_params}"
 
     def get_idp_url(self):
-        return self.setting("SERVER_URL") + "/session/sso_provider"
+        return f"{self.setting('SERVER_URL')}/session/sso_provider"
 
     def get_user_id(self, details, response):
         return response["email"]

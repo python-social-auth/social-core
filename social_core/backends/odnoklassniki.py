@@ -142,7 +142,7 @@ class OdnoklassnikiApp(BaseAuth):
 
     def get_auth_sig(self):
         return odnoklassniki_sig(
-            f"{self.data['logged_user_id']:s}{self.data['session_key']:s}{self.setting('SECRET'):s}"
+            f"{self.data['logged_user_id']}{self.data['session_key']}{self.setting('SECRET')}"
         )
 
     def get_response(self):
@@ -204,4 +204,4 @@ def odnoklassniki_api(
     else:
         msg = "Unknown request type {0}. How should it be signed?"
         raise AuthFailed(backend, msg.format(request_type))
-    return backend.get_json(api_url + "fb.do", params=data)
+    return backend.get_json(f"{api_url}fb.do", params=data)

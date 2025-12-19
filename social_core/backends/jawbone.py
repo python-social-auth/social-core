@@ -28,7 +28,7 @@ class JawboneOAuth2(BaseOAuth2):
             first_name=data.get("first", ""), last_name=data.get("last", "")
         )
         return {
-            "username": first_name + " " + last_name,
+            "username": f"{first_name} {last_name}",
             "fullname": fullname,
             "first_name": first_name,
             "last_name": last_name,
@@ -42,7 +42,7 @@ class JawboneOAuth2(BaseOAuth2):
         """Loads user data from service"""
         return self.get_json(
             "https://jawbone.com/nudge/api/users/@me",
-            headers={"Authorization": "Bearer " + access_token},
+            headers={"Authorization": f"Bearer {access_token}"},
         )
 
     def process_error(self, data):

@@ -27,5 +27,5 @@ class EventbriteOAuth2(BaseOAuth2):
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data and datacenter information from service"""
         return self.get_json(
-            self.METADATA_URL, headers={"Authorization": "Bearer " + access_token}
+            self.METADATA_URL, headers={"Authorization": f"Bearer {access_token}"}
         )
