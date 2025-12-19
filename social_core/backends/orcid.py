@@ -24,6 +24,20 @@ class ORCIDOAuth2(BaseOAuth2):
         ("refresh_token", "refresh_token"),
     ]
 
+    def get_user_email(self, emails: dict | None) -> str:
+        if not emails:
+            return ""
+        emails_list = emails.get("email")
+        if not emails_list:
+            return ""
+
+        if len(emails_list) > 1:
+            for email_dict in emails_list:
+                if email_dict.get("primary"):
+                    return email_dict["email"]
+
+        return emails_list[0].get("email", "")
+
     def get_user_details(self, response):
         """Return user details from ORCID account"""
 
@@ -76,19 +90,7 @@ class ORCIDOAuth2(BaseOAuth2):
                 fullname = first_name + " " + last_name
                 fullname = fullname.strip()
 
-            emails = person.get("emails")
-            if emails:
-                emails_list = emails.get("email")
-                if emails_list and len(emails_list) > 0:
-                    email = emails_list[0].get("email", "")
-
-                    if len(emails_list) > 1:
-                        for email_dict in emails_list:
-                            if email_dict.get("primary"):
-                                email = email_dict["email"]
-                                break
-                    else:
-                        email = emails_list[0].get("email", "")
+            email = self.get_user_email(person.get("emails"))
 
         return {
             "username": username,

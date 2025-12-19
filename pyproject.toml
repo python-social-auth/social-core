@@ -155,7 +155,6 @@ disable = [
   "too-many-branches",
   "too-many-instance-attributes",
   "too-many-locals",
-  "too-many-nested-blocks",  # TODO
   "too-many-positional-arguments",  # TODO
   "too-many-public-methods",
   "unused-argument"
