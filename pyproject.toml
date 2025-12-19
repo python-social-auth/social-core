@@ -164,8 +164,7 @@ disable = [
   "too-many-nested-blocks",  # TODO
   "too-many-positional-arguments",  # TODO
   "too-many-public-methods",
-  "unused-argument",
-  "useless-parent-delegation"  # TODO: prio
+  "unused-argument"
 ]
 
 [tool.pyright]
