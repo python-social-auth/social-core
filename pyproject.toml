@@ -157,7 +157,6 @@ disable = [
   "raise-missing-from",  # TODO
   "redefined-builtin",  # TODO
   "redefined-outer-name",  # TODO: prio
-  "reimported",  # TODO: prio
   "too-few-public-methods",
   "too-many-ancestors",
   "too-many-arguments",
@@ -169,9 +168,7 @@ disable = [
   "too-many-public-methods",
   "undefined-loop-variable",  # TODO: prio
   "unused-argument",
-  "unused-import",  # TODO: prio
-  "useless-parent-delegation",  # TODO: prio
-  "unused-argument"
+  "useless-parent-delegation"  # TODO: prio
 ]
 
 [tool.pyright]

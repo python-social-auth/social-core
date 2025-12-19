@@ -8,7 +8,6 @@ import responses
 
 from social_core.backends.base import BaseAuth
 from social_core.backends.utils import load_backends, user_backends_data
-from social_core.storage import PartialMixin
 from social_core.tests.models import (
     TestAssociation,
     TestCode,

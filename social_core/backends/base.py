@@ -8,7 +8,6 @@ import requests
 
 from social_core.exceptions import AuthConnectionError, AuthUnknownError
 from social_core.registry import REGISTRY
-from social_core.storage import BaseStorage, UserProtocol
 from social_core.utils import module_member, parse_qs, social_logger, user_agent
 
 if TYPE_CHECKING:
