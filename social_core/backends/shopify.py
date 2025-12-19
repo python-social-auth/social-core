@@ -55,7 +55,7 @@ class ShopifyOAuth2(BaseOAuth2):
         shopify.Session.setup(api_key=key, secret=secret)
         scope = self.get_scope()
         state = self.state_token()
-        self.strategy.session_set(self.name + "_state", state)
+        self.strategy.session_set(f"{self.name}_state", state)
         redirect_uri = self.get_redirect_uri(state)
         session = shopify.Session(
             self.data.get("shop").strip(), version=self.shopify_api_version

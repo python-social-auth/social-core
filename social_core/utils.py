@@ -49,7 +49,7 @@ def module_member(name):
 
 def user_agent():
     """Builds a simple User-Agent string to send in requests"""
-    return "social-auth-" + social_core.__version__
+    return f"social-auth-{social_core.__version__}"
 
 
 def url_add_parameters(

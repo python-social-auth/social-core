@@ -42,9 +42,8 @@ class SteamOpenIdTest(OpenIdTest):
             "openid.op_endpoint": "https://steamcommunity.com/openid/login",
             "openid.claimed_id": "https://steamcommunity.com/openid/id/123",
             "openid.identity": "https://steamcommunity.com/openid/id/123",
-            "openid.return_to": "http://myapp.com/complete/steam/?"
-            "janrain_nonce=" + JANRAIN_NONCE,
-            "openid.response_nonce": JANRAIN_NONCE + "oD4UZ3w9chOAiQXk0AqDipqFYRA=",
+            "openid.return_to": f"http://myapp.com/complete/steam/?janrain_nonce={JANRAIN_NONCE}",
+            "openid.response_nonce": f"{JANRAIN_NONCE}oD4UZ3w9chOAiQXk0AqDipqFYRA=",
             "openid.assoc_handle": "1234567890",
             "openid.signed": "signed,op_endpoint,claimed_id,identity,return_to,"
             "response_nonce,assoc_handle",
@@ -115,9 +114,8 @@ class SteamOpenIdMissingSteamIdTest(SteamOpenIdTest):
             "openid.op_endpoint": "https://steamcommunity.com/openid/login",
             "openid.claimed_id": "https://steamcommunity.com/openid/BROKEN",
             "openid.identity": "https://steamcommunity.com/openid/BROKEN",
-            "openid.return_to": "http://myapp.com/complete/steam/?"
-            "janrain_nonce=" + JANRAIN_NONCE,
-            "openid.response_nonce": JANRAIN_NONCE + "oD4UZ3w9chOAiQXk0AqDipqFYRA=",
+            "openid.return_to": f"http://myapp.com/complete/steam/?janrain_nonce={JANRAIN_NONCE}",
+            "openid.response_nonce": f"{JANRAIN_NONCE}oD4UZ3w9chOAiQXk0AqDipqFYRA=",
             "openid.assoc_handle": "1234567890",
             "openid.signed": "signed,op_endpoint,claimed_id,identity,return_to,"
             "response_nonce,assoc_handle",
@@ -145,9 +143,8 @@ class SteamOpenIdFakeSteamIdTest(SteamOpenIdTest):
             "openid.op_endpoint": "https://steamcommunity.com/openid/login",
             "openid.claimed_id": "https://fakesteamcommunity.com/openid/123",
             "openid.identity": "https://fakesteamcommunity.com/openid/123",
-            "openid.return_to": "http://myapp.com/complete/steam/?"
-            "janrain_nonce=" + JANRAIN_NONCE,
-            "openid.response_nonce": JANRAIN_NONCE + "oD4UZ3w9chOAiQXk0AqDipqFYRA=",
+            "openid.return_to": f"http://myapp.com/complete/steam/?janrain_nonce={JANRAIN_NONCE}",
+            "openid.response_nonce": f"{JANRAIN_NONCE}oD4UZ3w9chOAiQXk0AqDipqFYRA=",
             "openid.assoc_handle": "1234567890",
             "openid.signed": "signed,op_endpoint,claimed_id,identity,return_to,"
             "response_nonce,assoc_handle",

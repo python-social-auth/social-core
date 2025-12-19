@@ -135,7 +135,7 @@ class BuildAbsoluteURITest(unittest.TestCase):
     def test_host_ends_with_slash_and_path_starts_with_slash(self) -> None:
         assert self.host, "Subclasses must set the host attribute"
         self.assertEqual(
-            build_absolute_uri(self.host + "/", "/foo/bar"), "http://foobar.com/foo/bar"
+            build_absolute_uri(f"{self.host}/", "/foo/bar"), "http://foobar.com/foo/bar"
         )
 
     def test_absolute_uri(self) -> None:

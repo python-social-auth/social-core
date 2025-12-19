@@ -23,7 +23,7 @@ class SurveyMonkeyOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from a SurveyMonkey /users/me response"""
-        response["name"] = response["first_name"] + " " + response["last_name"]
+        response["name"] = f"{response['first_name']} {response['last_name']}"
         return response
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
@@ -31,5 +31,5 @@ class SurveyMonkeyOAuth2(BaseOAuth2):
         base_url = kwargs["response"]["access_url"]
         return self.get_json(
             base_url + self.USER_DATA_URL,
-            headers={"Authorization": "bearer " + access_token},
+            headers={"Authorization": f"bearer {access_token}"},
         )

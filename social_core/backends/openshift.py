@@ -30,7 +30,7 @@ class OpenshiftOAuth2(BaseOAuth2):
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
-        headers = {"Authorization": "Bearer " + access_token}
+        headers = {"Authorization": f"Bearer {access_token}"}
 
         return self.request(
             urljoin(append_slash(self.setting("URL")), "oapi/v1/users/~"),

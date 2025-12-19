@@ -133,8 +133,7 @@ class MediaWiki(BaseOAuth1):
         except jwt.InvalidTokenError as exception:
             raise AuthException(
                 self,
-                "An error occurred while trying to read json "
-                + f"content: {exception}",
+                f"An error occurred while trying to read json content: {exception}",
             ) from exception
 
         issuer = urlparse(identity["iss"]).netloc

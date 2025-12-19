@@ -39,5 +39,5 @@ class CoinbaseOAuth2(BaseOAuth2):
         """Loads user data from service"""
         return self.get_json(
             "https://api.coinbase.com/v2/user",
-            headers={"Authorization": "Bearer " + access_token},
+            headers={"Authorization": f"Bearer {access_token}"},
         )

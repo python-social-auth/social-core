@@ -42,7 +42,7 @@ class OssoOAuth2(BaseOAuth2):
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads normalized user profile from Osso"""
-        url = f"{self.osso_base_url}/oauth/me?" + urlencode(
-            {"access_token": access_token}
+        url = (
+            f"{self.osso_base_url}/oauth/me?{urlencode({'access_token': access_token})}"
         )
         return self.get_json(url)

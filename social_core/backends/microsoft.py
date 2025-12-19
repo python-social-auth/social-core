@@ -69,7 +69,7 @@ class MicrosoftOAuth2(BaseOAuth2):
             headers={
                 "Content-Type": "application/x-www-form-urlencoded",
                 "Accept": "application/json",
-                "Authorization": "Bearer " + access_token,
+                "Authorization": f"Bearer {access_token}",
             },
             method="GET",
         )

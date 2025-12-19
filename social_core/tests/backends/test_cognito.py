@@ -27,7 +27,7 @@ class CognitoAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         assert self.name, "subclasses must set the name attribute"
         settings.update(
             {
-                "SOCIAL_AUTH_" + self.name + "_POOL_DOMAIN": self.pool_domain,
+                f"SOCIAL_AUTH_{self.name}_POOL_DOMAIN": self.pool_domain,
             }
         )
         return settings

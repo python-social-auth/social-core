@@ -52,7 +52,7 @@ class SoundcloudOAuth2(BaseOAuth2):
             # but also added to redirect_uri, that way we can still verify the
             # request if the provider doesn't implement the state parameter.
             # Reuse token if any.
-            name = self.name + "_state"
+            name = f"{self.name}_state"
             state = self.strategy.session_get(name) or self.state_token()
             self.strategy.session_set(name, state)
 

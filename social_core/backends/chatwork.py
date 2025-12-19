@@ -52,7 +52,7 @@ class ChatworkOAuth2(BaseOAuth2):
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
-        headers = {"Authorization": "Bearer " + access_token}
+        headers = {"Authorization": f"Bearer {access_token}"}
         return self.get_json(self.api_url("/me"), headers=headers)
 
     def refresh_token_params(self, token, *args, **kwargs):

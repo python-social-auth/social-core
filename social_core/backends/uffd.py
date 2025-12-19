@@ -37,7 +37,7 @@ class UffdOAuth2(BaseOAuth2):
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
-        url = self.userinfo_url() + "?" + urlencode({"access_token": access_token})
+        url = f"{self.userinfo_url()}?{urlencode({'access_token': access_token})}"
         try:
             user_data: dict[str, Any] = self.get_json(url)
         except ValueError:
@@ -45,10 +45,10 @@ class UffdOAuth2(BaseOAuth2):
         return user_data
 
     def authorization_url(self):
-        return cast("str", self.setting("BASE_URL")) + "/oauth2/authorize"
+        return f"{cast('str', self.setting('BASE_URL'))}/oauth2/authorize"
 
     def access_token_url(self):
-        return cast("str", self.setting("BASE_URL")) + "/oauth2/token"
+        return f"{cast('str', self.setting('BASE_URL'))}/oauth2/token"
 
     def userinfo_url(self):
-        return cast("str", self.setting("BASE_URL")) + "/oauth2/userinfo"
+        return f"{cast('str', self.setting('BASE_URL'))}/oauth2/userinfo"

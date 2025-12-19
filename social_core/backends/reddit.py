@@ -41,7 +41,7 @@ class RedditOAuth2(BaseOAuth2):
         """Loads user data from service"""
         return self.get_json(
             "https://oauth.reddit.com/api/v1/me.json",
-            headers={"Authorization": "bearer " + access_token},
+            headers={"Authorization": f"bearer {access_token}"},
         )
 
     def auth_headers(self):

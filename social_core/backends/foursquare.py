@@ -25,7 +25,7 @@ class FoursquareOAuth2(BaseOAuth2):
             first_name=info.get("firstName", ""), last_name=info.get("lastName", "")
         )
         return {
-            "username": first_name + " " + last_name,
+            "username": f"{first_name} {last_name}",
             "fullname": fullname,
             "first_name": first_name,
             "last_name": last_name,

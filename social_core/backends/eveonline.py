@@ -13,8 +13,8 @@ class EVEOnlineOAuth2(BaseOAuth2):
 
     name = "eveonline"
     BASE_URL = "https://login.eveonline.com/oauth"
-    AUTHORIZATION_URL = BASE_URL + "/authorize"
-    ACCESS_TOKEN_URL = BASE_URL + "/token"
+    AUTHORIZATION_URL = f"{BASE_URL}/authorize"
+    ACCESS_TOKEN_URL = f"{BASE_URL}/token"
     ID_KEY = "CharacterID"
     EXTRA_DATA = [
         ("CharacterID", "id"),

@@ -58,7 +58,7 @@ class Auth0OAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     def extra_settings(self):
         assert self.name, "Subclasses must set the name attribute"
         settings = super().extra_settings()
-        settings["SOCIAL_AUTH_" + self.name + "_DOMAIN"] = DOMAIN
+        settings[f"SOCIAL_AUTH_{self.name}_DOMAIN"] = DOMAIN
         return settings
 
     def auth_handlers(self, start_url):

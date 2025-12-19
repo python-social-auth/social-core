@@ -38,7 +38,7 @@ class SciStarterOAuth2(BaseOAuth2):
         client_id, client_secret = self.get_key_and_secret()
         return self.get_json(
             self.USER_ACCESS_URL.format(clientid=client_id, key=client_secret),
-            headers={"Authorization": "Bearer " + access_token},
+            headers={"Authorization": f"Bearer {access_token}"},
         )
 
     def access_token(self, token):

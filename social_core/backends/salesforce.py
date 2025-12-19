@@ -34,7 +34,7 @@ class SalesforceOAuth2(BaseOAuth2):
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         user_id_url = kwargs["response"]["id"]
-        url = user_id_url + "?" + urlencode({"access_token": access_token})
+        url = f"{user_id_url}?{urlencode({'access_token': access_token})}"
         try:
             return self.get_json(url)
         except ValueError:
