@@ -58,7 +58,7 @@ class Auth0OpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
             content_type="application/json",
         )
 
-    def test_domain_configuration(self):
+    def test_domain_configuration(self) -> None:
         """Test that domain-based URLs are constructed correctly"""
         self.assertEqual(
             self.backend.authorization_url(), f"https://{self.domain}/authorize"
@@ -67,7 +67,7 @@ class Auth0OpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
             self.backend.access_token_url(), f"https://{self.domain}/oauth/token"
         )
 
-    def test_auth0_user_details(self):
+    def test_auth0_user_details(self) -> None:
         """Test Auth0-specific user detail extraction"""
         response = {
             "nickname": "testuser",

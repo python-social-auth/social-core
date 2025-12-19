@@ -40,7 +40,7 @@ class SteamOpenId(OpenIdAuth):
             details = {}
         return details
 
-    def get_consumer_store(self):
+    def get_consumer_store(self) -> None:
         # Steam seems to support stateless mode only, ignore store
         return None
 
