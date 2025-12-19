@@ -154,7 +154,6 @@ disable = [
   "no-member",  # TODO
   "raise-missing-from",  # TODO
   "redefined-builtin",  # TODO
-  "redefined-outer-name",  # TODO: prio
   "too-few-public-methods",
   "too-many-ancestors",
   "too-many-arguments",
