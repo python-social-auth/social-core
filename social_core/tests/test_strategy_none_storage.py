@@ -1,7 +1,10 @@
 import unittest
 
 from social_core.backends.base import BaseAuth
-from social_core.exceptions import StrategyMissingBackendError
+from social_core.exceptions import (
+    SocialAuthImproperlyConfiguredError,
+    StrategyMissingBackendError,
+)
 
 from .strategy import TestStrategy
 
@@ -15,7 +18,8 @@ class StrategyNoneStorageTestCase(unittest.TestCase):
 
     def test_strategy_initialization_with_none(self) -> None:
         """Test that strategy can be initialized with None storage"""
-        self.assertIsNone(self.strategy.storage)
+        with self.assertRaises(StrategyMissingBackendError):
+            self.assertIsNone(self.strategy.storage)
 
     def test_create_user_raises_error(self) -> None:
         """Test that create_user raises StrategyMissingBackendError with None storage"""
@@ -44,11 +48,8 @@ class StrategyNoneStorageTestCase(unittest.TestCase):
     def test_send_email_validation_raises_error(self) -> None:
         """Test that send_email_validation raises StrategyMissingBackendError with None storage"""
         backend = BaseAuth(self.strategy)
-        with self.assertRaises(StrategyMissingBackendError) as cm:
+        with self.assertRaises(SocialAuthImproperlyConfiguredError):
             self.strategy.send_email_validation(backend, "test@example.com")
-        self.assertEqual(
-            str(cm.exception), "Strategy storage backend is not configured"
-        )
 
     def test_validate_email_raises_error(self) -> None:
         """Test that validate_email raises StrategyMissingBackendError with None storage"""

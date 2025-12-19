@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from requests import Response
     from requests.auth import AuthBase
 
-    from social_core.storage import BaseStorage, PartialMixin, UserProtocol
+    from social_core.storage import PartialMixin, UserProtocol
     from social_core.strategy import BaseStrategy, HttpResponseProtocol
 
 
@@ -122,7 +122,7 @@ class BaseAuth:
     def disconnect(self, *args, **kwargs) -> dict:
         pipeline = self.strategy.get_disconnect_pipeline(self)
         kwargs["name"] = self.name
-        kwargs["user_storage"] = cast("type[BaseStorage]", self.strategy.storage).user
+        kwargs["user_storage"] = self.strategy.storage.user
         return self.run_pipeline(pipeline, *args, **kwargs)
 
     def run_pipeline(

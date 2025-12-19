@@ -10,6 +10,10 @@ class SocialAuthBaseException(ValueError):
     """Base class for pipeline exceptions."""
 
 
+class SocialAuthImproperlyConfiguredError(SocialAuthBaseException):
+    """Raised when configuration is invalid."""
+
+
 class StrategyMissingFeatureError(SocialAuthBaseException):
     """Strategy does not support this."""
 

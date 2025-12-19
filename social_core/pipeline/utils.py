@@ -89,9 +89,7 @@ def partial_load(strategy: BaseStrategy, token: str) -> PartialMixin | None:
             ).user.get_social_auth(**social)  # type: ignore[missing-argument]
 
         if user:
-            kwargs["user"] = cast("type[BaseStorage]", strategy.storage).user.get_user(
-                user
-            )
+            kwargs["user"] = strategy.storage.user.get_user(user)
 
         partial.args = [strategy.from_session_value(val) for val in args]
         partial.kwargs = {

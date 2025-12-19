@@ -30,7 +30,6 @@ if TYPE_CHECKING:
 
     from requests.auth import AuthBase
 
-    from social_core.storage import BaseStorage
     from social_core.strategy import BaseStrategy
 
 
@@ -235,21 +234,19 @@ class OpenIdConnectAuth(BaseOAuth2):
         nonce = self.strategy.random_string(64)
         # Store the nonce
         association = OpenIdConnectAssociation(nonce, assoc_type=state)
-        cast("type[BaseStorage]", self.strategy.storage).association.store(
-            url, association
-        )
+        self.strategy.storage.association.store(url, association)
         return nonce
 
     def get_nonce(self, nonce):
         try:
-            return cast("type[BaseStorage]", self.strategy.storage).association.get(
+            return self.strategy.storage.association.get(
                 server_url=self.authorization_url(), handle=nonce
             )[0]
         except IndexError:
             return None
 
     def remove_nonce(self, nonce_id) -> None:
-        cast("type[BaseStorage]", self.strategy.storage).association.remove([nonce_id])
+        self.strategy.storage.association.remove([nonce_id])
 
     def validate_claims(self, id_token) -> None:
         utc_timestamp = timegm(datetime.datetime.now(datetime.timezone.utc).timetuple())

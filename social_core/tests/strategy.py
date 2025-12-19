@@ -6,7 +6,6 @@ from social_core.strategy import BaseStrategy, BaseTemplateStrategy
 
 if TYPE_CHECKING:
     from social_core.backends.base import BaseAuth
-    from social_core.storage import BaseStorage
 
 TEST_URI = "http://myapp.com"
 TEST_HOST = "myapp.com"
@@ -30,7 +29,6 @@ class TestTemplateStrategy(BaseTemplateStrategy):
 
 class TestStrategy(BaseStrategy):
     __test__ = False
-    storage: type[BaseStorage]
 
     DEFAULT_TEMPLATE_STRATEGY = TestTemplateStrategy
 

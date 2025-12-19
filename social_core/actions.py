@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     from .backends.base import BaseAuth
-    from .storage import BaseStorage, UserProtocol
+    from .storage import UserProtocol
     from .strategy import HttpResponseProtocol
 
 
@@ -80,7 +80,7 @@ def do_complete(  # noqa: C901,PLR0912
 
     # check if the output value is something else than a user and just
     # return it to the client
-    user_model = cast("type[BaseStorage]", backend.strategy.storage).user.user_model()
+    user_model = backend.strategy.storage.user.user_model()
     if authenticated_user and not isinstance(authenticated_user, user_model):
         return cast("HttpResponseProtocol", authenticated_user)
 
