@@ -139,7 +139,6 @@ disable = [
   "abstract-method",  # TODO
   "arguments-differ",  # TODO
   "arguments-renamed",  # TODO: prio
-  "attribute-defined-outside-init",  # TODO: prio
   "broad-exception-caught",  # TODO
   "consider-using-f-string",  # TODO
   "duplicate-code",  # TODO
