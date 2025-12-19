@@ -144,7 +144,6 @@ disable = [
   "consider-using-f-string",  # TODO
   "duplicate-code",  # TODO
   "fixme",
-  "inconsistent-return-statements",  # TODO: prio
   "invalid-name",  # TODO
   "keyword-arg-before-vararg",  # TODO
   "line-too-long",
@@ -152,7 +151,6 @@ disable = [
   "missing-function-docstring",
   "missing-module-docstring",
   "no-else-raise",  # TODO
-  "no-else-return",  # TODO: prio
   "no-member",  # TODO
   "pointless-string-statement",  # TODO: prio
   "possibly-used-before-assignment",  # TODO: prio

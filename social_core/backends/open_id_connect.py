@@ -246,7 +246,7 @@ class OpenIdConnectAuth(BaseOAuth2):
                 server_url=self.authorization_url(), handle=nonce
             )[0]
         except IndexError:
-            pass
+            return None
 
     def remove_nonce(self, nonce_id) -> None:
         cast("type[BaseStorage]", self.strategy.storage).association.remove([nonce_id])

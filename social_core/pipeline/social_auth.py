@@ -70,8 +70,7 @@ def associate_user(
             if not result["social"]:
                 raise
             return result
-        else:
-            return {"social": social, "user": social.user, "new_association": True}
+        return {"social": social, "user": social.user, "new_association": True}
     return None
 
 
