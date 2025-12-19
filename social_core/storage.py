@@ -266,6 +266,7 @@ class UserMixin:
         cls,
         user: UserProtocol,
         provider: str | None = None,
+        # pylint: disable-next=redefined-builtin
         id: int | None = None,  # noqa: A002
     ):
         """Return all the UserSocialAuth instances for given user"""
