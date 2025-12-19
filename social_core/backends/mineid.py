@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, cast
 
 from .oauth import BaseOAuth2
 
@@ -31,6 +31,6 @@ class MineIDOAuth2(BaseOAuth2):
 
     def get_mineid_url_params(self) -> dict[str, str]:
         return {
-            "host": self.setting("HOST", "www.mineid.org"),
-            "scheme": self.setting("SCHEME", "https"),
+            "host": cast("str", self.setting("HOST", "www.mineid.org")),
+            "scheme": cast("str", self.setting("SCHEME", "https")),
         }

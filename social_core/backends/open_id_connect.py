@@ -145,7 +145,7 @@ class OpenIdConnectAuth(BaseOAuth2):
         return not methods or "client_secret_basic" in methods
 
     def oidc_endpoint(self) -> str:
-        return self.setting("OIDC_ENDPOINT", self.OIDC_ENDPOINT)
+        return cast("str", self.setting("OIDC_ENDPOINT", self.OIDC_ENDPOINT))
 
     @cache(ttl=86400)
     def oidc_config(self) -> dict[Any, Any]:
@@ -291,7 +291,9 @@ class OpenIdConnectAuth(BaseOAuth2):
         for key in keys:
             if kid is None or kid == key.get("kid"):
                 if "alg" not in key:
-                    key["alg"] = self.setting("JWT_ALGORITHMS", self.JWT_ALGORITHMS)[0]
+                    key["alg"] = cast(
+                        "list[str]", self.setting("JWT_ALGORITHMS", self.JWT_ALGORITHMS)
+                    )[0]
                 rsakey = jwt.PyJWK(key)
                 message, encoded_sig = id_token.rsplit(".", 1)
                 decoded_sig = base64url_decode(encoded_sig.encode("utf-8"))
@@ -323,7 +325,7 @@ class OpenIdConnectAuth(BaseOAuth2):
                 audience=client_id,
                 issuer=self.id_token_issuer(),
                 options=self.setting("JWT_DECODE_OPTIONS", self.JWT_DECODE_OPTIONS),
-                leeway=self.setting("JWT_LEEWAY", self.JWT_LEEWAY),
+                leeway=cast("int", self.setting("JWT_LEEWAY", self.JWT_LEEWAY)),
             )
         except ExpiredSignatureError as error:
             raise AuthTokenError(self, "Signature has expired") from error

@@ -1,17 +1,21 @@
+from typing import cast
+
 from social_core.exceptions import AuthMissingParameter
 
 from .base import BaseAuth
 
 
 class LegacyAuth(BaseAuth):
-    def auth_url(self):
-        return self.setting("FORM_URL")
+    def auth_url(self) -> str:
+        return cast("str", self.setting("FORM_URL"))
 
-    def auth_html(self):
-        return self.strategy.render_html(tpl=self.setting("FORM_HTML"))
+    def auth_html(self) -> str:
+        return self.strategy.render_html(tpl=cast("str", self.setting("FORM_HTML")))
 
-    def uses_redirect(self):
-        return self.setting("FORM_URL") and not self.setting("FORM_HTML")
+    def uses_redirect(self) -> bool:
+        return bool(cast("str", self.setting("FORM_URL"))) and not cast(
+            "str", self.setting("FORM_HTML")
+        )
 
     def auth_complete(self, *args, **kwargs):
         """Completes login process, must return user instance"""

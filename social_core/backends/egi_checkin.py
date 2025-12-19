@@ -5,11 +5,11 @@ https://www.egi.eu/service/check-in/
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Literal, cast
 
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 
-CHECKIN_ENV_ENDPOINTS = {
+CHECKIN_ENV_ENDPOINTS: dict[str, str] = {
     "prod": "https://aai.egi.eu/auth/realms/egi",
     "demo": "https://aai-demo.egi.eu/auth/realms/egi",
     "dev": "https://aai-dev.egi.eu/auth/realms/egi",
@@ -48,7 +48,7 @@ class EGICheckinOpenIdConnect(OpenIdConnectAuth):
         endpoint = self.setting("OIDC_ENDPOINT", self.OIDC_ENDPOINT)
         if endpoint:
             return endpoint
-        checkin_env = self.setting("CHECKIN_ENV", self.CHECKIN_ENV)
+        checkin_env = cast("str", self.setting("CHECKIN_ENV", self.CHECKIN_ENV))
         return CHECKIN_ENV_ENDPOINTS.get(checkin_env, "")
 
     def get_user_details(self, response):

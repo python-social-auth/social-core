@@ -2,6 +2,8 @@
 Ping Auth OpenID Connect backend
 """
 
+from typing import cast
+
 import jwt
 from jwt import (
     ExpiredSignatureError,
@@ -60,7 +62,7 @@ class PingOpenIdConnect(OpenIdConnectAuth):
                 audience=client_id,
                 issuer=self.id_token_issuer(),
                 options=self.JWT_DECODE_OPTIONS,
-                leeway=self.setting("JWT_LEEWAY", self.JWT_LEEWAY),
+                leeway=cast("int", self.setting("JWT_LEEWAY", self.JWT_LEEWAY)),
             )
         except ExpiredSignatureError as error:
             raise AuthTokenError(self, "Signature has expired") from error

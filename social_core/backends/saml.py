@@ -277,7 +277,9 @@ class SAMLAuth(BaseAuth):
 
     def get_idp(self, idp_name: str | None) -> SAMLIdentityProvider:
         """Given the name of an IdP, get a SAMLIdentityProvider instance"""
-        enabled_idps: dict[str, dict] = self.setting("ENABLED_IDPS")
+        enabled_idps: dict[str, dict] = cast(
+            "dict[str, dict]", self.setting("ENABLED_IDPS")
+        )
         if idp_name is None:
             # RelayState was missing, perhaps an IdP initiated flow
             if len(enabled_idps) != 1:

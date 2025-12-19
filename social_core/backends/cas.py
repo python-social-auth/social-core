@@ -7,9 +7,12 @@ the minor implementation differences between the Apereo CAS OIDC server
 implementation and the standard OIDC implementation in Python Social Auth.
 """
 
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from .open_id_connect import OpenIdConnectAuth
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 
 class CASOpenIdConnectAuth(OpenIdConnectAuth):
@@ -30,7 +33,7 @@ class CASOpenIdConnectAuth(OpenIdConnectAuth):
     STATE_PARAMETER = True
 
     def oidc_endpoint(self):
-        endpoint = self.setting("OIDC_ENDPOINT", self.OIDC_ENDPOINT)
+        endpoint = super().oidc_endpoint()
         self.log_debug("endpoint: %s", endpoint)
         return endpoint
 
@@ -58,7 +61,7 @@ class CASOpenIdConnectAuth(OpenIdConnectAuth):
         }
 
     def auth_allowed(self, response, details):
-        allow_groups = set(self.setting("ALLOW_GROUPS", set()))
+        allow_groups = set(cast("Iterable", self.setting("ALLOW_GROUPS", set())))
         groups = set(response.get("groups", set()))
         return (
             super().auth_allowed(response, details)

@@ -26,13 +26,13 @@ def get_username(
 ):
     if strategy.storage is None:
         raise StrategyMissingBackendError
-    if "username" not in backend.setting("USER_FIELDS", USER_FIELDS):
+    if "username" not in cast("set[str]", backend.setting("USER_FIELDS", USER_FIELDS)):
         return None
     storage = strategy.storage
 
     if not user:
         email_as_username = backend.setting("USERNAME_IS_FULL_EMAIL", False)
-        uuid_length = backend.setting("UUID_LENGTH", 16)
+        uuid_length = cast("int", backend.setting("UUID_LENGTH", 16))
         max_length = storage.user.username_max_length()
         do_slugify = backend.setting("SLUGIFY_USERNAMES", False)
         do_clean = backend.setting("CLEAN_USERNAMES", True)
@@ -92,7 +92,7 @@ def create_user(
 
     fields = {
         name: kwargs.get(name, details.get(name))
-        for name in backend.setting("USER_FIELDS", USER_FIELDS)
+        for name in cast("list[str]", backend.setting("USER_FIELDS", USER_FIELDS))
     }
     if not fields:
         return None

@@ -18,7 +18,7 @@ class ActionIDOpenID(OpenIdAuth):
     URL = "https://accounts.ngpvan.com/Home/Xrds"
     USERNAME_KEY = "email"
 
-    def get_ax_attributes(self):
+    def get_ax_attributes(self) -> list[tuple[str, str]]:
         """
         Return the AX attributes that ActionID responds with, as well as the
         user data result that it must map to.

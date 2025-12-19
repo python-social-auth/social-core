@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, cast
 
 import jwt
 
@@ -123,7 +123,7 @@ class KeycloakOAuth2(BaseOAuth2):  # pylint: disable=abstract-method
             key=self.public_key(),
             algorithms=self.algorithm(),
             audience=self.audience(),
-            leeway=self.setting("JWT_LEEWAY", default=0),
+            leeway=cast("int", self.setting("JWT_LEEWAY", default=0)),
         )
 
     def get_user_details(self, response):

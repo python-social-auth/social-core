@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any, cast
 
 from openid.consumer.consumer import CANCEL, FAILURE, SUCCESS, Consumer
 from openid.consumer.discover import DiscoveryFailure
@@ -18,6 +18,9 @@ from social_core.exceptions import (
 from social_core.utils import url_add_parameters
 
 from .base import BaseAuth
+
+if TYPE_CHECKING:
+    from social_core.store import OpenIdStore
 
 # OpenID configuration
 OLD_AX_ATTRS = [
@@ -52,8 +55,8 @@ class OpenIdAuth(BaseAuth):
         """Return user unique id provided by service"""
         return response.identity_url
 
-    def get_ax_attributes(self):
-        attrs = self.setting("AX_SCHEMA_ATTRS", [])
+    def get_ax_attributes(self) -> list[tuple[str, str]]:
+        attrs = cast("list[tuple[str, str]]", self.setting("AX_SCHEMA_ATTRS", []))
         if attrs and self.setting("IGNORE_DEFAULT_AX_ATTRS", True):
             return attrs
         return attrs + AX_SCHEMA_ATTRS + OLD_AX_ATTRS
@@ -255,7 +258,7 @@ class OpenIdAuth(BaseAuth):
             request.addExtension(pape_request)
         return request
 
-    def get_consumer_store(self):
+    def get_consumer_store(self) -> OpenIdStore | None:
         return self.strategy.openid_store()
 
     def consumer(self):
