@@ -138,7 +138,6 @@ module = [
 disable = [
   "abstract-method",  # TODO
   "arguments-differ",  # TODO
-  "arguments-renamed",  # TODO: prio
   "broad-exception-caught",  # TODO
   "consider-using-f-string",  # TODO
   "duplicate-code",  # TODO

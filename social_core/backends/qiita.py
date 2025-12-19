@@ -7,7 +7,6 @@ Qiita OAuth2 backend, docs at:
 
 from __future__ import annotations
 
-import json
 from typing import TYPE_CHECKING, Any, Literal
 
 from social_core.exceptions import AuthException
@@ -50,15 +49,13 @@ class QiitaOAuth2(BaseOAuth2):
         ("image_monthly_upload_remaining", "image_monthly_upload_remaining"),
     ]
 
-    # TODO: I am pretty sure this method returns the wrong type; it should
-    # return a dict
-    def auth_complete_params(self, state=None):  # type: ignore[reportIncompatibleMethodOverride]
+    def auth_complete_params(self, state=None):
         data = super().auth_complete_params(state)
         if "grant_type" in data:
             del data["grant_type"]
         if "redirect_uri" in data:
             del data["redirect_uri"]
-        return json.dumps(data)
+        return data
 
     def auth_headers(self):
         return {"Content-Type": "application/json"}

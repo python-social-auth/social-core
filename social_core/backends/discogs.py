@@ -21,12 +21,12 @@ class DiscogsOAuth1(BaseOAuth1):
     REQUEST_TOKEN_URL = "https://api.discogs.com/oauth/request_token"
     ACCESS_TOKEN_URL = "https://api.discogs.com/oauth/access_token"
 
-    def get_user_details(self, user_data):  # type: ignore[reportIncompatibleMethodOverride]
+    def get_user_details(self, response) -> dict[str, Any]:
         return {
-            "username": user_data["username"],
-            "id": user_data["id"],
-            "profile": user_data["profile"],
-            "name": user_data["name"],
+            "username": response["username"],
+            "id": response["id"],
+            "profile": response["profile"],
+            "name": response["name"],
         }
 
     def user_data(self, access_token: dict, *args, **kwargs) -> dict[str, Any] | None:
