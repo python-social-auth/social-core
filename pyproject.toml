@@ -147,7 +147,6 @@ disable = [
   "missing-class-docstring",
   "missing-function-docstring",
   "missing-module-docstring",
-  "no-else-raise",  # TODO
   "no-member",  # TODO
   "raise-missing-from",  # TODO
   "redefined-builtin",  # TODO
