@@ -5,9 +5,9 @@ import functools
 import hmac
 import logging
 import re
-import sys
 import time
 import unicodedata
+from importlib import import_module
 from typing import TYPE_CHECKING, Any
 from urllib.parse import parse_qs as battery_parse_qs
 from urllib.parse import unquote, urlencode, urlparse, urlunparse
@@ -34,11 +34,6 @@ PARTIAL_TOKEN_SESSION_NAME = "partial_pipeline_token"
 
 
 social_logger = logging.getLogger("social")
-
-
-def import_module(name):
-    __import__(name)
-    return sys.modules[name]
 
 
 def module_member(name):
