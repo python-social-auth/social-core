@@ -46,7 +46,7 @@ class SoundcloudOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         }
     )
 
-    def test_login(self):
+    def test_login(self) -> None:
         """Test standard login flow"""
         assert self.user_data_body is not None
         with patch.object(
@@ -54,7 +54,7 @@ class SoundcloudOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         ):
             self.do_login()
 
-    def test_partial_pipeline(self):
+    def test_partial_pipeline(self) -> None:
         """Test partial pipeline flow"""
         assert self.user_data_body is not None
         with patch.object(
@@ -62,7 +62,7 @@ class SoundcloudOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         ):
             self.do_partial_pipeline()
 
-    def test_user_data(self):
+    def test_user_data(self) -> None:
         """Test user_data method with Authorization header"""
         self.strategy.set_settings(
             {

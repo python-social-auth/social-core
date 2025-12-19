@@ -81,7 +81,7 @@ class TwitterOAuth2Mixin(OAuth2Test, ABC):
 
     expected_username = "twitter_username"
 
-    def _assert_social_attributes(self, social):
+    def _assert_social_attributes(self, social) -> None:
         self.assertEqual(social.uid, "1234567890123456789")
         self.assertEqual(social.extra_data["first_name"], "first")
         self.assertEqual(social.extra_data["last_name"], "last")

@@ -119,7 +119,7 @@ class WeixinOAuth2APP(WeixinOAuth2):
     ACCESS_TOKEN_URL = "https://api.weixin.qq.com/sns/oauth2/access_token"
     REDIRECT_STATE = False
 
-    def auth_url(self):
+    def auth_url(self) -> str:
         if self.STATE_PARAMETER or self.REDIRECT_STATE:
             # Store state in session for further request validation. The state
             # value is passed as state parameter (as specified in OAuth2 spec),
