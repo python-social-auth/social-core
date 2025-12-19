@@ -62,13 +62,14 @@ class LineOAuth2(BaseOAuth2):
                 headers=self.auth_headers(),
                 data=self.auth_complete_params(),
             )
-            self.process_error(response)
-
-            return self.do_auth(
-                response["access_token"], *args, response=response, **kwargs
-            )
         except requests.HTTPError as err:
             self.process_error(json.loads(err.response.content))
+            return None
+        self.process_error(response)
+
+        return self.do_auth(
+            response["access_token"], *args, response=response, **kwargs
+        )
 
     def get_user_details(self, response):
         fullname, first_name, last_name = self.get_user_names(

@@ -94,10 +94,11 @@ def sanitize_redirect(hosts: list[str], redirect_to: str | Any) -> str | None:
         # Don't redirect to a host that's not in the list
         netloc = urlparse(redirect_to)[1] or hosts[0]
     except (TypeError, AttributeError):
-        pass
-    else:
-        if netloc in hosts:
-            return redirect_to
+        return None
+
+    if netloc in hosts:
+        return redirect_to
+    return None
 
 
 def user_is_authenticated(user: UserProtocol | None) -> bool:
