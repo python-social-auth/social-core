@@ -111,7 +111,7 @@ class AzureADOAuth2(BaseOAuth2):
         try:
             decoded_id_token = jwt.decode(id_token, options={"verify_signature": False})
         except (jwt.DecodeError, jwt.ExpiredSignatureError) as de:
-            raise AuthTokenError(self, de)
+            raise AuthTokenError(self, de) from de
         return decoded_id_token
 
     def auth_extra_arguments(self):

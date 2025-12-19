@@ -52,8 +52,8 @@ def get_backend(backends, name):
         load_backends(backends, force_load=True)
         try:
             return BACKENDSCACHE[name]
-        except KeyError:
-            raise MissingBackend(name)
+        except KeyError as error:
+            raise MissingBackend(name) from error
 
 
 def user_backends_data(user, backends, storage):

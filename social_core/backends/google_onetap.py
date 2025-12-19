@@ -37,8 +37,8 @@ class GoogleOneTap(BaseGoogleAuth, BaseAuth):
                 transport_requests.Request(),
                 self.setting("KEY"),
             )
-        except ValueError:
-            raise AuthException(self, "Invalid response from Google")
+        except ValueError as error:
+            raise AuthException(self, "Invalid response from Google") from error
 
         return idinfo
 

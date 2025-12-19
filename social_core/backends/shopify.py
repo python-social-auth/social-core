@@ -75,8 +75,8 @@ class ShopifyOAuth2(BaseOAuth2):
                 shop_url, version=self.shopify_api_version, token=self.data
             )
             access_token = shopify_session.token
-        except shopify.ValidationException:
-            raise AuthCanceled(self)
+        except shopify.ValidationException as error:
+            raise AuthCanceled(self) from error
         if not access_token:
             raise AuthFailed(self, "Authentication Failed")
         return self.do_auth(

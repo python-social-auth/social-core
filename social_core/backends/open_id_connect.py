@@ -325,15 +325,15 @@ class OpenIdConnectAuth(BaseOAuth2):
                 options=self.setting("JWT_DECODE_OPTIONS", self.JWT_DECODE_OPTIONS),
                 leeway=self.setting("JWT_LEEWAY", self.JWT_LEEWAY),
             )
-        except ExpiredSignatureError:
-            raise AuthTokenError(self, "Signature has expired")
-        except InvalidAudienceError:
+        except ExpiredSignatureError as error:
+            raise AuthTokenError(self, "Signature has expired") from error
+        except InvalidAudienceError as error:
             # compatibility with jose error message
-            raise AuthTokenError(self, "Token error: Invalid audience")
+            raise AuthTokenError(self, "Token error: Invalid audience") from error
         except InvalidTokenError as error:
-            raise AuthTokenError(self, str(error))
-        except PyJWTError:
-            raise AuthTokenError(self, "Invalid signature")
+            raise AuthTokenError(self, str(error)) from error
+        except PyJWTError as error:
+            raise AuthTokenError(self, "Invalid signature") from error
 
         # pyjwt does not validate OIDC claims
         # see https://github.com/jpadilla/pyjwt/pull/296

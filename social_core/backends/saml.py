@@ -367,8 +367,8 @@ class SAMLAuth(BaseAuth):
         authenticate the user"""
         try:
             idp_name = self.strategy.request_data()["idp"]
-        except KeyError:
-            raise AuthMissingParameter(self, "idp")
+        except KeyError as error:
+            raise AuthMissingParameter(self, "idp") from error
         auth = self._create_saml_auth(idp=self.get_idp(idp_name))
         # Below, return_to sets the RelayState, which can contain
         # arbitrary data.  We use it to store the specific SAML IdP

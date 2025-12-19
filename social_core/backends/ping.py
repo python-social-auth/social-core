@@ -62,15 +62,15 @@ class PingOpenIdConnect(OpenIdConnectAuth):
                 options=self.JWT_DECODE_OPTIONS,
                 leeway=self.setting("JWT_LEEWAY", self.JWT_LEEWAY),
             )
-        except ExpiredSignatureError:
-            raise AuthTokenError(self, "Signature has expired")
-        except InvalidAudienceError:
+        except ExpiredSignatureError as error:
+            raise AuthTokenError(self, "Signature has expired") from error
+        except InvalidAudienceError as error:
             # compatibility with jose error message
-            raise AuthTokenError(self, "Invalid audience")
+            raise AuthTokenError(self, "Invalid audience") from error
         except InvalidTokenError as error:
-            raise AuthTokenError(self, str(error))
-        except PyJWTError:
-            raise AuthTokenError(self, "Invalid signature")
+            raise AuthTokenError(self, str(error)) from error
+        except PyJWTError as error:
+            raise AuthTokenError(self, "Invalid signature") from error
 
         self.validate_claims(claims)
 

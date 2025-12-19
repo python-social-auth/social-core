@@ -263,11 +263,11 @@ def handle_http_errors(func):
             )
 
             if err.response.status_code == 400:
-                raise AuthCanceled(args[0], response=err.response)
+                raise AuthCanceled(args[0], response=err.response) from err
             if err.response.status_code == 401:
-                raise AuthForbidden(args[0])
+                raise AuthForbidden(args[0]) from err
             if err.response.status_code == 503:
-                raise AuthUnreachableProvider(args[0])
+                raise AuthUnreachableProvider(args[0]) from err
             raise
 
     return wrapper
@@ -279,7 +279,9 @@ def wrap_access_token_error(backend: BaseAuth):
         yield
     except requests.HTTPError as error:
         if error.response.status_code == 401:
-            raise AuthTokenError(backend, "Invalid key/secret, perhaps expired")
+            raise AuthTokenError(
+                backend, "Invalid key/secret, perhaps expired"
+            ) from error
         raise
 
 

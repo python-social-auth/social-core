@@ -201,4 +201,4 @@ class AzureADB2COAuth2(AzureADOAuth2):
                 leeway=cast("int", self.setting("JWT_LEEWAY", default=0)),
             )
         except (DecodeError, ExpiredSignatureError) as error:
-            raise AuthTokenError(self, error)
+            raise AuthTokenError(self, error) from error

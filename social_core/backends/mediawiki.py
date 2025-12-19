@@ -137,7 +137,7 @@ class MediaWiki(BaseOAuth1):
                 self,
                 "An error occurred while trying to read json "
                 + f"content: {exception}",
-            )
+            ) from exception
 
         issuer = urlparse(identity["iss"]).netloc
         expected_domain = urlparse(self.setting("MEDIAWIKI_URL")).netloc
