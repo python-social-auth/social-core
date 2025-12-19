@@ -152,6 +152,7 @@ class TestUserSocialAuth(UserMixin, BaseModel):
         cls,
         user: User,
         provider: str | None = None,
+        # pylint: disable-next=redefined-builtin
         id: int | None = None,  # noqa: A002
     ):
         return [
