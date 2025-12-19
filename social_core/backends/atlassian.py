@@ -36,9 +36,7 @@ class AtlassianOAuth2(BaseOAuth2):
             headers={"Authorization": f"Bearer {access_token}"},
         )
         user_info = self.get_json(
-            "https://api.atlassian.com/ex/jira/{}/rest/api/2/myself".format(
-                resources[0]["id"]
-            ),
+            f"https://api.atlassian.com/ex/jira/{resources[0]['id']}/rest/api/2/myself",
             headers={"Authorization": f"Bearer {access_token}"},
         )
         user_info["resources"] = resources

@@ -36,9 +36,7 @@ class OktaMixin(BaseOAuth2):
 
         return urljoin(
             urlunparse(url),
-            "./.well-known/openid-configuration?client_id={}".format(
-                self.setting("KEY")
-            ),
+            f"./.well-known/openid-configuration?client_id={self.setting('KEY')}",
         )
 
     def oidc_config(self):

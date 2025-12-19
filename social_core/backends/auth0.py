@@ -17,9 +17,7 @@ class Auth0OAuth2(BaseOAuth2):
 
     def api_path(self, path=""):
         """Build API path for Auth0 domain"""
-        return "https://{domain}/{path}".format(
-            domain=self.setting("DOMAIN"), path=path
-        )
+        return f"https://{self.setting('DOMAIN')}/{path}"
 
     def authorization_url(self):
         return self.api_path("authorize")

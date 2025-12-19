@@ -66,7 +66,7 @@ class GithubOAuth2(BaseOAuth2):
         return data
 
     def _user_data(self, access_token, path=None):
-        url = urljoin(self.api_url(), "user{}".format(path or ""))
+        url = urljoin(self.api_url(), f"user{path or ''}")
         return self.get_json(url, headers={"Authorization": f"token {access_token}"})
 
 
@@ -101,9 +101,7 @@ class GithubOrganizationOAuth2(GithubMemberOAuth2):
     def member_url(self, user_data):
         return urljoin(
             self.api_url(),
-            "orgs/{org}/members/{username}".format(
-                org=self.setting("NAME"), username=user_data.get("login")
-            ),
+            f"orgs/{self.setting('NAME')}/members/{user_data.get('login')}",
         )
 
 
@@ -116,9 +114,7 @@ class GithubTeamOAuth2(GithubMemberOAuth2):
     def member_url(self, user_data):
         return urljoin(
             self.api_url(),
-            "teams/{team_id}/members/{username}".format(
-                team_id=self.setting("ID"), username=user_data.get("login")
-            ),
+            f"teams/{self.setting('ID')}/members/{user_data.get('login')}",
         )
 
 
