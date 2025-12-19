@@ -19,7 +19,11 @@ dev = [
   "types-defusedxml==0.7.0.20250822",
   "types-oauthlib==3.3.0.20250822",
   "types-requests-oauthlib==2.0.0.20250809",
-  "types-requests==2.32.4.20250913"
+  "types-requests==2.32.4.20250913",
+  {include-group = "pylint"}
+]
+pylint = [
+  "pylint==4.0.4"
 ]
 
 [project]
@@ -128,6 +132,48 @@ module = [
   "onelogin.*",
   "openid.*",
   "shopify.*"
+]
+
+[tool.pylint.main]
+disable = [
+  "abstract-method",  # TODO
+  "arguments-differ",  # TODO
+  "arguments-renamed",  # TODO: prio
+  "attribute-defined-outside-init",  # TODO: prio
+  "broad-exception-caught",  # TODO
+  "consider-using-f-string",  # TODO
+  "duplicate-code",  # TODO
+  "fixme",
+  "inconsistent-return-statements",  # TODO: prio
+  "invalid-name",  # TODO
+  "keyword-arg-before-vararg",  # TODO
+  "line-too-long",
+  "missing-class-docstring",
+  "missing-function-docstring",
+  "missing-module-docstring",
+  "no-else-raise",  # TODO
+  "no-else-return",  # TODO: prio
+  "no-member",  # TODO
+  "pointless-string-statement",  # TODO: prio
+  "possibly-used-before-assignment",  # TODO: prio
+  "raise-missing-from",  # TODO
+  "redefined-builtin",  # TODO
+  "redefined-outer-name",  # TODO: prio
+  "reimported",  # TODO: prio
+  "too-few-public-methods",
+  "too-many-ancestors",
+  "too-many-arguments",
+  "too-many-branches",
+  "too-many-instance-attributes",
+  "too-many-locals",
+  "too-many-nested-blocks",  # TODO
+  "too-many-positional-arguments",  # TODO
+  "too-many-public-methods",
+  "undefined-loop-variable",  # TODO: prio
+  "unused-argument",
+  "unused-import",  # TODO: prio
+  "useless-parent-delegation",  # TODO: prio
+  "unused-argument"
 ]
 
 [tool.pyright]

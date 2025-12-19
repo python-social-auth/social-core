@@ -2,6 +2,7 @@
 Google App Engine support using User API
 """
 
+# pylint: disable-next=import-error,no-name-in-module
 from google.appengine.api import users  # ty: ignore[unresolved-import]
 
 from social_core.exceptions import AuthException
