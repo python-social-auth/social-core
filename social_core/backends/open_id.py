@@ -278,7 +278,7 @@ class OpenIdAuth(BaseAuth):
         try:
             return self.consumer().begin(url_add_parameters(self.openid_url(), params))
         except DiscoveryFailure as err:
-            raise AuthException(self, f"OpenID discovery error: {err}")
+            raise AuthException(self, f"OpenID discovery error: {err}") from err
 
     def openid_url(self):
         """Return service provider URL.

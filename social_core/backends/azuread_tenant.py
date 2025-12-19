@@ -105,7 +105,7 @@ class AzureADTenantOAuth2(AzureADOAuth2):
                 audience=self.setting("KEY"),
             )
         except (DecodeError, ExpiredSignatureError) as error:
-            raise AuthTokenError(self, error)
+            raise AuthTokenError(self, error) from error
 
 
 class AzureADV2TenantOAuth2(AzureADTenantOAuth2):
