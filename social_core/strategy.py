@@ -20,7 +20,8 @@ if TYPE_CHECKING:
 
 
 class HttpResponseProtocol(Protocol):
-    url: str
+    @property
+    def url(self) -> str: ...
 
 
 class BaseTemplateStrategy:
