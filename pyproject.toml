@@ -95,7 +95,7 @@ dev = [
   "types-requests==2.32.4.20260107"
 ]
 google-onetap = [
-  "google-auth>=2.40.0,<2.48"
+  "google-auth>=2.40.0,<2.49"
 ]
 saml = [
   "python3-saml>=1.16.0"
