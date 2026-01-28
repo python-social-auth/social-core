@@ -14,6 +14,7 @@ import json
 from typing import Any, cast
 
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
+from onelogin.saml2.errors import OneLogin_Saml2_Error
 from onelogin.saml2.settings import OneLogin_Saml2_Settings
 
 from social_core.exceptions import (
@@ -443,7 +444,10 @@ class SAMLAuth(BaseAuth):
 
         idp = self.get_idp(idp_name)
         auth = self._create_saml_auth(idp)
-        auth.process_response()
+        try:
+            auth.process_response()
+        except OneLogin_Saml2_Error as error:
+            raise AuthFailed(self, f"SAML login failed: {error}") from error
         errors = auth.get_errors()
         if errors or not auth.is_authenticated():
             reason = auth.get_last_error_reason()
