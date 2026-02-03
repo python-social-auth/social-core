@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import os
 import time
+from pathlib import Path
 from typing import Any, cast
 
 import jwt
@@ -207,11 +208,10 @@ class AzureADOAuth2(BaseOAuth2):
             return None
 
         try:
-            with open(token_path, encoding="utf-8") as handle:
-                return handle.read().strip()
-        except OSError:
+            return Path(token_path).read_text(encoding="utf-8").strip()
+        except OSError as error:
             if required:
-                raise AuthMissingParameter(self, "client_assertion")
+                raise AuthMissingParameter(self, "client_assertion") from error
             return None
 
     def client_assertion_type(self) -> str:
