@@ -29,8 +29,9 @@ Azure AD OAuth2 backend, docs at:
 
 from __future__ import annotations
 
+import os
 import time
-from typing import Any
+from typing import Any, cast
 
 import jwt
 
@@ -138,13 +139,27 @@ class AzureADOAuth2(BaseOAuth2):
         return data
 
     def refresh_token_params(self, token, *args, **kwargs):
-        return {
+        client_secret = cast("str | None", self.setting("SECRET"))
+        params = {
             "client_id": self.setting("KEY"),
-            "client_secret": self.setting("SECRET"),
             "refresh_token": token,
             "grant_type": "refresh_token",
             "resource": self.setting("RESOURCE"),
         }
+
+        if client_secret:
+            params["client_secret"] = client_secret
+            return params
+
+        assertion = self.client_assertion(required=True)
+        params.update(
+            {
+                "client_assertion_type": self.client_assertion_type(),
+                "client_assertion": assertion,
+            }
+        )
+
+        return params
 
     def get_auth_token(self, user_id):
         """Return the access token for the given user, after ensuring that it
@@ -156,6 +171,55 @@ class AzureADOAuth2(BaseOAuth2):
             new_token_response = self.refresh_token(token=access_token)
             access_token = new_token_response["access_token"]
         return access_token
+
+    def auth_complete_params(self, state=None):
+        params = super().auth_complete_params(state)
+        if params.get("client_secret"):
+            return params
+
+        assertion = self.client_assertion(required=True)
+        params.update(
+            {
+                "client_assertion_type": self.client_assertion_type(),
+                "client_assertion": assertion,
+            }
+        )
+        return params
+
+    def client_assertion(self, *, required: bool = False) -> str | None:
+        if cast("str | None", self.setting("SECRET")):
+            return None
+
+        assertion = self.setting("CLIENT_ASSERTION")
+        if assertion:
+            return assertion
+
+        token_path = (
+            os.environ.get("OAUTH2_FIC_TOKEN_FILE")  # supports OAUTH2_ naming convention
+            or os.environ.get("AZURE_FEDERATED_TOKEN_FILE")  # canonical name
+            or self.setting("FEDERATED_TOKEN_FILE")
+        )
+        if not token_path:
+            if required:
+                raise AuthMissingParameter(self, "client_assertion")
+            return None
+
+        try:
+            with open(token_path, "r", encoding="utf-8") as handle:
+                return handle.read().strip()
+        except OSError:
+            if required:
+                raise AuthMissingParameter(self, "client_assertion")
+            return None
+
+    def client_assertion_type(self) -> str:
+        return cast(
+            "str",
+            self.setting(
+                "CLIENT_ASSERTION_TYPE",
+                "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+            ),
+        )
 
 
 class AzureADOAuth2V2(AzureADOAuth2):
