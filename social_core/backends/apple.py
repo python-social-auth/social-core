@@ -28,7 +28,7 @@ import time
 from typing import TYPE_CHECKING, cast
 
 import jwt
-from jwt.algorithms import RSAAlgorithm  # ty: ignore[possibly-missing-import]
+from jwt.algorithms import RSAAlgorithm
 from jwt.exceptions import PyJWTError
 
 from social_core.backends.oauth import BaseOAuth2

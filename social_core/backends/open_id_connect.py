@@ -28,6 +28,7 @@ from social_core.utils import cache
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
+    from jwt.types import Options
     from requests.auth import AuthBase
 
     from social_core.strategy import BaseStrategy
@@ -68,7 +69,7 @@ class OpenIdConnectAuth(BaseOAuth2):
     ID_KEY = "sub"
     USERNAME_KEY = "preferred_username"
     JWT_ALGORITHMS = ["RS256"]
-    JWT_DECODE_OPTIONS: dict[str, Any] = {}
+    JWT_DECODE_OPTIONS: Options = {}
     JWT_LEEWAY: float = 1.0  # seconds
     VALIDATE_AT_HASH: bool = True
     CUSTOM_AT_HASH_ALGO: str | None = None
@@ -282,7 +283,7 @@ class OpenIdConnectAuth(BaseOAuth2):
                 # In case the key id is not found in the cached keys, just
                 # reload the JWKS keys. Ideally this should be done by
                 # invalidating the cache.
-                self.get_jwks_keys.invalidate()  # type: ignore[reportFunctionMemberAccess]
+                self.get_jwks_keys.invalidate()  # pyright: ignore[reportAttributeAccessIssue]
                 keys = self.get_jwks_keys()
 
         for key in keys:

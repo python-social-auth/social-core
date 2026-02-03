@@ -35,7 +35,7 @@ from typing import TYPE_CHECKING, Any, Literal, cast
 from cryptography.hazmat.primitives import serialization
 from jwt import DecodeError, ExpiredSignatureError, get_unverified_header
 from jwt import decode as jwt_decode
-from jwt.algorithms import RSAAlgorithm  # ty: ignore[possibly-missing-import]
+from jwt.algorithms import RSAAlgorithm
 
 from social_core.exceptions import AuthException, AuthTokenError
 

@@ -32,7 +32,7 @@ from typing import TYPE_CHECKING, cast
 
 import jwt
 import responses
-from jwt.algorithms import RSAAlgorithm  # ty: ignore[possibly-missing-import]
+from jwt.algorithms import RSAAlgorithm
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
