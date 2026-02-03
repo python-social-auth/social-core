@@ -195,7 +195,9 @@ class AzureADOAuth2(BaseOAuth2):
             return assertion
 
         token_path = (
-            os.environ.get("OAUTH2_FIC_TOKEN_FILE")  # supports OAUTH2_ naming convention
+            os.environ.get(
+                "OAUTH2_FIC_TOKEN_FILE"
+            )  # supports OAUTH2_ naming convention
             or os.environ.get("AZURE_FEDERATED_TOKEN_FILE")  # canonical name
             or self.setting("FEDERATED_TOKEN_FILE")
         )
@@ -205,7 +207,7 @@ class AzureADOAuth2(BaseOAuth2):
             return None
 
         try:
-            with open(token_path, "r", encoding="utf-8") as handle:
+            with open(token_path, encoding="utf-8") as handle:
                 return handle.read().strip()
         except OSError:
             if required:
