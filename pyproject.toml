@@ -4,7 +4,7 @@ requires = ["setuptools>=78.0.2"]
 
 [dependency-groups]
 dev = [
-  "coverage==7.13.2",
+  "coverage==7.13.3",
   "flake8==7.3.0",
   "google-auth-stubs==0.3.0",
   "mypy==1.19.1",
@@ -77,7 +77,7 @@ azuread = [
 # This is present until pip implements supports for PEP 735
 # see https://github.com/pypa/pip/issues/12963
 dev = [
-  "coverage==7.13.2",
+  "coverage==7.13.3",
   "flake8==7.3.0",
   "google-auth-stubs==0.3.0",
   "mypy==1.19.1",
