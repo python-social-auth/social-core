@@ -27,7 +27,7 @@ class EtsyOAuth2(BaseOAuth2PKCE):
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         client_id, _ = self.get_key_and_secret()
-        user_id = access_token.split(".")[0]
+        user_id = access_token.split(".", maxsplit=1)[0]
         headers = {"Authorization": f"Bearer {access_token}", "x-api-key": client_id}
         return self.get_json(
             url=f"https://openapi.etsy.com/v3/application/users/{user_id}",
