@@ -25,6 +25,13 @@ SOFTWARE.
 """
 
 import json
+import os
+from unittest.mock import patch
+from urllib.parse import parse_qs
+
+import responses
+
+from social_core.exceptions import AuthMissingParameter
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
@@ -75,3 +82,64 @@ class AzureADOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     def test_refresh_token(self) -> None:
         _user, social = self.do_refresh_token()
         self.assertEqual(social.extra_data["access_token"], "foobar-new-token")
+
+
+class AzureADOAuth2FICTest(AzureADOAuth2Test):
+    def extra_settings(self):
+        settings = super().extra_settings()
+        settings.pop("SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET", None)
+        settings["SOCIAL_AUTH_AZUREAD_OAUTH2_CLIENT_ASSERTION"] = "fic-assertion"
+        return settings
+
+    def _token_request_body(self, url_prefix: str) -> dict[str, list[str]]:
+        request = next(
+            call.request
+            for call in responses.calls
+            if call.request.url.startswith(url_prefix)
+        )
+        body = request.body or ""
+        if isinstance(body, bytes):
+            body = body.decode()
+        return parse_qs(body)
+
+    def test_login_uses_client_assertion(self) -> None:
+        self.do_login()
+        body = self._token_request_body(self.backend.access_token_url())
+        self.assertIn("client_assertion", body)
+        self.assertEqual(body["client_assertion"], ["fic-assertion"])
+        self.assertEqual(
+            body.get("client_assertion_type"),
+            ["urn:ietf:params:oauth:client-assertion-type:jwt-bearer"],
+        )
+        self.assertNotIn("client_secret", body)
+
+    def test_refresh_token_uses_client_assertion(self) -> None:
+        _user, _social = self.do_refresh_token()
+        body = self._token_request_body(self.backend.refresh_token_url())
+        self.assertIn("client_assertion", body)
+        self.assertNotIn("client_secret", body)
+
+
+class AzureADOAuth2MissingCredentialsTest(AzureADOAuth2Test):
+    def extra_settings(self):
+        settings = super().extra_settings()
+        settings.pop("SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET", None)
+        settings.pop("SOCIAL_AUTH_AZUREAD_OAUTH2_CLIENT_ASSERTION", None)
+        return settings
+
+    def test_missing_secret_and_assertion_fails(self) -> None:
+        with patch.dict(os.environ, {"AZURE_FEDERATED_TOKEN_FILE": ""}, clear=False):
+            with self.assertRaises(AuthMissingParameter):
+                self.do_login()
+
+    def test_login(self) -> None:  # type: ignore[override]
+        with self.assertRaises(AuthMissingParameter):
+            self.do_login()
+
+    def test_partial_pipeline(self) -> None:  # type: ignore[override]
+        with self.assertRaises(AuthMissingParameter):
+            self.do_partial_pipeline()
+
+    def test_refresh_token(self) -> None:  # type: ignore[override]
+        with self.assertRaises(AuthMissingParameter):
+            self.do_refresh_token()
