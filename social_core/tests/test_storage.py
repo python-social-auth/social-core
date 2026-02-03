@@ -164,7 +164,7 @@ class BrokenStrategyTests(unittest.TestCase):
 
     def test_render_html_with_none(self) -> None:
         with self.assertRaisesRegex(ValueError, "Missing template or html parameters"):
-            self.strategy.render_html()  # type: ignore[reportCallIssue]
+            self.strategy.render_html()
 
     def test_is_integrity_error(self) -> None:
         with self.assertRaisesRegex(NotImplementedError, NOT_IMPLEMENTED_MSG):

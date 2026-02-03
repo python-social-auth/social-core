@@ -2,6 +2,7 @@ import hmac
 import time
 from base64 import urlsafe_b64decode, urlsafe_b64encode
 from hashlib import sha256
+from typing import cast
 from urllib.parse import urlencode
 
 from social_core.exceptions import AuthException, AuthTokenError
@@ -51,10 +52,14 @@ class DiscourseAuth(BaseAuth):
         }
 
     def add_nonce(self, nonce) -> None:
-        self.strategy.storage.nonce.use(self.setting("SERVER_URL"), time.time(), nonce)
+        self.strategy.storage.nonce.use(
+            cast("str", self.setting("SERVER_URL")), time.time(), nonce
+        )
 
     def get_nonce(self, nonce):
-        return self.strategy.storage.nonce.get(self.setting("SERVER_URL"), nonce)
+        return self.strategy.storage.nonce.get(
+            cast("str", self.setting("SERVER_URL")), nonce
+        )
 
     def delete_nonce(self, nonce) -> None:
         self.strategy.storage.nonce.delete(nonce)
