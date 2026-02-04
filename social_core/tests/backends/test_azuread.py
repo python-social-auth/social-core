@@ -84,7 +84,7 @@ class AzureADOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         self.assertEqual(social.extra_data["access_token"], "foobar-new-token")
 
 
-class AzureADOAuth2FICTest(AzureADOAuth2Test):
+class AzureADOAuth2FederatedIdentityCredentialTest(AzureADOAuth2Test):
     def extra_settings(self):
         settings = super().extra_settings()
         settings.pop("SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET", None)
