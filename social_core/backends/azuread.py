@@ -197,7 +197,7 @@ class AzureADOAuth2(BaseOAuth2):
 
         token_path = (
             os.environ.get(
-                "OAUTH2_FIC_TOKEN_FILE"
+                "OAUTH2_FEDERATED_TOKEN_FILE"
             )  # supports OAUTH2_ naming convention
             or os.environ.get("AZURE_FEDERATED_TOKEN_FILE")  # canonical name
             or self.setting("FEDERATED_TOKEN_FILE")
