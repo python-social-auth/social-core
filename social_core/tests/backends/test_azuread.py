@@ -26,6 +26,7 @@ SOFTWARE.
 
 import json
 import os
+import tempfile
 from unittest.mock import patch
 from urllib.parse import parse_qs
 
@@ -118,6 +119,85 @@ class AzureADOAuth2FederatedIdentityCredentialTest(AzureADOAuth2Test):
         body = self._token_request_body(self.backend.refresh_token_url())
         self.assertIn("client_assertion", body)
         self.assertNotIn("client_secret", body)
+
+
+class AzureADOAuth2FederatedIdentityCredentialFromFileTest(AzureADOAuth2Test):
+    def setUp(self) -> None:
+        super().setUp()
+        # Default token file for class-level flows; individual tests can override.
+        self.token_path = self._write_temp_token("default-assertion")
+        patcher = patch.dict(
+            os.environ,
+            {
+                "OAUTH2_FEDERATED_TOKEN_FILE": self.token_path,
+                "AZURE_FEDERATED_TOKEN_FILE": self.token_path,
+            },
+            clear=False,
+        )
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def extra_settings(self):
+        settings = super().extra_settings()
+        settings.pop("SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET", None)
+        settings.pop("SOCIAL_AUTH_AZUREAD_OAUTH2_CLIENT_ASSERTION", None)
+        settings.pop("SOCIAL_AUTH_AZUREAD_OAUTH2_FEDERATED_TOKEN_FILE", None)
+        return settings
+
+    def _token_request_body(self, url_prefix: str) -> dict[str, list[str]]:
+        request = next(
+            call.request
+            for call in responses.calls
+            if call.request.url.startswith(url_prefix)
+        )
+        body = request.body or ""
+        if isinstance(body, bytes):
+            body = body.decode()
+        return parse_qs(body)
+
+    def _write_temp_token(self, value: str) -> str:
+        handle = tempfile.NamedTemporaryFile("w", delete=False)
+        handle.write(value)
+        handle.close()
+        self.addCleanup(os.remove, handle.name)
+        return handle.name
+
+    def test_login_uses_oauth2_env_token_path(self) -> None:
+        token_path = self._write_temp_token("env-assertion")
+        with patch.dict(
+            os.environ, {"OAUTH2_FEDERATED_TOKEN_FILE": token_path}, clear=False
+        ):
+            self.do_login()
+
+        body = self._token_request_body(self.backend.access_token_url())
+        self.assertEqual(body.get("client_assertion"), ["env-assertion"])
+        self.assertEqual(
+            body.get("client_assertion_type"),
+            ["urn:ietf:params:oauth:client-assertion-type:jwt-bearer"],
+        )
+        self.assertNotIn("client_secret", body)
+
+    def test_login_uses_azure_env_token_path(self) -> None:
+        token_path = self._write_temp_token("azure-env-assertion")
+        with patch.dict(
+            os.environ,
+            {
+                "OAUTH2_FEDERATED_TOKEN_FILE": "",
+                "AZURE_FEDERATED_TOKEN_FILE": token_path,
+            },
+            clear=False,
+        ):
+            self.do_login()
+
+        body = self._token_request_body(self.backend.access_token_url())
+        self.assertEqual(body.get("client_assertion"), ["azure-env-assertion"])
+        self.assertNotIn("client_secret", body)
+
+    def test_missing_env_token_path_raises(self) -> None:
+        with patch.dict(
+            os.environ, {"OAUTH2_FEDERATED_TOKEN_FILE": "/no/such/file"}, clear=False
+        ), self.assertRaises(AuthMissingParameter):
+            self.do_login()
 
 
 class AzureADOAuth2MissingCredentialsTest(AzureADOAuth2Test):
