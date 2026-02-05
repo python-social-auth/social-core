@@ -194,9 +194,14 @@ class AzureADOAuth2FederatedIdentityCredentialFromFileTest(AzureADOAuth2Test):
         self.assertNotIn("client_secret", body)
 
     def test_missing_env_token_path_raises(self) -> None:
-        with patch.dict(
-            os.environ, {"OAUTH2_FEDERATED_TOKEN_FILE": "/no/such/file"}, clear=False
-        ), self.assertRaises(AuthMissingParameter):
+        with (
+            patch.dict(
+                os.environ,
+                {"OAUTH2_FEDERATED_TOKEN_FILE": "/no/such/file"},
+                clear=False,
+            ),
+            self.assertRaises(AuthMissingParameter),
+        ):
             self.do_login()
 
 
