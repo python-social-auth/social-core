@@ -156,11 +156,10 @@ class AzureADOAuth2FederatedIdentityCredentialFromFileTest(AzureADOAuth2Test):
         return parse_qs(body)
 
     def _write_temp_token(self, value: str) -> str:
-        handle = tempfile.NamedTemporaryFile("w", delete=False)
-        handle.write(value)
-        handle.close()
-        self.addCleanup(os.remove, handle.name)
-        return handle.name
+        with tempfile.NamedTemporaryFile("w", delete=False) as handle:
+            handle.write(value)
+            self.addCleanup(os.remove, handle.name)
+            return handle.name
 
     def test_login_uses_oauth2_env_token_path(self) -> None:
         token_path = self._write_temp_token("env-assertion")
