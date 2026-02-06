@@ -242,7 +242,14 @@ class AzureADOAuth2MissingCredentialsTest(AzureADOAuth2Test):
 
     def test_missing_secret_and_assertion_fails(self) -> None:
         with (
-            patch.dict(os.environ, {"AZURE_FEDERATED_TOKEN_FILE": ""}, clear=False),
+            patch.dict(
+                os.environ,
+                {
+                    "AZURE_FEDERATED_TOKEN_FILE": "",
+                    "OAUTH2_FEDERATED_TOKEN_FILE": "",
+                },
+                clear=False,
+            ),
             self.assertRaises(AuthMissingParameter),
         ):
             self.do_login()
