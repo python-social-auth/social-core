@@ -93,11 +93,17 @@ class AzureADOAuth2FederatedIdentityCredentialTest(AzureADOAuth2Test):
         return settings
 
     def _token_request_body(self, url_prefix: str) -> dict[str, list[str]]:
-        request = next(
+        matches = [
             call.request
             for call in responses.calls
             if call.request.url.startswith(url_prefix)
+        ]
+        self.assertGreaterEqual(
+            len(matches),
+            1,
+            f"expected at least one token request for {url_prefix}, found {len(matches)}",
         )
+        request = matches[-1]
         body = request.body or ""
         if isinstance(body, bytes):
             body = body.decode()
@@ -145,11 +151,17 @@ class AzureADOAuth2FederatedIdentityCredentialFromFileTest(AzureADOAuth2Test):
         return settings
 
     def _token_request_body(self, url_prefix: str) -> dict[str, list[str]]:
-        request = next(
+        matches = [
             call.request
             for call in responses.calls
             if call.request.url.startswith(url_prefix)
+        ]
+        self.assertGreaterEqual(
+            len(matches),
+            1,
+            f"expected at least one token request for {url_prefix}, found {len(matches)}",
         )
+        request = matches[-1]
         body = request.body or ""
         if isinstance(body, bytes):
             body = body.decode()
