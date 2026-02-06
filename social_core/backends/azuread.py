@@ -208,11 +208,18 @@ class AzureADOAuth2(BaseOAuth2):
             return None
 
         try:
-            return Path(token_path).read_text(encoding="utf-8").strip()
+            assertion = Path(token_path).read_text(encoding="utf-8").strip()
         except OSError as error:
             if required:
                 raise AuthMissingParameter(self, "client_assertion") from error
             return None
+
+        if not assertion:
+            if required:
+                raise AuthMissingParameter(self, "client_assertion")
+            return None
+
+        return assertion
 
     def client_assertion_type(self) -> str:
         return cast(
