@@ -205,16 +205,18 @@ class AzureADOAuth2FederatedIdentityCredentialFromFileTest(AzureADOAuth2Test):
 
     def test_empty_token_file_raises(self) -> None:
         token_path = self._write_temp_token(" \n\t")
-        with patch.dict(
-            os.environ,
-            {
-                "OAUTH2_FEDERATED_TOKEN_FILE": token_path,
-                "AZURE_FEDERATED_TOKEN_FILE": token_path,
-            },
-            clear=False,
+        with (
+            patch.dict(
+                os.environ,
+                {
+                    "OAUTH2_FEDERATED_TOKEN_FILE": token_path,
+                    "AZURE_FEDERATED_TOKEN_FILE": token_path,
+                },
+                clear=False,
+            ),
+            self.assertRaises(AuthMissingParameter),
         ):
-            with self.assertRaises(AuthMissingParameter):
-                self.do_login()
+            self.do_login()
 
     def test_empty_token_file_optional_returns_none(self) -> None:
         token_path = self._write_temp_token(" \n\t")
