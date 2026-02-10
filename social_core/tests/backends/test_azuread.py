@@ -27,6 +27,7 @@ SOFTWARE.
 import json
 import os
 import tempfile
+from typing import cast
 from unittest import TestCase
 from unittest.mock import patch
 from urllib.parse import parse_qs
@@ -91,7 +92,7 @@ class AzureADOAuth2TokenRequestBodyMixin(TestCase):
         matches = [
             call.request
             for call in responses.calls
-            if call.request.url.startswith(url_prefix)
+            if cast("str", call.request.url).startswith(url_prefix)
         ]
         self.assertGreaterEqual(
             len(matches),
