@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.8.4](https://github.com/python-social-auth/social-core/releases/tag/4.8.4) - 2026-02-10
+
+### Changed
+
+- Improved type annotations
+- Code cleanups
+- Improved error handling in SAML
+
+### Added
+
+- Add Azure AD(Entra ID) federated client assertion support (FIC)
+
 ## [4.8.3](https://github.com/python-social-auth/social-core/releases/tag/4.8.3) - 2025-12-18
 
 ### Changed
