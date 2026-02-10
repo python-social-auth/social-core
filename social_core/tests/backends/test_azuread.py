@@ -85,13 +85,7 @@ class AzureADOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         self.assertEqual(social.extra_data["access_token"], "foobar-new-token")
 
 
-class AzureADOAuth2FederatedIdentityCredentialTest(AzureADOAuth2Test):
-    def extra_settings(self):
-        settings = super().extra_settings()
-        settings.pop("SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET", None)
-        settings["SOCIAL_AUTH_AZUREAD_OAUTH2_CLIENT_ASSERTION"] = "fic-assertion"
-        return settings
-
+class AzureADOAuth2TokenRequestBodyMixin:
     def _token_request_body(self, url_prefix: str) -> dict[str, list[str]]:
         matches = [
             call.request
@@ -108,6 +102,16 @@ class AzureADOAuth2FederatedIdentityCredentialTest(AzureADOAuth2Test):
         if isinstance(body, bytes):
             body = body.decode()
         return parse_qs(body)
+
+
+class AzureADOAuth2FederatedIdentityCredentialTest(
+    AzureADOAuth2TokenRequestBodyMixin, AzureADOAuth2Test
+):
+    def extra_settings(self):
+        settings = super().extra_settings()
+        settings.pop("SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET", None)
+        settings["SOCIAL_AUTH_AZUREAD_OAUTH2_CLIENT_ASSERTION"] = "fic-assertion"
+        return settings
 
     def test_login_uses_client_assertion(self) -> None:
         self.do_login()
