@@ -62,7 +62,7 @@ def do_complete(  # noqa: C901,PLR0912
         user if is_authenticated else None
     )
 
-    partial = partial_pipeline_data(backend, user, *args, **kwargs)
+    partial = partial_pipeline_data(backend, authenticated_user, *args, **kwargs)
     if partial:
         authenticated_user = backend.continue_pipeline(partial)
         # clean partial data after usage
