@@ -27,6 +27,8 @@ SOFTWARE.
 import json
 import os
 import tempfile
+from typing import cast
+from unittest import TestCase
 from unittest.mock import patch
 from urllib.parse import parse_qs
 
@@ -85,18 +87,12 @@ class AzureADOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         self.assertEqual(social.extra_data["access_token"], "foobar-new-token")
 
 
-class AzureADOAuth2FederatedIdentityCredentialTest(AzureADOAuth2Test):
-    def extra_settings(self):
-        settings = super().extra_settings()
-        settings.pop("SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET", None)
-        settings["SOCIAL_AUTH_AZUREAD_OAUTH2_CLIENT_ASSERTION"] = "fic-assertion"
-        return settings
-
+class AzureADOAuth2TokenRequestBodyMixin(TestCase):
     def _token_request_body(self, url_prefix: str) -> dict[str, list[str]]:
         matches = [
             call.request
             for call in responses.calls
-            if call.request.url.startswith(url_prefix)
+            if cast("str", call.request.url).startswith(url_prefix)
         ]
         self.assertGreaterEqual(
             len(matches),
@@ -108,6 +104,16 @@ class AzureADOAuth2FederatedIdentityCredentialTest(AzureADOAuth2Test):
         if isinstance(body, bytes):
             body = body.decode()
         return parse_qs(body)
+
+
+class AzureADOAuth2FederatedIdentityCredentialTest(
+    AzureADOAuth2TokenRequestBodyMixin, AzureADOAuth2Test
+):
+    def extra_settings(self):
+        settings = super().extra_settings()
+        settings.pop("SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET", None)
+        settings["SOCIAL_AUTH_AZUREAD_OAUTH2_CLIENT_ASSERTION"] = "fic-assertion"
+        return settings
 
     def test_login_uses_client_assertion(self) -> None:
         self.do_login()
@@ -127,7 +133,9 @@ class AzureADOAuth2FederatedIdentityCredentialTest(AzureADOAuth2Test):
         self.assertNotIn("client_secret", body)
 
 
-class AzureADOAuth2FederatedIdentityCredentialFromFileTest(AzureADOAuth2Test):
+class AzureADOAuth2FederatedIdentityCredentialFromFileTest(
+    AzureADOAuth2TokenRequestBodyMixin, AzureADOAuth2Test
+):
     def setUp(self) -> None:
         super().setUp()
         # Default token file for class-level flows; individual tests can override.
@@ -149,23 +157,6 @@ class AzureADOAuth2FederatedIdentityCredentialFromFileTest(AzureADOAuth2Test):
         settings.pop("SOCIAL_AUTH_AZUREAD_OAUTH2_CLIENT_ASSERTION", None)
         settings.pop("SOCIAL_AUTH_AZUREAD_OAUTH2_FEDERATED_TOKEN_FILE", None)
         return settings
-
-    def _token_request_body(self, url_prefix: str) -> dict[str, list[str]]:
-        matches = [
-            call.request
-            for call in responses.calls
-            if call.request.url.startswith(url_prefix)
-        ]
-        self.assertGreaterEqual(
-            len(matches),
-            1,
-            f"expected at least one token request for {url_prefix}, found {len(matches)}",
-        )
-        request = matches[-1]
-        body = request.body or ""
-        if isinstance(body, bytes):
-            body = body.decode()
-        return parse_qs(body)
 
     def _write_temp_token(self, value: str) -> str:
         with tempfile.NamedTemporaryFile("w", delete=False) as handle:
@@ -266,14 +257,14 @@ class AzureADOAuth2MissingCredentialsTest(AzureADOAuth2Test):
         ):
             self.do_login()
 
-    def test_login(self) -> None:  # type: ignore[override]
+    def test_login(self) -> None:
         with self.assertRaises(AuthMissingParameter):
-            self.do_login()
+            super().test_login()
 
-    def test_partial_pipeline(self) -> None:  # type: ignore[override]
+    def test_partial_pipeline(self) -> None:
         with self.assertRaises(AuthMissingParameter):
-            self.do_partial_pipeline()
+            super().test_partial_pipeline()
 
-    def test_refresh_token(self) -> None:  # type: ignore[override]
+    def test_refresh_token(self) -> None:
         with self.assertRaises(AuthMissingParameter):
-            self.do_refresh_token()
+            super().test_refresh_token()
