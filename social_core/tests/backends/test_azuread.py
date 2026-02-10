@@ -27,6 +27,7 @@ SOFTWARE.
 import json
 import os
 import tempfile
+from unittest import TestCase
 from unittest.mock import patch
 from urllib.parse import parse_qs
 
@@ -85,7 +86,7 @@ class AzureADOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         self.assertEqual(social.extra_data["access_token"], "foobar-new-token")
 
 
-class AzureADOAuth2TokenRequestBodyMixin:
+class AzureADOAuth2TokenRequestBodyMixin(TestCase):
     def _token_request_body(self, url_prefix: str) -> dict[str, list[str]]:
         matches = [
             call.request
@@ -131,7 +132,9 @@ class AzureADOAuth2FederatedIdentityCredentialTest(
         self.assertNotIn("client_secret", body)
 
 
-class AzureADOAuth2FederatedIdentityCredentialFromFileTest(AzureADOAuth2Test):
+class AzureADOAuth2FederatedIdentityCredentialFromFileTest(
+    AzureADOAuth2TokenRequestBodyMixin, AzureADOAuth2Test
+):
     def setUp(self) -> None:
         super().setUp()
         # Default token file for class-level flows; individual tests can override.
@@ -153,23 +156,6 @@ class AzureADOAuth2FederatedIdentityCredentialFromFileTest(AzureADOAuth2Test):
         settings.pop("SOCIAL_AUTH_AZUREAD_OAUTH2_CLIENT_ASSERTION", None)
         settings.pop("SOCIAL_AUTH_AZUREAD_OAUTH2_FEDERATED_TOKEN_FILE", None)
         return settings
-
-    def _token_request_body(self, url_prefix: str) -> dict[str, list[str]]:
-        matches = [
-            call.request
-            for call in responses.calls
-            if call.request.url.startswith(url_prefix)
-        ]
-        self.assertGreaterEqual(
-            len(matches),
-            1,
-            f"expected at least one token request for {url_prefix}, found {len(matches)}",
-        )
-        request = matches[-1]
-        body = request.body or ""
-        if isinstance(body, bytes):
-            body = body.decode()
-        return parse_qs(body)
 
     def _write_temp_token(self, value: str) -> str:
         with tempfile.NamedTemporaryFile("w", delete=False) as handle:
@@ -270,14 +256,14 @@ class AzureADOAuth2MissingCredentialsTest(AzureADOAuth2Test):
         ):
             self.do_login()
 
-    def test_login_fails_without_credentials(self) -> None:  # type: ignore[override]
+    def test_login_fails_without_credentials(self) -> None:
         with self.assertRaises(AuthMissingParameter):
             self.do_login()
 
-    def test_partial_pipeline_fails_without_credentials(self) -> None:  # type: ignore[override]
+    def test_partial_pipeline_fails_without_credentials(self) -> None:
         with self.assertRaises(AuthMissingParameter):
             self.do_partial_pipeline()
 
-    def test_refresh_token_fails_without_credentials(self) -> None:  # type: ignore[override]
+    def test_refresh_token_fails_without_credentials(self) -> None:
         with self.assertRaises(AuthMissingParameter):
             self.do_refresh_token()
