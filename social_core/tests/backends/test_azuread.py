@@ -121,7 +121,7 @@ class AzureADOAuth2FederatedIdentityCredentialTest(AzureADOAuth2Test):
         self.assertNotIn("client_secret", body)
 
     def test_refresh_token_uses_client_assertion(self) -> None:
-        _user, _social = self.do_refresh_token()
+        self.do_refresh_token()
         body = self._token_request_body(self.backend.refresh_token_url())
         self.assertIn("client_assertion", body)
         self.assertNotIn("client_secret", body)
