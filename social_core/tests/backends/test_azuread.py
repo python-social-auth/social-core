@@ -270,7 +270,7 @@ class AzureADOAuth2MissingCredentialsTest(AzureADOAuth2Test):
         with self.assertRaises(AuthMissingParameter):
             self.do_login()
 
-    def test_partial_pipeline(self) -> None:  # type: ignore[override]
+    def test_partial_pipeline_fails_without_credentials(self) -> None:  # type: ignore[override]
         with self.assertRaises(AuthMissingParameter):
             self.do_partial_pipeline()
 
