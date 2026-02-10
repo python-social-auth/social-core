@@ -266,7 +266,7 @@ class AzureADOAuth2MissingCredentialsTest(AzureADOAuth2Test):
         ):
             self.do_login()
 
-    def test_login(self) -> None:  # type: ignore[override]
+    def test_login_fails_without_credentials(self) -> None:  # type: ignore[override]
         with self.assertRaises(AuthMissingParameter):
             self.do_login()
 
