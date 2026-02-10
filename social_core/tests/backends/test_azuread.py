@@ -256,14 +256,14 @@ class AzureADOAuth2MissingCredentialsTest(AzureADOAuth2Test):
         ):
             self.do_login()
 
-    def test_login_fails_without_credentials(self) -> None:
+    def test_login(self) -> None:
         with self.assertRaises(AuthMissingParameter):
-            self.do_login()
+            super().test_login()
 
-    def test_partial_pipeline_fails_without_credentials(self) -> None:
+    def test_partial_pipeline(self) -> None:
         with self.assertRaises(AuthMissingParameter):
-            self.do_partial_pipeline()
+            super().test_partial_pipeline()
 
-    def test_refresh_token_fails_without_credentials(self) -> None:
+    def test_refresh_token(self) -> None:
         with self.assertRaises(AuthMissingParameter):
-            self.do_refresh_token()
+            super().test_refresh_token()
