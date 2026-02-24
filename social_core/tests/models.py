@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import base64
-from typing import TypeVar
+from typing import TYPE_CHECKING, TypeVar
 
 from typing_extensions import Self
 
@@ -13,8 +13,12 @@ from social_core.storage import (
     NonceMixin,
     PartialMixin,
     UserMixin,
-    UserProtocol,
 )
+
+if TYPE_CHECKING:
+    from social_core.storage import (
+        UserProtocol,
+    )
 
 ModelT = TypeVar("ModelT", bound="BaseModel")
 
@@ -30,7 +34,7 @@ class BaseModel:
         cls.cache = {}
 
 
-class User(BaseModel, UserProtocol):
+class User(BaseModel):
     NEXT_ID = 1
     cache = {}
     _is_active = True
@@ -58,7 +62,8 @@ class User(BaseModel, UserProtocol):
         self.extra_user_fields = extra_user_fields
         self.save()
 
-    def is_active(self):  # pyright: ignore[reportIncompatibleVariableOverride]
+    @property
+    def is_active(self):
         return self._is_active
 
     @classmethod

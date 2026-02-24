@@ -24,10 +24,14 @@ NO_SPECIAL_REGEX = re.compile(r"[^\w.@+_-]+", re.UNICODE)
 
 
 class UserProtocol(Protocol):
-    id: int
-    username: str
-    is_active: bool | Callable[[], bool]
-    is_authenticated: bool | Callable[[], bool]
+    @property
+    def id(self, /) -> int: ...
+    @property
+    def username(self, /) -> str: ...
+    @property
+    def is_active(self, /) -> bool | Callable[[], bool]: ...
+    @property
+    def is_authenticated(self, /) -> bool | Callable[[], bool]: ...
 
     # Set in BaseAuth.pipeline
     # social_user: UserMixin
