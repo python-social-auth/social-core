@@ -48,11 +48,12 @@ class RdioOAuth1(BaseRdio, BaseOAuth1):
             "method": "currentUser",
             "extras": "username,displayName,streamRegion",
         }
-        request = self.oauth_request(access_token, RDIO_API, params, method="POST")
-        # TODO: I don't think to_postdata exists.
-        return self.get_json(request.url, method="POST", data=request.to_postdata())[  # type: ignore[reportAttributeAccessIssue]
-            "result"
-        ]
+        return self.get_json(
+            RDIO_API,
+            method="POST",
+            data=params,
+            auth=self.oauth_auth(access_token),
+        )["result"]
 
 
 class RdioOAuth2(BaseRdio, BaseOAuth2):

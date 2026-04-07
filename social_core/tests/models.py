@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import base64
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, TypeVar, cast
 
 from typing_extensions import Self
 
@@ -153,22 +153,22 @@ class TestUserSocialAuth(UserMixin, BaseModel):
         return None
 
     @classmethod
-    def get_social_auth_for_user(  # type: ignore[override]
+    def get_social_auth_for_user(
         cls,
-        user: User,
+        user: UserProtocol,
         provider: str | None = None,
         # pylint: disable-next=redefined-builtin
         id: int | None = None,  # noqa: A002
     ):
         return [
             usa
-            for usa in user.social
+            for usa in getattr(user, "social", [])
             if provider in (None, usa.provider) and id in (None, usa.id)
         ]
 
     @classmethod
-    def create_social_auth(cls, user: User, uid: int, provider: str):  # type: ignore[override]
-        return cls(user=user, provider=provider, uid=uid)
+    def create_social_auth(cls, user: UserProtocol, uid: int, provider: str):
+        return cls(user=cast("User", user), provider=provider, uid=uid)
 
     @classmethod
     def get_users_by_email(cls, email: str):

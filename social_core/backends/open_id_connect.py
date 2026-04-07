@@ -322,7 +322,10 @@ class OpenIdConnectAuth(BaseOAuth2):
                 algorithms=self.setting("JWT_ALGORITHMS", self.JWT_ALGORITHMS),
                 audience=client_id,
                 issuer=self.id_token_issuer(),
-                options=self.setting("JWT_DECODE_OPTIONS", self.JWT_DECODE_OPTIONS),
+                options=cast(
+                    "Options",
+                    self.setting("JWT_DECODE_OPTIONS", self.JWT_DECODE_OPTIONS),
+                ),
                 leeway=cast("int", self.setting("JWT_LEEWAY", self.JWT_LEEWAY)),
             )
         except ExpiredSignatureError as error:

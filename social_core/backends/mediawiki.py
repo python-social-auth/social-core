@@ -64,7 +64,10 @@ class MediaWiki(BaseOAuth1):
         """
         if not isinstance(token, dict):
             token = parse_qs(token)
-        oauth_token = token.get(self.OAUTH_TOKEN_PARAMETER_NAME)[0]  # type: ignore[reportOptionalSubscript]
+        oauth_tokens = token.get(self.OAUTH_TOKEN_PARAMETER_NAME)
+        if not oauth_tokens:
+            raise AuthMissingParameter(self, self.OAUTH_TOKEN_PARAMETER_NAME)
+        oauth_token = oauth_tokens[0]
         state = self.get_or_create_state()
         base_url = self.setting("MEDIAWIKI_URL")
         params = urlencode(
@@ -92,8 +95,14 @@ class MediaWiki(BaseOAuth1):
         if response.content.decode().startswith("Error"):
             raise AuthException(self, response.content.decode())
         credentials = parse_qs(response.content)
-        oauth_token_key = credentials.get(b"oauth_token")[0]  # type: ignore[reportOptionalSubscript]
-        oauth_token_secret = credentials.get(b"oauth_token_secret")[0]  # type: ignore[reportOptionalSubscript]
+        oauth_token_keys = credentials.get(b"oauth_token")
+        oauth_token_secrets = credentials.get(b"oauth_token_secret")
+        if not oauth_token_keys:
+            raise AuthMissingParameter(self, "oauth_token")
+        if not oauth_token_secrets:
+            raise AuthMissingParameter(self, "oauth_token_secret")
+        oauth_token_key = oauth_token_keys[0]
+        oauth_token_secret = oauth_token_secrets[0]
         oauth_token_key = oauth_token_key.decode()
         oauth_token_secret = oauth_token_secret.decode()
 

@@ -35,7 +35,7 @@ from social_core.backends.oauth import BaseOAuth2
 from social_core.exceptions import AuthFailed
 
 if TYPE_CHECKING:
-    from jwt.types import JWKDict
+    from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
 
 
 class AppleIdAuth(BaseOAuth2):
@@ -101,9 +101,11 @@ class AppleIdAuth(BaseOAuth2):
         client_secret = self.generate_client_secret()
         return client_id, client_secret
 
-    def get_apple_jwk(self, kid=None) -> str | JWKDict:
+    def get_apple_jwk(self, kid=None) -> str:
         """
-        Return requested Apple public key or all available.
+        Return a single Apple public key as JWK JSON.
+
+        If ``kid`` is not provided, use the first key in the response.
         """
         keys = self.get_json(url=self.JWK_URL).get("keys")
 
@@ -111,10 +113,11 @@ class AppleIdAuth(BaseOAuth2):
             raise AuthFailed(self, "Invalid jwk response")
 
         if kid:
-            return json.dumps(next(key for key in keys if key["kid"] == kid))
-        # TODO: this should actually return a JWKDict; the caller expects it.
-        # I suspect this code path is never hit in practice
-        return (json.dumps(key) for key in keys)  # type:ignore[reportReturnType]
+            key = next((key for key in keys if key["kid"] == kid), None)
+            if key is None:
+                raise AuthFailed(self, "Unable to find Apple public key")
+            return json.dumps(key)
+        return json.dumps(keys[0])
 
     def decode_id_token(self, id_token):
         """
@@ -126,11 +129,13 @@ class AppleIdAuth(BaseOAuth2):
 
         try:
             kid = jwt.get_unverified_header(id_token).get("kid")
-            public_key = RSAAlgorithm.from_jwk(self.get_apple_jwk(kid))
+            public_key = cast(
+                "RSAPublicKey", RSAAlgorithm.from_jwk(self.get_apple_jwk(kid))
+            )
 
             decoded = jwt.decode(
                 id_token,
-                key=public_key,  # type: ignore[reportArgumentType]
+                key=public_key,
                 audience=self.get_audience(),
                 algorithms=["RS256"],
             )

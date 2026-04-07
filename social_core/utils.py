@@ -8,7 +8,7 @@ import re
 import time
 import unicodedata
 from importlib import import_module
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 from urllib.parse import parse_qs as battery_parse_qs
 from urllib.parse import unquote, urlencode, urlparse, urlunparse
 
@@ -333,7 +333,7 @@ class cache:
                         raise
             return cached_value
 
-        wrapped.invalidate = self._invalidate  # type: ignore[attr-defined]
+        cast("Any", wrapped).invalidate = self._invalidate
         return wrapped
 
     def _invalidate(self) -> None:
