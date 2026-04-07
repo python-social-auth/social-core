@@ -243,6 +243,9 @@ class BaseAuthUrlTestMixin(Generic[OAuthBackendT]):
 
 
 class OAuth1AuthUrlTestMixin(BaseAuthUrlTestMixin):
+    def request_token_handler(self) -> None:
+        raise NotImplementedError
+
     def test_auth_url_parameters(self) -> None:
-        self.request_token_handler()  # type: ignore[attr-defined]
+        self.request_token_handler()
         self.check_parameters_in_authorization_url()

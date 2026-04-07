@@ -1,7 +1,14 @@
 import json
+from typing import Protocol, cast
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 from .open_id_connect import OpenIdConnectTest
+
+
+class SupportsLinkedinFlows(Protocol):
+    def do_login(self) -> None: ...
+
+    def do_partial_pipeline(self) -> None: ...
 
 
 class LinkedinOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
@@ -63,10 +70,10 @@ class BaseLinkedinTest:
     )
 
     def test_login(self) -> None:
-        self.do_login()  # type: ignore[attr-defined]
+        cast("SupportsLinkedinFlows", self).do_login()
 
     def test_partial_pipeline(self) -> None:
-        self.do_partial_pipeline()  # type: ignore[attr-defined]
+        cast("SupportsLinkedinFlows", self).do_partial_pipeline()
 
 
 class LinkedinOAuth2Test(BaseLinkedinTest, OAuth2Test):

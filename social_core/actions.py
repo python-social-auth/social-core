@@ -15,8 +15,40 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     from .backends.base import BaseAuth
-    from .storage import UserProtocol
+    from .storage import PipelineUserProtocol, UserMixin, UserProtocol
     from .strategy import HttpResponseProtocol
+
+
+def _get_social_user(user: PipelineUserProtocol) -> UserMixin:
+    social_user = user.social_user
+    if social_user is None:
+        raise ValueError("Expected social_user to be set during authentication")
+    return social_user
+
+
+def _login_user(
+    backend: BaseAuth, login: Callable, authenticated_user: PipelineUserProtocol
+) -> bool:
+    social_user = _get_social_user(authenticated_user)
+    is_new = authenticated_user.is_new
+    login(backend, authenticated_user, social_user)
+    backend.strategy.session_set("social_auth_last_login_backend", social_user.provider)
+    return is_new
+
+
+def _sanitize_redirect_url(backend: BaseAuth, url: str) -> str:
+    if backend.setting("SANITIZE_REDIRECTS", True):
+        allowed_hosts = [
+            *cast("list[str]", backend.setting("ALLOWED_REDIRECT_HOSTS", [])),
+            backend.strategy.request_host(),
+        ]
+        sanitized_url = sanitize_redirect(allowed_hosts, url) or backend.setting(
+            "LOGIN_REDIRECT_URL"
+        )
+        if sanitized_url is None:
+            raise ValueError("Disallowed URL")
+        url = cast("str", sanitized_url)
+    return url
 
 
 def do_auth(backend: BaseAuth, redirect_name: str = "next") -> HttpResponseProtocol:
@@ -47,7 +79,7 @@ def do_auth(backend: BaseAuth, redirect_name: str = "next") -> HttpResponseProto
     return backend.start()
 
 
-def do_complete(  # noqa: C901,PLR0912
+def do_complete(
     backend: BaseAuth,
     login: Callable,
     user: UserProtocol | None = None,
@@ -84,7 +116,7 @@ def do_complete(  # noqa: C901,PLR0912
     if authenticated_user and not isinstance(authenticated_user, user_model):
         return cast("HttpResponseProtocol", authenticated_user)
 
-    authenticated_user = cast("UserProtocol | None", authenticated_user)
+    authenticated_user = cast("PipelineUserProtocol | None", authenticated_user)
     url: str | None
 
     if is_authenticated:
@@ -103,15 +135,7 @@ def do_complete(  # noqa: C901,PLR0912
             "ALLOW_INACTIVE_USERS_LOGIN", False
         )
         if bypass_inactivation or user_is_active(authenticated_user):
-            # catch is_new/social_user in case login() resets the instance
-            # These attributes are set in BaseAuth.pipeline()
-            is_new = getattr(authenticated_user, "is_new", False)
-            social_user = authenticated_user.social_user  # type: ignore[union-attr]
-            login(backend, authenticated_user, social_user)
-            # store last login backend name in session
-            backend.strategy.session_set(
-                "social_auth_last_login_backend", social_user.provider
-            )
+            is_new = _login_user(backend, login, authenticated_user)
 
             if is_new:
                 url = setting_url(
@@ -124,9 +148,7 @@ def do_complete(  # noqa: C901,PLR0912
                 url = setting_url(backend, redirect_value, "LOGIN_REDIRECT_URL")
         else:
             if backend.setting("INACTIVE_USER_LOGIN", False):
-                # This attribute is set in BaseAuth.pipeline()
-                social_user = authenticated_user.social_user  # type: ignore[union-attr]
-                login(backend, authenticated_user, social_user)
+                login(backend, authenticated_user, _get_social_user(authenticated_user))
             url = setting_url(
                 backend, "INACTIVE_USER_URL", "LOGIN_ERROR_URL", "LOGIN_URL"
             )
@@ -140,16 +162,7 @@ def do_complete(  # noqa: C901,PLR0912
         redirect_value = quote(redirect_value)
         url += f"{'&' if '?' in url else '?'}{redirect_name}={redirect_value}"
 
-    if backend.setting("SANITIZE_REDIRECTS", True):
-        allowed_hosts = [
-            *cast("list[str]", backend.setting("ALLOWED_REDIRECT_HOSTS", [])),
-            backend.strategy.request_host(),
-        ]
-        url = sanitize_redirect(allowed_hosts, url) or backend.setting(
-            "LOGIN_REDIRECT_URL"
-        )
-        if url is None:
-            raise ValueError("Disallowed URL")
+    url = _sanitize_redirect_url(backend, url)
     return backend.strategy.redirect(url)
 
 

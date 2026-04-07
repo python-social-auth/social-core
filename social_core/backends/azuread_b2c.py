@@ -44,6 +44,7 @@ from .azuread import AzureADOAuth2
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
+    from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
     from requests.auth import AuthBase
 
 
@@ -152,11 +153,8 @@ class AzureADB2COAuth2(AzureADOAuth2):
         """
         Builds a PEM formatted key string from a JWT public key dict.
         """
-        pub_key = RSAAlgorithm.from_jwk(dumps(key_json_dict))
-
-        # TODO: clarify the types of this; JWKs can apparently include both public and private,
-        # but this code assumes public.
-        return pub_key.public_bytes(  # type: ignore[reportAttributeAccessIssue]
+        pub_key = cast("RSAPublicKey", RSAAlgorithm.from_jwk(dumps(key_json_dict)))
+        return pub_key.public_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PublicFormat.SubjectPublicKeyInfo,
         )

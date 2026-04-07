@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from requests import Response
     from requests.auth import AuthBase
 
-    from social_core.storage import PartialMixin, UserProtocol
+    from social_core.storage import PartialMixin, PipelineUserProtocol, UserProtocol
     from social_core.strategy import BaseStrategy, HttpResponseProtocol
 
 
@@ -115,8 +115,9 @@ class BaseAuth:
             return cast("HttpResponseProtocol", out)
         user = cast("UserProtocol | None", out.get("user"))
         if user:
-            user.social_user = out.get("social")  # type: ignore[attr-defined]
-            user.is_new = out.get("is_new")  # type: ignore[attr-defined]
+            pipeline_user = cast("PipelineUserProtocol", user)
+            pipeline_user.social_user = cast("Any", out.get("social"))
+            pipeline_user.is_new = bool(out.get("is_new"))
         return user
 
     def disconnect(self, *args, **kwargs) -> dict:
