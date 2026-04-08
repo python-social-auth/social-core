@@ -16,7 +16,7 @@ dev = [
   "pytest==9.0.3",
   "responses==0.26.0",
   "ty==0.0.29",
-  "types-defusedxml==0.7.0.20260402",
+  "types-defusedxml==0.7.0.20260408",
   "types-oauthlib==3.3.0.20260324",
   "types-requests-oauthlib==2.0.0.20260402",
   "types-requests==2.33.0.20260402",
@@ -89,7 +89,7 @@ dev = [
   "pytest==9.0.3",
   "responses==0.26.0",
   "ty==0.0.29",
-  "types-defusedxml==0.7.0.20260402",
+  "types-defusedxml==0.7.0.20260408",
   "types-oauthlib==3.3.0.20260324",
   "types-requests-oauthlib==2.0.0.20260402",
   "types-requests==2.33.0.20260402"
