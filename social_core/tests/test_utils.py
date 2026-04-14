@@ -55,6 +55,12 @@ class SanitizeRedirectTest(unittest.TestCase):
             url = f"http://{host}/path/"
             self.assertEqual(sanitize_redirect(allowed_hosts, url), url)
 
+    def test_invalid_unicode_nfkc_redirect(self) -> None:
+        """URLs with invalid netloc chars under NFKC like \u2100 should return None"""
+        self.assertEqual(
+            sanitize_redirect(["myapp.com"], "https://evil.c\u2100.myapp.com"), None
+        )
+
     def test_multiple_hosts_wrong_host(self) -> None:
         self.assertEqual(
             sanitize_redirect(
