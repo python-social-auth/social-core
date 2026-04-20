@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.8.6](https://github.com/python-social-auth/social-core/releases/tag/4.8.6) - 2026-04-20
+
+### Changed
+
+- `storage.UserProtocol` now supports read-only attributes for better type-checker compatibility
+- Improved type annotations and enabled mypy type checking in CI
+
+### Fixed
+
+- `sanitize_redirect()` now handles invalid redirect values that raise `ValueError`
+- Fixed timezone handling when working with dates
+
+### Security
+
+- Require `PyJWT >= 2.12.0` to address CVE-2026-32597
+
 ## [4.8.5](https://github.com/python-social-auth/social-core/releases/tag/4.8.5) - 2026-02-10
 
 ### Changed
