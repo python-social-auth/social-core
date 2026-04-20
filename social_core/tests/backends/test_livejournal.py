@@ -50,7 +50,7 @@ ns:http://specs.openid.net/auth/2.0
 session_type:DH-SHA1
 """
 
-    def openid_url(self):
+    def openid_url(self) -> str:
         return f"{super().openid_url()}/data/yadis"
 
     def post_start(self) -> None:

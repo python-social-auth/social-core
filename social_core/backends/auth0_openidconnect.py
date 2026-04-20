@@ -17,7 +17,7 @@ class Auth0OpenIdConnectAuth(OpenIdConnectAuth):
     USERNAME_KEY = "nickname"
     EXTRA_DATA = ["id_token", "refresh_token", ("sub", "id"), "picture"]
 
-    def api_path(self, path=""):
+    def api_path(self, path="") -> str:
         """Build API path for Auth0 domain"""
         return f"https://{self.setting('DOMAIN')}/{path.lstrip('/')}"
 

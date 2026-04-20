@@ -28,7 +28,7 @@ class GitLabOAuth2(BaseOAuth2):
         ("refresh_token", "refresh_token"),
     ]
 
-    def api_url(self, path):
+    def api_url(self, path) -> str:
         api_url = self.setting("API_URL") or self.API_URL
         return f"{api_url.rstrip('/')}{path}"
 

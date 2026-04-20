@@ -42,7 +42,7 @@ def module_member(name):
     return getattr(module, member)
 
 
-def user_agent():
+def user_agent() -> str:
     """Builds a simple User-Agent string to send in requests"""
     return f"social-auth-{social_core.__version__}"
 
