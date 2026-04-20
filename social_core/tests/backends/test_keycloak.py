@@ -69,7 +69,7 @@ _ACCESS_TOKEN_URL = (
 
 _ALGORITHM = "RS256"
 _AUTH_TIME = int(time.time())
-_PAYLOAD = {
+_PAYLOAD: dict[str, str | int] = {
     "preferred_username": "john.doe",
     "email": "john.doe@example.com",
     "name": "John Doe",

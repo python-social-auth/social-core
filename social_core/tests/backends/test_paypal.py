@@ -58,13 +58,13 @@ class PayPalOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         self.assertEqual(social.extra_data["access_token"], "foobar-new-token")
 
     def test_get_email_no_emails(self) -> None:
-        emails = []
+        emails: list[dict[str, str | bool]] = []
         email = PayPalOAuth2.get_email(emails)
         self.assertEqual(email, "")
 
     def test_get_email_multiple_emails(self) -> None:
         expected_email = "mail2@example.com"
-        emails = [
+        emails: list[dict[str, str | bool]] = [
             {"value": "mail1@example.com", "primary": False},
             {"value": expected_email, "primary": True},
         ]
@@ -73,7 +73,7 @@ class PayPalOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
 
     def test_get_email_multiple_emails_no_primary(self) -> None:
         expected_email = "mail1@example.com"
-        emails = [
+        emails: list[dict[str, str | bool]] = [
             {"value": expected_email, "primary": False},
             {"value": "mail2@example.com", "primary": False},
         ]

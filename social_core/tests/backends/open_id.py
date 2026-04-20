@@ -20,15 +20,17 @@ from .base import BaseBackendTest
 
 
 class FormHTMLParser(HTMLParser):
-    form = {}
-    inputs = {}
+    form: dict[str, str | None] = {}
+    inputs: dict[str, str | None] = {}
 
     def handle_starttag(self, tag, attrs) -> None:
         attrs = dict(attrs)
         if tag == "form":
             self.form.update(attrs)
-        elif tag == "input" and "name" in attrs:
-            self.inputs[attrs["name"]] = attrs["value"]
+        elif tag == "input":
+            name = attrs.get("name")
+            if name is not None:
+                self.inputs[name] = attrs.get("value")
 
 
 class OpenIdTest(BaseBackendTest):

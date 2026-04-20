@@ -8,11 +8,13 @@ from social_core.tests.strategy import TestStrategy
 
 
 class BaseBackendUtilsTest(unittest.TestCase):
+    strategy: TestStrategy
+
     def setUp(self) -> None:
         self.strategy = TestStrategy(storage=TestStorage)
 
     def tearDown(self) -> None:
-        self.strategy = None
+        del self.strategy
 
 
 class LoadBackendsTest(BaseBackendUtilsTest):

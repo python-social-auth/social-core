@@ -30,8 +30,8 @@ class TelegramAuth(BaseAuth):
         if received_hash_string is None or auth_date is None:
             raise AuthMissingParameter(self, "hash or auth_date")
 
-        data_check_string = [f"{k}={v}" for k, v in response.items() if k != "hash"]
-        data_check_string = "\n".join(sorted(data_check_string))
+        data_check_lines = [f"{k}={v}" for k, v in response.items() if k != "hash"]
+        data_check_string = "\n".join(sorted(data_check_lines))
         secret_key = hashlib.sha256(bot_token.encode()).digest()
         built_hash = hmac.new(
             secret_key, msg=data_check_string.encode(), digestmod=hashlib.sha256

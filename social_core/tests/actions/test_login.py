@@ -82,6 +82,7 @@ class LoginActionTest(BaseActionTest):
             partial = cast("TestStorage", self.strategy.storage).partial.load(
                 partial_token
             )
+            assert partial is not None
             partial.data["backend"] = "foobar"
 
         self.do_login_with_partial_pipeline(before_complete)

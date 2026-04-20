@@ -65,7 +65,7 @@ class OpenIdConnectAuth(BaseOAuth2):
     DEFAULT_SCOPE = ["openid", "profile", "email"]
     EXTRA_DATA = ["id_token", "refresh_token", ("sub", "id")]
     REDIRECT_STATE = False
-    REVOKE_TOKEN_METHOD = "GET"
+    REVOKE_TOKEN_METHOD: Literal["GET", "POST", "DELETE"] = "GET"
     ID_KEY = "sub"
     USERNAME_KEY = "preferred_username"
     JWT_ALGORITHMS = ["RS256"]
@@ -82,13 +82,13 @@ class OpenIdConnectAuth(BaseOAuth2):
     JWKS_URI = ""
     TOKEN_ENDPOINT_AUTH_METHOD = ""
     # Optional parameters for Authentication Request
-    DISPLAY = None
-    PROMPT = None
-    MAX_AGE = None
-    UI_LOCALES = None
-    ID_TOKEN_HINT = None
-    LOGIN_HINT = None
-    ACR_VALUES = None
+    DISPLAY: str | None = None
+    PROMPT: str | None = None
+    MAX_AGE: int | None = None
+    UI_LOCALES: str | None = None
+    ID_TOKEN_HINT: str | None = None
+    LOGIN_HINT: str | None = None
+    ACR_VALUES: str | None = None
 
     def __init__(
         self, strategy: BaseStrategy | None = None, redirect_uri: str | None = None

@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Literal
 
 import requests
 
@@ -16,7 +16,7 @@ class UntappdOAuth2(BaseOAuth2):
     ACCESS_TOKEN_URL = "https://untappd.com/oauth/authorize/"
     BASE_API_URL = "https://api.untappd.com"
     USER_INFO_URL = f"{BASE_API_URL}/v4/user/info/"
-    ACCESS_TOKEN_METHOD = "GET"
+    ACCESS_TOKEN_METHOD: Literal["GET", "POST"] = "GET"
     STATE_PARAMETER = False
     REDIRECT_STATE = False
     EXTRA_DATA = [

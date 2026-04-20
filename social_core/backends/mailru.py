@@ -36,13 +36,13 @@ class MailruOAuth2(BaseOAuth2):
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Return user data from Mail.ru REST API"""
         key, secret = self.get_key_and_secret()
-        data = {
+        data: dict[str, str] = {
             "method": "users.getInfo",
             "session_key": access_token,
             "app_id": key,
             "secure": "1",
         }
-        param_list = sorted(f"{item}={value}" for item, value in data.values())
+        param_list = sorted(f"{item}={value}" for item, value in data.items())
         # Usage of md5 is mandated by the API: https://api.mail.ru/docs/guides/restapi/#client
         data["sig"] = md5(("".join(param_list) + secret).encode("utf-8")).hexdigest()  # noqa: S324
         return self.get_json("http://www.appsmail.ru/platform/api", params=data)[0]

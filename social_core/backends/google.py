@@ -3,7 +3,7 @@ Google OpenId, OAuth2, OAuth1, Google+ Sign-in backends, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/google.html
 """
 
-from typing import Any
+from typing import Any, Literal
 
 from social_core.backends.base import BaseAuth
 from social_core.exceptions import AuthMissingParameter
@@ -68,7 +68,7 @@ class GoogleOAuth2(BaseGoogleOAuth2API, BaseOAuth2):
     AUTHORIZATION_URL = "https://accounts.google.com/o/oauth2/auth"
     ACCESS_TOKEN_URL = "https://accounts.google.com/o/oauth2/token"
     REVOKE_TOKEN_URL = "https://accounts.google.com/o/oauth2/revoke"
-    REVOKE_TOKEN_METHOD = "GET"
+    REVOKE_TOKEN_METHOD: Literal["GET", "POST", "DELETE"] = "GET"
     # The order of the default scope is important
     DEFAULT_SCOPE = ["openid", "email", "profile"]
     EXTRA_DATA = [
@@ -85,7 +85,7 @@ class GooglePlusAuth(BaseGoogleOAuth2API, BaseOAuth2):
     AUTHORIZATION_URL = "https://accounts.google.com/o/oauth2/auth"
     ACCESS_TOKEN_URL = "https://accounts.google.com/o/oauth2/token"
     REVOKE_TOKEN_URL = "https://accounts.google.com/o/oauth2/revoke"
-    REVOKE_TOKEN_METHOD = "GET"
+    REVOKE_TOKEN_METHOD: Literal["GET", "POST", "DELETE"] = "GET"
     DEFAULT_SCOPE = [
         "https://www.googleapis.com/auth/plus.login",
         "https://www.googleapis.com/auth/plus.me",

@@ -23,7 +23,7 @@ class MendeleyMixin:
         bio = response["link"]
         return {"profile_id": profile_id, "name": name, "bio": bio}
 
-    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
+    def user_data(self, access_token, *args, **kwargs) -> dict[str, Any] | None:
         """Return user data provided"""
         values = self.get_user_data(access_token)
         values.update(values)

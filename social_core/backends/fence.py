@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from typing import cast
 from urllib.parse import urljoin
 
 from social_core.utils import append_slash, cache
@@ -16,7 +15,9 @@ class Fence(OpenIdConnectAuth):
     VALIDATE_AT_HASH: bool = False
 
     def _url(self, path):
-        return urljoin(append_slash(cast("str", self.OIDC_ENDPOINT)), path)
+        endpoint = self.OIDC_ENDPOINT
+        assert endpoint is not None
+        return urljoin(append_slash(endpoint), path)
 
     def authorization_url(self):
         return self._url("user/oauth2/authorize")
