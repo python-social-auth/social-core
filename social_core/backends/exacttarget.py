@@ -104,7 +104,9 @@ class ExactTargetOAuth2(BaseOAuth2):
         # Take a bit off, then convert to an int timestamp
         expiresSeconds = details.get("expiresIn", 0) - 30
         expires = datetime.now(timezone.utc) + timedelta(seconds=expiresSeconds)
-        data["expires"] = (expires - datetime(1970, 1, 1)).total_seconds()
+        data["expires"] = (
+            expires - datetime(1970, 1, 1, tzinfo=timezone.utc)
+        ).total_seconds()
 
         if response.get("token"):
             token = response["token"]

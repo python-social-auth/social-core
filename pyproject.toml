@@ -188,8 +188,6 @@ ignore = [
   "D",  # TODO: Missing documentation
   "D203",  # CONFIG: incompatible with D211
   "D212",  # CONFIG: incompatible with D213
-  "DTZ001",  # TODO: `datetime.datetime()` called without a `tzinfo` argument
-  "DTZ005",  # TODO: `datetime.datetime.now()` called without a `tz` argument
   "E501",  # WONTFIX: we accept long strings (rest is formatted by ruff)
   "EM101",  # TODO: Exception must not use a string literal, assign to variable first
   "EM102",  # TODO: Exception must not use an f-string literal, assign to variable first
