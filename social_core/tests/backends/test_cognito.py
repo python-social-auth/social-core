@@ -1,5 +1,3 @@
-# pyright: reportAttributeAccessIssue=false
-
 import json
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test

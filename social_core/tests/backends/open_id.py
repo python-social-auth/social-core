@@ -1,5 +1,3 @@
-# pyright: reportAttributeAccessIssue=false
-
 from html.parser import HTMLParser
 
 import requests

@@ -1,5 +1,3 @@
-# pyright: reportAttributeAccessIssue=false
-
 import json
 from abc import ABC
 
