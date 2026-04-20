@@ -159,12 +159,11 @@ disable = [
 ]
 
 [tool.pyright]
-executionEnvironments = [
-  {reportMissingImports = "none", root = "social_core/backends/gae.py"}
-]
 pythonVersion = "3.10"
 reportOptionalMemberAccess = "none"
 reportPossiblyUnboundVariable = "none"
+venv = ".venv"
+venvPath = "."
 
 [tool.pytest.ini_options]
 addopts = "--cov=social_core --cov-report=xml --durations=10"
