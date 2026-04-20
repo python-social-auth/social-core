@@ -10,7 +10,7 @@ from .actions import BaseActionTest
 
 class AssociateActionTest(BaseActionTest):
     expected_username = "foobar"
-    user: User
+    user: User | None
 
     def setUp(self) -> None:
         super().setUp()
@@ -19,11 +19,13 @@ class AssociateActionTest(BaseActionTest):
 
     def test_associate(self) -> None:
         self.do_login()
+        assert self.user is not None
         self.assertEqual(len(self.user.social), 1)
         self.assertEqual(self.user.social[0].provider, "github")
 
     def test_associate_with_partial_pipeline(self) -> None:
         self.do_login_with_partial_pipeline()
+        assert self.user is not None
         self.assertEqual(len(self.user.social), 1)
         self.assertEqual(self.user.social[0].provider, "github")
 
@@ -67,12 +69,15 @@ class MultipleAccountsTest(AssociateActionTest):
     def test_multiple_social_accounts(self) -> None:
         self.do_login()
         self.do_login(user_data_body=self.alternative_user_data_body)
+        assert self.user is not None
         self.assertEqual(len(self.user.social), 2)
         self.assertEqual(self.user.social[0].provider, "github")
         self.assertEqual(self.user.social[1].provider, "github")
 
 
 class AlreadyAssociatedErrorTest(BaseActionTest):
+    user1: User | None
+
     def setUp(self) -> None:
         super().setUp()
         self.user1 = User(username="foobar", email="foo@bar.com")
@@ -84,6 +89,7 @@ class AlreadyAssociatedErrorTest(BaseActionTest):
         self.user = None
 
     def test_already_associated_error(self) -> None:
+        assert self.user1 is not None
         self.user = self.user1
         self.do_login()
         self.user = User(username="foobar2", email="foo2@bar2.com")

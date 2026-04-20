@@ -90,11 +90,10 @@ def do_complete(
     data = backend.strategy.request_data()
 
     is_authenticated = user_is_authenticated(user)
-    authenticated_user: UserProtocol | HttpResponseProtocol | None = (
-        user if is_authenticated else None
-    )
+    partial_user = user if is_authenticated else None
+    authenticated_user: UserProtocol | HttpResponseProtocol | None = partial_user
 
-    partial = partial_pipeline_data(backend, authenticated_user, *args, **kwargs)
+    partial = partial_pipeline_data(backend, partial_user, *args, **kwargs)
     if partial:
         authenticated_user = backend.continue_pipeline(partial)
         # clean partial data after usage
@@ -204,5 +203,5 @@ def do_disconnect(
             )
         if not url:
             raise ValueError("Disallowed URL")
-        response = backend.strategy.redirect(url)
+        return backend.strategy.redirect(url)
     return response

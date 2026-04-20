@@ -140,9 +140,11 @@ class NGPVANActionIDOpenIDTest(OpenIdTest):
         self.assertEqual(inputs["openid.ax.required"], "ngpvanemail")
 
         # Confirm that the 3 optional attributes are requested "if available"
-        self.assertIn("ngpvanphone", inputs["openid.ax.if_available"])
-        self.assertIn("ngpvanfirstname", inputs["openid.ax.if_available"])
-        self.assertIn("ngpvanlastname", inputs["openid.ax.if_available"])
+        if_available = inputs["openid.ax.if_available"]
+        assert if_available is not None
+        self.assertIn("ngpvanphone", if_available)
+        self.assertIn("ngpvanfirstname", if_available)
+        self.assertIn("ngpvanlastname", if_available)
 
         # Verify the individual attribute properties
         self.assertEqual(

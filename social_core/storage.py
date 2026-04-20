@@ -314,7 +314,7 @@ class AssociationMixin:
 
     server_url = ""
     handle = ""
-    secret = ""
+    secret: str | bytes = ""
     issued = 0
     lifetime = 0
     assoc_type = ""

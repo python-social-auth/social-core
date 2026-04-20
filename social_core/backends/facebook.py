@@ -8,7 +8,7 @@ import hashlib
 import hmac
 import json
 import time
-from typing import Any, cast
+from typing import Any, Literal, cast
 
 from social_core.exceptions import (
     AuthCanceled,
@@ -32,7 +32,7 @@ class FacebookOAuth2(BaseOAuth2):
     SCOPE_SEPARATOR = ","
     AUTHORIZATION_URL = "https://www.facebook.com/v{version}/dialog/oauth"
     ACCESS_TOKEN_URL = "https://graph.facebook.com/v{version}/oauth/access_token"
-    ACCESS_TOKEN_METHOD = "GET"
+    ACCESS_TOKEN_METHOD: Literal["GET", "POST"] = "GET"
     REVOKE_TOKEN_URL = "https://graph.facebook.com/v{version}/{uid}/permissions"
     REVOKE_TOKEN_METHOD = "DELETE"
     USER_DATA_URL = "https://graph.facebook.com/v{version}/me"

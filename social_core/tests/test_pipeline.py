@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 from typing import TYPE_CHECKING, cast
 
@@ -10,7 +12,7 @@ from .models import TestStorage, TestUserSocialAuth, User
 from .strategy import TestStrategy
 
 if TYPE_CHECKING:
-    from social_core.storage import PartialMixin
+    from social_core.storage import PartialMixin, UserMixin
 
 
 class IntegrityError(Exception):
@@ -22,6 +24,8 @@ class UnknownError(Exception):
 
 
 class IntegrityErrorUserSocialAuth(TestUserSocialAuth):
+    _called_times = 0
+
     @classmethod
     def create_social_auth(cls, user, uid, provider):
         raise IntegrityError
@@ -38,7 +42,7 @@ class IntegrityErrorUserSocialAuth(TestUserSocialAuth):
 
 
 class IntegrityErrorStorage(TestStorage):
-    user = IntegrityErrorUserSocialAuth
+    user: type[UserMixin] = IntegrityErrorUserSocialAuth
 
     @classmethod
     def is_integrity_error(cls, exception):
@@ -53,7 +57,7 @@ class UnknownErrorUserSocialAuth(TestUserSocialAuth):
 
 
 class UnknownErrorStorage(IntegrityErrorStorage):
-    user = UnknownErrorUserSocialAuth
+    user: type[UserMixin] = UnknownErrorUserSocialAuth
 
 
 class IntegrityErrorOnLoginTest(BaseActionTest):

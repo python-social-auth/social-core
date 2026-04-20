@@ -65,6 +65,7 @@ class BaseActionTest(unittest.TestCase):
 
     strategy: TestStrategy
     backend: BaseOAuth2
+    user: User | None
 
     def setUp(self) -> None:
         responses.start()

@@ -33,9 +33,9 @@ class TestStrategy(BaseStrategy):
     DEFAULT_TEMPLATE_STRATEGY = TestTemplateStrategy
 
     def __init__(self, storage, tpl=None) -> None:
-        self._request_data = {}
-        self._settings = {}
-        self._session = {}
+        self._request_data: dict[str, Any] = {}
+        self._settings: dict[str, Any] = {}
+        self._session: dict[str, Any] = {}
         super().__init__(storage, tpl)
 
     def redirect(self, url):

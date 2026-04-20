@@ -1,5 +1,4 @@
 import json
-from typing import cast
 
 from .oauth import BaseAuthUrlTestMixin
 from .open_id_connect import OpenIdConnectTest
@@ -686,9 +685,8 @@ class NFDIOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
         self.assertEqual(self.backend.entitlement_allowed(["foo"]), False)
 
     def test_get_user_details(self) -> None:
-        testdata = self.backend.get_user_details(
-            json.loads(cast("str", self.user_data_body))
-        )
+        assert self.user_data_body is not None
+        testdata = self.backend.get_user_details(json.loads(self.user_data_body))
         self.assertEqual(testdata["username"], "donald")
         self.assertEqual(testdata["email"], "donald.hardt@duckburg.edu")
         self.assertEqual(testdata["fullname"], "Donald Duck")

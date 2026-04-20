@@ -3,7 +3,7 @@ Beats backend, docs at:
     https://developer.beatsmusic.com/docs
 """
 
-from typing import Any
+from typing import Any, cast
 
 from social_core.exceptions import AuthUnknownError
 from social_core.utils import handle_http_errors
@@ -38,9 +38,10 @@ class BeatsOAuth2(BaseOAuth2):
         self.process_error(response)
         # mashery wraps in jsonrpc
         if response.get("jsonrpc", None):
-            response = response.get("result", None)
-            if response is None:
+            result = response.get("result", None)
+            if result is None:
                 raise AuthUnknownError(self, "Invalid authentication response")
+            response = cast("dict[Any, Any]", result)
         return self.do_auth(
             response["access_token"], *args, response=response, **kwargs
         )

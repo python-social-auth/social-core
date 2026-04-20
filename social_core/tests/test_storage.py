@@ -16,7 +16,8 @@ NOT_IMPLEMENTED_MSG = "Implement in subclass"
 
 
 class BrokenUser(UserMixin):
-    pass
+    def save(self) -> None:
+        pass
 
 
 class BrokenAssociation(AssociationMixin):

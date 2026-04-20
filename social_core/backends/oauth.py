@@ -366,7 +366,7 @@ class BaseOAuth2(OAuthAuth):
     """
 
     REFRESH_TOKEN_URL: str | None = None
-    REFRESH_TOKEN_METHOD = "POST"
+    REFRESH_TOKEN_METHOD: Literal["GET", "POST", "DELETE"] = "POST"
     RESPONSE_TYPE: str | None = "code"
     REDIRECT_STATE = True
     STATE_PARAMETER = True

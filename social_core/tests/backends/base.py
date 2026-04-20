@@ -62,7 +62,7 @@ class BaseBackendTest(unittest.TestCase, Generic[BackendT]):
         del self.backend
         del self.strategy
         self.name = ""
-        self.complete_url = None
+        self.complete_url = ""
         User.reset_cache()
         TestUserSocialAuth.reset_cache()
         TestNonce.reset_cache()

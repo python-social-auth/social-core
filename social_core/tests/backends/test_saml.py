@@ -42,7 +42,6 @@ class SAMLTest(BaseBackendTest):
         request/response pairs"""
         super().setUp()
 
-        @staticmethod
         def fixed_time():
             return OneLogin_Saml2_Utils.parse_SAML_to_time("2015-05-09T03:57:22Z")
 
