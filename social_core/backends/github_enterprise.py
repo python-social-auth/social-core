@@ -5,7 +5,7 @@ Github Enterprise OAuth2 backend, docs at:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Protocol, cast
+from typing import TYPE_CHECKING, cast
 from urllib.parse import urljoin
 
 from social_core.exceptions import AuthMissingParameter
@@ -17,13 +17,9 @@ if TYPE_CHECKING:
     from .base import BaseAuth
 
 
-class SupportsSetting(Protocol):
-    def setting(self, name: str, default=None): ...
-
-
 class GithubEnterpriseMixin:
     def _required_setting(self, name: str) -> str:
-        value = cast("SupportsSetting", self).setting(name)
+        value = cast("GithubOAuth2", self).setting(name)
         if not value:
             raise AuthMissingParameter(cast("BaseAuth", self), name)
         return cast("str", value)

@@ -15,7 +15,7 @@ class Auth0OAuth2(BaseOAuth2):
     SCOPE_SEPARATOR = " "
     EXTRA_DATA = [("picture", "picture")]
 
-    def api_path(self, path=""):
+    def api_path(self, path="") -> str:
         """Build API path for Auth0 domain"""
         return f"https://{self.setting('DOMAIN')}/{path}"
 

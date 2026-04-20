@@ -24,7 +24,7 @@ class LiveJournalOpenId(OpenIdAuth):
         )
         return values
 
-    def openid_url(self):
+    def openid_url(self) -> str:
         """Returns LiveJournal authentication URL"""
         if not self.data.get("openid_lj_user"):
             raise AuthMissingParameter(self, "openid_lj_user")

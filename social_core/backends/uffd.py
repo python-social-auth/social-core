@@ -44,11 +44,11 @@ class UffdOAuth2(BaseOAuth2):
             return None
         return user_data
 
-    def authorization_url(self):
+    def authorization_url(self) -> str:
         return f"{cast('str', self.setting('BASE_URL'))}/oauth2/authorize"
 
-    def access_token_url(self):
+    def access_token_url(self) -> str:
         return f"{cast('str', self.setting('BASE_URL'))}/oauth2/token"
 
-    def userinfo_url(self):
+    def userinfo_url(self) -> str:
         return f"{cast('str', self.setting('BASE_URL'))}/oauth2/userinfo"

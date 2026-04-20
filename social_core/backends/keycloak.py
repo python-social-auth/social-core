@@ -107,7 +107,7 @@ class KeycloakOAuth2(BaseOAuth2):  # pylint: disable=abstract-method
     def algorithm(self):
         return self.setting("ALGORITHM", default="RS256")
 
-    def public_key(self):
+    def public_key(self) -> str:
         return f"-----BEGIN PUBLIC KEY-----\n{self.setting('PUBLIC_KEY')}\n-----END PUBLIC KEY-----"
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:

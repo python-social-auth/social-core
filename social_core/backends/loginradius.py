@@ -90,7 +90,7 @@ class LoginRadiusAuth(BaseOAuth2):
             "last_name": response["LastName"] or "",
         }
 
-    def get_user_id(self, details, response):
+    def get_user_id(self, details, response) -> str:
         """Return a unique ID for the current user, by default from server
         response. Since LoginRadius handles multiple providers, we need to
         distinguish them to prevent conflicts."""

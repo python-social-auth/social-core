@@ -58,7 +58,7 @@ class MediaWiki(BaseOAuth1):
 
         return response.content.decode()
 
-    def oauth_authorization_request(self, token):
+    def oauth_authorization_request(self, token) -> str:
         """
         Generates the URL for the authorization link
         """

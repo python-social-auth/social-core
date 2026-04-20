@@ -26,7 +26,7 @@ class CILogonOAuth2(BaseOAuth2):
         except ValueError:
             return None
 
-    def get_user_id(self, details, response):
+    def get_user_id(self, details, response) -> str:
         """Return user unique id provided by service
         In this case it is a combination of the `sub`
         and `iss` respective values."""
