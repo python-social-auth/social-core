@@ -17,7 +17,7 @@ from jwt import (
 )
 from jwt.utils import base64url_decode
 
-from social_core.backends.oauth import BaseOAuth2
+from social_core.backends.oauth import BaseOAuth2PKCE
 from social_core.exceptions import (
     AuthInvalidParameter,
     AuthMissingParameter,
@@ -45,7 +45,7 @@ class OpenIdConnectAssociation:
         self.assoc_type = assoc_type  # as state
 
 
-class OpenIdConnectAuth(BaseOAuth2):
+class OpenIdConnectAuth(BaseOAuth2PKCE):
     """
     Base class for Open ID Connect backends.
     Currently only the code response type is supported.
@@ -56,6 +56,7 @@ class OpenIdConnectAuth(BaseOAuth2):
     SOCIAL_AUTH_OIDC_OIDC_ENDPOINT = 'https://.....'  # endpoint without /.well-known/openid-configuration
     SOCIAL_AUTH_OIDC_KEY = '<client_id>'
     SOCIAL_AUTH_OIDC_SECRET = '<client_secret>'
+    SOCIAL_AUTH_OIDC_USE_PKCE = True  # optional, enables PKCE for this backend
     """
 
     name = "oidc"
@@ -89,6 +90,8 @@ class OpenIdConnectAuth(BaseOAuth2):
     ID_TOKEN_HINT: str | None = None
     LOGIN_HINT: str | None = None
     ACR_VALUES: str | None = None
+    PKCE_DEFAULT_CODE_CHALLENGE_METHOD = "S256"
+    DEFAULT_USE_PKCE = False
 
     def __init__(
         self, strategy: BaseStrategy | None = None, redirect_uri: str | None = None

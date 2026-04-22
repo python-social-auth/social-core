@@ -1,17 +1,82 @@
 from __future__ import annotations
 
 import json
+from typing import Protocol, cast
 
 import responses
 
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 from social_core.exceptions import AuthInvalidParameter
+from social_core.utils import get_querystring, parse_qs
 
 from .oauth import BaseAuthUrlTestMixin
 from .open_id_connect import OpenIdConnectTest
 
 
-class BaseOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
+class OpenIdConnectPkceAssertionsCapable(Protocol):
+    backend: OpenIdConnectAuth
+
+    def assertEqual(self, first, second, msg=None) -> None: ...
+
+    def assertIsNone(self, obj, msg=None) -> None: ...
+
+    def assertIsNotNone(self, obj, msg=None) -> None: ...
+
+
+class OpenIdConnectPkceAssertionsMixin:
+    backend: OpenIdConnectAuth
+
+    def assert_pkce_enabled(self: OpenIdConnectPkceAssertionsCapable) -> None:
+        auth_request = next(
+            r.request
+            for r in responses.calls
+            if cast("str", r.request.url).startswith(self.backend.authorization_url())
+        )
+        code_challenge = get_querystring(cast("str", auth_request.url)).get(
+            "code_challenge"
+        )
+        code_challenge_method = get_querystring(cast("str", auth_request.url)).get(
+            "code_challenge_method"
+        )
+
+        self.assertIsNotNone(code_challenge)
+        self.assertEqual(code_challenge_method, "S256")
+
+        auth_complete = next(
+            r.request
+            for r in responses.calls
+            if cast("str", r.request.url).startswith(self.backend.access_token_url())
+        )
+        code_verifier = parse_qs(auth_complete.body).get("code_verifier")
+
+        self.assertEqual(
+            self.backend.generate_code_challenge(code_verifier, code_challenge_method),
+            code_challenge,
+        )
+
+    def assert_pkce_disabled(self: OpenIdConnectPkceAssertionsCapable) -> None:
+        auth_request = next(
+            r.request
+            for r in responses.calls
+            if cast("str", r.request.url).startswith(self.backend.authorization_url())
+        )
+        auth_query = get_querystring(cast("str", auth_request.url))
+
+        self.assertIsNone(auth_query.get("code_challenge"))
+        self.assertIsNone(auth_query.get("code_challenge_method"))
+
+        auth_complete = next(
+            r.request
+            for r in responses.calls
+            if cast("str", r.request.url).startswith(self.backend.access_token_url())
+        )
+
+        self.assertIsNone(parse_qs(auth_complete.body).get("code_verifier"))
+
+
+class BaseOpenIdConnectTest(
+    OpenIdConnectTest, BaseAuthUrlTestMixin, OpenIdConnectPkceAssertionsMixin
+):
     backend_path = "social_core.backends.open_id_connect.OpenIdConnectAuth"
     issuer = "https://example.com"
     openid_config_body = json.dumps(
@@ -49,10 +114,31 @@ class BaseOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
     def test_everything_works(self) -> None:
         self.do_login()
 
+    def test_pkce_disabled_by_default(self) -> None:
+        self.do_login()
+        self.assert_pkce_disabled()
+
+    def test_pkce_can_be_enabled_by_setting(self) -> None:
+        self.strategy.set_settings(
+            {
+                **self.extra_settings(),
+                f"SOCIAL_AUTH_{self.name}_USE_PKCE": True,
+            }
+        )
+
+        self.do_login()
+
+        self.assert_pkce_enabled()
+
 
 class ExampleOpenIdConnectAuth(OpenIdConnectAuth):
     name = "example123"
     OIDC_ENDPOINT = "https://example.com/oidc"
+
+
+class OpenIdConnectPkceEnabledByDefault(ExampleOpenIdConnectAuth):
+    name = "example123-pkce-default"
+    DEFAULT_USE_PKCE = True
 
 
 class ExampleOpenIdConnectTest(OpenIdConnectTest):
@@ -85,6 +171,54 @@ class ExampleOpenIdConnectTest(OpenIdConnectTest):
 
     def test_everything_works(self) -> None:
         self.do_login()
+
+
+class ExampleOpenIdConnectPkceEnabledByDefaultTest(
+    OpenIdConnectTest, OpenIdConnectPkceAssertionsMixin
+):
+    backend_path = "social_core.tests.backends.test_open_id_connect.OpenIdConnectPkceEnabledByDefault"
+    issuer = "https://example.com"
+    openid_config_body = json.dumps(
+        {
+            "issuer": "https://example.com",
+            "authorization_endpoint": "https://example.com/oidc/auth",
+            "token_endpoint": "https://example.com/oidc/token",
+            "userinfo_endpoint": "https://example.com/oidc/userinfo",
+            "revocation_endpoint": "https://example.com/oidc/revoke",
+            "jwks_uri": "https://example.com/oidc/certs",
+        }
+    )
+
+    expected_username = "cartman"
+
+    def pre_complete_callback(self, start_url) -> None:
+        super().pre_complete_callback(start_url)
+        responses.add(
+            responses.GET,
+            url=self.backend.userinfo_url(),
+            status=200,
+            body=json.dumps({"preferred_username": self.expected_username}),
+            content_type="text/json",
+        )
+
+    def test_everything_works(self) -> None:
+        self.do_login()
+
+    def test_pkce_enabled_by_backend_default(self) -> None:
+        self.do_login()
+        self.assert_pkce_enabled()
+
+    def test_pkce_can_be_disabled_by_setting(self) -> None:
+        self.strategy.set_settings(
+            {
+                **self.extra_settings(),
+                f"SOCIAL_AUTH_{self.name}_USE_PKCE": False,
+            }
+        )
+
+        self.do_login()
+
+        self.assert_pkce_disabled()
 
 
 class OpenIdConnectAuthNoValidateAtHash(ExampleOpenIdConnectAuth):

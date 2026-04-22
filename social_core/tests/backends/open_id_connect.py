@@ -66,6 +66,7 @@ class OpenIdConnectTest(
         if self.__class__.__name__ == "OpenIdConnectTest":
             self.skipTest("base class")
         super().setUp()
+        self.access_token_kwargs = {}
         self.key = JWK_KEY.copy()
         self.public_key = JWK_PUBLIC_KEY.copy()
 

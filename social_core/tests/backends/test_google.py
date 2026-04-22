@@ -12,6 +12,7 @@ import responses
 from social_core.actions import do_disconnect
 from social_core.exceptions import AuthException, AuthTokenError
 from social_core.tests.models import User
+from social_core.utils import get_querystring, parse_qs
 
 from .base import BaseBackendTest
 from .oauth import BaseAuthUrlTestMixin, OAuth1AuthUrlTestMixin, OAuth1Test, OAuth2Test
@@ -171,6 +172,50 @@ class GoogleOpenIdConnectTest(OpenIdConnectTest):
             ],
         }
     )
+
+    def test_pkce_can_be_enabled_by_setting(self) -> None:
+        self.strategy.set_settings(
+            {
+                **self.extra_settings(),
+                f"SOCIAL_AUTH_{self.name}_USE_PKCE": True,
+            }
+        )
+        responses.add(
+            responses.GET,
+            url="https://openidconnect.googleapis.com/v1/userinfo",
+            status=200,
+            body=json.dumps({"preferred_username": "foo@bar.com"}),
+            content_type="text/json",
+        )
+
+        self.do_start()
+
+        auth_request = next(
+            r.request
+            for r in responses.calls
+            if cast("str", r.request.url).startswith(self.backend.authorization_url())
+        )
+        code_challenge = get_querystring(cast("str", auth_request.url)).get(
+            "code_challenge"
+        )
+        code_challenge_method = get_querystring(cast("str", auth_request.url)).get(
+            "code_challenge_method"
+        )
+
+        self.assertIsNotNone(code_challenge)
+        self.assertEqual(code_challenge_method, "S256")
+
+        auth_complete = next(
+            r.request
+            for r in responses.calls
+            if cast("str", r.request.url).startswith(self.backend.access_token_url())
+        )
+        code_verifier = parse_qs(auth_complete.body).get("code_verifier")
+
+        self.assertEqual(
+            self.backend.generate_code_challenge(code_verifier, code_challenge_method),
+            code_challenge,
+        )
 
 
 class GoogleOneTapTest(BaseBackendTest):
