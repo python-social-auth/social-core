@@ -8,7 +8,7 @@ class GoClioOAuth2(BaseOAuth2):
     AUTHORIZATION_URL = "https://app.goclio.com/oauth/authorize/"
     ACCESS_TOKEN_URL = "https://app.goclio.com/oauth/token/"
     REDIRECT_STATE = False
-    STATE_PARAMETER = False
+    STATE_PARAMETER = True
 
     def get_user_details(self, response):
         """Return user details from GoClio account"""

@@ -10,7 +10,7 @@ class EventbriteOAuth2(BaseOAuth2):
     AUTHORIZATION_URL = "https://www.eventbrite.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://www.eventbrite.com/oauth/token"
     METADATA_URL = "https://www.eventbriteapi.com/v3/users/me"
-    STATE_PARAMETER = False
+    STATE_PARAMETER = True
     REDIRECT_STATE = False
 
     def get_user_details(self, response):

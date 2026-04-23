@@ -17,7 +17,7 @@ class UntappdOAuth2(BaseOAuth2):
     BASE_API_URL = "https://api.untappd.com"
     USER_INFO_URL = f"{BASE_API_URL}/v4/user/info/"
     ACCESS_TOKEN_METHOD: Literal["GET", "POST"] = "GET"
-    STATE_PARAMETER = False
+    STATE_PARAMETER = True
     REDIRECT_STATE = False
     EXTRA_DATA = [
         ("id", "id"),
@@ -32,11 +32,14 @@ class UntappdOAuth2(BaseOAuth2):
 
     def auth_params(self, state=None):
         client_id, _client_secret = self.get_key_and_secret()
-        return {
+        params = {
             "client_id": client_id,
             "redirect_url": self.get_redirect_uri(),
             "response_type": self.RESPONSE_TYPE,
         }
+        if self.STATE_PARAMETER and state:
+            params["state"] = state
+        return params
 
     def process_error(self, data) -> None:
         """
@@ -54,6 +57,7 @@ class UntappdOAuth2(BaseOAuth2):
         code = self.data.get("code")
 
         self.process_error(self.data)
+        state = self.validate_state()
 
         # Untapped sends the access token request with URL parameters,
         # not a body
@@ -65,7 +69,7 @@ class UntappdOAuth2(BaseOAuth2):
                 "code": code,
                 "client_id": client_id,
                 "client_secret": client_secret,
-                "redirect_url": self.get_redirect_uri(),
+                "redirect_url": self.get_redirect_uri(state),
             },
         )
 
