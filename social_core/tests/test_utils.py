@@ -46,6 +46,26 @@ class SanitizeRedirectTest(unittest.TestCase):
     def test_invalid_control_character_redirect(self) -> None:
         self.assertEqual(sanitize_redirect(["myapp.com"], "/path/\n"), None)
 
+    def test_invalid_absolute_url_without_host_redirect(self) -> None:
+        for url in [
+            "https:///evil.example/path",
+            "http:////evil.example/path",
+            "http:///evil.example",
+            "http:evil.example/path",
+            "http:/evil.example/path",
+            "https:///myapp.com/path",
+        ]:
+            self.assertEqual(sanitize_redirect(["myapp.com"], url), None)
+
+    def test_invalid_non_web_scheme_redirect(self) -> None:
+        for url in [
+            "javascript://myapp.com/%0Aalert(1)",
+            "vbscript://myapp.com/msgbox(1)",
+            "ftp://myapp.com/path",
+            "custom-scheme://myapp.com/path",
+        ]:
+            self.assertEqual(sanitize_redirect(["myapp.com"], url), None)
+
     def test_valid_absolute_redirect(self) -> None:
         self.assertEqual(
             sanitize_redirect(["myapp.com"], "http://myapp.com/path/"),
