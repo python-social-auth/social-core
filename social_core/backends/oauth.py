@@ -558,8 +558,8 @@ class BaseOAuth2PKCE(BaseOAuth2):
         https://datatracker.ietf.org/doc/html/rfc7636
     """
 
-    PKCE_DEFAULT_CODE_CHALLENGE_METHOD = "s256"
-    PKCE_DEFAULT_CODE_VERIFIER_LENGTH = 32
+    PKCE_DEFAULT_CODE_CHALLENGE_METHOD = "S256"
+    PKCE_DEFAULT_CODE_VERIFIER_LENGTH = 43
     DEFAULT_USE_PKCE = True
 
     def create_code_verifier(self):
