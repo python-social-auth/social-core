@@ -14,7 +14,7 @@ class CleverOAuth2(BaseOAuth2):
     AUTHORIZATION_URL = "https://clever.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://clever.com/oauth/tokens"
     REDIRECT_STATE = False
-    STATE_PARAMETER = False
+    STATE_PARAMETER = True
     SCOPE_SEPARATOR = " "
 
     def get_user_id(self, details, response):

@@ -8,6 +8,7 @@ import requests
 import responses
 
 from social_core.backends.oauth import BaseOAuth1, BaseOAuth2, OAuthAuth
+from social_core.exceptions import AuthMissingParameter, AuthStateForbidden
 from social_core.tests.models import User
 from social_core.utils import get_querystring, parse_qs, url_add_parameters
 
@@ -137,6 +138,36 @@ class OAuth2Test(BaseOAuthTest[BaseOAuth2BackendT], Generic[BaseOAuth2BackendT])
         social = user.social[0]
         social.refresh_token(strategy=self.strategy, **self.refresh_token_arguments())
         return user, social
+
+
+class OAuth2StateTestMixin(Generic[BaseOAuth2BackendT]):
+    backend: BaseOAuth2BackendT
+
+    def test_auth_url_contains_state_parameter(self) -> None:
+        case = cast("BaseBackendTest[BaseOAuth2BackendT]", self)
+        start_url = case.backend.start().url
+        state = get_querystring(start_url).get("state")
+
+        case.assertIsNotNone(state)
+        case.assertEqual(state, case.strategy.session_get(f"{case.backend.name}_state"))
+
+    def test_complete_rejects_missing_state_parameter(self) -> None:
+        case = cast("BaseBackendTest[BaseOAuth2BackendT]", self)
+        case.backend.start()
+        case.strategy.set_request_data({"code": "foobar"}, case.backend)
+
+        with case.assertRaises(AuthMissingParameter):
+            case.backend.complete()
+
+    def test_complete_rejects_mismatched_state_parameter(self) -> None:
+        case = cast("BaseBackendTest[BaseOAuth2BackendT]", self)
+        case.backend.start()
+        case.strategy.set_request_data(
+            {"code": "foobar", "state": "invalid-state"}, case.backend
+        )
+
+        with case.assertRaises(AuthStateForbidden):
+            case.backend.complete()
 
 
 class OAuth2PkcePlainTest(OAuth2Test):
