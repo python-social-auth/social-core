@@ -88,15 +88,18 @@ def sanitize_redirect(hosts: list[str], redirect_to: str | Any) -> str | None:
     ):
         return None
 
-    def allowed_url(url: str) -> bool:
-        try:
-            # Don't redirect to a host that's not in the list
-            netloc = urlparse(url)[1] or hosts[0]
-        except (IndexError, TypeError, AttributeError, ValueError):
-            return False
-        return netloc in hosts
+    try:
+        parsed_url = urlparse(redirect_to)
+        if parsed_url.scheme and parsed_url.scheme not in {"http", "https"}:
+            return None
+        if parsed_url.scheme and not parsed_url.netloc:
+            return None
+        # Don't redirect to a host that's not in the list
+        netloc = parsed_url.netloc or hosts[0]
+    except (IndexError, TypeError, AttributeError, ValueError):
+        return None
 
-    if allowed_url(redirect_to):
+    if netloc in hosts:
         return redirect_to
     return None
 
