@@ -68,6 +68,11 @@ class LoginActionTest(BaseActionTest):
         redirect = self.do_login(after_complete_checks=False)
         self.assertEqual(redirect.url, "/after-login")
 
+    def test_backslash_redirect_value_falls_back(self) -> None:
+        self.strategy.set_request_data({"next": "/\\evil.com"}, self.backend)
+        redirect = self.do_login(after_complete_checks=False)
+        self.assertEqual(redirect.url, self.login_redirect_url)
+
     def test_redirect_value_set_by_backend(self) -> None:
         self.backend = BackendThatControlsRedirect(self.strategy)
         self.user = TestUserSocialAuth.create_user("test-user")

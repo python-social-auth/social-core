@@ -40,6 +40,12 @@ class SanitizeRedirectTest(unittest.TestCase):
     def test_invalid_evil_redirect(self) -> None:
         self.assertEqual(sanitize_redirect(["myapp.com"], "///evil.com"), None)
 
+    def test_invalid_backslash_redirect(self) -> None:
+        self.assertEqual(sanitize_redirect(["myapp.com"], "/\\evil.com"), None)
+
+    def test_invalid_control_character_redirect(self) -> None:
+        self.assertEqual(sanitize_redirect(["myapp.com"], "/path/\n"), None)
+
     def test_valid_absolute_redirect(self) -> None:
         self.assertEqual(
             sanitize_redirect(["myapp.com"], "http://myapp.com/path/"),
