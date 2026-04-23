@@ -69,6 +69,10 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
     REVOKE_TOKEN_METHOD: Literal["GET", "POST", "DELETE"] = "GET"
     ID_KEY = "sub"
     USERNAME_KEY = "preferred_username"
+    EMAIL_KEY = "email"
+    FIRST_NAME_KEY = "given_name"
+    LAST_NAME_KEY = "family_name"
+    FULLNAME_KEY = "name"
     JWT_ALGORITHMS = ["RS256"]
     JWT_DECODE_OPTIONS: Options = {}
     JWT_LEEWAY: float = 1.0  # seconds
@@ -385,6 +389,10 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
 
     def get_user_details(self, response):
         username_key = self.setting("USERNAME_KEY", self.USERNAME_KEY)
+        email_key = self.setting("EMAIL_KEY", self.EMAIL_KEY)
+        first_name_key = self.setting("FIRST_NAME_KEY", self.FIRST_NAME_KEY)
+        last_name_key = self.setting("LAST_NAME_KEY", self.LAST_NAME_KEY)
+        fullname_key = self.setting("FULLNAME_KEY", self.FULLNAME_KEY)
 
         def get_value(key):
             if key in response:
@@ -395,10 +403,10 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
 
         return {
             "username": get_value(username_key),
-            "email": get_value("email"),
-            "fullname": get_value("name"),
-            "first_name": get_value("given_name"),
-            "last_name": get_value("family_name"),
+            "email": get_value(email_key),
+            "fullname": get_value(fullname_key),
+            "first_name": get_value(first_name_key),
+            "last_name": get_value(last_name_key),
         }
 
     def validate_at_hash(self, claims, access_token, key):
