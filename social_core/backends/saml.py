@@ -423,6 +423,8 @@ class SAMLAuth(BaseAuth):
         now log them in, if everything checks out.
         """
         idp_name: str | None
+        session_id: str | None = None
+        next_url: str | None = None
         try:
             relay_state_str = self.strategy.request_data()["RelayState"]
         except KeyError:
@@ -436,11 +438,8 @@ class SAMLAuth(BaseAuth):
             if not idp_name:
                 raise AuthInvalidParameter(self, "RelayState.idp")
 
-            if session_id := relay_state.get(self.strategy.SESSION_SAVE_KEY):
-                self.strategy.restore_session(session_id, kwargs)
-            elif next_url := relay_state.get("next"):
-                # The do_complete action expects the "next" URL to be in session state or the request params.
-                self.strategy.session_set(kwargs.get("redirect_name", "next"), next_url)
+            session_id = relay_state.get(self.strategy.SESSION_SAVE_KEY)
+            next_url = relay_state.get("next")
 
         idp = self.get_idp(idp_name)
         auth = self._create_saml_auth(idp)
@@ -456,6 +455,12 @@ class SAMLAuth(BaseAuth):
         attributes = auth.get_attributes()
         attributes["name_id"] = auth.get_nameid()
         self._check_entitlements(idp, attributes)
+        if session_id:
+            self.strategy.restore_session(session_id, kwargs)
+        elif next_url:
+            # The do_complete action expects the "next" URL to be in
+            # session state or the request params.
+            self.strategy.session_set(kwargs.get("redirect_name", "next"), next_url)
         response = {
             "idp_name": idp_name,
             "attributes": attributes,

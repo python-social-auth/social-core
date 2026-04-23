@@ -16,7 +16,7 @@ try:
 except ImportError:
     SAML_MODULE_ENABLED = False
 
-from social_core.exceptions import AuthMissingParameter
+from social_core.exceptions import AuthFailed, AuthMissingParameter
 
 from .base import BaseBackendTest
 
@@ -141,6 +141,114 @@ class SAMLTest(BaseBackendTest):
 
         with self.assertRaises(AuthMissingParameter):
             self.do_start()
+
+    def test_relay_state_session_restored_after_saml_response_validation(
+        self,
+    ) -> None:
+        """
+        Session restore uses RelayState data, so it must wait until the SAML response is valid.
+        """
+        events = []
+
+        class ValidAuth:
+            def process_response(self):
+                events.append("process_response")
+
+            def get_errors(self):
+                return []
+
+            def is_authenticated(self):
+                return True
+
+            def get_attributes(self):
+                return {}
+
+            def get_nameid(self):
+                return "name-id"
+
+            def get_session_index(self):
+                return "session-index"
+
+        def restore_session(session_id, kwargs) -> None:
+            events.append("restore_session")
+            self.assertEqual(session_id, "restored-session")
+
+        def authenticate(*args, **kwargs):
+            events.append("authenticate")
+            return "user"
+
+        self.strategy.set_request_data(
+            {
+                "RelayState": json.dumps(
+                    {
+                        "idp": "testshib",
+                        self.strategy.SESSION_SAVE_KEY: "restored-session",
+                    }
+                ),
+                "SAMLResponse": "irrelevant",
+            },
+            self.backend,
+        )
+
+        with (
+            patch.object(self.strategy, "restore_session", restore_session),
+            patch.object(self.strategy, "authenticate", authenticate),
+            patch.object(self.backend, "_create_saml_auth", return_value=ValidAuth()),
+        ):
+            self.assertEqual(self.backend.complete(), "user")
+
+        self.assertEqual(
+            events,
+            ["process_response", "restore_session", "authenticate"],
+        )
+
+    def test_relay_state_session_not_restored_for_invalid_saml_response(self) -> None:
+        """
+        Invalid SAML responses must not trigger RelayState-derived session changes.
+        """
+
+        class InvalidAuth:
+            def process_response(self):
+                return None
+
+            def get_errors(self):
+                return ["invalid"]
+
+            def is_authenticated(self):
+                return False
+
+            def get_last_error_reason(self):
+                return "invalid response"
+
+        def restore_session(session_id, kwargs) -> None:
+            self.fail("restore_session should not be called")
+
+        def authenticate(*args, **kwargs):
+            self.fail("authenticate should not be called")
+
+        self.strategy.set_request_data(
+            {
+                "RelayState": json.dumps(
+                    {
+                        "idp": "testshib",
+                        self.strategy.SESSION_SAVE_KEY: "restored-session",
+                        "next": "/after-login",
+                    }
+                ),
+                "SAMLResponse": "irrelevant",
+            },
+            self.backend,
+        )
+
+        with (
+            patch.object(self.strategy, "restore_session", restore_session),
+            patch.object(self.strategy, "authenticate", authenticate),
+            patch.object(self.backend, "_create_saml_auth", return_value=InvalidAuth()),
+            self.assertRaises(AuthFailed),
+        ):
+            self.backend.complete()
+
+        self.assertIsNone(self.strategy.session_get("next"))
 
     def modify_start_url(self, start_url):
         """
