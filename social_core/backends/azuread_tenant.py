@@ -32,20 +32,12 @@ for verifying JWT tokens.
 
 from __future__ import annotations
 
-import base64
-from typing import TYPE_CHECKING, Any, cast
+from typing import Any, cast
+from uuid import UUID
 
-from cryptography.x509 import load_der_x509_certificate
-from jwt import DecodeError, ExpiredSignatureError, get_unverified_header
-from jwt import decode as jwt_decode
-
-from social_core.exceptions import AuthTokenError
+from social_core.exceptions import AuthMissingParameter, AuthTokenError
 
 from .azuread import AzureADOAuth2
-
-if TYPE_CHECKING:
-    from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
-    from cryptography.x509 import Certificate
 
 
 class AzureADTenantOAuth2(AzureADOAuth2):
@@ -70,47 +62,32 @@ class AzureADTenantOAuth2(AzureADOAuth2):
             f"?appid={self.setting('KEY')}" if self.setting("KEY") is not None else ""
         )
 
-    def get_certificate(self, kid: str) -> Certificate:
-        # retrieve keys from jwks_url
-        resp = self.request(self.jwks_url(), method="GET")
-        resp.raise_for_status()
-
-        # find the proper key for the kid
-        for key in resp.json()["keys"]:
-            if key["kid"] == kid:
-                x5c = key["x5c"][0]
-                break
-        else:
-            raise DecodeError(f"Cannot find kid={kid}")
-
-        return load_der_x509_certificate(base64.b64decode(x5c))
-
     def get_user_id(self, details, response):
         """Use subject (sub) claim as unique id."""
         return response.get("sub")
 
-    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
-        response = kwargs.get("response")
-        if response and response.get("id_token"):
-            id_token = response.get("id_token")
-        else:
-            id_token = access_token
+    def get_id_token_issuer(self, claims: dict[str, Any]) -> str:
+        self.validate_configured_tenant(claims)
+        return super().get_id_token_issuer(claims)
 
-        # get key id and algorithm
-        key_id = get_unverified_header(id_token)["kid"]
+    def validate_configured_tenant(self, claims: dict[str, Any]) -> None:
+        configured_tenant_id = self.tenant_id
+        try:
+            configured_tenant_uuid = UUID(configured_tenant_id)
+        except (TypeError, ValueError):
+            return
+
+        tenant_id = claims.get("tid")
+        if not isinstance(tenant_id, str) or not tenant_id:
+            raise AuthMissingParameter(self, "tid")
 
         try:
-            # retrieve certificate for key_id
-            certificate = self.get_certificate(key_id)
+            token_tenant_uuid = UUID(tenant_id)
+        except ValueError:
+            token_tenant_uuid = None
 
-            return jwt_decode(
-                id_token,
-                key=cast("RSAPublicKey", certificate.public_key()),
-                algorithms=["RS256"],
-                audience=self.setting("KEY"),
-            )
-        except (DecodeError, ExpiredSignatureError) as error:
-            raise AuthTokenError(self, error) from error
+        if configured_tenant_uuid != token_tenant_uuid:
+            raise AuthTokenError(self, "Token tenant does not match configured tenant")
 
 
 class AzureADV2TenantOAuth2(AzureADTenantOAuth2):
