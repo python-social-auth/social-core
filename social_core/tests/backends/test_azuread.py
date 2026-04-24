@@ -226,6 +226,47 @@ class AzureADOAuth2V2Test(AzureADOAuth2Test):
     TOKEN_VERSION = "2.0"
 
 
+class AzureADTenantOAuth2Test(AzureADOAuth2Test):
+    backend_path = "social_core.backends.azuread_tenant.AzureADTenantOAuth2"
+    JWKS_URL = (
+        "https://login.microsoftonline.com/"
+        f"{AzureADOAuth2Test.TENANT_ID}/discovery/keys?appid=a-key"
+    )
+
+    def extra_settings(self):
+        settings = super().extra_settings()
+        assert self.name, "Name must be set in subclasses"
+        settings[f"SOCIAL_AUTH_{self.name}_TENANT_ID"] = self.TENANT_ID
+        return settings
+
+    def issuer_for_tenant(self, tenant_id: str) -> str:
+        return self.ISSUER.replace(self.TENANT_ID, tenant_id)
+
+    def test_login_rejects_wrong_configured_tenant_id(self) -> None:
+        other_tenant_id = "00000000-0000-0000-0000-000000000000"
+        self.access_token_body = self.build_access_token_body(
+            iss=self.issuer_for_tenant(other_tenant_id),
+            tid=other_tenant_id,
+        )
+
+        with self.assertRaises(AuthTokenError):
+            self.do_start()
+
+
+class AzureADV2TenantOAuth2Test(AzureADTenantOAuth2Test):
+    backend_path = "social_core.backends.azuread_tenant.AzureADV2TenantOAuth2"
+    ISSUER = (
+        "https://login.microsoftonline.com/727406ac-7068-48fa-92b9-c2d67211bc50/v2.0"
+    )
+    ISSUER_TEMPLATE = "https://login.microsoftonline.com/{tenantid}/v2.0"
+    KEY_ISSUER = ISSUER_TEMPLATE
+    JWKS_URL = (
+        "https://login.microsoftonline.com/"
+        f"{AzureADOAuth2Test.TENANT_ID}/discovery/v2.0/keys?appid=a-key"
+    )
+    TOKEN_VERSION = "2.0"
+
+
 class AzureADOAuth2TokenRequestBodyMixin(TestCase):
     def _token_request_body(self, url_prefix: str) -> dict[str, list[str]]:
         matches = [

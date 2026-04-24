@@ -29,22 +29,15 @@ See https://nicksnettravels.builttoroam.com/post/2017/01/24/Verifying-Azure-Acti
 
 from __future__ import annotations
 
-from json import dumps
-from typing import TYPE_CHECKING, Any, Literal, cast
+from typing import TYPE_CHECKING, Any, Literal
 
-from cryptography.hazmat.primitives import serialization
-from jwt import DecodeError, ExpiredSignatureError, get_unverified_header
-from jwt import decode as jwt_decode
-from jwt.algorithms import RSAAlgorithm
-
-from social_core.exceptions import AuthException, AuthTokenError
+from social_core.exceptions import AuthException, AuthMissingParameter, AuthTokenError
 
 from .azuread import AzureADOAuth2
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
-    from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
     from requests.auth import AuthBase
 
 
@@ -149,16 +142,6 @@ class AzureADB2COAuth2(AzureADOAuth2):
         extra_arguments["p"] = self.policy or self.data.get("p")
         return extra_arguments
 
-    def jwt_key_to_pem(self, key_json_dict):
-        """
-        Builds a PEM formatted key string from a JWT public key dict.
-        """
-        pub_key = cast("RSAPublicKey", RSAAlgorithm.from_jwk(dumps(key_json_dict)))
-        return pub_key.public_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PublicFormat.SubjectPublicKeyInfo,
-        )
-
     def get_user_id(self, details, response):
         """Use subject (sub) claim as unique id."""
         return response.get("sub")
@@ -175,35 +158,32 @@ class AzureADB2COAuth2(AzureADOAuth2):
             details["email"] = details["email"][0]
         return details
 
-    def get_public_key(self, kid):
-        """
-        Retrieve JWT keys from the URL.
-        """
-        resp = self.request(self.jwks_url(), method="GET")
-        resp.raise_for_status()
+    def get_id_token_policy(self, claims: dict[str, Any]) -> str:
+        policy = claims.get("tfp")
+        if policy is None:
+            policy = claims.get("acr")
+        if not isinstance(policy, str) or not policy:
+            raise AuthMissingParameter(self, "tfp")
+        return policy
 
-        # find the proper key for the kid
-        for key in resp.json()["keys"]:
-            if key["kid"] == kid:
-                return self.jwt_key_to_pem(key)
-        raise DecodeError(f"Cannot find kid={kid}")
+    def validate_id_token_policy(self, claims: dict[str, Any]) -> None:
+        if self.get_id_token_policy(claims).lower() != self.policy.lower():
+            raise AuthTokenError(self, "Token policy does not match configured policy")
 
-    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
-        response = kwargs["response"]
+    def validate_and_return_id_token(self, id_token: str) -> dict[str, Any]:
+        claims = super().validate_and_return_id_token(id_token)
+        self.validate_id_token_policy(claims)
+        return claims
 
-        id_token = response["id_token"]
-
-        # `kid` is short for key id
-        kid = get_unverified_header(id_token)["kid"]
-        key = self.get_public_key(kid)
-
-        try:
-            return jwt_decode(
-                id_token,
-                key=key,
-                algorithms=["RS256"],
-                audience=self.setting("KEY"),
-                leeway=cast("int", self.setting("JWT_LEEWAY", default=0)),
-            )
-        except (DecodeError, ExpiredSignatureError) as error:
-            raise AuthTokenError(self, error) from error
+    def extra_data(
+        self,
+        user,
+        uid: str,
+        response: dict[str, Any],
+        details: dict[str, Any],
+        pipeline_kwargs: dict[str, Any],
+    ) -> dict[str, Any]:
+        data = super().extra_data(user, uid, response, details, pipeline_kwargs)
+        if not data.get("policy") and response.get("acr"):
+            data["policy"] = response["acr"]
+        return data
