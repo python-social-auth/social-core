@@ -310,30 +310,31 @@ class cache:
     Cache decorator that caches the return value of a method for a
     specified time.
 
-    It maintains a cache per class, so subclasses have a different cache entry
-    for the same cached method.
-
-    Does not work for methods with arguments.
+    It maintains a cache per class and method arguments, so subclasses have a
+    different cache entry for the same cached method.
     """
 
     def __init__(self, ttl: int) -> None:
         self.ttl = ttl
-        self.cache: dict[type, Any] = {}
+        self.cache: dict[
+            tuple[type, tuple[Any, ...], tuple[tuple[str, Any], ...]], Any
+        ] = {}
 
     def __call__(self, fn):
-        def wrapped(this):
+        def wrapped(this, *args, **kwargs):
             now = time.time()
             last_updated = None
             cached_value = None
-            if this.__class__ in self.cache:
-                last_updated, cached_value = self.cache[this.__class__]
+            cache_key = (this.__class__, args, tuple(sorted(kwargs.items())))
+            if cache_key in self.cache:
+                last_updated, cached_value = self.cache[cache_key]
 
             # ignoring this type issue is safe; if cached_value is returned, last_updated
             # is also set, but the type checker doesn't know it.
             if not cached_value or not last_updated or now - last_updated > self.ttl:
                 try:
-                    cached_value = fn(this)
-                    self.cache[this.__class__] = (now, cached_value)
+                    cached_value = fn(this, *args, **kwargs)
+                    self.cache[cache_key] = (now, cached_value)
                 # pylint: disable-next=broad-exception-caught
                 except Exception:
                     # Use previously cached value when call fails, if available
