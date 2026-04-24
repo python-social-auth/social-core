@@ -297,8 +297,10 @@ class BaseAuth:
         verify = self.setting("VERIFY_SSL", True)
 
         if timeout is None:
-            timeout = self.setting("REQUESTS_TIMEOUT") or self.setting(
-                "URLOPEN_TIMEOUT"
+            timeout = (
+                self.setting("REQUESTS_TIMEOUT")
+                or self.setting("URLOPEN_TIMEOUT")
+                or 5.0
             )
 
         if self.SEND_USER_AGENT and "User-Agent" not in headers:
