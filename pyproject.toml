@@ -45,12 +45,13 @@ classifiers = [
   "Topic :: Internet"
 ]
 dependencies = [
+  "cryptography>=46.0.7",
   "defusedxml>=0.7.1",
   "oauthlib>=3.3.1",
-  "PyJWT[crypto]==2.12.1",
+  "PyJWT[crypto]>=2.12.1",
   "python3-openid>=3.2.0",
   "requests-oauthlib>=2.0.0",
-  "requests>=2.32.5"
+  "requests>=2.33.1"
 ]
 description = "Python social authentication made simple."
 keywords = ["oauth", "openid", "saml", "social auth"]
@@ -70,9 +71,6 @@ all = [
 ]
 allpy3 = [
   "social-auth-core[all]"
-]
-azuread = [
-  "cryptography>=42.0.8"
 ]
 # This is present until pip implements supports for PEP 735
 # see https://github.com/pypa/pip/issues/12963
