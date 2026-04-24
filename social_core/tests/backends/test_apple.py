@@ -1,7 +1,19 @@
 import json
+from time import time
+from typing import TYPE_CHECKING, cast
 from unittest.mock import patch
 
+import jwt
+import responses
+from jwt.algorithms import RSAAlgorithm
+
+from social_core.exceptions import AuthFailed
+
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
+from .test_azuread_b2c import RSA_PRIVATE_JWT_KEY, RSA_PUBLIC_JWT_KEY
+
+if TYPE_CHECKING:
+    from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
 
 TEST_KEY = """
 -----BEGIN EC PRIVATE KEY-----
@@ -39,6 +51,35 @@ class AppleIdTest(OAuth2Test, BaseAuthUrlTestMixin):
             f"SOCIAL_AUTH_{self.name}_SCOPE": ["name", "email"],
         }
 
+    def build_id_token(self, **overrides) -> str:
+        auth_time = int(time())
+        payload = {
+            "aud": "a-client-id",
+            "email": "foobar@apple.com",
+            "exp": auth_time + 3600,
+            "iat": auth_time,
+            "iss": self.backend.ID_TOKEN_ISSUER,
+            "sub": "11011110101011011011111011101111",
+        }
+        payload.update(overrides)
+        return jwt.encode(
+            payload,
+            key=cast(
+                "RSAPrivateKey",
+                RSAAlgorithm.from_jwk(json.dumps(RSA_PRIVATE_JWT_KEY)),
+            ),
+            algorithm="RS256",
+            headers={"kid": RSA_PRIVATE_JWT_KEY["kid"]},
+        )
+
+    def add_apple_jwk_response(self) -> None:
+        responses.add(
+            responses.GET,
+            self.backend.JWK_URL,
+            body=json.dumps({"keys": [RSA_PUBLIC_JWT_KEY]}),
+            content_type="application/json",
+        )
+
     def test_login(self) -> None:
         with patch(
             f"{self.backend_path}.decode_id_token",
@@ -56,3 +97,17 @@ class AppleIdTest(OAuth2Test, BaseAuthUrlTestMixin):
             self.do_partial_pipeline()
         assert decode_mock.called
         assert decode_mock.call_args[0] == (self.id_token,)
+
+    def test_decode_id_token_accepts_valid_issuer(self) -> None:
+        self.add_apple_jwk_response()
+
+        decoded = self.backend.decode_id_token(self.build_id_token())
+
+        self.assertEqual(decoded["iss"], "https://appleid.apple.com")
+        self.assertEqual(decoded["aud"], "a-client-id")
+
+    def test_decode_id_token_rejects_wrong_issuer(self) -> None:
+        self.add_apple_jwk_response()
+
+        with self.assertRaises(AuthFailed):
+            self.backend.decode_id_token(self.build_id_token(iss="https://example.com"))
