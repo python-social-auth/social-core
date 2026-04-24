@@ -1,35 +1,8 @@
-"""
-Douban OAuth1 and OAuth2 backends, docs at:
-    https://python-social-auth.readthedocs.io/en/latest/backends/douban.html
-"""
+"""Douban OAuth2 backend."""
 
 from typing import Any
 
-from .oauth import BaseOAuth1, BaseOAuth2
-
-
-class DoubanOAuth(BaseOAuth1):
-    """Douban OAuth authentication backend"""
-
-    name = "douban"
-    EXTRA_DATA = [("id", "id")]
-    AUTHORIZATION_URL = "http://www.douban.com/service/auth/authorize"
-    REQUEST_TOKEN_URL = "http://www.douban.com/service/auth/request_token"
-    ACCESS_TOKEN_URL = "http://www.douban.com/service/auth/access_token"
-
-    def get_user_id(self, details, response):
-        return response["db:uid"]["$t"]
-
-    def get_user_details(self, response):
-        """Return user details from Douban"""
-        return {"username": response["db:uid"]["$t"], "email": ""}
-
-    def user_data(self, access_token: dict, *args, **kwargs) -> dict[str, Any] | None:
-        """Return user data provided"""
-        return self.get_json(
-            "http://api.douban.com/people/%40me?&alt=json",
-            auth=self.oauth_auth(access_token),
-        )
+from .oauth import BaseOAuth2
 
 
 class DoubanOAuth2(BaseOAuth2):
