@@ -267,11 +267,18 @@ class BaseAuth:
         )
 
     def auth_extra_arguments(self) -> dict[str, str]:
-        """Return extra arguments needed on auth process. The defaults can be
-        overridden by GET parameters."""
+        """Return extra arguments needed on auth process."""
         extra_arguments = self.setting("AUTH_EXTRA_ARGUMENTS", {}).copy()
+        override_allowlist = (
+            self.setting("AUTH_EXTRA_ARGUMENTS_OVERRIDE_ALLOWLIST", ()) or ()
+        )
+        if isinstance(override_allowlist, str):
+            override_allowlist = (override_allowlist,)
+
         extra_arguments.update(
-            (key, self.data[key]) for key in extra_arguments if key in self.data
+            (key, self.data[key])
+            for key in override_allowlist
+            if key in extra_arguments and key in self.data
         )
         return extra_arguments
 
