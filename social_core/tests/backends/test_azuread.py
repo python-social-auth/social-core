@@ -24,48 +24,47 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import base64
 import json
 import os
 import tempfile
-from typing import cast
+from time import time
+from typing import TYPE_CHECKING, cast
 from unittest import TestCase
 from unittest.mock import patch
 from urllib.parse import parse_qs
 
+import jwt
 import responses
+from jwt.algorithms import RSAAlgorithm
 
-from social_core.exceptions import AuthMissingParameter
+from social_core.exceptions import AuthMissingParameter, AuthTokenError
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
+from .test_azuread_b2c import RSA_PRIVATE_JWT_KEY, RSA_PUBLIC_JWT_KEY
+
+if TYPE_CHECKING:
+    from typing import Any
+
+    from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
 
 
 class AzureADOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
+    AUTH_KEY = "a-key"
+    AUTH_TIME = int(time())
+    EXPIRES_IN = 3600
+    EXPIRES_ON = AUTH_TIME + EXPIRES_IN
+    JWKS_URL = "https://login.microsoftonline.com/common/discovery/keys"
+    ISSUER = "https://sts.windows.net/727406ac-7068-48fa-92b9-c2d67211bc50/"
+    ISSUER_TEMPLATE = "https://sts.windows.net/{tenantid}/"
+    KEY_ISSUER = ISSUER_TEMPLATE
+    TENANT_ID = "727406ac-7068-48fa-92b9-c2d67211bc50"
+    TOKEN_VERSION = "1.0"
+
     backend_path = "social_core.backends.azuread.AzureADOAuth2"
     user_data_url = "https://graph.windows.net/me"
     expected_username = "foobar"
-    access_token_body = json.dumps(
-        {
-            "access_token": "foobar",
-            "token_type": "bearer",
-            "id_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL"
-            "3N0cy53aW5kb3dzLm5ldC83Mjc0MDZhYy03MDY4LTQ4ZmEtOTJiOS1jMmQ"
-            "2NzIxMWJjNTAvIiwiaWF0IjpudWxsLCJleHAiOm51bGwsImF1ZCI6IjAyO"
-            "WNjMDEwLWJiNzQtNGQyYi1hMDQwLWY5Y2VkM2ZkMmM3NiIsInN1YiI6In"
-            "FVOHhrczltSHFuVjZRMzR6aDdTQVpvY2loOUV6cnJJOW1wVlhPSWJWQTg"
-            "iLCJ2ZXIiOiIxLjAiLCJ0aWQiOiI3Mjc0MDZhYy03MDY4LTQ4ZmEtOTJi"
-            "OS1jMmQ2NzIxMWJjNTAiLCJvaWQiOiI3ZjhlMTk2OS04YjgxLTQzOGMtO"
-            "GQ0ZS1hZDZmNTYyYjI4YmIiLCJ1cG4iOiJmb29iYXJAdGVzdC5vbm1pY3"
-            "Jvc29mdC5jb20iLCJnaXZlbl9uYW1lIjoiZm9vIiwiZmFtaWx5X25hbWU"
-            "iOiJiYXIiLCJuYW1lIjoiZm9vIGJhciIsInVuaXF1ZV9uYW1lIjoiZm9v"
-            "YmFyQHRlc3Qub25taWNyb3NvZnQuY29tIiwicHdkX2V4cCI6IjQ3MzMwO"
-            "TY4IiwicHdkX3VybCI6Imh0dHBzOi8vcG9ydGFsLm1pY3Jvc29mdG9ubG"
-            "luZS5jb20vQ2hhbmdlUGFzc3dvcmQuYXNweCJ9.3V50dHXTZOHj9UWtkn"
-            "2g7BjX5JxNe8skYlK4PdhiLz4",
-            "expires_in": 3600,
-            "expires_on": 1423650396,
-            "not_before": 1423646496,
-        }
-    )
+    access_token_body = ""
     refresh_token_body = json.dumps(
         {
             "access_token": "foobar-new-token",
@@ -76,6 +75,81 @@ class AzureADOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         }
     )
 
+    def setUp(self) -> None:
+        super().setUp()
+        self.access_token_body = self.build_access_token_body()
+        responses.add(
+            responses.GET,
+            self.backend.openid_configuration_url(),
+            body=json.dumps(
+                {
+                    "issuer": self.ISSUER_TEMPLATE,
+                    "jwks_uri": self.JWKS_URL,
+                    "id_token_signing_alg_values_supported": ["RS256"],
+                }
+            ),
+            content_type="application/json",
+        )
+        responses.add(
+            responses.GET,
+            self.JWKS_URL,
+            body=json.dumps(
+                {"keys": [{**RSA_PUBLIC_JWT_KEY, "issuer": self.KEY_ISSUER}]}
+            ),
+            content_type="application/json",
+        )
+
+    def build_id_token(self, **overrides) -> str:
+        payload = {
+            "aud": self.AUTH_KEY,
+            "exp": self.EXPIRES_ON,
+            "family_name": "bar",
+            "given_name": "foo",
+            "iat": self.AUTH_TIME,
+            "iss": self.ISSUER,
+            "name": "foo bar",
+            "nbf": self.AUTH_TIME,
+            "oid": "7f8e1969-8b81-438c-8d4e-ad6f562b28bb",
+            "preferred_username": "foobar@test.onmicrosoft.com",
+            "sub": "qU8xks9mHqnV6Q34zh7SAZocih9EzrrI9mpVXOiBVA8",
+            "tid": self.TENANT_ID,
+            "upn": "foobar@test.onmicrosoft.com",
+            "ver": self.TOKEN_VERSION,
+        }
+        payload.update(overrides)
+        return jwt.encode(
+            payload,
+            key=cast(
+                "RSAPrivateKey",
+                RSAAlgorithm.from_jwk(json.dumps(RSA_PRIVATE_JWT_KEY)),
+            ),
+            algorithm="RS256",
+            headers={"kid": RSA_PRIVATE_JWT_KEY["kid"]},
+        )
+
+    def build_access_token_body(self, **id_token_overrides) -> str:
+        return json.dumps(
+            {
+                "access_token": "foobar",
+                "token_type": "bearer",
+                "id_token": self.build_id_token(**id_token_overrides),
+                "expires_in": self.EXPIRES_IN,
+                "expires_on": self.EXPIRES_ON,
+                "not_before": self.AUTH_TIME,
+            }
+        )
+
+    def tamper_id_token(self, id_token: str, **overrides) -> str:
+        header, _payload, signature = id_token.split(".")
+        payload = jwt.decode(
+            id_token,
+            options={"verify_signature": False, "verify_aud": False},
+        )
+        payload.update(overrides)
+        data = json.dumps(payload, separators=(",", ":")).encode()
+        tampered_payload = base64.urlsafe_b64encode(data).rstrip(b"=").decode()
+        return f"{header}.{tampered_payload}.{signature}"
+
     def test_login(self) -> None:
         self.do_login()
 
@@ -85,6 +159,71 @@ class AzureADOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     def test_refresh_token(self) -> None:
         _user, social = self.do_refresh_token()
         self.assertEqual(social.extra_data["access_token"], "foobar-new-token")
+
+    def test_login_rejects_invalid_id_token_signature(self) -> None:
+        id_token = self.build_id_token()
+        self.access_token_body = json.dumps(
+            {
+                "access_token": "foobar",
+                "token_type": "bearer",
+                "id_token": self.tamper_id_token(id_token, upn="attacker@example.com"),
+            }
+        )
+
+        with self.assertRaises(AuthTokenError):
+            self.do_start()
+
+    def test_login_rejects_wrong_id_token_audience(self) -> None:
+        self.access_token_body = self.build_access_token_body(aud="other-app")
+
+        with self.assertRaises(AuthTokenError):
+            self.do_start()
+
+    def test_login_rejects_wrong_id_token_issuer(self) -> None:
+        self.access_token_body = self.build_access_token_body(
+            iss="https://sts.windows.net/00000000-0000-0000-0000-000000000000/"
+        )
+
+        with self.assertRaises(AuthTokenError):
+            self.do_start()
+
+    def test_login_rejects_invalid_id_token_tenant_id(self) -> None:
+        self.access_token_body = self.build_access_token_body(tid=None)
+
+        with self.assertRaises(AuthMissingParameter):
+            self.do_start()
+
+    def test_openid_configuration_and_jwks_cache_shared_by_url(self) -> None:
+        cast("Any", self.backend.get_openid_configuration).invalidate()
+        cast("Any", self.backend.get_jwks_keys_for_uri).invalidate()
+
+        other_backend = self.backend.__class__(
+            self.strategy, redirect_uri=self.complete_url
+        )
+
+        self.backend.openid_configuration()
+        other_backend.openid_configuration()
+        self.backend.get_jwks_keys()
+        other_backend.get_jwks_keys()
+
+        self.assertEqual(
+            self.response_call_count(self.backend.openid_configuration_url()), 1
+        )
+        self.assertEqual(self.response_call_count(self.JWKS_URL), 1)
+
+    def response_call_count(self, url: str) -> int:
+        return sum(1 for call in responses.calls if call.request.url == url)
+
+
+class AzureADOAuth2V2Test(AzureADOAuth2Test):
+    backend_path = "social_core.backends.azuread.AzureADOAuth2V2"
+    ISSUER = (
+        "https://login.microsoftonline.com/727406ac-7068-48fa-92b9-c2d67211bc50/v2.0"
+    )
+    ISSUER_TEMPLATE = "https://login.microsoftonline.com/{tenantid}/v2.0"
+    KEY_ISSUER = ISSUER_TEMPLATE
+    JWKS_URL = "https://login.microsoftonline.com/common/discovery/v2.0/keys"
+    TOKEN_VERSION = "2.0"
 
 
 class AzureADOAuth2TokenRequestBodyMixin(TestCase):
@@ -268,3 +407,15 @@ class AzureADOAuth2MissingCredentialsTest(AzureADOAuth2Test):
     def test_refresh_token(self) -> None:
         with self.assertRaises(AuthMissingParameter):
             super().test_refresh_token()
+
+    def test_login_rejects_invalid_id_token_signature(self) -> None:
+        with self.assertRaises(AuthMissingParameter):
+            super().test_login_rejects_invalid_id_token_signature()
+
+    def test_login_rejects_wrong_id_token_audience(self) -> None:
+        with self.assertRaises(AuthMissingParameter):
+            super().test_login_rejects_wrong_id_token_audience()
+
+    def test_login_rejects_wrong_id_token_issuer(self) -> None:
+        with self.assertRaises(AuthMissingParameter):
+            super().test_login_rejects_wrong_id_token_issuer()
