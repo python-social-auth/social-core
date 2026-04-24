@@ -1,11 +1,8 @@
-"""
-Mendeley OAuth1 backend, docs at:
-    https://python-social-auth.readthedocs.io/en/latest/backends/mendeley.html
-"""
+"""Mendeley OAuth2 backend."""
 
 from typing import Any
 
-from .oauth import BaseOAuth1, BaseOAuth2
+from .oauth import BaseOAuth2
 
 BASE_EXTRA_DATA = [("profile_id", "profile_id"), ("name", "name"), ("bio", "bio")]
 
@@ -31,20 +28,6 @@ class MendeleyMixin:
 
     def get_user_data(self, access_token):
         raise NotImplementedError("Implement in subclass")
-
-
-class MendeleyOAuth(MendeleyMixin, BaseOAuth1):
-    name = "mendeley"
-    AUTHORIZATION_URL = "http://api.mendeley.com/oauth/authorize/"
-    REQUEST_TOKEN_URL = "http://api.mendeley.com/oauth/request_token/"
-    ACCESS_TOKEN_URL = "http://api.mendeley.com/oauth/access_token/"
-    EXTRA_DATA = [*BASE_EXTRA_DATA]
-
-    def get_user_data(self, access_token):
-        return self.get_json(
-            "http://api.mendeley.com/oapi/profiles/info/me/",
-            auth=self.oauth_auth(access_token),
-        )
 
 
 class MendeleyOAuth2(MendeleyMixin, BaseOAuth2):
