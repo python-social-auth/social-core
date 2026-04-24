@@ -52,6 +52,7 @@ class AppleIdAuth(BaseOAuth2):
     REDIRECT_STATE = False
     SCOPE_SEPARATOR = "%20"
 
+    ID_TOKEN_ISSUER = "https://appleid.apple.com"
     TOKEN_AUDIENCE = "https://appleid.apple.com"
     TOKEN_TTL_SEC = 6 * 30 * 24 * 60 * 60
 
@@ -137,6 +138,7 @@ class AppleIdAuth(BaseOAuth2):
                 id_token,
                 key=public_key,
                 audience=self.get_audience(),
+                issuer=self.ID_TOKEN_ISSUER,
                 algorithms=["RS256"],
             )
         except PyJWTError as error:
