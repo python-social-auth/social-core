@@ -6,6 +6,14 @@ from social_core.exceptions import AuthFailed
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
+CAPTURE_GITHUB_EMAILS_PIPELINE = (
+    "social_core.tests.backends.test_github.capture_github_emails"
+)
+
+
+def capture_github_emails(strategy, response, *args, **kwargs) -> None:
+    strategy.session_set("github_emails", response.get("emails"))
+
 
 class GithubOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.github.GithubOAuth2"
@@ -85,6 +93,7 @@ class GithubOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
 
 
 class GithubOAuth2NoEmailTest(GithubOAuth2Test):
+    emails_url = "https://api.github.com/user/emails"
     user_data_body = json.dumps(
         {
             "login": "foobar",
@@ -120,48 +129,66 @@ class GithubOAuth2NoEmailTest(GithubOAuth2Test):
         }
     )
 
-    def test_login(self) -> None:
-        url = "https://api.github.com/user/emails"
+    def add_emails_response(self, emails) -> None:
         responses.add(
             responses.GET,
-            url,
+            self.emails_url,
             status=200,
-            body=json.dumps(["foo@bar.com"]),
+            body=json.dumps(emails),
             content_type="application/json",
         )
+
+    def capture_emails_in_pipeline(self) -> None:
+        pipeline = self.strategy.get_pipeline(self.backend)
+        self.strategy.set_settings(
+            {
+                "SOCIAL_AUTH_PIPELINE": (
+                    pipeline[0],
+                    CAPTURE_GITHUB_EMAILS_PIPELINE,
+                    *pipeline[1:],
+                )
+            }
+        )
+
+    def test_login(self) -> None:
+        self.add_emails_response(["foo@bar.com"])
         self.do_login()
 
     def test_login_next_format(self) -> None:
-        url = "https://api.github.com/user/emails"
-        responses.add(
-            responses.GET,
-            url,
-            status=200,
-            body=json.dumps([{"email": "foo@bar.com"}]),
-            content_type="application/json",
-        )
+        self.add_emails_response([{"email": "foo@bar.com"}])
         self.do_login()
 
+    def test_pipeline_receives_legacy_email_response(self) -> None:
+        emails = ["foo@bar.com"]
+        self.add_emails_response(emails)
+        self.capture_emails_in_pipeline()
+
+        user = self.do_login()
+
+        self.assertEqual(self.strategy.session_get("github_emails"), emails)
+        self.assertEqual(user.email, "foo@bar.com")
+        self.assertNotIn("emails", user.social[0].extra_data)
+
+    def test_pipeline_receives_dict_email_response(self) -> None:
+        emails = [
+            {"email": "secondary@example.com", "primary": False},
+            {"email": "foo@bar.com", "primary": True},
+        ]
+        self.add_emails_response(emails)
+        self.capture_emails_in_pipeline()
+
+        user = self.do_login()
+
+        self.assertEqual(self.strategy.session_get("github_emails"), emails)
+        self.assertEqual(user.email, "foo@bar.com")
+        self.assertNotIn("emails", user.social[0].extra_data)
+
     def test_partial_pipeline(self) -> None:
-        url = "https://api.github.com/user/emails"
-        responses.add(
-            responses.GET,
-            url,
-            status=200,
-            body=json.dumps([{"email": "foo@bar.com"}]),
-            content_type="application/json",
-        )
+        self.add_emails_response([{"email": "foo@bar.com"}])
         self.do_partial_pipeline()
 
     def test_refresh_token(self) -> None:
-        url = "https://api.github.com/user/emails"
-        responses.add(
-            responses.GET,
-            url,
-            status=200,
-            body=json.dumps([{"email": "foo@bar.com"}]),
-            content_type="application/json",
-        )
+        self.add_emails_response([{"email": "foo@bar.com"}])
         self.do_refresh_token()
 
 

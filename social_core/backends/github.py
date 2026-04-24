@@ -52,6 +52,7 @@ class GithubOAuth2(BaseOAuth2):
                 emails = self._user_data(access_token, "/emails")
             except (HTTPError, ValueError, TypeError):
                 emails = []
+            data["emails"] = emails
 
             if emails:
                 email = emails[0]
