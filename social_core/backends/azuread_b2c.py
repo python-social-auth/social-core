@@ -133,13 +133,9 @@ class AzureADB2COAuth2(AzureADOAuth2):
         return response
 
     def auth_extra_arguments(self):
-        """
-        Return extra arguments needed on auth process.
-
-        The defaults can be overridden by GET parameters.
-        """
+        """Return extra arguments needed on auth process."""
         extra_arguments = super().auth_extra_arguments()
-        extra_arguments["p"] = self.policy or self.data.get("p")
+        extra_arguments["p"] = self.policy
         return extra_arguments
 
     def get_user_id(self, details, response):

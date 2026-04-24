@@ -36,6 +36,7 @@ import responses
 from jwt.algorithms import RSAAlgorithm
 
 from social_core.exceptions import AuthMissingParameter, AuthTokenError
+from social_core.utils import get_querystring
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
@@ -197,6 +198,13 @@ class AzureADB2COAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     def test_refresh_token(self) -> None:
         _user, social = self.do_refresh_token()
         self.assertEqual(social.extra_data["access_token"], "foobar-new-token")
+
+    def test_auth_url_uses_configured_policy_when_request_includes_policy(self) -> None:
+        self.strategy.set_request_data({"p": "b2c_1_passwordreset"}, self.backend)
+
+        auth_query = get_querystring(self.backend.start().url)
+
+        self.assertEqual(auth_query["p"], self.POLICY)
 
     def test_login_rejects_invalid_id_token_signature(self) -> None:
         self.access_token_body = self.build_access_token_body(
