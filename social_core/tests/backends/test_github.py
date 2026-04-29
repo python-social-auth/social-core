@@ -156,7 +156,8 @@ class GithubOAuth2NoEmailTest(GithubOAuth2Test):
 
     def test_login_next_format(self) -> None:
         self.add_emails_response([{"email": "foo@bar.com"}])
-        self.do_login()
+        user = self.do_login()
+        self.assertEqual(user.email, "foo@bar.com")
 
     def test_pipeline_receives_legacy_email_response(self) -> None:
         emails = ["foo@bar.com"]
