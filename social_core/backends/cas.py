@@ -45,6 +45,7 @@ class CASOpenIdConnectAuth(OpenIdConnectAuth):
         data = self.get_json(
             self.userinfo_url(), headers={"Authorization": f"Bearer {access_token}"}
         )
+        self.validate_userinfo_sub(data)
         self.log_debug("user_data: %s", data)
         return data.get("attributes", {})
 

@@ -105,6 +105,7 @@ class OpenIdConnectTest(
         issue_datetime=None,
         nonce=None,
         issuer=None,
+        subject=None,
     ):
         """
         Return the id_token to be added to the access token body.
@@ -116,7 +117,7 @@ class OpenIdConnectTest(
             "azp": client_key,
             "exp": expiration_datetime,
             "iat": issue_datetime,
-            "sub": "1234",
+            "sub": subject or "1234",
         }
 
     def prepare_access_token_body(  # NOQA: PLR0913
@@ -129,6 +130,7 @@ class OpenIdConnectTest(
         nonce=None,
         issuer=None,
         at_hash=None,
+        subject=None,
     ):
         """
         Prepares a provider access token response. Arguments:
@@ -154,6 +156,7 @@ class OpenIdConnectTest(
             timegm(issue_datetime.timetuple()),
             nonce,
             issuer,
+            subject,
         )
         # calc at_hash
         id_token["at_hash"] = at_hash or OpenIdConnectAuth.calc_at_hash(

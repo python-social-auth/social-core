@@ -73,6 +73,7 @@ class OktaOpenIdConnectTest(OpenIdConnectTest):
     backend_path = "social_core.backends.okta_openidconnect.OktaOpenIdConnect"
     user_data_url = "https://dev-000000.oktapreview.com/oauth2/v1/userinfo"
     issuer = "https://dev-000000.oktapreview.com/oauth2"
+    user_id = "101010101010101010101"
     openid_config_body = json.dumps(
         {
             "issuer": "https://dev-000000.oktapreview.com/oauth2",
@@ -124,7 +125,7 @@ class OktaOpenIdConnectTest(OpenIdConnectTest):
     user_data_body = json.dumps(
         {
             "family_name": "Bar",
-            "sub": "101010101010101010101",
+            "sub": user_id,
             "locale": "en",
             "email_verified": True,
             "given_name": "Foo",
@@ -177,6 +178,7 @@ class OktaOpenIdConnectTest(OpenIdConnectTest):
         super().setUp()
 
     def pre_complete_callback(self, start_url) -> None:
+        self.access_token_kwargs.setdefault("subject", self.user_id)
         super().pre_complete_callback(start_url)
         responses.add(
             responses.GET,

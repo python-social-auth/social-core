@@ -6,7 +6,7 @@ from typing import Protocol, cast
 import responses
 
 from social_core.backends.open_id_connect import OpenIdConnectAuth
-from social_core.exceptions import AuthInvalidParameter
+from social_core.exceptions import AuthInvalidParameter, AuthTokenError
 from social_core.utils import get_querystring, parse_qs
 
 from .oauth import BaseAuthUrlTestMixin
@@ -159,18 +159,42 @@ class ExampleOpenIdConnectTest(OpenIdConnectTest):
 
     expected_username = "cartman"
 
+    def setUp(self) -> None:
+        super().setUp()
+        self.userinfo_response = {"preferred_username": self.expected_username}
+
     def pre_complete_callback(self, start_url) -> None:
         super().pre_complete_callback(start_url)
         responses.add(
             responses.GET,
             url=self.backend.userinfo_url(),
             status=200,
-            body=json.dumps({"preferred_username": self.expected_username}),
+            body=json.dumps(self.userinfo_response),
             content_type="text/json",
         )
 
     def test_everything_works(self) -> None:
         self.do_login()
+
+    def test_user_id_comes_from_id_token_when_userinfo_omits_sub(self) -> None:
+        user = self.do_login()
+
+        self.assertEqual(user.social[0].uid, "1234")
+
+    def test_matching_userinfo_sub_succeeds(self) -> None:
+        self.userinfo_response["sub"] = "1234"
+
+        user = self.do_login()
+
+        self.assertEqual(user.social[0].uid, "1234")
+
+    def test_mismatched_userinfo_sub_raises_error(self) -> None:
+        self.userinfo_response["sub"] = "not-validated-subject"
+
+        with self.assertRaisesRegex(
+            AuthTokenError, "Token error: Invalid UserInfo sub"
+        ):
+            self.do_login()
 
 
 class ExampleOpenIdConnectPkceEnabledByDefaultTest(
@@ -298,6 +322,7 @@ class ExampleOpenIdConnectCustomAtHashTest(OpenIdConnectTest):
         nonce=None,
         issuer=None,
         at_hash=None,
+        subject=None,
     ):
         if at_hash is None:
             at_hash = OpenIdConnectAuth.calc_at_hash("foobar", "RS256", "sha512")
@@ -310,6 +335,7 @@ class ExampleOpenIdConnectCustomAtHashTest(OpenIdConnectTest):
             nonce=nonce,
             issuer=issuer,
             at_hash=at_hash,
+            subject=subject,
         )
 
     def test_everything_works(self) -> None:

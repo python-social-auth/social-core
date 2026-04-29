@@ -605,6 +605,7 @@ class NFDIOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
     openid_config_body = OIDC_CONFIG_UNITY
     expected_username = "donald"
     user_data_url = "https://login.helmholtz.de/oauth2/userinfo"
+    user_id = "42234223-4223-4223-4223-422342234223"
     user_data_body = json.dumps(
         {
             "display_name": "Donald Duck",
@@ -659,7 +660,7 @@ class NFDIOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
             "preferred_username": "donald",
             "sn": "Duck",
             "ssh_public_key": "ssh-ed25519 AAAAC3N4224224224224224224224224224224224224224224224224224224223ym/ donald@home\n",
-            "sub": "42234223-4223-4223-4223-422342234223",
+            "sub": user_id,
             "voperson_external_affiliation": [
                 "employee@duckburg.edu",
                 "faculty@duckburg.edu",
@@ -668,6 +669,10 @@ class NFDIOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
             "voperson_id": "42234223422342234223422342234223@login.mouseton.edu",
         }
     )
+
+    def pre_complete_callback(self, start_url) -> None:
+        self.access_token_kwargs.setdefault("subject", self.user_id)
+        super().pre_complete_callback(start_url)
 
     def test_do_not_override_endpoint(self) -> None:
         self.backend.OIDC_ENDPOINT = self.issuer
