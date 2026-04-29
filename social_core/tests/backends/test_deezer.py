@@ -5,7 +5,7 @@ from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 class DeezerOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.deezer.DeezerOAuth2"
-    user_data_url = "http://api.deezer.com/user/me"
+    user_data_url = "https://api.deezer.com/user/me"
     expected_username = "foobar"
     access_token_body = "access_token=foobar&expires=0"
     user_data_body = json.dumps(

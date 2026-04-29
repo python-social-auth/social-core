@@ -11,7 +11,7 @@ from .oauth import BaseOAuth2
 class AppsfuelOAuth2(BaseOAuth2):
     name = "appsfuel"
     ID_KEY = "user_id"
-    AUTHORIZATION_URL = "http://app.appsfuel.com/content/permission"
+    AUTHORIZATION_URL = "https://app.appsfuel.com/content/permission"
     ACCESS_TOKEN_URL = "https://api.appsfuel.com/v1/live/oauth/token"
     USER_DETAILS_URL = "https://api.appsfuel.com/v1/live/user"
 

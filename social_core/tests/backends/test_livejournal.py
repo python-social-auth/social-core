@@ -96,3 +96,7 @@ session_type:DH-SHA1
         self._setup_handlers()
         with self.assertRaises(AuthMissingParameter):
             self.do_login()
+
+    def test_openid_url_uses_https(self) -> None:
+        self.strategy.set_request_data({"openid_lj_user": "foobar"}, self.backend)
+        self.assertEqual(self.backend.openid_url(), "https://foobar.livejournal.com")
