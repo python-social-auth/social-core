@@ -383,9 +383,30 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
         return response
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
-        return self.get_json(
-            self.userinfo_url(), headers={"Authorization": f"Bearer {access_token}"}
+        return self.validate_userinfo_sub(
+            self.get_json(
+                self.userinfo_url(),
+                headers={"Authorization": f"Bearer {access_token}"},
+            )
         )
+
+    def validate_userinfo_sub(
+        self, userinfo: dict[str, Any] | None
+    ) -> dict[str, Any] | None:
+        """Validate that UserInfo belongs to the validated ID token subject."""
+        if userinfo is None or userinfo.get("sub") is None:
+            return userinfo
+
+        id_token_sub = self.id_token.get("sub") if self.id_token is not None else None
+        if userinfo["sub"] != id_token_sub:
+            raise AuthTokenError(self, "Invalid UserInfo sub")
+
+        return userinfo
+
+    def get_user_id(self, details, response):
+        if self.id_key() == "sub" and self.id_token is not None:
+            return self.id_token.get("sub")
+        return super().get_user_id(details, response)
 
     def get_user_details(self, response):
         username_key = self.setting("USERNAME_KEY", self.USERNAME_KEY)

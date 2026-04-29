@@ -19,6 +19,8 @@ class PixelPinOpenIDConnect(OpenIdConnectAuth):
         first_name = response.get("given_name")
         last_name = response.get("family_name")
         sub = response.get("sub")
+        if sub is None and self.id_token is not None:
+            sub = self.id_token.get("sub")
 
         username = first_name + last_name + sub
 
@@ -31,7 +33,9 @@ class PixelPinOpenIDConnect(OpenIdConnectAuth):
         }
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
-        return self.get_json(
-            "https://login.pixelpin.io/connect/userinfo",
-            headers={"Authorization": f"Bearer {access_token}"},
+        return self.validate_userinfo_sub(
+            self.get_json(
+                "https://login.pixelpin.io/connect/userinfo",
+                headers={"Authorization": f"Bearer {access_token}"},
+            )
         )

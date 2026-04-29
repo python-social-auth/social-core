@@ -10,6 +10,7 @@ class Auth0OpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.auth0_openidconnect.Auth0OpenIdConnectAuth"
     domain = "example.auth0.com"
     issuer = f"https://{domain}/"
+    user_id = "auth0|123456789"
 
     openid_config_body = json.dumps(
         {
@@ -35,6 +36,7 @@ class Auth0OpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
         return settings
 
     def pre_complete_callback(self, start_url) -> None:
+        self.access_token_kwargs.setdefault("subject", self.user_id)
         super().pre_complete_callback(start_url)
 
         # Mock userinfo response with Auth0-specific fields
@@ -49,7 +51,7 @@ class Auth0OpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
                     "email_verified": True,
                     "picture": "https://example.com/avatar.jpg",
                     "locale": "en-US",
-                    "sub": "auth0|123456789",
+                    "sub": self.user_id,
                     "name": "Test User",
                     "given_name": "Test",
                     "family_name": "User",
@@ -75,7 +77,7 @@ class Auth0OpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
             "email_verified": True,
             "picture": "https://example.com/avatar.jpg",
             "locale": "en-US",
-            "sub": "auth0|123456789",
+            "sub": self.user_id,
             "name": "Test User",
             "given_name": "Test",
             "family_name": "User",
@@ -87,7 +89,17 @@ class Auth0OpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
         self.assertEqual(details["email"], "test@example.com")
         self.assertTrue(details["email_verified"])
         self.assertEqual(details["picture"], "https://example.com/avatar.jpg")
-        self.assertEqual(details["user_id"], "auth0|123456789")
+        self.assertEqual(details["user_id"], self.user_id)
+
+    def test_auth0_user_id_uses_id_token_sub(self) -> None:
+        self.backend.id_token = {"sub": "validated-subject"}
+        details = self.backend.get_user_details({"sub": self.user_id})
+
+        self.assertEqual(details["user_id"], "validated-subject")
+        self.assertEqual(
+            self.backend.get_user_id(details, {"sub": self.user_id}),
+            "validated-subject",
+        )
 
     def test_everything_works(self) -> None:
         self.do_login()

@@ -11,6 +11,7 @@ ROOT_URL = "https://cas.example.net/"
 class CASOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.cas.CASOpenIdConnectAuth"
     issuer = f"{ROOT_URL}oidc"
+    user_id = "Cartman"
     openid_config_body = json.dumps(
         {
             "issuer": f"{ROOT_URL}oidc",
@@ -28,7 +29,7 @@ class CASOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
 
     user_data_body = json.dumps(
         {
-            "sub": "Cartman",
+            "sub": user_id,
             "service": "https://cas.example.net/complete/cas/",
             "auth_time": 1677057708,
             "attributes": {
@@ -58,6 +59,7 @@ class CASOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
         return settings
 
     def pre_complete_callback(self, start_url) -> None:
+        self.access_token_kwargs.setdefault("subject", self.user_id)
         super().pre_complete_callback(start_url)
         responses.add(
             responses.GET,
