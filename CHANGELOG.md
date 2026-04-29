@@ -5,6 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.9.0](https://github.com/python-social-auth/social-core/releases/tag/4.9.0) - 2026-04-29
+
+This release might contain breaking changes. Review the removed backends and
+stricter OAuth, OpenID Connect, and Azure AD validation before upgrading.
+
+### Added
+
+- OpenID Connect claim names for email, first name, last name, and full name can
+  now be configured.
+- GitHub backend now stores fetched emails in pipeline data.
+
+### Changed
+
+- Azure AD backends now use OpenID configuration and JWKS for token validation.
+- Built-in provider URLs now consistently use HTTPS.
+- `AUTH_EXTRA_ARGUMENTS` values are no longer overridden by request data unless
+  the key is listed in `AUTH_EXTRA_ARGUMENTS_OVERRIDE_ALLOWLIST`.
+- Requests now fall back to a default timeout when no timeout is configured.
+- Improved the publishing workflow.
+
+### Removed
+
+- Removed obsolete Rdio, Shimmering, and ThisIsMyJam backends.
+- Removed legacy OAuth1 backends for Douban and Mendeley.
+
+### Security
+
+- Apple ID backend now validates the ID token issuer.
+- Azure AD backends now validate ID token signatures, issuer, audience, tenant,
+  and policy claims. Tokens accepted by earlier versions might now be rejected.
+- OpenID Connect backends now reject UserInfo responses whose `sub` does not
+  match the validated ID token subject.
+
 ## [4.8.7](https://github.com/python-social-auth/social-core/releases/tag/4.8.7) - 2026-04-23
 
 ### Added
