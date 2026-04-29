@@ -43,7 +43,7 @@ from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 if TYPE_CHECKING:
     from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
 
-# Dummy private and private keys:
+# Dummy public and private keys:
 RSA_PUBLIC_JWT_KEY = {
     # https://github.com/jpadilla/pyjwt/blob/06f461a/tests/keys/jwk_rsa_pub.json
     "kty": "RSA",
