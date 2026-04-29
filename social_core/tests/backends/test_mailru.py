@@ -26,3 +26,27 @@ class MRGOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
 
     def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
+
+
+class MailruOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
+    backend_path = "social_core.backends.mailru.MailruOAuth2"
+    user_data_url = "https://www.appsmail.ru/platform/api"
+    expected_username = "FooBar"
+    access_token_body = json.dumps({"access_token": "foobar", "token_type": "bearer"})
+    user_data_body = json.dumps(
+        [
+            {
+                "uid": "123",
+                "first_name": "Foo",
+                "last_name": "Bar",
+                "nick": "FooBar",
+                "email": "foobar@example.com",
+            }
+        ]
+    )
+
+    def test_login(self) -> None:
+        self.do_login()
+
+    def test_partial_pipeline(self) -> None:
+        self.do_partial_pipeline()

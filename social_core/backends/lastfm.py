@@ -16,7 +16,7 @@ class LastFmAuth(BaseAuth):
     """
 
     name = "lastfm"
-    AUTH_URL = "http://www.last.fm/api/auth/?api_key={api_key}"
+    AUTH_URL = "https://www.last.fm/api/auth/?api_key={api_key}"
     EXTRA_DATA = [("key", "session_key")]
 
     def auth_url(self):
@@ -34,7 +34,7 @@ class LastFmAuth(BaseAuth):
         ).hexdigest()
 
         response = self.get_json(
-            "http://ws.audioscrobbler.com/2.0/",
+            "https://ws.audioscrobbler.com/2.0/",
             data={
                 "method": "auth.getSession",
                 "api_key": key,

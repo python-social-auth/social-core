@@ -14,7 +14,7 @@ from .open_id import OpenIdAuth
 if TYPE_CHECKING:
     from social_core.store import OpenIdStore
 
-USER_INFO = "http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?"
+USER_INFO = "https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?"
 
 
 class SteamOpenId(OpenIdAuth):

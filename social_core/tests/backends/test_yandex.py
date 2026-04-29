@@ -1,6 +1,12 @@
 import json
 
+from social_core.backends.yandex import YandexOpenId
+
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
+
+
+def test_yandex_openid_url_uses_https() -> None:
+    assert YandexOpenId.URL == "https://openid.yandex.ru"
 
 
 class YandexOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):

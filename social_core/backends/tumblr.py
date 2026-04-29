@@ -13,16 +13,16 @@ from .oauth import BaseOAuth1
 class TumblrOAuth(BaseOAuth1):
     name = "tumblr"
     ID_KEY = "name"
-    AUTHORIZATION_URL = "http://www.tumblr.com/oauth/authorize"
-    REQUEST_TOKEN_URL = "http://www.tumblr.com/oauth/request_token"
+    AUTHORIZATION_URL = "https://www.tumblr.com/oauth/authorize"
+    REQUEST_TOKEN_URL = "https://www.tumblr.com/oauth/request_token"
     REQUEST_TOKEN_METHOD = "POST"
-    ACCESS_TOKEN_URL = "http://www.tumblr.com/oauth/access_token"
+    ACCESS_TOKEN_URL = "https://www.tumblr.com/oauth/access_token"
 
     def get_user_id(self, details, response):
         return response["response"]["user"][self.id_key()]
 
     def get_user_details(self, response):
-        # http://www.tumblr.com/docs/en/api/v2#user-methods
+        # https://www.tumblr.com/docs/en/api/v2#user-methods
         user_info = response["response"]["user"]
         data = {"username": user_info["name"]}
         blog = first(lambda blog: blog["primary"], user_info["blogs"])
@@ -32,5 +32,5 @@ class TumblrOAuth(BaseOAuth1):
 
     def user_data(self, access_token: dict, *args, **kwargs) -> dict[str, Any] | None:
         return self.get_json(
-            "http://api.tumblr.com/v2/user/info", auth=self.oauth_auth(access_token)
+            "https://api.tumblr.com/v2/user/info", auth=self.oauth_auth(access_token)
         )

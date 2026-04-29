@@ -18,7 +18,7 @@ class YandexOpenId(OpenIdAuth):
     """Yandex OpenID authentication backend"""
 
     name = "yandex-openid"
-    URL = "http://openid.yandex.ru"
+    URL = "https://openid.yandex.ru"
 
     def get_user_id(self, details, response):
         return details["email"] or response.identity_url

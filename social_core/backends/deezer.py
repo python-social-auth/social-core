@@ -75,5 +75,5 @@ class DeezerOAuth2(BaseOAuth2):
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         return self.get_json(
-            "http://api.deezer.com/user/me", params={"access_token": access_token}
+            "https://api.deezer.com/user/me", params={"access_token": access_token}
         )
