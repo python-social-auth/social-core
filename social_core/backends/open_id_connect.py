@@ -377,6 +377,12 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
             auth=auth,
             params=params,
         )
+        for parameter in ("id_token", "access_token"):
+            if parameter not in response:
+                raise AuthTokenError(
+                    self,
+                    f"Missing {parameter} in OpenID Connect token response",
+                )
         self.id_token = self.validate_and_return_id_token(
             response["id_token"], response["access_token"]
         )

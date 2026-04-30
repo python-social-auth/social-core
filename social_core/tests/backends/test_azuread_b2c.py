@@ -129,17 +129,22 @@ class AzureADB2COAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
             payload=payload,
         )
 
-    def build_access_token_body(self, id_token: str | None = None, **overrides) -> str:
-        return json.dumps(
-            {
-                "access_token": "foobar",
-                "token_type": "bearer",
-                "id_token": id_token or self.build_id_token(**overrides),
-                "expires_in": self.EXPIRES_IN,
-                "expires_on": self.EXPIRES_ON,
-                "not_before": self.AUTH_TIME,
-            }
-        )
+    def build_access_token_body(
+        self,
+        id_token: str | None = None,
+        access_token: str | None = "foobar",  # noqa: S107
+        **overrides,
+    ) -> str:
+        body = {
+            "token_type": "bearer",
+            "id_token": id_token or self.build_id_token(**overrides),
+            "expires_in": self.EXPIRES_IN,
+            "expires_on": self.EXPIRES_ON,
+            "not_before": self.AUTH_TIME,
+        }
+        if access_token is not None:
+            body["access_token"] = access_token
+        return json.dumps(body)
 
     def tamper_id_token(self, id_token: str, **overrides) -> str:
         header, _payload, signature = id_token.split(".")
@@ -191,6 +196,14 @@ class AzureADB2COAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
 
     def test_login(self) -> None:
         self.do_login()
+
+    def test_login_accepts_id_token_only_response(self) -> None:
+        self.access_token_body = self.build_access_token_body(access_token=None)
+        id_token = json.loads(self.access_token_body)["id_token"]
+
+        user = self.do_login()
+
+        self.assertEqual(user.social[0].extra_data["access_token"], id_token)
 
     def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
