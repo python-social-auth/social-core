@@ -2,7 +2,6 @@
 OAuth2 Backend to work with microsoft graph.
 """
 
-import time
 from typing import Any
 
 from social_core.exceptions import AuthMissingParameter
@@ -18,6 +17,10 @@ class MicrosoftOAuth2(BaseOAuth2):
 
     REDIRECT_STATE = False
     DEFAULT_SCOPE = ["User.Read"]
+    EXTRA_DATA = [
+        ("refresh_token", "refresh_token", True),
+        ("expires_in", "expires_in"),
+    ]
 
     def auth_complete(self, *args, **kwargs):
         """Completes login process, must return user instance"""
@@ -86,9 +89,4 @@ class MicrosoftOAuth2(BaseOAuth2):
         """Return the access token for the given user, after ensuring that it
         has not expired, or refreshing it if so."""
         user = self.get_user(user_id=user_id)
-        access_token = user.social_user.access_token
-        expires_on = user.social_user.extra_data["expires_on"]
-        if expires_on <= int(time.time()):
-            new_token_response = self.refresh_token(token=access_token)
-            access_token = new_token_response["access_token"]
-        return access_token
+        return user.social_user.get_access_token(self.strategy)
