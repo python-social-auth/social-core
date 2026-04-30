@@ -1,4 +1,5 @@
 import json
+from unittest import TestCase
 
 import responses
 
@@ -15,7 +16,7 @@ def capture_github_emails(strategy, response, *args, **kwargs) -> None:
     strategy.session_set("github_emails", response.get("emails"))
 
 
-class TestCaptureGithubEmails:
+class TestCaptureGithubEmails(TestCase):
     class DummyStrategy:
         def __init__(self) -> None:
             self.data = {}
