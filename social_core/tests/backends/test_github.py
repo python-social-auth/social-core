@@ -1,4 +1,6 @@
 import json
+from typing import Any
+from unittest import TestCase
 
 import responses
 
@@ -13,6 +15,29 @@ CAPTURE_GITHUB_EMAILS_PIPELINE = (
 
 def capture_github_emails(strategy, response, *args, **kwargs) -> None:
     strategy.session_set("github_emails", response.get("emails"))
+
+
+class TestCaptureGithubEmails(TestCase):
+    class DummyStrategy:
+        def __init__(self) -> None:
+            self.data: dict[str, Any] = {}
+
+        def session_set(self, key, value) -> None:
+            self.data[key] = value
+
+    def test_capture_github_emails_missing_emails_key(self) -> None:
+        strategy = self.DummyStrategy()
+
+        capture_github_emails(strategy, {})
+
+        assert "github_emails" in strategy.data
+        assert strategy.data["github_emails"] is None
+
+    def test_capture_github_emails_response_none_raises_attribute_error(self) -> None:
+        strategy = self.DummyStrategy()
+
+        with self.assertRaises(AttributeError):
+            capture_github_emails(strategy, None)
 
 
 class GithubOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
@@ -74,6 +99,7 @@ class GithubOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
 
     def do_login(self):
         user = super().do_login()
+        self.assertTrue(user.social)
         social = user.social[0]
 
         self.assertIsNotNone(social.extra_data["expires_in"])
@@ -129,11 +155,13 @@ class GithubOAuth2NoEmailTest(GithubOAuth2Test):
         }
     )
 
-    def add_emails_response(self, emails) -> None:
+    def add_emails_response(
+        self, emails: list[dict[str, str | bool]], status: int = 200
+    ) -> None:
         responses.add(
             responses.GET,
             self.emails_url,
-            status=200,
+            status=status,
             body=json.dumps(emails),
             content_type="application/json",
         )
@@ -150,28 +178,22 @@ class GithubOAuth2NoEmailTest(GithubOAuth2Test):
             }
         )
 
-    def test_login(self) -> None:
-        self.add_emails_response(["foo@bar.com"])
+    def test_login_email_denied(self) -> None:
+        self.add_emails_response([], status=403)
         self.do_login()
+
+    def test_login_with_empty_email_list(self) -> None:
+        self.add_emails_response([])
+        user = self.do_login()
+        self.assertNotIn("emails", user.social[0].extra_data)
 
     def test_login_next_format(self) -> None:
         self.add_emails_response([{"email": "foo@bar.com"}])
         user = self.do_login()
         self.assertEqual(user.email, "foo@bar.com")
 
-    def test_pipeline_receives_legacy_email_response(self) -> None:
-        emails = ["foo@bar.com"]
-        self.add_emails_response(emails)
-        self.capture_emails_in_pipeline()
-
-        user = self.do_login()
-
-        self.assertEqual(self.strategy.session_get("github_emails"), emails)
-        self.assertEqual(user.email, "foo@bar.com")
-        self.assertNotIn("emails", user.social[0].extra_data)
-
-    def test_pipeline_receives_dict_email_response(self) -> None:
-        emails = [
+    def test_login(self) -> None:
+        emails: list[dict[str, str | bool]] = [
             {"email": "secondary@example.com", "primary": False},
             {"email": "foo@bar.com", "primary": True},
         ]

@@ -62,9 +62,7 @@ class GithubOAuth2(BaseOAuth2):
                 ]
                 if primary_emails:
                     email = primary_emails[0]
-                if isinstance(email, dict):
-                    email = email.get("email", "")
-                data["email"] = email
+                data["email"] = email["email"]
         return data
 
     def _user_data(self, access_token, path=None):
