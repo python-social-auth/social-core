@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.9.1](https://github.com/python-social-auth/social-core/releases/tag/4.9.1) - 2026-04-30
+
+### Changed
+
+- GitHub backend now handles scoped email fetching deterministically.
+
+### Fixed
+
+- OpenID Connect missing token handling.
+- Microsoft refresh token and expiry handling.
+- Partial pipeline handling for Django `QueryDict` values.
+
 ## [4.9.0](https://github.com/python-social-auth/social-core/releases/tag/4.9.0) - 2026-04-29
 
 This release might contain breaking changes. Review the removed backends and
