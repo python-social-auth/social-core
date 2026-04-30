@@ -1,4 +1,5 @@
 import json
+from typing import Any
 from unittest import TestCase
 
 import responses
@@ -19,7 +20,7 @@ def capture_github_emails(strategy, response, *args, **kwargs) -> None:
 class TestCaptureGithubEmails(TestCase):
     class DummyStrategy:
         def __init__(self) -> None:
-            self.data = {}
+            self.data: dict[str, Any] = {}
 
         def session_set(self, key, value) -> None:
             self.data[key] = value
@@ -192,7 +193,7 @@ class GithubOAuth2NoEmailTest(GithubOAuth2Test):
         self.assertEqual(user.email, "foo@bar.com")
 
     def test_login(self) -> None:
-        emails = [
+        emails: list[dict[str, str | bool]] = [
             {"email": "secondary@example.com", "primary": False},
             {"email": "foo@bar.com", "primary": True},
         ]
