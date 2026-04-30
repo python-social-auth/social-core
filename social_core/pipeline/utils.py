@@ -24,6 +24,14 @@ def is_dict_type(value):
     )
 
 
+def to_plain_dict(value):
+    if any(cls.__name__ == "MultiValueDict" for cls in value.__class__.mro()):
+        dict_method = getattr(value, "dict", None)
+        if callable(dict_method):
+            return dict_method()
+    return dict(value)
+
+
 def partial_prepare(
     strategy: BaseStrategy,
     backend: BaseAuth,
@@ -54,7 +62,7 @@ def partial_prepare(
     # Clean any MergeDict data type from the values
     clean_kwargs = {}
     for name, value in kwargs.items():
-        value = dict(value) if is_dict_type(value) else value
+        value = to_plain_dict(value) if is_dict_type(value) else value
         if isinstance(value, SERIALIZABLE_TYPES):
             clean_kwargs[name] = strategy.to_session_value(value)
 

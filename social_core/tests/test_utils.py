@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, cast
 from unittest.mock import Mock, patch
 
 from social_core.backends.base import BaseAuth
+from social_core.pipeline.utils import partial_prepare
 from social_core.utils import (
     build_absolute_uri,
     partial_pipeline_data,
@@ -13,7 +14,8 @@ from social_core.utils import (
     user_is_authenticated,
 )
 
-from .models import TestPartial
+from .models import TestPartial, TestStorage
+from .strategy import TestStrategy
 
 if TYPE_CHECKING:
     from social_core.storage import PartialMixin, UserProtocol
@@ -173,6 +175,38 @@ class BuildAbsoluteURITest(unittest.TestCase):
     def test_absolute_uri(self) -> None:
         self.assertEqual(
             build_absolute_uri(self.host, "/foo/bar"), "http://foobar.com/foo/bar"
+        )
+
+
+class PartialPrepareTest(unittest.TestCase):
+    def test_django_multivalue_dict_keeps_flat_values(self) -> None:
+        class MultiValueDict(dict):
+            def dict(self):
+                return {key: values[-1] for key, values in self.items()}
+
+        class QueryDict(MultiValueDict):
+            pass
+
+        strategy = TestStrategy(TestStorage)
+        backend = Mock()
+        backend.name = "test-backend"
+        response = QueryDict(
+            {
+                "id": ["123456789"],
+                "username": ["demo_user"],
+                "first_name": ["Alice"],
+            }
+        )
+
+        partial = partial_prepare(strategy, backend, 0, response=response)
+
+        self.assertEqual(
+            partial.kwargs["response"],
+            {
+                "id": "123456789",
+                "username": "demo_user",
+                "first_name": "Alice",
+            },
         )
 
 
