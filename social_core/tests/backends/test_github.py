@@ -154,6 +154,23 @@ class GithubOAuth2NoEmailTest(GithubOAuth2Test):
         self.add_emails_response(["foo@bar.com"])
         self.do_login()
 
+    def test_login_with_empty_email_list(self) -> None:
+        self.add_emails_response([])
+        user = self.do_login()
+        self.assertNotIn("emails", user.social[0].extra_data)
+
+    def test_login_with_malformed_email_entries(self) -> None:
+        self.add_emails_response(
+            [
+                {"address": "missing-email-key@example.com", "primary": True},
+                {"email": "secondary@example.com", "primary": False},
+                {"email": "foo@bar.com", "primary": True},
+            ]
+        )
+        user = self.do_login()
+        self.assertEqual(user.email, "foo@bar.com")
+        self.assertNotIn("emails", user.social[0].extra_data)
+
     def test_login_next_format(self) -> None:
         self.add_emails_response([{"email": "foo@bar.com"}])
         user = self.do_login()
