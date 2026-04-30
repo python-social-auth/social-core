@@ -196,6 +196,12 @@ class ExampleOpenIdConnectTest(OpenIdConnectTest):
         ):
             self.do_login()
 
+    def test_missing_access_token_response_raises_token_error(self) -> None:
+        self.authtoken_raised(
+            "Token error: Missing access_token in OpenID Connect token response",
+            access_token=None,
+        )
+
 
 class ExampleOpenIdConnectPkceEnabledByDefaultTest(
     OpenIdConnectTest, OpenIdConnectPkceAssertionsMixin
@@ -323,9 +329,10 @@ class ExampleOpenIdConnectCustomAtHashTest(OpenIdConnectTest):
         issuer=None,
         at_hash=None,
         subject=None,
+        access_token: str | None = "foobar",  # noqa: S107
     ):
-        if at_hash is None:
-            at_hash = OpenIdConnectAuth.calc_at_hash("foobar", "RS256", "sha512")
+        if at_hash is None and access_token is not None:
+            at_hash = OpenIdConnectAuth.calc_at_hash(access_token, "RS256", "sha512")
         return super().prepare_access_token_body(
             client_key=client_key,
             tamper_message=tamper_message,
@@ -336,6 +343,7 @@ class ExampleOpenIdConnectCustomAtHashTest(OpenIdConnectTest):
             issuer=issuer,
             at_hash=at_hash,
             subject=subject,
+            access_token=access_token,
         )
 
     def test_everything_works(self) -> None:

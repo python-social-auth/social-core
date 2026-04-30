@@ -131,6 +131,7 @@ class OpenIdConnectTest(
         issuer=None,
         at_hash=None,
         subject=None,
+        access_token: str | None = "foobar",  # noqa: S107
     ):
         """
         Prepares a provider access token response. Arguments:
@@ -141,7 +142,9 @@ class OpenIdConnectTest(
                                       should be considered invalid.
         """
 
-        body = {"access_token": "foobar", "token_type": "bearer"}
+        body = {"token_type": "bearer"}
+        if access_token is not None:
+            body["access_token"] = access_token
         client_key = client_key or self.client_key
         now = datetime.datetime.now(datetime.timezone.utc)
         expiration_datetime = expiration_datetime or (
@@ -158,10 +161,10 @@ class OpenIdConnectTest(
             issuer,
             subject,
         )
-        # calc at_hash
-        id_token["at_hash"] = at_hash or OpenIdConnectAuth.calc_at_hash(
-            "foobar", "RS256"
-        )
+        if at_hash is not None:
+            id_token["at_hash"] = at_hash
+        elif access_token is not None:
+            id_token["at_hash"] = OpenIdConnectAuth.calc_at_hash(access_token, "RS256")
 
         body["id_token"] = jwt.encode(
             id_token,
