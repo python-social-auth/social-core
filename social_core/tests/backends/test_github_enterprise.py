@@ -114,7 +114,11 @@ class GithubEnterpriseOAuth2NoEmailTest(GithubEnterpriseOAuth2Test):
             responses.GET,
             url,
             status=200,
-            body=json.dumps(["foo@bar.com"]),
+            body=json.dumps(
+                [
+                    {"email": "foo@bar.com", "primary": True},
+                ]
+            ),
             content_type="application/json",
         )
         self.do_login()
