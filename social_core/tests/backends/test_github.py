@@ -15,6 +15,32 @@ def capture_github_emails(strategy, response, *args, **kwargs) -> None:
     strategy.session_set("github_emails", response.get("emails"))
 
 
+class TestCaptureGithubEmails:
+    class DummyStrategy:
+        def __init__(self) -> None:
+            self.data = {}
+
+        def session_set(self, key, value) -> None:
+            self.data[key] = value
+
+    def test_capture_github_emails_missing_emails_key(self) -> None:
+        strategy = self.DummyStrategy()
+
+        capture_github_emails(strategy, {})
+
+        assert "github_emails" in strategy.data
+        assert strategy.data["github_emails"] is None
+
+    def test_capture_github_emails_response_none_raises_attribute_error(self) -> None:
+        strategy = self.DummyStrategy()
+
+        try:
+            capture_github_emails(strategy, None)
+            assert False, "Expected AttributeError when response is None"
+        except AttributeError:
+            pass
+
+
 class GithubOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     backend_path = "social_core.backends.github.GithubOAuth2"
     user_data_url = "https://api.github.com/user"
