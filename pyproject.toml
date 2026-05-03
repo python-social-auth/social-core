@@ -19,7 +19,7 @@ dev = [
   "types-defusedxml==0.7.0.20260408",
   "types-oauthlib==3.3.0.20260408",
   "types-requests-oauthlib==2.0.0.20260408",
-  "types-requests==2.33.0.20260408",
+  "types-requests==2.33.0.20260503",
   {include-group = "pylint"}
 ]
 pylint = [
@@ -90,7 +90,7 @@ dev = [
   "types-defusedxml==0.7.0.20260408",
   "types-oauthlib==3.3.0.20260408",
   "types-requests-oauthlib==2.0.0.20260408",
-  "types-requests==2.33.0.20260408"
+  "types-requests==2.33.0.20260503"
 ]
 google-onetap = [
   "google-auth>=2.40.0,<2.51"
