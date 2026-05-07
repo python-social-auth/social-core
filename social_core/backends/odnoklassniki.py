@@ -65,6 +65,7 @@ class OdnoklassnikiApp(BaseAuth):
 
     name = "odnoklassniki-app"
     ID_KEY = "uid"
+    API_URL = "https://api.ok.ru/"
 
     def extra_data(
         self,
@@ -114,13 +115,21 @@ class OdnoklassnikiApp(BaseAuth):
         details = odnoklassniki_api(
             self,
             data,
-            response["api_server"],
+            self.API_URL,
             public_key,
             client_secret,
             "iframe_nosession",
         )
-        if len(details) == 1 and "uid" in details[0]:
+        if (
+            isinstance(details, list)
+            and len(details) == 1
+            and isinstance(details[0], dict)
+            and "uid" in details[0]
+        ):
             details = details[0]
+            if str(details["uid"]) != str(response["logged_user_id"]):
+                raise AuthFailed(self, "User details do not match signed user")
+
             auth_data_fields = cast(
                 "tuple[str, ...]",
                 self.setting(
