@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- VK ID OAuth2 backend.
+
 ### Removed
 
 - Discontinued OAuth backends: AppsFuel, Beats Music, ChangeTip, Clef,
