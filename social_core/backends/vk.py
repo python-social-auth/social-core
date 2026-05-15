@@ -212,9 +212,7 @@ class VKIDOAuth2(BaseOAuth2):
     def auth_params(self, state: str | None = None) -> dict[str, str]:
         params = super().auth_params(state)
         code_verifier = self.generate_code_verifier()
-        self.strategy.session_set(
-            self.code_verifier_session_key(state), code_verifier
-        )
+        self.strategy.session_set(self.code_verifier_session_key(state), code_verifier)
         params.update(
             {
                 "code_challenge": self.generate_code_challenge(code_verifier),
@@ -253,9 +251,7 @@ class VKIDOAuth2(BaseOAuth2):
             raise AuthMissingParameter(self, "device_id")
         self._callback_device_id = device_id
 
-        code_verifier = self.strategy.session_pop(
-            self.code_verifier_session_key(state)
-        )
+        code_verifier = self.strategy.session_pop(self.code_verifier_session_key(state))
         if not code_verifier:
             raise AuthMissingParameter(self, "code_verifier")
 

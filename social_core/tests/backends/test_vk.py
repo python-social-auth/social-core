@@ -1,12 +1,14 @@
 import json
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import responses
 
-from social_core.tests.models import User
 from social_core.utils import get_querystring, parse_qs
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
+
+if TYPE_CHECKING:
+    from social_core.tests.models import User
 
 
 class VKOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
@@ -134,7 +136,7 @@ class VKIDOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
             content_type=self.user_data_content_type,
         )
 
-        user = cast(User, self.backend.complete())
+        user = cast("User", self.backend.complete())
 
         token_request = next(
             r.request
