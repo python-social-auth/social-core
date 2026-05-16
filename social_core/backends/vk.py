@@ -5,12 +5,18 @@ VK.com OpenAPI, OAuth2 and Iframe application OAuth2 backends, docs at:
 
 from __future__ import annotations
 
+import base64
 import json
-from hashlib import md5
+from hashlib import md5, sha256
 from time import time
 from typing import Any, cast
 
-from social_core.exceptions import AuthException, AuthTokenRevoked
+from social_core.exceptions import (
+    AuthException,
+    AuthFailed,
+    AuthMissingParameter,
+    AuthTokenRevoked,
+)
 from social_core.utils import parse_qs
 
 from .base import BaseAuth
@@ -170,6 +176,156 @@ class VKOAuth2(BaseOAuth2):
             return self.get_json(url, params=data)
         except (TypeError, KeyError, OSError, ValueError, IndexError):
             return None
+
+
+class VKIDOAuth2(BaseOAuth2):
+    """VK ID OAuth2 authentication backend"""
+
+    name = "vk-id"
+    ID_KEY = "id"
+    AUTHORIZATION_URL = "https://id.vk.ru/authorize"
+    ACCESS_TOKEN_URL = "https://id.vk.ru/oauth2/auth"
+    USER_INFO_URL = "https://id.vk.ru/oauth2/user_info"
+    REDIRECT_STATE = False
+    STATE_PARAMETER = True
+    SCOPE_SEPARATOR = " "
+    EXTRA_DATA = [
+        ("id", "id"),
+        ("user_id", "user_id"),
+        ("expires_in", "expires_in"),
+        ("refresh_token", "refresh_token"),
+        ("id_token", "id_token"),
+        ("scope", "scope"),
+        ("device_id", "device_id"),
+    ]
+
+    def code_verifier_session_key(self, state: str | None) -> str:
+        return f"{self.name}_code_verifier_{state or 'default'}"
+
+    def generate_code_verifier(self) -> str:
+        return self.strategy.random_string(128)
+
+    def generate_code_challenge(self, code_verifier: str) -> str:
+        digest = sha256(code_verifier.encode("ascii")).digest()
+        return base64.urlsafe_b64encode(digest).decode("ascii").rstrip("=")
+
+    def auth_params(self, state: str | None = None) -> dict[str, str]:
+        params = super().auth_params(state)
+        code_verifier = self.generate_code_verifier()
+        self.strategy.session_set(self.code_verifier_session_key(state), code_verifier)
+        params.update(
+            {
+                "code_challenge": self.generate_code_challenge(code_verifier),
+                "code_challenge_method": "S256",
+            }
+        )
+        return params
+
+    def callback_data(self) -> dict[str, Any]:
+        data = dict(self.data)
+        payload = data.get("payload")
+        if isinstance(payload, list):
+            payload = payload[0] if payload else None
+        if isinstance(payload, str) and payload:
+            try:
+                parsed_payload = json.loads(payload)
+            except json.JSONDecodeError as exc:
+                raise AuthFailed(self, "Invalid VK ID payload") from exc
+            if isinstance(parsed_payload, dict):
+                data.update(parsed_payload)
+        return data
+
+    def get_request_state(self):
+        request_state = self.callback_data().get("state")
+        if request_state and isinstance(request_state, list):
+            request_state = request_state[0]
+        return request_state
+
+    def auth_complete_params(self, state=None):
+        data = self.callback_data()
+        code = data.get("code")
+        device_id = data.get("device_id")
+        if not code:
+            raise AuthMissingParameter(self, "code")
+        if not device_id:
+            raise AuthMissingParameter(self, "device_id")
+        self._callback_device_id = device_id
+
+        code_verifier = self.strategy.session_pop(self.code_verifier_session_key(state))
+        if not code_verifier:
+            raise AuthMissingParameter(self, "code_verifier")
+
+        client_id, _client_secret = self.get_key_and_secret()
+        params = {
+            "grant_type": "authorization_code",
+            "code": code,
+            "code_verifier": code_verifier,
+            "client_id": client_id,
+            "device_id": device_id,
+            "redirect_uri": self.get_redirect_uri(state),
+        }
+        if state:
+            params["state"] = state
+        return params
+
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
+        response = kwargs.get("response") or {}
+        client_id, _client_secret = self.get_key_and_secret()
+        data = self.get_json(
+            self.USER_INFO_URL,
+            method="POST",
+            headers=self.auth_headers(),
+            data={
+                "access_token": access_token,
+                "client_id": client_id,
+            },
+        )
+        self.process_error(data)
+
+        user = data.get("user") if isinstance(data.get("user"), dict) else data
+        if not isinstance(user, dict):
+            return {}
+
+        user_id = (
+            user.get("user_id")
+            or user.get("id")
+            or response.get("user_id")
+            or response.get("id")
+        )
+        first_name = user.get("first_name") or user.get("firstName") or ""
+        last_name = user.get("last_name") or user.get("lastName") or ""
+        avatar = (
+            user.get("avatar")
+            or user.get("photo")
+            or user.get("photo_200")
+            or user.get("picture")
+        )
+
+        return {
+            **user,
+            "id": str(user_id) if user_id is not None else None,
+            "user_id": user_id,
+            "first_name": first_name,
+            "last_name": last_name,
+            "email": user.get("email") or response.get("email", ""),
+            "user_photo": avatar,
+            "photo": avatar,
+            "device_id": response.get("device_id")
+            or getattr(self, "_callback_device_id", None),
+        }
+
+    def get_user_details(self, response):
+        fullname, first_name, last_name = self.get_user_names(
+            first_name=response.get("first_name"),
+            last_name=response.get("last_name"),
+        )
+        return {
+            "username": "",
+            "email": response.get("email", ""),
+            "fullname": fullname,
+            "first_name": first_name,
+            "last_name": last_name,
+        }
 
 
 class VKAppOAuth2(VKOAuth2):
