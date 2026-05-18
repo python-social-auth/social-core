@@ -222,7 +222,7 @@ class VKIDOAuth2(BaseOAuth2):
         return params
 
     def callback_data(self) -> dict[str, Any]:
-        data = dict(self.data)
+        data = dict(self.data.items())
         payload = data.get("payload")
         if isinstance(payload, list):
             payload = payload[0] if payload else None
