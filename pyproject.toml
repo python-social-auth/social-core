@@ -19,7 +19,6 @@ dev = [
   "types-defusedxml==0.7.0.20260504",
   "types-oauthlib==3.3.0.20260518",
   "types-requests-oauthlib==2.0.0.20260518",
-  "types-requests==2.33.0.20260518",
   {include-group = "pylint"}
 ]
 pylint = [
@@ -51,7 +50,7 @@ dependencies = [
   "PyJWT[crypto]>=2.12.1",
   "python3-openid>=3.2.0",
   "requests-oauthlib>=2.0.0",
-  "requests>=2.33.1"
+  "requests>=2.34.0"
 ]
 description = "Python social authentication made simple."
 keywords = ["oauth", "openid", "saml", "social auth"]
