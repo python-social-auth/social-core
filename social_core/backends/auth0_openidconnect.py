@@ -39,11 +39,15 @@ class Auth0OpenIdConnectAuth(OpenIdConnectAuth):
 
     def api_path(self, path="") -> str:
         """Build API path for Auth0 domain"""
-        return f"https://{self.setting('DOMAIN')}/{path.lstrip('/')}"
+        base_url = f"https://{self.normalized_domain()}"
+        path = path.strip("/")
+        if path:
+            return f"{base_url}/{path}"
+        return base_url
 
     def oidc_endpoint(self) -> str:
-        """Override to use Auth0 domain instead of OIDC_ENDPOINT setting"""
-        return self.api_path("")
+        """Return Auth0 OpenID Connect endpoint without trailing slash."""
+        return self.api_path()
 
     def get_user_id(self, details, response):
         """Return current user id."""
