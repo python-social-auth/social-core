@@ -11,10 +11,12 @@ Terminology:
 from __future__ import annotations
 
 import json
+from binascii import Error as BinasciiError
 from typing import Any, cast
 
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
 from onelogin.saml2.errors import OneLogin_Saml2_Error
+from onelogin.saml2.response import OneLogin_Saml2_Response
 from onelogin.saml2.settings import OneLogin_Saml2_Settings
 
 from social_core.exceptions import (
@@ -22,6 +24,7 @@ from social_core.exceptions import (
     AuthInvalidParameter,
     AuthMissingParameter,
 )
+from social_core.utils import constant_time_compare, user_is_authenticated
 
 from .base import BaseAuth
 
@@ -276,6 +279,115 @@ class SAMLAuth(BaseAuth):
     name = "saml"
     EXTRA_DATA = []
 
+    def _authn_request_id_session_key(self, idp_name: str) -> str:
+        return f"{self.name}_{idp_name}_authn_request_id"
+
+    def _process_response(
+        self, auth: OneLogin_Saml2_Auth, request_id: str | None = None
+    ) -> None:
+        try:
+            auth.process_response(request_id=request_id)
+        except OneLogin_Saml2_Error as error:
+            raise AuthFailed(self, f"SAML login failed: {error}") from error
+        errors = auth.get_errors()
+        if errors or not auth.is_authenticated():
+            reason = auth.get_last_error_reason()
+            raise AuthFailed(self, f"SAML login failed: {errors} ({reason})")
+
+    def _validate_in_response_to(
+        self, auth: OneLogin_Saml2_Auth, request_id: str
+    ) -> None:
+        in_response_to = auth.get_last_response_in_response_to()
+        if not in_response_to or not constant_time_compare(in_response_to, request_id):
+            raise AuthFailed(self, "SAML login failed: invalid InResponseTo")
+
+    def _response_in_response_to(self, idp: SAMLIdentityProvider) -> str | None:
+        try:
+            saml_response = self.strategy.request_post()["SAMLResponse"]
+            response = OneLogin_Saml2_Response(
+                OneLogin_Saml2_Settings(self.generate_saml_config(idp)),
+                saml_response,
+            )
+        except (BinasciiError, KeyError, OneLogin_Saml2_Error, ValueError):
+            return None
+        return cast("str | None", response.get_in_response_to())
+
+    def _request_id_required(
+        self, request_id: str | None, kwargs: dict[str, Any]
+    ) -> bool:
+        return bool(request_id) or user_is_authenticated(kwargs.get("user"))
+
+    def _check_missing_request_id(
+        self, request_id: str | None, session_id: str | None, kwargs: dict[str, Any]
+    ) -> None:
+        if (
+            self._request_id_required(request_id, kwargs)
+            and not request_id
+            and not session_id
+        ):
+            raise AuthFailed(self, "SAML login failed: missing AuthnRequest ID")
+
+    def _validate_processed_response_request_id(
+        self,
+        auth: OneLogin_Saml2_Auth,
+        request_id: str | None,
+        kwargs: dict[str, Any],
+    ) -> bool:
+        get_in_response_to = getattr(auth, "get_last_response_in_response_to", None)
+        in_response_to = get_in_response_to() if get_in_response_to else None
+        if in_response_to:
+            if not request_id:
+                raise AuthFailed(self, "SAML login failed: missing AuthnRequest ID")
+            self._validate_in_response_to(auth, request_id)
+            return True
+        if user_is_authenticated(kwargs.get("user")):
+            raise AuthFailed(self, "SAML login failed: invalid InResponseTo")
+        return False
+
+    def _validate_auth_response(
+        self,
+        auth: OneLogin_Saml2_Auth,
+        request_id_key: str,
+        request_id: str | None,
+        session_id: str | None,
+        kwargs: dict[str, Any],
+        response_in_response_to: str | None,
+    ) -> tuple[bool, bool]:
+        self._check_missing_request_id(request_id, session_id, kwargs)
+        if session_id:
+            if response_in_response_to:
+                # Authenticate the SAML response before trusting RelayState to
+                # restore another session. The restored request ID is checked
+                # against this response below.
+                self._process_response(auth, response_in_response_to)
+                self.strategy.restore_session(session_id, kwargs)
+                request_id = cast(
+                    "str | None", self.strategy.session_get(request_id_key)
+                )
+                if not request_id:
+                    raise AuthFailed(self, "SAML login failed: missing AuthnRequest ID")
+            else:
+                self._process_response(auth)
+                self.strategy.restore_session(session_id, kwargs)
+                request_id = cast(
+                    "str | None", self.strategy.session_get(request_id_key)
+                )
+                return True, self._validate_processed_response_request_id(
+                    auth, request_id, kwargs
+                )
+            self._validate_in_response_to(auth, request_id)
+            return True, True
+        if response_in_response_to:
+            if not request_id:
+                raise AuthFailed(self, "SAML login failed: missing AuthnRequest ID")
+            self._process_response(auth, request_id)
+            self._validate_in_response_to(auth, request_id)
+            return False, True
+        self._process_response(auth)
+        return False, self._validate_processed_response_request_id(
+            auth, request_id, kwargs
+        )
+
     def get_idp(self, idp_name: str | None) -> SAMLIdentityProvider:
         """Given the name of an IdP, get a SAMLIdentityProvider instance"""
         enabled_idps: dict[str, dict] = cast(
@@ -372,7 +484,8 @@ class SAMLAuth(BaseAuth):
             idp_name = self.strategy.request_data()["idp"]
         except KeyError as error:
             raise AuthMissingParameter(self, "idp") from error
-        auth = self._create_saml_auth(idp=self.get_idp(idp_name))
+        idp = self.get_idp(idp_name)
+        auth = self._create_saml_auth(idp=idp)
         # Below, return_to sets the RelayState, which can contain
         # arbitrary data.  We use it to store the specific SAML IdP
         # name, since we multiple IdPs share the same auth_complete
@@ -383,7 +496,11 @@ class SAMLAuth(BaseAuth):
         }
         if session_id := self.strategy.get_session_id():
             relay_state[self.strategy.SESSION_SAVE_KEY] = session_id
-        return auth.login(return_to=json.dumps(relay_state))
+        url = auth.login(return_to=json.dumps(relay_state))
+        self.strategy.session_set(
+            self._authn_request_id_session_key(idp.name), auth.get_last_request_id()
+        )
+        return url
 
     def get_user_details(self, response):
         """Get user details like full name, email, etc. from the
@@ -442,20 +559,28 @@ class SAMLAuth(BaseAuth):
             next_url = relay_state.get("next")
 
         idp = self.get_idp(idp_name)
-        auth = self._create_saml_auth(idp)
-        try:
-            auth.process_response()
-        except OneLogin_Saml2_Error as error:
-            raise AuthFailed(self, f"SAML login failed: {error}") from error
-        errors = auth.get_errors()
-        if errors or not auth.is_authenticated():
-            reason = auth.get_last_error_reason()
-            raise AuthFailed(self, f"SAML login failed: {errors} ({reason})")
+        request_id_key = self._authn_request_id_session_key(idp.name)
+        request_id = cast("str | None", self.strategy.session_get(request_id_key))
+        if session_id:
+            request_id = None
+        self._check_missing_request_id(request_id, session_id, kwargs)
+        response_in_response_to = self._response_in_response_to(idp)
 
+        auth = self._create_saml_auth(idp)
+        session_restored, request_id_validated = self._validate_auth_response(
+            auth,
+            request_id_key,
+            request_id,
+            session_id,
+            kwargs,
+            response_in_response_to,
+        )
+        if request_id_validated:
+            self.strategy.session_pop(request_id_key)
         attributes = auth.get_attributes()
         attributes["name_id"] = auth.get_nameid()
         self._check_entitlements(idp, attributes)
-        if session_id:
+        if session_id and not session_restored:
             self.strategy.restore_session(session_id, kwargs)
         elif next_url:
             # The do_complete action expects the "next" URL to be in
