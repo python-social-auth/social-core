@@ -100,6 +100,11 @@ class Auth0OpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
         with self.assertRaises(AuthMissingParameter):
             self.backend.api_path()
 
+    def test_api_path_rejects_missing_domain_after_normalization(self) -> None:
+        self.strategy.set_settings({"SOCIAL_AUTH_AUTH0_OPENIDCONNECT_DOMAIN": "https://"})
+        with self.assertRaises(AuthMissingParameter):
+            self.backend.api_path()
+
     def test_oidc_config_uses_correct_discovery_url(self) -> None:
         self.backend.oidc_config.invalidate()
         self.backend.oidc_config()
