@@ -89,7 +89,7 @@ class TestUserSocialAuth(UserMixin, BaseModel):
 
     NEXT_ID = 1
     cache: dict[int, TestUserSocialAuth] = {}
-    cache_by_uid: dict[int, TestUserSocialAuth] = {}
+    cache_by_uid: dict[str, TestUserSocialAuth] = {}
 
     def __init__(self, user: User, provider, uid, extra_data=None) -> None:
         self.id = TestUserSocialAuth.next_id()
@@ -101,7 +101,10 @@ class TestUserSocialAuth(UserMixin, BaseModel):
         TestUserSocialAuth.cache_by_uid[uid] = self
 
     def save(self) -> None:
-        pass
+        for uid, social_auth in list(TestUserSocialAuth.cache_by_uid.items()):
+            if social_auth is self:
+                del TestUserSocialAuth.cache_by_uid[uid]
+        TestUserSocialAuth.cache_by_uid[self.uid] = self
 
     @classmethod
     def reset_cache(cls) -> None:
@@ -149,7 +152,7 @@ class TestUserSocialAuth(UserMixin, BaseModel):
         return None
 
     @classmethod
-    def get_social_auth(cls, provider: str, uid: int):
+    def get_social_auth(cls, provider: str, uid: str):
         social_user = cls.cache_by_uid.get(uid)
         if social_user and social_user.provider == provider:
             return social_user
@@ -170,7 +173,7 @@ class TestUserSocialAuth(UserMixin, BaseModel):
         ]
 
     @classmethod
-    def create_social_auth(cls, user: UserProtocol, uid: int, provider: str):
+    def create_social_auth(cls, user: UserProtocol, uid: str, provider: str):
         return cls(user=cast("User", user), provider=provider, uid=uid)
 
     @classmethod

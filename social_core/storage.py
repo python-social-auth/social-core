@@ -265,7 +265,7 @@ class UserMixin:
         raise NotImplementedError("Implement in subclass")
 
     @classmethod
-    def get_social_auth(cls, provider: str, uid: int):
+    def get_social_auth(cls, provider: str, uid: str):
         """Return UserSocialAuth for given provider and uid"""
         raise NotImplementedError("Implement in subclass")
 
@@ -281,7 +281,7 @@ class UserMixin:
         raise NotImplementedError("Implement in subclass")
 
     @classmethod
-    def create_social_auth(cls, user: UserProtocol, uid: int, provider: str):
+    def create_social_auth(cls, user: UserProtocol, uid: str, provider: str):
         """Create a UserSocialAuth instance for given user"""
         raise NotImplementedError("Implement in subclass")
 
