@@ -2,6 +2,7 @@ import json
 
 import responses
 
+from social_core.exceptions import AuthMissingParameter
 from social_core.tests.backends.oauth import BaseAuthUrlTestMixin
 from social_core.tests.backends.open_id_connect import OpenIdConnectTest
 
@@ -67,6 +68,64 @@ class Auth0OpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
         )
         self.assertEqual(
             self.backend.access_token_url(), f"https://{self.domain}/oauth/token"
+        )
+
+    def test_api_path_normalizes_domain_with_trailing_slash(self) -> None:
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_AUTH0_OPENIDCONNECT_DOMAIN": f"{self.domain}/"}
+        )
+
+        self.assertEqual(self.backend.api_path(), f"https://{self.domain}")
+        self.assertEqual(
+            self.backend.api_path("/oauth/token/"),
+            f"https://{self.domain}/oauth/token",
+        )
+        self.assertEqual(self.backend.oidc_endpoint(), f"https://{self.domain}")
+
+    def test_api_path_normalizes_domain_with_scheme(self) -> None:
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_AUTH0_OPENIDCONNECT_DOMAIN": f"https://{self.domain}/"}
+        )
+
+        self.assertEqual(self.backend.api_path(), f"https://{self.domain}")
+        self.assertEqual(
+            self.backend.api_path("/authorize"),
+            f"https://{self.domain}/authorize",
+        )
+        self.assertEqual(self.backend.oidc_endpoint(), f"https://{self.domain}")
+
+    def test_api_path_rejects_missing_domain(self) -> None:
+        self.strategy.set_settings({"SOCIAL_AUTH_AUTH0_OPENIDCONNECT_DOMAIN": ""})
+
+        with self.assertRaises(AuthMissingParameter):
+            self.backend.api_path()
+
+    def test_api_path_rejects_missing_domain_after_normalization(self) -> None:
+        self.strategy.set_settings({"SOCIAL_AUTH_AUTH0_OPENIDCONNECT_DOMAIN": "/"})
+        with self.assertRaises(AuthMissingParameter):
+            self.backend.api_path()
+
+    def test_oidc_config_uses_correct_discovery_url(self) -> None:
+        self.backend.oidc_config.invalidate()
+        self.backend.oidc_config()
+
+        self.assertEqual(
+            responses.calls[-1].request.url,
+            f"https://{self.domain}/.well-known/openid-configuration",
+        )
+
+    def test_oidc_config_uses_correct_discovery_url_with_normalized_domain(
+        self,
+    ) -> None:
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_AUTH0_OPENIDCONNECT_DOMAIN": f"https://{self.domain}/"}
+        )
+        self.backend.oidc_config.invalidate()
+        self.backend.oidc_config()
+
+        self.assertEqual(
+            responses.calls[-1].request.url,
+            f"https://{self.domain}/.well-known/openid-configuration",
         )
 
     def test_auth0_user_details(self) -> None:
