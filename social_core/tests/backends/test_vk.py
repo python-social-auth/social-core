@@ -84,6 +84,7 @@ class VKAppOAuth2Test(BaseBackendTest):
     def test_login(self) -> None:
         user = self.do_login()
 
+        self.assertEqual(user.username, self.expected_username)
         self.assertEqual(user.social[0].uid, VIEWER_ID)
         self.assertEqual(user.social[0].provider, self.backend.name)
 
