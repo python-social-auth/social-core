@@ -77,13 +77,14 @@ class VKAppOAuth2Test(BaseBackendTest):
         data["auth_key"] = self.auth_key(viewer_id)
         return data
 
-    def do_start(self):
+    def do_start(self) -> User:
         self.strategy.set_request_data(self.signed_request_data(), self.backend)
         return self.backend.complete()
 
     def test_login(self) -> None:
         user = self.do_login()
 
+        self.assertEqual(user.username, self.expected_username)
         self.assertEqual(user.social[0].uid, VIEWER_ID)
         self.assertEqual(user.social[0].provider, self.backend.name)
 
