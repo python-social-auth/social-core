@@ -540,7 +540,9 @@ class SAMLTest(BaseBackendTest):
         events: list[tuple[str, str]] = []
 
         class InvalidAuth:
-            def process_response(self, request_id=None):
+            def process_response(self, request_id: str | None = None) -> None:
+                if request_id is None:
+                    raise AssertionError("request_id should be TEST_ID")
                 events.append(("process_response", request_id))
 
             def get_errors(self):
