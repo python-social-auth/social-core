@@ -359,7 +359,7 @@ class SAMLTest(BaseBackendTest):
     def test_relay_state_restored_session_rejects_mismatched_in_response_to(
         self,
     ) -> None:
-        events: list[object] = []
+        events: list[str | tuple[str, None]] = []
         victim = User("victim")
         key = self.authn_request_id_session_key("testshib")
 
