@@ -75,8 +75,12 @@ class BaseAuth:
         raise NotImplementedError("Implement in subclass")
 
     def process_error(self, data) -> None:
-        """Process data for errors, raise exception if needed.
-        Call this method on any override of auth_complete."""
+        """Hook to process provider response errors.
+
+        Default implementation is a no-op. Backends that can detect
+        provider-specific error payloads should override this method and
+        raise an appropriate exception when needed.
+        """
 
     def authenticate(
         self, *args, **kwargs
@@ -209,8 +213,12 @@ class BaseAuth:
         allowed = True
         if email and (emails or domains):
             email = email.lower()
-            domain = email.split("@", 1)[1]
-            allowed = email in emails or domain in domains
+            parts = email.split("@", 1)
+            if len(parts) != 2:
+                allowed = False
+            else:
+                domain = parts[1]
+                allowed = email in emails or domain in domains
         return allowed
 
     def id_key(self) -> str:
@@ -228,7 +236,7 @@ class BaseAuth:
         return response.get(id_key)
 
     def get_user_details(self, response) -> dict[str, Any]:
-        """Must return user details in a know internal struct:
+        """Must return user details in a known internal struct:
         {'username': <username if any>,
          'email': <user email if any>,
          'fullname': <user full name if any>,
