@@ -209,8 +209,12 @@ class BaseAuth:
         allowed = True
         if email and (emails or domains):
             email = email.lower()
-            domain = email.split("@", 1)[1]
-            allowed = email in emails or domain in domains
+            parts = email.split("@", 1)
+            if len(parts) != 2:
+                allowed = False
+            else:
+                domain = parts[1]
+                allowed = email in emails or domain in domains
         return allowed
 
     def id_key(self) -> str:
