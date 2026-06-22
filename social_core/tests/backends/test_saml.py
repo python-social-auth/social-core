@@ -537,7 +537,7 @@ class SAMLTest(BaseBackendTest):
         """
         A parseable InResponseTo alone is not enough to trust RelayState session data.
         """
-        events: list[object] = []
+        events: list[tuple[str, str]] = []
 
         class InvalidAuth:
             def process_response(self, request_id=None):
