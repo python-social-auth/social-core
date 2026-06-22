@@ -75,8 +75,12 @@ class BaseAuth:
         raise NotImplementedError("Implement in subclass")
 
     def process_error(self, data) -> None:
-        """Process data for errors, raise exception if needed.
-        Call this method on any override of auth_complete."""
+        """Hook to process provider response errors.
+
+        Default implementation is a no-op. Backends that can detect
+        provider-specific error payloads should override this method and
+        raise an appropriate exception when needed.
+        """
 
     def authenticate(
         self, *args, **kwargs
