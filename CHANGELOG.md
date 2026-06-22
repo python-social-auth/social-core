@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Security
+
+- LoginRadius backend now validates callback state to prevent login CSRF.
+
 ### Removed
 
 - Discontinued OAuth backends: AppsFuel, Beats Music, ChangeTip, Clef,

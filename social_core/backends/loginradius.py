@@ -22,7 +22,7 @@ class LoginRadiusAuth(BaseOAuth2):
     ID_KEY = "ID"
     ACCESS_TOKEN_URL = "https://api.loginradius.com/api/v2/access_token"
     PROFILE_URL = "https://api.loginradius.com/api/v2/userprofile"
-    REDIRECT_STATE = False
+    REDIRECT_STATE = True
     STATE_PARAMETER = False
 
     def uses_redirect(self) -> bool:
@@ -31,13 +31,15 @@ class LoginRadiusAuth(BaseOAuth2):
 
     def auth_html(self):
         key, _secret = self.get_key_and_secret()
+        state = self.get_or_create_state()
         tpl = self.setting("TEMPLATE", "loginradius.html")
         return self.strategy.render_html(
             tpl=tpl,
             context={
                 "backend": self,
                 "LOGINRADIUS_KEY": key,
-                "LOGINRADIUS_REDIRECT_URL": self.get_redirect_uri(),
+                "LOGINRADIUS_REDIRECT_STATE": state,
+                "LOGINRADIUS_REDIRECT_URL": self.get_redirect_uri(state),
             },
         )
 
