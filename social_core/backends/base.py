@@ -228,7 +228,7 @@ class BaseAuth:
         return response.get(id_key)
 
     def get_user_details(self, response) -> dict[str, Any]:
-        """Must return user details in a know internal struct:
+        """Must return user details in a known internal struct:
         {'username': <username if any>,
          'email': <user email if any>,
          'fullname': <user full name if any>,
