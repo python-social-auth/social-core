@@ -416,7 +416,7 @@ class SAMLTest(BaseBackendTest):
         self.assertEqual(self.strategy.session_get(key), "TEST_ID")
 
     def test_relay_state_restored_session_ignores_transient_request_id(self) -> None:
-        events: list[object] = []
+        events: list[str | tuple[str, str | None]] = []
         victim = User("victim")
         key = self.authn_request_id_session_key("testshib")
         self.strategy.session_set(key, "STALE_ID")
