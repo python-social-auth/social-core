@@ -10,7 +10,7 @@ from hashlib import md5
 from time import time
 from typing import Any, cast
 
-from social_core.exceptions import AuthException, AuthTokenRevoked
+from social_core.exceptions import AuthException, AuthFailed, AuthTokenRevoked
 from social_core.utils import parse_qs
 
 from .base import BaseAuth
@@ -184,12 +184,13 @@ class VKAppOAuth2(VKOAuth2):
 
         auth_key = self.data.get("auth_key")
 
-        # Verify signature, if present
+        # Verify signature before trusting callback data.
         key, secret = self.get_key_and_secret()
-        if auth_key:
-            check_key = vk_sig(f"{key}_{self.data.get('viewer_id')}_{secret}")
-            if check_key != auth_key:
-                raise ValueError("VK.com authentication failed: invalid auth key")
+        if not auth_key:
+            raise AuthFailed(self, "Missing auth key")
+        check_key = vk_sig(f"{key}_{self.data.get('viewer_id')}_{secret}")
+        if check_key != auth_key:
+            raise AuthFailed(self, "Invalid auth key")
 
         user_check = self.setting("USERMODE")
         user_id = self.data.get("viewer_id")
