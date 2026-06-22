@@ -211,7 +211,7 @@ class SAMLTest(BaseBackendTest):
     def test_relay_state_restored_session_request_id_validates_in_response_to(
         self,
     ) -> None:
-        events: list[object] = []
+        events: list[str | tuple[str, None] | tuple[str, User]] = []
         victim = User("victim")
         key = self.authn_request_id_session_key("testshib")
         self.strategy.session_set(key, "STALE_ID")
@@ -281,7 +281,7 @@ class SAMLTest(BaseBackendTest):
     def test_relay_state_restored_session_skips_no_id_validation_for_in_response_to(
         self,
     ) -> None:
-        events: list[object] = []
+        events: list[str | tuple[str, str | None] | tuple[str, User]] = []
         victim = User("victim")
         key = self.authn_request_id_session_key("testshib")
 
@@ -359,7 +359,7 @@ class SAMLTest(BaseBackendTest):
     def test_relay_state_restored_session_rejects_mismatched_in_response_to(
         self,
     ) -> None:
-        events: list[object] = []
+        events: list[str | tuple[str, None]] = []
         victim = User("victim")
         key = self.authn_request_id_session_key("testshib")
 
@@ -416,7 +416,7 @@ class SAMLTest(BaseBackendTest):
         self.assertEqual(self.strategy.session_get(key), "TEST_ID")
 
     def test_relay_state_restored_session_ignores_transient_request_id(self) -> None:
-        events: list[object] = []
+        events: list[str | tuple[str, str | None]] = []
         victim = User("victim")
         key = self.authn_request_id_session_key("testshib")
         self.strategy.session_set(key, "STALE_ID")
@@ -537,10 +537,12 @@ class SAMLTest(BaseBackendTest):
         """
         A parseable InResponseTo alone is not enough to trust RelayState session data.
         """
-        events: list[object] = []
+        events: list[tuple[str, str]] = []
 
         class InvalidAuth:
-            def process_response(self, request_id=None):
+            def process_response(self, request_id: str | None = None) -> None:
+                if request_id is None:
+                    raise AssertionError("request_id should be TEST_ID")
                 events.append(("process_response", request_id))
 
             def get_errors(self):
