@@ -281,7 +281,7 @@ class SAMLTest(BaseBackendTest):
     def test_relay_state_restored_session_skips_no_id_validation_for_in_response_to(
         self,
     ) -> None:
-        events: list[object] = []
+        events: list[str | tuple[str, str | None] | tuple[str, User]] = []
         victim = User("victim")
         key = self.authn_request_id_session_key("testshib")
 
