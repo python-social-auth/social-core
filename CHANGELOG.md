@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Security
 
 - LoginRadius backend now validates callback state to prevent login CSRF.
+- Partial pipeline resume now requires session ownership or explicit external
+  resume confirmation to prevent login CSRF.
 
 ### Removed
 

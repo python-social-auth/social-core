@@ -6,8 +6,14 @@ from unittest.mock import Mock, patch
 from social_core.backends.base import BaseAuth
 from social_core.pipeline.utils import partial_prepare
 from social_core.utils import (
+    PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME,
+    PARTIAL_TOKEN_PENDING_CONFIRMATION_SESSION_NAME,
+    PARTIAL_TOKEN_PENDING_REQUEST_SESSION_NAME,
+    PARTIAL_TOKEN_PENDING_SESSION_NAME,
+    PARTIAL_TOKEN_SESSION_NAME,
     build_absolute_uri,
     partial_pipeline_data,
+    partial_pipeline_result,
     sanitize_redirect,
     slugify,
     user_is_active,
@@ -210,6 +216,30 @@ class PartialPrepareTest(unittest.TestCase):
         )
 
 
+class CleanPartialPipelineTest(unittest.TestCase):
+    def test_clean_partial_pipeline_clears_pending_external_resume(self) -> None:
+        strategy = TestStrategy(TestStorage)
+        partial = TestPartial.prepare("test-backend", 0, {"args": [], "kwargs": {}})
+        partial.token = "external-token"
+        partial.save()
+        strategy.session_set(PARTIAL_TOKEN_PENDING_SESSION_NAME, partial.token)
+        strategy.session_set(PARTIAL_TOKEN_PENDING_CONFIRMATION_SESSION_NAME, "nonce")
+        strategy.session_set(
+            PARTIAL_TOKEN_PENDING_REQUEST_SESSION_NAME, {"verification_code": "123456"}
+        )
+
+        strategy.clean_partial_pipeline(partial.token)
+
+        self.assertIsNone(TestPartial.load(partial.token))
+        self.assertIsNone(strategy.session_get(PARTIAL_TOKEN_PENDING_SESSION_NAME))
+        self.assertIsNone(
+            strategy.session_get(PARTIAL_TOKEN_PENDING_REQUEST_SESSION_NAME)
+        )
+        self.assertIsNone(
+            strategy.session_get(PARTIAL_TOKEN_PENDING_CONFIRMATION_SESSION_NAME)
+        )
+
+
 class PartialPipelineData(unittest.TestCase):
     def test_returns_partial_when_uid_and_email_do_match(self) -> None:
         email = "foo@example.com"
@@ -223,6 +253,158 @@ class PartialPipelineData(unittest.TestCase):
         self.assertIn(key, partial.kwargs)
         self.assertEqual(partial.kwargs[key], val)
         self.assertEqual(backend.strategy.clean_partial_pipeline.call_count, 0)
+
+    def test_returns_partial_when_request_token_matches_session_id(self) -> None:
+        backend = self._backend(request_data={"partial_token": "session-token"})
+        partial = partial_pipeline_data(backend)
+        self.assertIsNotNone(partial)
+        backend.strategy.partial_load.assert_called_once_with("session-token")
+
+    def test_request_token_without_session_match_is_halted(self) -> None:
+        backend = self._backend(
+            request_data={"partial_token": "attacker-token"},
+            session_id="session-token",
+            partial_id="attacker-token",
+        )
+        result = partial_pipeline_result(backend)
+        self.assertIsNone(result.partial)
+        self.assertIsNone(result.response)
+        self.assertTrue(result.halt)
+        self.assertEqual(backend.strategy.clean_partial_pipeline.call_count, 0)
+
+    def test_external_resume_stores_pending_token_and_returns_confirmation(
+        self,
+    ) -> None:
+        response = object()
+        backend = self._backend(
+            request_data={
+                "partial_token": "external-token",
+                "verification_code": "123456",
+            },
+            session_id=None,
+            partial_id="external-token",
+            partial_data={PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME: True},
+        )
+        backend.strategy.partial_pipeline_external_resume_confirmation.return_value = (
+            response
+        )
+
+        result = partial_pipeline_result(backend)
+
+        self.assertIsNone(result.partial)
+        self.assertEqual(result.response, response)
+        self.assertFalse(result.halt)
+        backend.strategy.partial_pipeline_external_resume_confirmation.assert_called_once()
+        backend.strategy.session_set.assert_any_call(
+            PARTIAL_TOKEN_PENDING_SESSION_NAME, "external-token"
+        )
+        backend.strategy.session_set.assert_any_call(
+            PARTIAL_TOKEN_PENDING_REQUEST_SESSION_NAME,
+            {"partial_token": "external-token", "verification_code": "123456"},
+        )
+
+    def test_external_resume_stores_plain_pending_request_data(self) -> None:
+        class MultiValueDict(dict):
+            def get(self, key, default=None):
+                value = super().get(key, default)
+                if isinstance(value, list):
+                    return value[-1]
+                return value
+
+            def dict(self):
+                return {key: values[-1] for key, values in self.items()}
+
+        class QueryDict(MultiValueDict):
+            pass
+
+        response = object()
+        backend = self._backend(
+            request_data=QueryDict(
+                {
+                    "partial_token": ["external-token"],
+                    "verification_code": ["123456"],
+                }
+            ),
+            session_id=None,
+            partial_id="external-token",
+            partial_data={PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME: True},
+        )
+        backend.strategy.partial_pipeline_external_resume_confirmation.return_value = (
+            response
+        )
+
+        partial_pipeline_result(backend)
+
+        backend.strategy.session_set.assert_any_call(
+            PARTIAL_TOKEN_PENDING_REQUEST_SESSION_NAME,
+            {"partial_token": "external-token", "verification_code": "123456"},
+        )
+
+    def test_external_resume_without_confirmation_handler_halts(self) -> None:
+        backend = self._backend(
+            request_data={"partial_token": "external-token"},
+            session_id=None,
+            partial_id="external-token",
+            partial_data={PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME: True},
+        )
+
+        result = partial_pipeline_result(backend)
+
+        self.assertIsNone(result.partial)
+        self.assertIsNone(result.response)
+        self.assertTrue(result.halt)
+        self.assertEqual(backend.strategy.session_set.call_count, 0)
+
+    def test_unconfirmed_external_resume_halts(self) -> None:
+        backend = self._backend(
+            request_data={"partial_pipeline_confirm": "1"},
+            session_id=None,
+            pending_resume={
+                "token": "external-token",
+                "request": {
+                    "partial_token": "external-token",
+                    "verification_code": "123456",
+                },
+            },
+            partial_id="external-token",
+            partial_data={PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME: True},
+        )
+        backend.strategy.partial_pipeline_external_resume_confirmed.return_value = False
+
+        result = partial_pipeline_result(backend)
+
+        self.assertIsNone(result.partial)
+        self.assertIsNone(result.response)
+        self.assertTrue(result.halt)
+
+    def test_confirmed_external_resume_uses_pending_request_data(self) -> None:
+        backend = self._backend(
+            request_data={"partial_pipeline_confirm": "1"},
+            session_id=None,
+            pending_resume={
+                "token": "external-token",
+                "request": {
+                    "partial_token": "external-token",
+                    "verification_code": "123456",
+                },
+            },
+            partial_id="external-token",
+            partial_data={PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME: True},
+        )
+
+        result = partial_pipeline_result(backend, request=object())
+
+        self.assertIsNotNone(result.partial)
+        assert result.partial is not None
+        self.assertEqual(
+            result.partial.kwargs["request"]["partial_token"], "external-token"
+        )
+        self.assertEqual(
+            result.partial.kwargs["request"]["verification_code"], "123456"
+        )
+        self.assertEqual(
+            result.partial.kwargs["request"]["partial_pipeline_confirm"], "1"
+        )
 
     def test_clean_pipeline_when_uid_does_not_match(self) -> None:
         backend = self._backend({"uid": "foo@example.com"})
@@ -268,21 +450,53 @@ class PartialPipelineData(unittest.TestCase):
         self.assertEqual(partial.kwargs[key], val)
         self.assertEqual(backend.strategy.clean_partial_pipeline.call_count, 0)
 
-    def _backend(self, session_kwargs=None):
+    def _backend(
+        self,
+        session_kwargs=None,
+        request_data=None,
+        session_id: str | None = "session-token",
+        pending_resume=None,
+        partial_id="session-token",
+        partial_data=None,
+        settings=None,
+    ):
         backend = Mock()
         backend.ID_KEY = "email"
         backend.name = "mock-backend"
         backend.id_key.return_value = "email"
+        settings = settings or {}
+
+        def setting(name, default=None):
+            return settings.get(name, default)
 
         strategy = Mock()
         strategy.request = None
-        strategy.request_data.return_value = {}
-        strategy.session_get.return_value = object()
-        strategy.partial_load.return_value = TestPartial.prepare(
+        strategy.request_data.return_value = request_data or {}
+        strategy.to_session_value.side_effect = lambda value: value
+        strategy.from_session_value.side_effect = lambda value: value
+        session_values = {
+            PARTIAL_TOKEN_SESSION_NAME: session_id,
+            PARTIAL_TOKEN_PENDING_SESSION_NAME: (pending_resume or {}).get("token"),
+            PARTIAL_TOKEN_PENDING_REQUEST_SESSION_NAME: (pending_resume or {}).get(
+                "request"
+            ),
+        }
+        strategy.session_get.side_effect = lambda name, default=None: (
+            session_values.get(name, default)
+        )
+        partial = TestPartial.prepare(
             backend.name, 0, {"args": [], "kwargs": session_kwargs or {}}
         )
+        partial.token = partial_id
+        if partial_data:
+            partial.data.update(partial_data)
+        strategy.partial_load.return_value = partial
+        strategy.redirect.return_value = Mock()
+        strategy.partial_pipeline_external_resume_confirmation.return_value = None
+        strategy.partial_pipeline_external_resume_confirmed.return_value = True
 
         backend.strategy = strategy
+        backend.setting.side_effect = setting
         return backend
 
 

@@ -12,7 +12,14 @@ from .exceptions import (
 from .pipeline import DEFAULT_AUTH_PIPELINE, DEFAULT_DISCONNECT_PIPELINE
 from .pipeline.utils import partial_load
 from .store import OpenIdSessionWrapper, OpenIdStore
-from .utils import PARTIAL_TOKEN_SESSION_NAME, module_member, setting_name
+from .utils import (
+    PARTIAL_TOKEN_PENDING_CONFIRMATION_SESSION_NAME,
+    PARTIAL_TOKEN_PENDING_REQUEST_SESSION_NAME,
+    PARTIAL_TOKEN_PENDING_SESSION_NAME,
+    PARTIAL_TOKEN_SESSION_NAME,
+    module_member,
+    setting_name,
+)
 
 if TYPE_CHECKING:
     from .backends.base import BaseAuth
@@ -132,6 +139,26 @@ class BaseStrategy:
         current_token_in_session = self.session_get(PARTIAL_TOKEN_SESSION_NAME)
         if current_token_in_session == token:
             self.session_pop(PARTIAL_TOKEN_SESSION_NAME)
+        pending_token_in_session = self.session_get(PARTIAL_TOKEN_PENDING_SESSION_NAME)
+        if pending_token_in_session == token:
+            self.session_pop(PARTIAL_TOKEN_PENDING_SESSION_NAME)
+            self.session_pop(PARTIAL_TOKEN_PENDING_REQUEST_SESSION_NAME)
+            self.session_pop(PARTIAL_TOKEN_PENDING_CONFIRMATION_SESSION_NAME)
+
+    def partial_pipeline_external_resume_confirmation(
+        self,
+        backend: BaseAuth,
+        partial: PartialMixin,
+        request_data: dict[str, Any],
+    ) -> HttpResponseProtocol | None:
+        return None
+
+    def partial_pipeline_external_resume_confirmed(
+        self,
+        backend: BaseAuth,
+        request_data: dict[str, Any],
+    ) -> bool:
+        return False
 
     def openid_store(self) -> OpenIdStore:
         return OpenIdStore(self)

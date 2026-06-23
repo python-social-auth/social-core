@@ -1,11 +1,14 @@
 from functools import wraps
 
-from social_core.utils import PARTIAL_TOKEN_SESSION_NAME
+from social_core.utils import (
+    PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME,
+    PARTIAL_TOKEN_SESSION_NAME,
+)
 
 from .utils import partial_prepare
 
 
-def partial_step(save_to_session):
+def partial_step(save_to_session, allow_external_resume=False):
     """Wraps func to behave like a partial pipeline step, any output
     that's not None or {} will be considered a response object and
     will be returned to user.
@@ -21,6 +24,9 @@ def partial_step(save_to_session):
     The token is also stored in the session under the
     PARTIAL_TOKEN_SESSION_NAME (partial_pipeline_token) key when the
     save_to_session parameter is True.
+
+    Set allow_external_resume=True only for flows that intentionally resume
+    from an external validation link, such as email validation.
     """
 
     def decorator(func):
@@ -43,6 +49,9 @@ def partial_step(save_to_session):
             )
 
             if not isinstance(out, dict):
+                current_partial.data[PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME] = (
+                    allow_external_resume
+                )
                 strategy.storage.partial.store(current_partial)
                 if save_to_session:
                     strategy.session_set(

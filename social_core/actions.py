@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Any, cast
 from urllib.parse import quote
 
 from .utils import (
-    partial_pipeline_data,
+    partial_pipeline_result,
     sanitize_redirect,
     setting_url,
     user_is_active,
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     from .backends.base import BaseAuth
-    from .storage import PipelineUserProtocol, UserMixin, UserProtocol
+    from .storage import PartialMixin, PipelineUserProtocol, UserMixin, UserProtocol
     from .strategy import HttpResponseProtocol
 
 
@@ -49,6 +49,31 @@ def _sanitize_redirect_url(backend: BaseAuth, url: str) -> str:
             raise ValueError("Disallowed URL")
         url = cast("str", sanitized_url)
     return url
+
+
+def _handle_partial(
+    backend: BaseAuth,
+    user: UserProtocol | None,
+    resume_partial: Callable[[PartialMixin], Any],
+    halt_url_names: tuple[str, ...],
+    halt_error: str,
+    *args,
+    **kwargs,
+) -> tuple[bool, Any]:
+    partial = partial_pipeline_result(backend, user, *args, **kwargs)
+    if partial.response is not None:
+        return True, partial.response
+    if partial.partial:
+        response = resume_partial(partial.partial)
+        backend.strategy.clean_partial_pipeline(partial.partial.token)
+        return True, response
+    if partial.halt:
+        halt_url = setting_url(backend, *halt_url_names)
+        if not halt_url:
+            raise ValueError(halt_error)
+        halt_url = _sanitize_redirect_url(backend, halt_url)
+        return True, backend.strategy.redirect(halt_url)
+    return False, None
 
 
 def do_auth(backend: BaseAuth, redirect_name: str = "next") -> HttpResponseProtocol:
@@ -93,11 +118,19 @@ def do_complete(
     partial_user = user if is_authenticated else None
     authenticated_user: UserProtocol | HttpResponseProtocol | None = partial_user
 
-    partial = partial_pipeline_data(backend, partial_user, *args, **kwargs)
-    if partial:
-        authenticated_user = backend.continue_pipeline(partial)
-        # clean partial data after usage
-        backend.strategy.clean_partial_pipeline(partial.token)
+    partial_handled, partial_response = _handle_partial(
+        backend,
+        partial_user,
+        backend.continue_pipeline,
+        ("LOGIN_ERROR_URL", "LOGIN_URL"),
+        "By this point URL has to have been set",
+        *args,
+        **kwargs,
+    )
+    if partial_handled:
+        authenticated_user = cast(
+            "UserProtocol | HttpResponseProtocol | None", partial_response
+        )
     else:
         authenticated_user = backend.complete(
             *args, user=authenticated_user, redirect_name=redirect_name, **kwargs
@@ -173,13 +206,24 @@ def do_disconnect(
     *args,
     **kwargs,
 ):
-    partial = partial_pipeline_data(backend, user, *args, **kwargs)
-    if partial:
+    response: dict | HttpResponseProtocol
+
+    def resume_disconnect(partial: PartialMixin):
         if association_id and not partial.kwargs.get("association_id"):
             partial.extend_kwargs({"association_id": association_id})
-        response = backend.disconnect(*partial.args, **partial.kwargs)
-        # clean partial data after usage
-        backend.strategy.clean_partial_pipeline(partial.token)
+        return backend.disconnect(*partial.args, **partial.kwargs)
+
+    partial_handled, partial_response = _handle_partial(
+        backend,
+        user,
+        resume_disconnect,
+        ("DISCONNECT_REDIRECT_URL", "LOGIN_REDIRECT_URL"),
+        "Disallowed URL",
+        *args,
+        **kwargs,
+    )
+    if partial_handled:
+        response = cast("dict | HttpResponseProtocol", partial_response)
     else:
         response = backend.disconnect(
             *args, user=user, association_id=association_id, **kwargs

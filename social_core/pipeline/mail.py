@@ -4,13 +4,13 @@ from typing import TYPE_CHECKING, cast
 
 from social_core.exceptions import InvalidEmail
 
-from .partial import partial
+from .partial import partial_step
 
 if TYPE_CHECKING:
     from social_core.backends.base import BaseAuth
 
 
-@partial
+@partial_step(save_to_session=True, allow_external_resume=True)
 def mail_validation(backend: BaseAuth, details, is_new=False, *args, **kwargs):
     requires_validation = backend.REQUIRES_EMAIL_VALIDATION or backend.setting(
         "FORCE_EMAIL_VALIDATION", False
@@ -19,7 +19,9 @@ def mail_validation(backend: BaseAuth, details, is_new=False, *args, **kwargs):
         is_new or backend.setting("PASSWORDLESS", False)
     )
     if requires_validation and send_validation:
-        data = backend.strategy.request_data()
+        # External partial resumes may replay the original validation-link data
+        # after a local confirmation request.
+        data = kwargs.get("request") or backend.strategy.request_data()
         if "verification_code" in data:
             backend.strategy.session_pop("email_validation_address")
             if not backend.strategy.validate_email(
