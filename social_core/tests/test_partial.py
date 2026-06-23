@@ -2,7 +2,10 @@ import unittest
 from unittest.mock import Mock, patch
 
 from social_core.pipeline.partial import partial, partial_step
-from social_core.utils import PARTIAL_TOKEN_SESSION_NAME
+from social_core.utils import (
+    PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME,
+    PARTIAL_TOKEN_SESSION_NAME,
+)
 
 
 class PartialDecoratorTestCase(unittest.TestCase):
@@ -10,6 +13,7 @@ class PartialDecoratorTestCase(unittest.TestCase):
         super().setUp()
         self.mock_current_partial_token = Mock()
         self.mock_current_partial = Mock(token=self.mock_current_partial_token)
+        self.mock_current_partial.data = {}
 
         self.mock_strategy = Mock()
         self.mock_backend = Mock()
@@ -49,6 +53,32 @@ class PartialDecoratorTestCase(unittest.TestCase):
             self.assertEqual(
                 (PARTIAL_TOKEN_SESSION_NAME, self.mock_current_partial_token),
                 self.mock_session_set.call_args[0],
+            )
+            self.assertFalse(
+                self.mock_current_partial.data[PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME]
+            )
+
+    def test_allow_external_resume(self) -> None:
+        # GIVEN
+        expected_response = Mock()
+
+        @partial_step(save_to_session=True, allow_external_resume=True)
+        def decorated_func(*args, **kwargs):
+            return expected_response
+
+        # WHEN
+        with patch(
+            "social_core.pipeline.partial.partial_prepare",
+            return_value=self.mock_current_partial,
+        ):
+            response = decorated_func(
+                self.mock_strategy, self.mock_backend, self.mock_pipeline_index
+            )
+
+            # THEN
+            self.assertEqual(expected_response, response)
+            self.assertTrue(
+                self.mock_current_partial.data[PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME]
             )
 
     def test_not_to_save_to_session(self) -> None:

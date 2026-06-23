@@ -1,8 +1,15 @@
 from typing import TYPE_CHECKING, cast
+from unittest.mock import patch
 
+from social_core.actions import do_complete
+from social_core.backends.base import BaseAuth
 from social_core.backends.oauth import BaseOAuth2
-from social_core.tests.models import TestUserSocialAuth, User
-from social_core.utils import PARTIAL_TOKEN_SESSION_NAME
+from social_core.tests.models import TestPartial, TestUserSocialAuth, User
+from social_core.utils import (
+    PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME,
+    PARTIAL_TOKEN_PENDING_SESSION_NAME,
+    PARTIAL_TOKEN_SESSION_NAME,
+)
 
 from .actions import BaseActionTest
 
@@ -32,6 +39,16 @@ class BackendThatControlsRedirect(BaseOAuth2):
         # Put the redirect URL in the session state, as this is where the `do_complete` action looks for it.
         self.strategy.session_set(kwargs["redirect_name"], "/after-login")
         return kwargs["user"]
+
+
+class PartialTokenBackend(BaseAuth):
+    name = "partial-token"
+
+    def auth_url(self) -> str:
+        return "/auth"
+
+    def auth_complete(self, *args, **kwargs):
+        raise AssertionError("Unexpected backend completion")
 
 
 class LoginActionTest(BaseActionTest):
@@ -91,6 +108,51 @@ class LoginActionTest(BaseActionTest):
             partial.data["backend"] = "foobar"
 
         self.do_login_with_partial_pipeline(before_complete)
+
+    def test_complete_rejects_cross_session_partial_token(self) -> None:
+        def unexpected_login(*args, **kwargs) -> None:
+            raise AssertionError("Unexpected login")
+
+        TestPartial.reset_cache()
+        self.addCleanup(TestPartial.reset_cache)
+        backend = PartialTokenBackend(self.strategy)
+        self.strategy.set_settings({"SOCIAL_AUTH_LOGIN_ERROR_URL": "/error"})
+        partial = TestPartial.prepare(backend.name, 0, {"args": [], "kwargs": {}})
+        partial.token = "attacker-token"
+        partial.save()
+        self.strategy.set_request_data({"partial_token": partial.token}, backend)
+
+        redirect = do_complete(backend, login=unexpected_login)
+
+        self.assertEqual(redirect.url, "/error")
+        self.assertIsNone(self.strategy.session_get("username"))
+        self.assertIsNotNone(TestPartial.load(partial.token))
+
+    def test_complete_external_partial_requires_confirmation(self) -> None:
+        def unexpected_login(*args, **kwargs) -> None:
+            raise AssertionError("Unexpected login")
+
+        TestPartial.reset_cache()
+        self.addCleanup(TestPartial.reset_cache)
+        backend = PartialTokenBackend(self.strategy)
+        partial = TestPartial.prepare(backend.name, 0, {"args": [], "kwargs": {}})
+        partial.token = "external-token"
+        partial.data[PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME] = True
+        partial.save()
+        self.strategy.set_request_data({"partial_token": partial.token}, backend)
+
+        with patch.object(
+            self.strategy,
+            "partial_pipeline_external_resume_confirmation",
+            return_value=self.strategy.redirect("/confirm"),
+        ):
+            redirect = do_complete(backend, login=unexpected_login)
+
+        self.assertEqual(redirect.url, "/confirm")
+        self.assertEqual(
+            self.strategy.session_get(PARTIAL_TOKEN_PENDING_SESSION_NAME),
+            partial.token,
+        )
 
     def test_new_user(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_NEW_USER_REDIRECT_URL": "/new-user"})
