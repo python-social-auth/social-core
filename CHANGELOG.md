@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [5.0.1](https://github.com/python-social-auth/social-core/releases/tag/5.0.1) - 2026-06-24
+
+### Security
+
+- Externally resumable partial request links now require confirmation even in
+  the browser session that created the partial, preventing validation links from
+  being consumed by a plain GET.
+
 ## [5.0.0](https://github.com/python-social-auth/social-core/releases/tag/5.0.0) - 2026-06-23
 
 ### Security

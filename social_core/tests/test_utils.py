@@ -260,6 +260,98 @@ class PartialPipelineData(unittest.TestCase):
         self.assertIsNotNone(partial)
         backend.strategy.partial_load.assert_called_once_with("session-token")
 
+    def test_same_session_external_resume_requires_confirmation(self) -> None:
+        response = object()
+        backend = self._backend(
+            request_data={
+                "partial_token": "session-token",
+                "verification_code": "123456",
+            },
+            partial_data={PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME: True},
+        )
+        backend.strategy.partial_pipeline_external_resume_confirmation.return_value = (
+            response
+        )
+
+        result = partial_pipeline_result(backend)
+
+        self.assertIsNone(result.partial)
+        self.assertEqual(result.response, response)
+        self.assertFalse(result.halt)
+        backend.strategy.session_set.assert_any_call(
+            PARTIAL_TOKEN_PENDING_SESSION_NAME, "session-token"
+        )
+        backend.strategy.session_set.assert_any_call(
+            PARTIAL_TOKEN_PENDING_REQUEST_SESSION_NAME,
+            {"partial_token": "session-token", "verification_code": "123456"},
+        )
+
+    def test_same_session_external_resume_rejects_initial_confirmation(self) -> None:
+        response = object()
+        backend = self._backend(
+            request_data={
+                "partial_token": "session-token",
+                "partial_pipeline_confirm": "1",
+                "verification_code": "123456",
+            },
+            partial_data={PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME: True},
+        )
+        backend.strategy.partial_pipeline_external_resume_confirmation.return_value = (
+            response
+        )
+
+        result = partial_pipeline_result(backend)
+
+        self.assertIsNone(result.partial)
+        self.assertEqual(result.response, response)
+        backend.strategy.partial_pipeline_external_resume_confirmed.assert_not_called()
+        backend.strategy.session_set.assert_any_call(
+            PARTIAL_TOKEN_PENDING_SESSION_NAME, "session-token"
+        )
+        backend.strategy.session_set.assert_any_call(
+            PARTIAL_TOKEN_PENDING_REQUEST_SESSION_NAME,
+            {
+                "partial_token": "session-token",
+                "partial_pipeline_confirm": "1",
+                "verification_code": "123456",
+            },
+        )
+
+    def test_same_session_external_resume_without_request_data_resumes(self) -> None:
+        backend = self._backend(
+            partial_data={PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME: True},
+        )
+
+        result = partial_pipeline_result(backend)
+
+        self.assertIsNotNone(result.partial)
+        backend.strategy.partial_pipeline_external_resume_confirmation.assert_not_called()
+
+    def test_same_session_external_resume_without_request_token_requires_confirmation(
+        self,
+    ) -> None:
+        response = object()
+        backend = self._backend(
+            request_data={"verification_code": "123456"},
+            partial_data={PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME: True},
+        )
+        backend.strategy.partial_pipeline_external_resume_confirmation.return_value = (
+            response
+        )
+
+        result = partial_pipeline_result(backend)
+
+        self.assertIsNone(result.partial)
+        self.assertEqual(result.response, response)
+        self.assertFalse(result.halt)
+        backend.strategy.session_set.assert_any_call(
+            PARTIAL_TOKEN_PENDING_SESSION_NAME, "session-token"
+        )
+        backend.strategy.session_set.assert_any_call(
+            PARTIAL_TOKEN_PENDING_REQUEST_SESSION_NAME,
+            {"verification_code": "123456"},
+        )
+
     def test_request_token_without_session_match_is_halted(self) -> None:
         backend = self._backend(
             request_data={"partial_token": "attacker-token"},
@@ -404,6 +496,33 @@ class PartialPipelineData(unittest.TestCase):
         )
         self.assertEqual(
             result.partial.kwargs["request"]["partial_pipeline_confirm"], "1"
+        )
+
+    def test_confirmed_same_session_resume_uses_pending_request_data(self) -> None:
+        backend = self._backend(
+            request_data={
+                "partial_token": "session-token",
+                "partial_pipeline_confirm": "1",
+            },
+            pending_resume={
+                "token": "session-token",
+                "request": {
+                    "partial_token": "session-token",
+                    "verification_code": "123456",
+                },
+            },
+            partial_data={PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME: True},
+        )
+
+        result = partial_pipeline_result(backend, request=object())
+
+        self.assertIsNotNone(result.partial)
+        assert result.partial is not None
+        self.assertEqual(
+            result.partial.kwargs["request"]["partial_token"], "session-token"
+        )
+        self.assertEqual(
+            result.partial.kwargs["request"]["verification_code"], "123456"
         )
 
     def test_clean_pipeline_when_uid_does_not_match(self) -> None:
