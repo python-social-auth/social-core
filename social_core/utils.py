@@ -230,9 +230,6 @@ def _select_partial_pipeline_token(
     pending_token: str | None,
     confirmation_requested: bool,
 ) -> PartialPipelineSelection:
-    if request_token and request_token == session_token:
-        return PartialPipelineSelection(token=request_token, owns_token=True)
-
     if confirmation_requested and pending_token:
         selected_token = request_token or pending_token
         pending_resume = selected_token == pending_token
@@ -242,10 +239,26 @@ def _select_partial_pipeline_token(
             pending_resume=pending_resume,
         )
 
+    if request_token and request_token == session_token:
+        return PartialPipelineSelection(token=request_token, owns_token=True)
+
     if request_token:
         return PartialPipelineSelection(token=request_token)
 
     return PartialPipelineSelection(token=session_token, owns_token=bool(session_token))
+
+
+def _partial_pipeline_requires_confirmation(
+    partial: PartialMixin,
+    request_token: str | None,
+    request_data: dict[str, Any],
+    pending_resume: bool,
+) -> bool:
+    return bool(
+        not pending_resume
+        and partial.data.get(PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME)
+        and (request_token or request_data)
+    )
 
 
 def _confirmed_partial_pipeline_request_data(
@@ -338,7 +351,16 @@ def partial_pipeline_result(
         backend, partial, effective_request_data
     )
     if partial and partial_matches:
-        if selection.owns_token:
+        if _partial_pipeline_requires_confirmation(
+            partial,
+            request_token,
+            effective_request_data,
+            selection.pending_resume,
+        ):
+            result = _external_partial_pipeline_result(
+                backend, partial, selection.token, effective_request_data
+            )
+        elif selection.owns_token:
             result = PartialPipelineResult(
                 partial=_extend_partial_pipeline(
                     partial, effective_request_data, user, kwargs
