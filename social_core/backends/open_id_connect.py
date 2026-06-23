@@ -415,6 +415,7 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
         return super().get_user_id(details, response)
 
     def get_user_details(self, response):
+        """Return user details from the UserInfo response or ID token."""
         username_key = self.setting("USERNAME_KEY", self.USERNAME_KEY)
         email_key = self.setting("EMAIL_KEY", self.EMAIL_KEY)
         first_name_key = self.setting("FIRST_NAME_KEY", self.FIRST_NAME_KEY)

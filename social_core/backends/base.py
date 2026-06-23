@@ -236,12 +236,20 @@ class BaseAuth:
         return response.get(id_key)
 
     def get_user_details(self, response) -> dict[str, Any]:
-        """Must return user details in a known internal struct:
-        {'username': <username if any>,
-         'email': <user email if any>,
-         'fullname': <user full name if any>,
-         'first_name': <user first name if any>,
-         'last_name': <user last name if any>}
+        """Return user details in a known internal structure.
+
+        The returned dictionary can contain:
+
+        ``username``
+            Username, if any.
+        ``email``
+            User email, if any.
+        ``fullname``
+            User full name, if any.
+        ``first_name``
+            User first name, if any.
+        ``last_name``
+            User last name, if any.
         """
         raise NotImplementedError("Implement in subclass")
 
