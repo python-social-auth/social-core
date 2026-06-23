@@ -5,15 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [5.0.0](https://github.com/python-social-auth/social-core/releases/tag/5.0.0) - 2026-06-23
 
 ### Security
 
 - LoginRadius backend now validates callback state to prevent login CSRF.
+- Odnoklassniki app backend now ignores untrusted callback API hosts and
+  validates returned user details.
 - Partial pipeline resume now requires session ownership or explicit external
   resume confirmation to prevent login CSRF.
+- SAML responses are now validated against the original AuthnRequest when
+  possible.
 - Twilio backend now preserves HTTPS callback URLs and validates callback state
   to prevent login CSRF.
+
+### Fixed
+
+- Auth0 OpenID Connect configuration now uses the correct base URLs.
+- Authentication now handles invalid email addresses without crashing.
+- Vend OAuth user IDs are now scoped by shop.
+- VK app authentication now requires an auth key.
 
 ### Removed
 
