@@ -1,13 +1,11 @@
 """
-Google OpenId, OAuth2, OAuth1, Google+ Sign-in backends, docs at:
+Google OpenId, OAuth2, and OAuth1 backends, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/google.html
 """
 
 from typing import Any, Literal
 
 from social_core.backends.base import BaseAuth
-from social_core.exceptions import AuthMissingParameter
-from social_core.utils import handle_http_errors
 
 from .oauth import BaseOAuth1, BaseOAuth2
 
@@ -76,70 +74,6 @@ class GoogleOAuth2(BaseGoogleOAuth2API, BaseOAuth2):
         ("expires_in", "expires_in"),
         ("token_type", "token_type", True),
     ]
-
-
-class GooglePlusAuth(BaseGoogleOAuth2API, BaseOAuth2):
-    name = "google-plus"
-    REDIRECT_STATE = False
-    STATE_PARAMETER = False
-    AUTHORIZATION_URL = "https://accounts.google.com/o/oauth2/auth"
-    ACCESS_TOKEN_URL = "https://accounts.google.com/o/oauth2/token"
-    REVOKE_TOKEN_URL = "https://accounts.google.com/o/oauth2/revoke"
-    REVOKE_TOKEN_METHOD: Literal["GET", "POST", "DELETE"] = "GET"
-    DEFAULT_SCOPE = [
-        "https://www.googleapis.com/auth/plus.login",
-        "https://www.googleapis.com/auth/plus.me",
-    ]
-    EXTRA_DATA = [
-        ("id", "user_id"),
-        ("refresh_token", "refresh_token", True),
-        ("expires_in", "expires_in"),
-        ("access_type", "access_type", True),
-        ("code", "code"),
-    ]
-
-    def auth_complete_params(self, state=None):
-        params = super().auth_complete_params(state)
-        if self.data.get("access_token"):
-            # Don't add postmessage if this is plain server-side workflow
-            params["redirect_uri"] = "postmessage"
-        return params
-
-    @handle_http_errors
-    def auth_complete(self, *args, **kwargs):
-        if "access_token" in self.data:  # Client-side workflow
-            token = self.data.get("access_token")
-            response = self.get_json(
-                "https://www.googleapis.com/oauth2/v3/tokeninfo",
-                params={"access_token": token},
-            )
-            self.process_error(response)
-            return self.do_auth(token, *args, response=response, **kwargs)
-        if "code" in self.data:  # Server-side workflow
-            response = self.request_access_token(
-                self.access_token_url(),
-                data=self.auth_complete_params(),
-                headers=self.auth_headers(),
-                method=self.ACCESS_TOKEN_METHOD,
-            )
-            self.process_error(response)
-            return self.do_auth(
-                response["access_token"], *args, response=response, **kwargs
-            )
-        if "id_token" in self.data:  # Client-side workflow
-            token = self.data.get("id_token")
-            return self.do_auth(token, *args, **kwargs)
-        raise AuthMissingParameter(self, "access_token, id_token, or code")
-
-    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
-        if "id_token" not in self.data:
-            return super().user_data(access_token, *args, **kwargs)
-        response = self.get_json(
-            "https://www.googleapis.com/oauth2/v3/tokeninfo",
-            params={"id_token": access_token},
-        )
-        self.process_error(response)
-        return response
 
 
 class GoogleOAuth(BaseGoogleAuth, BaseOAuth1):

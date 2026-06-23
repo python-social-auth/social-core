@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Discontinued OAuth backends: AppsFuel, Beats Music, ChangeTip, Clef,
   Edmodo, 500px (`five_hundred_px`), legacy Google App Engine bundled Users
   (`gae`), Jawbone, Moves, Mozilla Persona, Readability Parser API, and Wunderlist.
+- Discontinued Google+ Sign-In backend (`google-plus` / `GooglePlusAuth`).
 
 ## [4.9.1](https://github.com/python-social-auth/social-core/releases/tag/4.9.1) - 2026-04-30
 
