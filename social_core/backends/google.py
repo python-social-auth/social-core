@@ -93,10 +93,12 @@ class GoogleOAuth(BaseGoogleAuth, BaseOAuth1):
         )
 
     def get_key_and_secret(self):
-        """Return Google OAuth Consumer Key and Consumer Secret pair, uses
-        anonymous by default, beware that this marks the application as not
-        registered and a security badge is displayed on authorization page.
-        http://code.google.com/apis/accounts/docs/OAuth_ref.html#SigningOAuth
+        """
+        Return Google OAuth Consumer Key and Consumer Secret pair
+
+        Uses anonymous by default, beware that this marks the application as
+        not registered and a security badge is displayed on authorization page.
+        https://developers.google.com/identity/protocols/oauth2
         """
         key_secret = super().get_key_and_secret()
         if key_secret == (None, None):
