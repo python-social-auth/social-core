@@ -54,18 +54,20 @@ class ShopifyOAuth2(BaseOAuth2):
         key, secret = self.get_key_and_secret()
         shopify.Session.setup(api_key=key, secret=secret)
         scope = self.get_scope()
-        state = self.state_token()
-        self.strategy.session_set(f"{self.name}_state", state)
+        state = self.get_or_create_state()
         redirect_uri = self.get_redirect_uri(state)
         session = shopify.Session(
             self.data.get("shop").strip(), version=self.shopify_api_version
         )
-        return session.create_permission_url(scope=scope, redirect_uri=redirect_uri)
+        return session.create_permission_url(
+            scope=scope, redirect_uri=redirect_uri, state=state
+        )
 
     @handle_http_errors
     def auth_complete(self, *args, **kwargs):
         """Completes login process, must return user instance"""
         self.process_error(self.data)
+        self.validate_state()
         access_token = None
         key, secret = self.get_key_and_secret()
         try:
