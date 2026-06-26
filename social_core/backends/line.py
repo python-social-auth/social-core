@@ -54,6 +54,7 @@ class LineOAuth2(BaseOAuth2):
     def auth_complete(self, *args, **kwargs):
         """Completes login process, must return user instance"""
         self.process_error(self.data)
+        self.validate_state()
 
         try:
             response = self.request_access_token(
