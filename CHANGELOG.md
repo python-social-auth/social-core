@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [5.0.2](https://github.com/python-social-auth/social-core/releases/tag/5.0.2) - 2026-06-26
+
+### Security
+
+- LINE backend now validates callback state before exchanging authorization
+  codes, preventing login CSRF.
+- Shopify backend now sends and validates OAuth state, preventing login CSRF.
+
+### Changed
+
+- Updated development dependencies and CI actions.
+
+### Fixed
+
+- Updated the Google OAuth documentation link.
+
 ## [5.0.1](https://github.com/python-social-auth/social-core/releases/tag/5.0.1) - 2026-06-24
 
 ### Security
