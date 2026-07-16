@@ -27,7 +27,6 @@ class HelmholtzOpenIdConnect(OpenIdConnectAuth):
         "eduperson_scoped_affiliation",
         "voperson_external_affiliation",
         "eduperson_assurance",
-        "orcid",
         # "offline_access",
     ]
     # This is the list of entitlements that are allowed to login into the
