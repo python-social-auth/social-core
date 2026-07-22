@@ -17,7 +17,7 @@ repos:
   - id: pretty-format-json
     args: [--no-sort-keys, --autofix, --no-ensure-ascii]
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.15.21
+  rev: v0.15.22
   hooks:
   - id: ruff-check
     args: [--fix, --exit-non-zero-on-fix]
@@ -46,7 +46,7 @@ repos:
     additional_dependencies:
     - mdformat-gfm==1.0.0
 - repo: https://github.com/codespell-project/codespell
-  rev: v2.4.2
+  rev: v2.4.3
   hooks:
   - id: codespell
     additional_dependencies:
@@ -56,6 +56,6 @@ repos:
   hooks:
   - id: actionlint
 - repo: https://github.com/zizmorcore/zizmor-pre-commit
-  rev: v1.27.0
+  rev: v1.28.0
   hooks:
   - id: zizmor

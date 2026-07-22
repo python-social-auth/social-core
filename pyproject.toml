@@ -4,7 +4,7 @@ requires = ["setuptools>=78.0.2"]
 
 [dependency-groups]
 dev = [
-  "coverage==7.15.1",
+  "coverage==7.15.2",
   "flake8==7.3.0",
   "google-auth-stubs==0.3.0",
   "mypy==2.3.0",
@@ -15,7 +15,7 @@ dev = [
   "pytest-xdist==3.8.0",
   "pytest==9.1.1",
   "responses==0.26.2",
-  "ty==0.0.59",
+  "ty==0.0.62",
   "types-defusedxml==0.7.0.20260504",
   "types-oauthlib==3.3.0.20260518",
   "types-requests-oauthlib==2.0.0.20260610",
@@ -74,7 +74,7 @@ allpy3 = [
 # This is present until pip implements supports for PEP 735
 # see https://github.com/pypa/pip/issues/12963
 dev = [
-  "coverage==7.15.1",
+  "coverage==7.15.2",
   "flake8==7.3.0",
   "google-auth-stubs==0.3.0",
   "mypy==2.3.0",
@@ -85,7 +85,7 @@ dev = [
   "pytest-xdist==3.8.0",
   "pytest==9.1.1",
   "responses==0.26.2",
-  "ty==0.0.59",
+  "ty==0.0.62",
   "types-defusedxml==0.7.0.20260504",
   "types-oauthlib==3.3.0.20260518",
   "types-requests-oauthlib==2.0.0.20260610",
