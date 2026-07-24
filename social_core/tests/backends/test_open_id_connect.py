@@ -318,7 +318,7 @@ class ExampleOpenIdConnectCustomAtHashTest(OpenIdConnectTest):
             content_type="text/json",
         )
 
-    def prepare_access_token_body(  # NOQA: PLR0913
+    def prepare_access_token_body(  # NOQA: PLR0913, PLR0917
         self,
         client_key=None,
         tamper_message=False,

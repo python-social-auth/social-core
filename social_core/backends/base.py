@@ -353,7 +353,7 @@ class BaseAuth:
         response.raise_for_status()
         return response
 
-    def get_json(  # noqa: PLR0913
+    def get_json(  # noqa: PLR0913, PLR0917
         self,
         url: str,
         method: Literal["GET", "POST", "DELETE"] = "GET",

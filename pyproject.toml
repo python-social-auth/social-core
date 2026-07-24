@@ -182,6 +182,7 @@ ignore = [
   "ARG002",  # TODO: Unused method argument (mostly for API compatibility)
   "ARG003",  # TODO: Unused class method argument
   "COM",  # CONFIG: No trailing commas
+  "CPY001",  # TODO: Copyright not documented
   "D",  # TODO: Missing documentation
   "D203",  # CONFIG: incompatible with D211
   "D212",  # CONFIG: incompatible with D213
