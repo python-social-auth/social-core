@@ -17,7 +17,7 @@ dev = [
   "responses==0.26.2",
   "ty==0.0.63",
   "types-defusedxml==0.7.0.20260504",
-  "types-oauthlib==3.3.0.20260518",
+  "types-oauthlib==3.3.0.20260724",
   "types-requests-oauthlib==2.0.0.20260610",
   {include-group = "pylint"}
 ]
@@ -87,7 +87,7 @@ dev = [
   "responses==0.26.2",
   "ty==0.0.63",
   "types-defusedxml==0.7.0.20260504",
-  "types-oauthlib==3.3.0.20260518",
+  "types-oauthlib==3.3.0.20260724",
   "types-requests-oauthlib==2.0.0.20260610",
   "types-requests==2.33.0.20260712"
 ]
