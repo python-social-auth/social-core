@@ -5,6 +5,8 @@ https://auth0.com/docs/quickstart/webapp/django/01-login
 
 import jwt
 
+from social_core.exceptions import AuthTokenError
+
 from .oauth import BaseOAuth2
 
 
@@ -36,12 +38,14 @@ class Auth0OAuth2(BaseOAuth2):
         issuer = self.api_path()
         audience = self.setting("KEY")  # CLIENT_ID
         try:
-            # it could be a set of JWKs
-            keys = jwt.PyJWKSet.from_dict(jwks).keys
-        except jwt.PyJWKSetError:
-            # let any error raise from here
-            # try to get single JWK
-            keys = [jwt.PyJWK.from_dict(jwks, "RS256")]
+            try:
+                # it could be a set of JWKs
+                keys = jwt.PyJWKSet.from_dict(jwks).keys
+            except jwt.PyJWKSetError:
+                # try to get single JWK
+                keys = [jwt.PyJWK.from_dict(jwks, "RS256")]
+        except jwt.PyJWTError as error:
+            raise AuthTokenError(self, error) from error
 
         signature_error = None
         for key in keys:
@@ -55,12 +59,14 @@ class Auth0OAuth2(BaseOAuth2):
                 )
             except (jwt.InvalidSignatureError, jwt.InvalidAlgorithmError) as ex:
                 signature_error = ex
+            except jwt.PyJWTError as error:
+                raise AuthTokenError(self, error) from error
             else:
                 break
         else:
             assert signature_error is not None
-            # raise last esception found during iteration
-            raise signature_error
+            # raise the last exception found during iteration
+            raise AuthTokenError(self, signature_error) from signature_error
 
         fullname, first_name, last_name = self.get_user_names(payload["name"])
         return {

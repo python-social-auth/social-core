@@ -3,6 +3,7 @@ from typing import Any, cast
 import jwt
 
 from social_core.backends.oauth import BaseOAuth2
+from social_core.exceptions import AuthTokenError
 
 
 class KeycloakOAuth2(BaseOAuth2):  # pylint: disable=abstract-method
@@ -118,13 +119,16 @@ class KeycloakOAuth2(BaseOAuth2):  # pylint: disable=abstract-method
         the user information in the access_token.
         """
 
-        return jwt.decode(
-            access_token,
-            key=self.public_key(),
-            algorithms=self.algorithm(),
-            audience=self.audience(),
-            leeway=cast("int", self.setting("JWT_LEEWAY", default=0)),
-        )
+        try:
+            return jwt.decode(
+                access_token,
+                key=self.public_key(),
+                algorithms=self.algorithm(),
+                audience=self.audience(),
+                leeway=cast("int", self.setting("JWT_LEEWAY", default=0)),
+            )
+        except jwt.PyJWTError as error:
+            raise AuthTokenError(self, error) from error
 
     def get_user_details(self, response):
         """Map fields in user_data into Django User fields"""
