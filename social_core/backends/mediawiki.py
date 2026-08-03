@@ -140,7 +140,7 @@ class MediaWiki(BaseOAuth1):
                 algorithms=["HS256"],
                 leeway=self.LEEWAY,
             )
-        except jwt.InvalidTokenError as exception:
+        except jwt.PyJWTError as exception:
             raise AuthException(
                 self,
                 f"An error occurred while trying to read json content: {exception}",

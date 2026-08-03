@@ -1,7 +1,10 @@
 import json
+from unittest.mock import patch
 
 import jwt
 import responses
+
+from social_core.exceptions import AuthTokenError
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
@@ -72,6 +75,33 @@ class Auth0OAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
 
     def test_login(self) -> None:
         self.do_login()
+
+    def test_invalid_signature_raises_auth_token_error(self) -> None:
+        assert self.access_token_body is not None
+        id_token = json.loads(self.access_token_body)["id_token"]
+        header, payload, _signature = id_token.split(".")
+
+        with (
+            patch.object(
+                self.backend, "get_json", return_value={"keys": [JWK_PUBLIC_KEY]}
+            ),
+            self.assertRaises(AuthTokenError) as context,
+        ):
+            self.backend.get_user_details({"id_token": f"{header}.{payload}.AAAA"})
+
+        self.assertIsInstance(context.exception.__cause__, jwt.InvalidSignatureError)
+
+    def test_invalid_jwk_raises_auth_token_error(self) -> None:
+        assert self.access_token_body is not None
+        id_token = json.loads(self.access_token_body)["id_token"]
+
+        with (
+            patch.object(self.backend, "get_json", return_value={}),
+            self.assertRaises(AuthTokenError) as context,
+        ):
+            self.backend.get_user_details({"id_token": id_token})
+
+        self.assertIsInstance(context.exception.__cause__, jwt.PyJWTError)
 
     def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()

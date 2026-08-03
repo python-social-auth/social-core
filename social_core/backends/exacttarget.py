@@ -65,7 +65,7 @@ class ExactTargetOAuth2(BaseOAuth2):
         _key, secret = self.get_key_and_secret()
         try:  # Decode the token, using the Application Signature from settings
             decoded = jwt.decode(token, secret, algorithms=["HS256"])
-        except jwt.DecodeError as error:
+        except jwt.PyJWTError as error:
             # Wrong signature, fail authentication
             raise AuthCanceled(self) from error
         kwargs.update({"response": {"token": decoded}, "backend": self})

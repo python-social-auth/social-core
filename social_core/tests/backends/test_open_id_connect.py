@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from typing import Protocol, cast
 
+import jwt
 import responses
 
 from social_core.backends.open_id_connect import OpenIdConnectAuth
@@ -175,6 +176,12 @@ class ExampleOpenIdConnectTest(OpenIdConnectTest):
 
     def test_everything_works(self) -> None:
         self.do_login()
+
+    def test_malformed_id_token_raises_auth_token_error(self) -> None:
+        with self.assertRaises(AuthTokenError) as context:
+            self.backend.validate_and_return_id_token("malformed", "access-token")
+
+        self.assertIsInstance(context.exception.__cause__, jwt.PyJWTError)
 
     def test_user_id_comes_from_id_token_when_userinfo_omits_sub(self) -> None:
         user = self.do_login()

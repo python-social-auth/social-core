@@ -5,6 +5,8 @@ import time
 
 import jwt
 
+from social_core.exceptions import AuthTokenError
+
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 _PRIVATE_KEY_HEADERLESS = """
@@ -127,6 +129,14 @@ class KeycloakOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
 
     def test_login(self) -> None:
         self.do_login()
+
+    def test_invalid_signature_raises_auth_token_error(self) -> None:
+        header, payload, _signature = _encode(_PAYLOAD).split(".")
+
+        with self.assertRaises(AuthTokenError) as context:
+            self.backend.user_data(f"{header}.{payload}.AAAA")
+
+        self.assertIsInstance(context.exception.__cause__, jwt.InvalidSignatureError)
 
     def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()

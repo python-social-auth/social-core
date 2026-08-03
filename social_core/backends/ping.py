@@ -45,16 +45,19 @@ class PingOpenIdConnect(OpenIdConnectAuth):
         """
         client_id, _client_secret = self.get_key_and_secret()
 
-        key = self.find_valid_key(id_token)
+        try:
+            key = self.find_valid_key(id_token)
+        except PyJWTError as error:
+            raise AuthTokenError(self, str(error)) from error
 
         if not key:
             raise AuthTokenError(self, "Signature verification failed")
 
         if "alg" not in key:
             key["alg"] = "RS256"
-        rsakey = jwt.PyJWK(key)
 
         try:
+            rsakey = jwt.PyJWK(key)
             claims = jwt.decode(
                 id_token,
                 rsakey.key,
