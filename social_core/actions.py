@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Any, cast
 from urllib.parse import quote
 
 from .utils import (
+    get_allowed_redirect_schemes,
     partial_pipeline_result,
     sanitize_redirect,
     setting_url,
@@ -42,9 +43,9 @@ def _sanitize_redirect_url(backend: BaseAuth, url: str) -> str:
             *cast("list[str]", backend.setting("ALLOWED_REDIRECT_HOSTS", [])),
             backend.strategy.request_host(),
         ]
-        sanitized_url = sanitize_redirect(allowed_hosts, url) or backend.setting(
-            "LOGIN_REDIRECT_URL"
-        )
+        sanitized_url = sanitize_redirect(
+            allowed_hosts, url, get_allowed_redirect_schemes(backend)
+        ) or backend.setting("LOGIN_REDIRECT_URL")
         if sanitized_url is None:
             raise ValueError("Disallowed URL")
         url = cast("str", sanitized_url)
@@ -97,7 +98,9 @@ def do_auth(backend: BaseAuth, redirect_name: str = "next") -> HttpResponseProto
                 *cast("list[str]", backend.setting("ALLOWED_REDIRECT_HOSTS", [])),
                 backend.strategy.request_host(),
             ]
-            redirect_uri = sanitize_redirect(allowed_hosts, redirect_uri)
+            redirect_uri = sanitize_redirect(
+                allowed_hosts, redirect_uri, get_allowed_redirect_schemes(backend)
+            )
         backend.strategy.session_set(
             redirect_name, redirect_uri or backend.setting("LOGIN_REDIRECT_URL")
         )
@@ -241,7 +244,9 @@ def do_disconnect(
                 backend.strategy.request_host(),
             ]
             url = (
-                sanitize_redirect(allowed_hosts, url)
+                sanitize_redirect(
+                    allowed_hosts, url, get_allowed_redirect_schemes(backend)
+                )
                 or backend.setting("DISCONNECT_REDIRECT_URL")
                 or backend.setting("LOGIN_REDIRECT_URL")
             )
