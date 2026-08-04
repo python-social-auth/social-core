@@ -30,6 +30,61 @@ class DisconnectActionTest(BaseActionTest):
         do_disconnect(self.backend, user)
         self.assertEqual(len(user.social), 0)
 
+    def test_disconnect_redirects_to_allowed_private_use_scheme(self) -> None:
+        deeplink = "com.example.app://oauth2redirect"
+        self.strategy.set_settings(
+            {
+                "SOCIAL_AUTH_DISCONNECT_REDIRECT_URL": deeplink,
+                "SOCIAL_AUTH_ALLOWED_REDIRECT_SCHEMES": [
+                    "http",
+                    "https",
+                    "com.example.app",
+                ],
+            }
+        )
+        self.do_login()
+        user = cast("User", User.get(self.expected_username))
+        user.password = "password"
+        redirect = do_disconnect(self.backend, user)
+        self.assertEqual(redirect.url, deeplink)
+
+    def test_disconnect_ignores_disallowed_scheme_from_request(self) -> None:
+        self.strategy.set_settings(
+            {
+                "SOCIAL_AUTH_DISCONNECT_REDIRECT_URL": "/disconnected",
+                "SOCIAL_AUTH_ALLOWED_REDIRECT_SCHEMES": [
+                    "http",
+                    "https",
+                    "com.example.app",
+                ],
+            }
+        )
+        self.do_login()
+        user = cast("User", User.get(self.expected_username))
+        user.password = "password"
+        self.strategy.set_request_data({"next": "com.evil.app://steal"}, self.backend)
+        redirect = do_disconnect(self.backend, user)
+        self.assertNotEqual(redirect.url, "com.evil.app://steal")
+
+    def test_disconnect_keeps_allowed_scheme_from_request(self) -> None:
+        deeplink = "com.example.app://oauth2redirect"
+        self.strategy.set_settings(
+            {
+                "SOCIAL_AUTH_DISCONNECT_REDIRECT_URL": "/disconnected",
+                "SOCIAL_AUTH_ALLOWED_REDIRECT_SCHEMES": [
+                    "http",
+                    "https",
+                    "com.example.app",
+                ],
+            }
+        )
+        self.do_login()
+        user = cast("User", User.get(self.expected_username))
+        user.password = "password"
+        self.strategy.set_request_data({"next": deeplink}, self.backend)
+        redirect = do_disconnect(self.backend, user)
+        self.assertEqual(redirect.url, deeplink)
+
     def test_disconnect_with_association_id(self) -> None:
         self.do_login()
         user = cast("User", User.get(self.expected_username))

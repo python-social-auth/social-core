@@ -96,6 +96,11 @@ def setting_name(*names: str) -> str:
     return to_setting_name(*((SETTING_PREFIX, *names)))
 
 
+def normalize_redirect_schemes(schemes: Collection[str]) -> set[str]:
+    """URI schemes are case-insensitive, and urlparse lowercases them."""
+    return {scheme.lower() for scheme in schemes}
+
+
 def sanitize_redirect(
     hosts: list[str],
     redirect_to: str | Any,
@@ -123,7 +128,9 @@ def sanitize_redirect(
         return None
 
     schemes = (
-        DEFAULT_REDIRECT_SCHEMES if allowed_schemes is None else set(allowed_schemes)
+        set(DEFAULT_REDIRECT_SCHEMES)
+        if allowed_schemes is None
+        else normalize_redirect_schemes(allowed_schemes)
     )
 
     try:
@@ -431,13 +438,35 @@ def constant_time_compare(val1: str | bytes, val2: str | bytes) -> bool:
 
 
 def get_allowed_redirect_schemes(backend: BaseAuth) -> set[str]:
-    return {
-        scheme.lower()
-        for scheme in cast(
+    return normalize_redirect_schemes(
+        cast(
             "Collection[str]",
             backend.setting("ALLOWED_REDIRECT_SCHEMES", DEFAULT_REDIRECT_SCHEMES),
         )
-    }
+    )
+
+
+def is_private_use_redirect(
+    value: str | None, allowed_schemes: Collection[str] | None = None
+) -> bool:
+    """
+    Whether ``value`` uses a non-web scheme that has been explicitly allowed.
+
+    URI construction helpers such as ``build_absolute_uri`` only preserve http
+    and https, so callers must check this before turning a redirect candidate
+    into an absolute URI.
+    """
+    if not value or not isinstance(value, str) or not allowed_schemes:
+        return False
+    try:
+        scheme = urlparse(value).scheme
+    except ValueError:
+        return False
+    return (
+        bool(scheme)
+        and scheme not in DEFAULT_REDIRECT_SCHEMES
+        and scheme in normalize_redirect_schemes(allowed_schemes)
+    )
 
 
 def is_url(value: str | None, allowed_schemes: Collection[str] | None = None) -> bool:
@@ -445,14 +474,7 @@ def is_url(value: str | None, allowed_schemes: Collection[str] | None = None) ->
         return False
     if value.startswith(("http://", "https://", "/")):
         return True
-    if allowed_schemes is None:
-        return False
-    scheme = urlparse(value).scheme
-    return (
-        bool(scheme)
-        and scheme not in DEFAULT_REDIRECT_SCHEMES
-        and scheme in allowed_schemes
-    )
+    return is_private_use_redirect(value, allowed_schemes)
 
 
 def setting_url(backend: BaseAuth, *names: str | None) -> str | None:

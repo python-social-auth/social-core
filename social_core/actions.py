@@ -5,6 +5,7 @@ from urllib.parse import quote
 
 from .utils import (
     get_allowed_redirect_schemes,
+    is_private_use_redirect,
     partial_pipeline_result,
     sanitize_redirect,
     setting_url,
@@ -233,10 +234,18 @@ def do_disconnect(
         )
 
     if isinstance(response, dict):
-        url: str | None = backend.strategy.absolute_uri(
+        allowed_schemes = get_allowed_redirect_schemes(backend)
+        candidate = (
             backend.strategy.request_data().get(redirect_name, "")
             or backend.setting("DISCONNECT_REDIRECT_URL")
             or backend.setting("LOGIN_REDIRECT_URL")
+        )
+        # absolute_uri() only preserves http and https, so an allowed
+        # private-use scheme has to bypass it to survive intact.
+        url: str | None = (
+            cast("str", candidate)
+            if is_private_use_redirect(cast("str | None", candidate), allowed_schemes)
+            else backend.strategy.absolute_uri(cast("str | None", candidate))
         )
         if backend.setting("SANITIZE_REDIRECTS", True):
             allowed_hosts = [
@@ -244,9 +253,7 @@ def do_disconnect(
                 backend.strategy.request_host(),
             ]
             url = (
-                sanitize_redirect(
-                    allowed_hosts, url, get_allowed_redirect_schemes(backend)
-                )
+                sanitize_redirect(allowed_hosts, url, allowed_schemes)
                 or backend.setting("DISCONNECT_REDIRECT_URL")
                 or backend.setting("LOGIN_REDIRECT_URL")
             )

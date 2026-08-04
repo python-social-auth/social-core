@@ -147,6 +147,18 @@ class SanitizeRedirectAllowedSchemesTest(unittest.TestCase):
         for url in ["///evil.com", "/\\evil.com", "/path/\n"]:
             self.assertEqual(sanitize_redirect(["myapp.com"], url, self.schemes), None)
 
+    def test_scheme_matching_is_case_insensitive(self) -> None:
+        url = "com.example.app://oauth2redirect"
+        self.assertEqual(
+            sanitize_redirect(["myapp.com"], url, {"Com.Example.App"}), url
+        )
+        self.assertEqual(
+            sanitize_redirect(
+                ["myapp.com"], "COM.EXAMPLE.APP://oauth2redirect", {"com.example.app"}
+            ),
+            "COM.EXAMPLE.APP://oauth2redirect",
+        )
+
     def test_restricting_schemes_blocks_web_urls(self) -> None:
         self.assertEqual(
             sanitize_redirect(
@@ -180,6 +192,18 @@ class IsUrlTest(unittest.TestCase):
 
     def test_malformed_web_scheme_not_promoted(self) -> None:
         self.assertEqual(is_url("http:evil.example/path", {"http", "https"}), False)
+
+    def test_malformed_url_does_not_raise(self) -> None:
+        for value in ["foo://[bad", "com.example.app://[::1", "foo://["]:
+            self.assertEqual(is_url(value, {"foo", "com.example.app"}), False)
+
+    def test_scheme_matching_is_case_insensitive(self) -> None:
+        self.assertEqual(
+            is_url("com.example.app://oauth2redirect", {"Com.Example.App"}), True
+        )
+        self.assertEqual(
+            is_url("COM.EXAMPLE.APP://oauth2redirect", {"com.example.app"}), True
+        )
 
 
 class UserIsAuthenticatedTest(unittest.TestCase):
