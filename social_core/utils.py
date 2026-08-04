@@ -26,11 +26,15 @@ from .exceptions import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Collection
+
     from .backends.base import BaseAuth
     from .storage import PartialMixin, UserProtocol
     from .strategy import BaseStrategy, HttpResponseProtocol
 
 SETTING_PREFIX = "SOCIAL_AUTH"
+
+DEFAULT_REDIRECT_SCHEMES = ("http", "https")
 
 PARTIAL_TOKEN_SESSION_NAME = "partial_pipeline_token"
 PARTIAL_TOKEN_PENDING_SESSION_NAME = "partial_pipeline_pending_token"
@@ -92,12 +96,25 @@ def setting_name(*names: str) -> str:
     return to_setting_name(*((SETTING_PREFIX, *names)))
 
 
-def sanitize_redirect(hosts: list[str], redirect_to: str | Any) -> str | None:
+def normalize_redirect_schemes(schemes: Collection[str]) -> set[str]:
+    """URI schemes are case-insensitive, and urlparse lowercases them."""
+    return {scheme.lower() for scheme in schemes}
+
+
+def sanitize_redirect(
+    hosts: list[str],
+    redirect_to: str | Any,
+    allowed_schemes: Collection[str] | None = None,
+) -> str | None:
     """
     Given a list of hostnames and an untrusted URL to redirect to,
     this method tests it to make sure it isn't garbage/harmful
     and returns it, else returns None, similar as how's it done
     on django.contrib.auth.views.
+
+    ``allowed_schemes`` defaults to http and https. Deployments that need to
+    hand control back to a native application can add a private-use URI scheme
+    (RFC 8252) through the ``ALLOWED_REDIRECT_SCHEMES`` setting.
     """
     # Avoid redirect on evil URLs like ///evil.com and URLs containing
     # backslashes or control characters that browsers may normalize.
@@ -110,20 +127,31 @@ def sanitize_redirect(hosts: list[str], redirect_to: str | Any) -> str | None:
     ):
         return None
 
+    schemes = (
+        set(DEFAULT_REDIRECT_SCHEMES)
+        if allowed_schemes is None
+        else normalize_redirect_schemes(allowed_schemes)
+    )
+
     try:
         parsed_url = urlparse(redirect_to)
-        if parsed_url.scheme and parsed_url.scheme not in {"http", "https"}:
-            return None
-        if parsed_url.scheme and not parsed_url.netloc:
-            return None
+        scheme = parsed_url.scheme
+        if scheme:
+            if scheme not in schemes:
+                return None
+            if scheme not in DEFAULT_REDIRECT_SCHEMES:
+                # A private-use URI scheme is registered by a single native
+                # application, so the scheme itself is the trust boundary and
+                # the host allowlist does not apply.
+                return redirect_to
+            if not parsed_url.netloc:
+                return None
         # Don't redirect to a host that's not in the list
         netloc = parsed_url.netloc or hosts[0]
     except (IndexError, TypeError, AttributeError, ValueError):
         return None
 
-    if netloc in hosts:
-        return redirect_to
-    return None
+    return redirect_to if netloc in hosts else None
 
 
 def user_is_authenticated(user: UserProtocol | None) -> bool:
@@ -409,19 +437,56 @@ def constant_time_compare(val1: str | bytes, val2: str | bytes) -> bool:
     return hmac.compare_digest(val1, val2)
 
 
-def is_url(value: str | None) -> bool:
-    return value is not None and value.startswith(("http://", "https://", "/"))
+def get_allowed_redirect_schemes(backend: BaseAuth) -> set[str]:
+    return normalize_redirect_schemes(
+        cast(
+            "Collection[str]",
+            backend.setting("ALLOWED_REDIRECT_SCHEMES", DEFAULT_REDIRECT_SCHEMES),
+        )
+    )
+
+
+def is_private_use_redirect(
+    value: str | None, allowed_schemes: Collection[str] | None = None
+) -> bool:
+    """
+    Whether ``value`` uses a non-web scheme that has been explicitly allowed.
+
+    URI construction helpers such as ``build_absolute_uri`` only preserve http
+    and https, so callers must check this before turning a redirect candidate
+    into an absolute URI.
+    """
+    if not value or not isinstance(value, str) or not allowed_schemes:
+        return False
+    try:
+        scheme = urlparse(value).scheme
+    except ValueError:
+        return False
+    return (
+        bool(scheme)
+        and scheme not in DEFAULT_REDIRECT_SCHEMES
+        and scheme in normalize_redirect_schemes(allowed_schemes)
+    )
+
+
+def is_url(value: str | None, allowed_schemes: Collection[str] | None = None) -> bool:
+    if value is None:
+        return False
+    if value.startswith(("http://", "https://", "/")):
+        return True
+    return is_private_use_redirect(value, allowed_schemes)
 
 
 def setting_url(backend: BaseAuth, *names: str | None) -> str | None:
+    allowed_schemes = get_allowed_redirect_schemes(backend)
     for name in names:
         # Name can actually None, value or setting name
         if not name:
             continue
-        if is_url(name):
+        if is_url(name, allowed_schemes):
             return name
         value = backend.setting(name)
-        if is_url(value):
+        if is_url(value, allowed_schemes):
             return value
     return None
 
