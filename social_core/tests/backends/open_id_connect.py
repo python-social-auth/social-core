@@ -132,6 +132,11 @@ class OpenIdConnectTest(
         at_hash=None,
         subject=None,
         access_token: str | None = "foobar",  # noqa: S107
+        refresh_token: str | None = None,
+        include_nonce: bool = True,
+        auth_time: int | None = None,
+        include_azp: bool = True,
+        authorized_party: str | None = None,
     ):
         """
         Prepares a provider access token response. Arguments:
@@ -145,6 +150,8 @@ class OpenIdConnectTest(
         body = {"token_type": "bearer"}
         if access_token is not None:
             body["access_token"] = access_token
+        if refresh_token is not None:
+            body["refresh_token"] = refresh_token
         client_key = client_key or self.client_key
         now = datetime.datetime.now(datetime.timezone.utc)
         expiration_datetime = expiration_datetime or (
@@ -161,6 +168,16 @@ class OpenIdConnectTest(
             issuer,
             subject,
         )
+        if isinstance(client_key, list):
+            id_token["azp"] = client_key[0]
+        if not include_nonce:
+            id_token.pop("nonce")
+        if not include_azp:
+            id_token.pop("azp")
+        elif authorized_party is not None:
+            id_token["azp"] = authorized_party
+        if auth_time is not None:
+            id_token["auth_time"] = auth_time
         if at_hash is not None:
             id_token["at_hash"] = at_hash
         elif access_token is not None:

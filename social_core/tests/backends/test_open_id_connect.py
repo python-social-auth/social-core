@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import copy
+import datetime
 import json
 from typing import Protocol, cast
+from unittest.mock import patch
 
 import jwt
 import responses
@@ -130,6 +133,268 @@ class BaseOpenIdConnectTest(
         self.do_login()
 
         self.assert_pkce_enabled()
+
+    def login_for_refresh(self, **id_token_kwargs):
+        self.access_token_kwargs = {
+            "refresh_token": "refresh-token",
+            **id_token_kwargs,
+        }
+        user = self.do_login()
+        return user.social[0]
+
+    def refresh_response(self, **id_token_kwargs) -> str:
+        return self.prepare_access_token_body(
+            access_token="refreshed-access-token",  # noqa: S106
+            include_nonce=False,
+            **id_token_kwargs,
+        )
+
+    def refresh_social(self, social, body: str) -> None:
+        responses.add(
+            self._method(self.backend.REFRESH_TOKEN_METHOD),
+            self.backend.refresh_token_url(),
+            status=200,
+            body=body,
+            content_type="application/json",
+        )
+        social.refresh_token(strategy=self.strategy)
+
+    def assert_refresh_rejected(self, body: str, message: str) -> None:
+        social = self.login_for_refresh()
+        original_extra_data = copy.deepcopy(social.extra_data)
+
+        with self.assertRaisesRegex(AuthTokenError, message):
+            self.refresh_social(social, body)
+
+        self.assertEqual(social.extra_data, original_extra_data)
+
+    def test_refresh_without_id_token_preserves_context(self) -> None:
+        social = self.login_for_refresh()
+        original_id_token = social.extra_data["id_token"]
+        original_context = copy.deepcopy(
+            social.extra_data[self.backend.ID_TOKEN_CONTEXT_KEY]
+        )
+
+        self.refresh_social(
+            social,
+            json.dumps(
+                {
+                    "access_token": "refreshed-access-token",
+                    "token_type": "bearer",
+                }
+            ),
+        )
+
+        self.assertEqual(social.extra_data["access_token"], "refreshed-access-token")
+        self.assertEqual(social.extra_data["id_token"], original_id_token)
+        self.assertEqual(
+            social.extra_data[self.backend.ID_TOKEN_CONTEXT_KEY],
+            original_context,
+        )
+
+    def test_refresh_validates_id_token_without_nonce(self) -> None:
+        social = self.login_for_refresh()
+        original_context = copy.deepcopy(
+            social.extra_data[self.backend.ID_TOKEN_CONTEXT_KEY]
+        )
+        body = self.refresh_response()
+
+        self.refresh_social(social, body)
+
+        self.assertEqual(social.extra_data["access_token"], "refreshed-access-token")
+        self.assertEqual(social.extra_data["id_token"], json.loads(body)["id_token"])
+        self.assertEqual(
+            social.extra_data[self.backend.ID_TOKEN_CONTEXT_KEY],
+            original_context,
+        )
+
+    def test_refresh_rejects_missing_access_token(self) -> None:
+        body = self.prepare_access_token_body(
+            access_token=None,
+            include_nonce=False,
+        )
+        self.assert_refresh_rejected(
+            body,
+            "Missing access_token in OpenID Connect refresh response",
+        )
+
+    def test_refresh_rejects_invalid_signature(self) -> None:
+        self.assert_refresh_rejected(
+            self.refresh_response(tamper_message=True),
+            "Signature verification failed",
+        )
+
+    def test_refresh_rejects_expired_id_token(self) -> None:
+        expiration = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(
+            seconds=30
+        )
+        self.assert_refresh_rejected(
+            self.refresh_response(expiration_datetime=expiration),
+            "Signature has expired",
+        )
+
+    def test_refresh_rejects_invalid_issuer(self) -> None:
+        self.assert_refresh_rejected(
+            self.refresh_response(issuer="https://invalid.example.com"),
+            "Invalid issuer",
+        )
+
+    def test_refresh_rejects_invalid_audience(self) -> None:
+        self.assert_refresh_rejected(
+            self.refresh_response(client_key="invalid-client"),
+            "Invalid audience",
+        )
+
+    def test_refresh_rejects_changed_audience_set(self) -> None:
+        self.assert_refresh_rejected(
+            self.refresh_response(client_key=[self.client_key, "another-audience"]),
+            "Incorrect refreshed id_token: aud",
+        )
+
+    def test_refresh_rejects_missing_azp_for_multiple_audiences(self) -> None:
+        self.assert_refresh_rejected(
+            self.refresh_response(
+                client_key=[self.client_key, "another-audience"],
+                include_azp=False,
+            ),
+            "Incorrect id_token: azp",
+        )
+
+    def test_refresh_rejects_invalid_azp(self) -> None:
+        self.assert_refresh_rejected(
+            self.refresh_response(authorized_party="another-audience"),
+            "Incorrect id_token: azp",
+        )
+
+    def test_refresh_rejects_changed_azp(self) -> None:
+        social = self.login_for_refresh(include_azp=False)
+        original_extra_data = copy.deepcopy(social.extra_data)
+
+        with self.assertRaisesRegex(
+            AuthTokenError,
+            "Incorrect refreshed id_token: azp",
+        ):
+            self.refresh_social(social, self.refresh_response())
+
+        self.assertEqual(social.extra_data, original_extra_data)
+
+    def test_refresh_rejects_omitted_azp(self) -> None:
+        social = self.login_for_refresh()
+        original_extra_data = copy.deepcopy(social.extra_data)
+
+        with self.assertRaisesRegex(
+            AuthTokenError,
+            "Incorrect refreshed id_token: azp",
+        ):
+            self.refresh_social(
+                social,
+                self.refresh_response(include_azp=False),
+            )
+
+        self.assertEqual(social.extra_data, original_extra_data)
+
+    def test_refresh_rejects_invalid_at_hash(self) -> None:
+        self.assert_refresh_rejected(
+            self.refresh_response(at_hash="invalid-hash"),
+            "Invalid access token",
+        )
+
+    def test_refresh_rejects_changed_subject(self) -> None:
+        self.assert_refresh_rejected(
+            self.refresh_response(subject="different-subject"),
+            "Incorrect refreshed id_token: sub",
+        )
+
+    def test_refresh_rejects_changed_auth_time(self) -> None:
+        social = self.login_for_refresh(auth_time=1_700_000_000)
+        original_extra_data = copy.deepcopy(social.extra_data)
+
+        with self.assertRaisesRegex(
+            AuthTokenError,
+            "Incorrect refreshed id_token: auth_time",
+        ):
+            self.refresh_social(
+                social,
+                self.refresh_response(auth_time=1_700_000_001),
+            )
+
+        self.assertEqual(social.extra_data, original_extra_data)
+
+    def test_refresh_accepts_matching_nonce(self) -> None:
+        social = self.login_for_refresh()
+        context = social.extra_data[self.backend.ID_TOKEN_CONTEXT_KEY]
+
+        self.refresh_social(
+            social,
+            self.prepare_access_token_body(
+                access_token="refreshed-access-token",  # noqa: S106
+                nonce=context["nonce"],
+            ),
+        )
+
+        self.assertEqual(social.extra_data["access_token"], "refreshed-access-token")
+
+    def test_refresh_rejects_changed_nonce(self) -> None:
+        self.assert_refresh_rejected(
+            self.prepare_access_token_body(
+                access_token="refreshed-access-token",  # noqa: S106
+                nonce="different-nonce",
+            ),
+            "Incorrect refreshed id_token: nonce",
+        )
+
+    def test_refresh_seeds_missing_legacy_context(self) -> None:
+        social = self.login_for_refresh()
+        social.extra_data.pop(self.backend.ID_TOKEN_CONTEXT_KEY)
+
+        self.refresh_social(social, self.refresh_response())
+
+        self.assertEqual(
+            social.extra_data[self.backend.ID_TOKEN_CONTEXT_KEY]["sub"],
+            "1234",
+        )
+        original_extra_data = copy.deepcopy(social.extra_data)
+        with self.assertRaisesRegex(
+            AuthTokenError,
+            "Incorrect refreshed id_token: sub",
+        ):
+            self.refresh_social(
+                social,
+                self.refresh_response(subject="different-subject"),
+            )
+        self.assertEqual(social.extra_data, original_extra_data)
+
+    def test_legacy_refresh_rejects_changed_subject(self) -> None:
+        social = self.login_for_refresh()
+        social.extra_data.pop(self.backend.ID_TOKEN_CONTEXT_KEY)
+        original_extra_data = copy.deepcopy(social.extra_data)
+
+        with self.assertRaisesRegex(
+            AuthTokenError,
+            "Incorrect refreshed id_token: sub",
+        ):
+            self.refresh_social(
+                social,
+                self.refresh_response(subject="different-subject"),
+            )
+
+        self.assertEqual(social.extra_data, original_extra_data)
+
+    def test_legacy_refresh_requires_subject_identity_key(self) -> None:
+        social = self.login_for_refresh()
+        social.extra_data.pop(self.backend.ID_TOKEN_CONTEXT_KEY)
+        original_extra_data = copy.deepcopy(social.extra_data)
+
+        with (
+            patch.object(OpenIdConnectAuth, "id_key", return_value="username"),
+            self.assertRaisesRegex(
+                AuthTokenError,
+                "reauthentication required",
+            ),
+        ):
+            self.refresh_social(social, self.refresh_response())
+
+        self.assertEqual(social.extra_data, original_extra_data)
 
 
 class ExampleOpenIdConnectAuth(OpenIdConnectAuth):
@@ -337,6 +602,11 @@ class ExampleOpenIdConnectCustomAtHashTest(OpenIdConnectTest):
         at_hash=None,
         subject=None,
         access_token: str | None = "foobar",  # noqa: S107
+        refresh_token: str | None = None,
+        include_nonce: bool = True,
+        auth_time: int | None = None,
+        include_azp: bool = True,
+        authorized_party: str | None = None,
     ):
         if at_hash is None and access_token is not None:
             at_hash = OpenIdConnectAuth.calc_at_hash(access_token, "RS256", "sha512")
@@ -351,6 +621,11 @@ class ExampleOpenIdConnectCustomAtHashTest(OpenIdConnectTest):
             at_hash=at_hash,
             subject=subject,
             access_token=access_token,
+            refresh_token=refresh_token,
+            include_nonce=include_nonce,
+            auth_time=auth_time,
+            include_azp=include_azp,
+            authorized_party=authorized_party,
         )
 
     def test_everything_works(self) -> None:

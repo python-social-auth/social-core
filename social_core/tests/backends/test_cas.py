@@ -2,6 +2,8 @@ import json
 
 import responses
 
+from social_core.exceptions import AuthTokenError
+
 from .oauth import BaseAuthUrlTestMixin
 from .open_id_connect import OpenIdConnectTest
 
@@ -71,3 +73,10 @@ class CASOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
 
     def test_everything_works(self) -> None:
         self.do_login()
+
+    def test_legacy_refresh_requires_reauthentication(self) -> None:
+        with self.assertRaisesRegex(AuthTokenError, "reauthentication required"):
+            self.backend.validate_legacy_id_token_context(
+                "cartman",
+                {"sub": self.user_id},
+            )

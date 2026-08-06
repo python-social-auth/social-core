@@ -78,6 +78,7 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
     JWT_LEEWAY: float = 1.0  # seconds
     VALIDATE_AT_HASH: bool = True
     CUSTOM_AT_HASH_ALGO: str | None = None
+    ID_TOKEN_CONTEXT_KEY = "_oidc_id_token_context"
     # When these options are unspecified, server will choose via openid autoconfiguration
     ID_TOKEN_ISSUER = ""
     ACCESS_TOKEN_URL = ""
@@ -256,7 +257,7 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
     def remove_nonce(self, nonce_id) -> None:
         self.strategy.storage.association.remove([nonce_id])
 
-    def validate_claims(self, id_token) -> None:
+    def validate_temporal_claims(self, id_token) -> None:
         utc_timestamp = timegm(datetime.datetime.now(datetime.timezone.utc).timetuple())
 
         if "nbf" in id_token and utc_timestamp < id_token["nbf"]:
@@ -264,8 +265,11 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
 
         # Verify the token was issued in the last 10 minutes
         iat_leeway = self.setting("ID_TOKEN_MAX_AGE", self.ID_TOKEN_MAX_AGE)
-        if utc_timestamp > id_token["iat"] + iat_leeway:
+        if "iat" not in id_token or utc_timestamp > id_token["iat"] + iat_leeway:
             raise AuthTokenError(self, "Incorrect id_token: iat")
+
+    def validate_claims(self, id_token) -> None:
+        self.validate_temporal_claims(id_token)
 
         # Validate the nonce to ensure the request was not modified
         nonce = id_token.get("nonce")
@@ -277,6 +281,10 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
             self.remove_nonce(nonce_obj.id)
         else:
             raise AuthTokenError(self, "Incorrect id_token: nonce")
+
+    def validate_refresh_claims(self, id_token) -> None:
+        """Validate claims that do not depend on the authentication request."""
+        self.validate_temporal_claims(id_token)
 
     def find_valid_key(self, id_token):
         kid = jwt.get_unverified_header(id_token).get("kid")
@@ -308,11 +316,8 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
                     return key
         return None
 
-    def validate_and_return_id_token(self, id_token, access_token):
-        """
-        Validates the id_token according to the steps at
-        http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation.
-        """
+    def decode_and_validate_id_token(self, id_token, access_token):
+        """Validate an ID token's signature and self-contained claims."""
         client_id, _client_secret = self.get_key_and_secret()
 
         try:
@@ -349,10 +354,26 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
 
         # pyjwt does not validate OIDC claims
         # see https://github.com/jpadilla/pyjwt/pull/296
+        self.validate_authorized_party(claims, client_id)
         if not self.validate_at_hash(claims, access_token, key):
             raise AuthTokenError(self, "Invalid access token")
 
+        return claims
+
+    def validate_and_return_id_token(self, id_token, access_token):
+        """
+        Validates the id_token according to the steps at
+        http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation.
+        """
+        claims = self.decode_and_validate_id_token(id_token, access_token)
         self.validate_claims(claims)
+
+        return claims
+
+    def validate_and_return_refresh_id_token(self, id_token, access_token):
+        """Validate an ID token returned by a refresh request."""
+        claims = self.decode_and_validate_id_token(id_token, access_token)
+        self.validate_refresh_claims(claims)
 
         return claims
 
@@ -389,6 +410,148 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
             response["id_token"], response["access_token"]
         )
         return response
+
+    def process_refresh_token_response(self, response, *args, **kwargs) -> dict:
+        data = super().process_refresh_token_response(response, *args, **kwargs)
+        id_token = data.get("id_token")
+        if id_token is None:
+            return data
+
+        access_token = data.get("access_token")
+        if access_token is None:
+            raise AuthTokenError(
+                self,
+                "Missing access_token in OpenID Connect refresh response",
+            )
+
+        self.id_token = self.validate_and_return_refresh_id_token(
+            id_token, access_token
+        )
+        return data
+
+    @staticmethod
+    def id_token_audiences(audience) -> set[str]:
+        if isinstance(audience, str):
+            return {audience}
+        if isinstance(audience, list) and all(
+            isinstance(item, str) for item in audience
+        ):
+            return set(cast("list[str]", audience))
+        raise ValueError
+
+    def validate_authorized_party(self, claims, client_id: str) -> None:
+        """Validate the client authorized to use the ID token."""
+        audience = claims.get("aud")
+        try:
+            self.id_token_audiences(audience)
+        except ValueError as error:
+            raise AuthTokenError(self, "Incorrect id_token: aud") from error
+
+        has_authorized_party = "azp" in claims
+        authorized_party = claims.get("azp")
+        if (
+            isinstance(audience, list)
+            and len(audience) > 1
+            and not has_authorized_party
+        ) or (has_authorized_party and authorized_party != client_id):
+            raise AuthTokenError(self, "Incorrect id_token: azp")
+
+    def id_token_context(self, claims) -> dict[str, Any]:
+        """Return identity claims that must remain stable across refreshes."""
+        context = {}
+        for claim in ("iss", "sub", "aud"):
+            if claim not in claims:
+                raise AuthTokenError(self, f"Incorrect id_token: {claim}")
+            context[claim] = claims[claim]
+
+        for claim in ("auth_time", "nonce", "azp"):
+            if claim in claims:
+                context[claim] = claims[claim]
+        return context
+
+    def validate_id_token_context(self, previous, current) -> None:
+        """Validate identity continuity for an ID token refresh."""
+        if not isinstance(previous, dict):
+            raise AuthTokenError(self, "Invalid stored OpenID Connect context")
+
+        for claim in ("iss", "sub", "aud"):
+            if claim not in previous:
+                raise AuthTokenError(self, "Invalid stored OpenID Connect context")
+
+        for claim in ("iss", "sub"):
+            if previous[claim] != current[claim]:
+                raise AuthTokenError(self, f"Incorrect refreshed id_token: {claim}")
+
+        self.validate_id_token_audience_context(previous, current)
+
+        # OIDC Core 1.0 section 12.2 requires exact azp continuity,
+        # including whether the claim is present.
+        if previous.get("azp") != current.get("azp"):
+            raise AuthTokenError(self, "Incorrect refreshed id_token: azp")
+
+        for claim in ("auth_time", "nonce"):
+            if claim in current and previous.get(claim) != current[claim]:
+                raise AuthTokenError(
+                    self,
+                    f"Incorrect refreshed id_token: {claim}",
+                )
+
+    def validate_id_token_audience_context(self, previous, current) -> None:
+        """Validate that refreshed ID token audiences are unchanged."""
+        try:
+            previous_audiences = self.id_token_audiences(previous["aud"])
+        except ValueError as error:
+            raise AuthTokenError(
+                self, "Invalid stored OpenID Connect context"
+            ) from error
+        try:
+            current_audiences = self.id_token_audiences(current["aud"])
+        except ValueError as error:
+            raise AuthTokenError(self, "Incorrect id_token: aud") from error
+        if previous_audiences != current_audiences:
+            raise AuthTokenError(self, "Incorrect refreshed id_token: aud")
+
+    def validate_legacy_id_token_context(self, uid: str, current) -> None:
+        """Bind a legacy association to a refreshed ID token when possible."""
+        # ID_KEY alone cannot prove how a subclass derived its persisted UID.
+        if (
+            self.id_key() != "sub"
+            or type(self).get_user_id is not OpenIdConnectAuth.get_user_id
+        ):
+            raise AuthTokenError(
+                self,
+                "OpenID Connect identity context is unavailable; "
+                "reauthentication required",
+            )
+        if uid != current["sub"]:
+            raise AuthTokenError(self, "Incorrect refreshed id_token: sub")
+
+    def extra_data(
+        self,
+        user,
+        uid: str,
+        response: dict[str, Any],
+        details: dict[str, Any],
+        pipeline_kwargs: dict[str, Any],
+    ) -> dict[str, Any]:
+        data = super().extra_data(user, uid, response, details, pipeline_kwargs)
+        previous_context = details.get(self.ID_TOKEN_CONTEXT_KEY)
+
+        if response.get("id_token") is not None:
+            if self.id_token is None:
+                raise AuthTokenError(self, "ID token was not validated")
+            current_context = self.id_token_context(self.id_token)
+            if previous_context is not None:
+                self.validate_id_token_context(previous_context, current_context)
+                data[self.ID_TOKEN_CONTEXT_KEY] = previous_context
+            else:
+                if not pipeline_kwargs:
+                    self.validate_legacy_id_token_context(uid, current_context)
+                data[self.ID_TOKEN_CONTEXT_KEY] = current_context
+        elif previous_context is not None:
+            data[self.ID_TOKEN_CONTEXT_KEY] = previous_context
+
+        return data
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         return self.validate_userinfo_sub(
