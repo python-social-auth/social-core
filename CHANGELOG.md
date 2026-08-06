@@ -5,18 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [5.1.0](https://github.com/python-social-auth/social-core/releases/tag/5.1.0) - 2026-08-06
+
+### Added
+
+- Added a Helmholtz AAI OpenID Connect backend.
+- Native applications can allow private-use redirect URI schemes with the
+  `ALLOWED_REDIRECT_SCHEMES` setting.
 
 ### Security
 
 - OpenID Connect backends now validate ID tokens returned during token refresh
   and reject changes to the authenticated identity.
 
+### Changed
+
+- Updated development dependencies and CI actions.
+
 ### Fixed
 
 - Updated the Coinbase backend to use current OAuth endpoints, scopes, API
   versioning, and token revocation parameters.
 - HTTP 403 responses from authentication providers now raise `AuthForbidden`.
+- JWT verification failures are now consistently wrapped in social-core
+  authentication exceptions.
 
 ## [5.0.2](https://github.com/python-social-auth/social-core/releases/tag/5.0.2) - 2026-06-26
 
