@@ -3,7 +3,10 @@ import unittest
 from typing import TYPE_CHECKING, cast
 from unittest.mock import Mock, patch
 
+import requests
+
 from social_core.backends.base import BaseAuth
+from social_core.exceptions import AuthForbidden
 from social_core.pipeline.utils import partial_prepare
 from social_core.utils import (
     PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME,
@@ -12,6 +15,7 @@ from social_core.utils import (
     PARTIAL_TOKEN_PENDING_SESSION_NAME,
     PARTIAL_TOKEN_SESSION_NAME,
     build_absolute_uri,
+    handle_http_errors,
     is_url,
     partial_pipeline_data,
     partial_pipeline_result,
@@ -731,6 +735,25 @@ class GetKeyAndSecretBasicAuthTest(unittest.TestCase):
             expected = b"Basic " + base64.b64encode(b"test_key:test_secret")
             self.assertEqual(result, expected)
             self.assertIsInstance(result, bytes)
+
+
+class HandleHttpErrorsTest(unittest.TestCase):
+    def test_unauthorized_and_forbidden_raise_auth_forbidden(self) -> None:
+        backend = BaseAuth(TestStrategy(TestStorage))
+
+        @handle_http_errors
+        def fail(_backend, error):
+            raise error
+
+        for status_code in (401, 403):
+            with self.subTest(status_code=status_code):
+                response = Mock(status_code=status_code, text="Access denied")
+                error = requests.HTTPError(response=response)
+
+                with self.assertRaises(AuthForbidden) as context:
+                    fail(backend, error)
+
+                self.assertIs(context.exception.__cause__, error)
 
 
 class IdKeyConfigurabilityTest(unittest.TestCase):

@@ -505,7 +505,7 @@ def handle_http_errors(func):
 
             if err.response.status_code == 400:
                 raise AuthCanceled(args[0], response=err.response) from err
-            if err.response.status_code == 401:
+            if err.response.status_code in (401, 403):
                 raise AuthForbidden(args[0]) from err
             if err.response.status_code == 503:
                 raise AuthUnreachableProvider(args[0]) from err
