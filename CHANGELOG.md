@@ -12,6 +12,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - OpenID Connect backends now validate ID tokens returned during token refresh
   and reject changes to the authenticated identity.
 
+### Fixed
+
+- Updated the Coinbase backend to use current OAuth endpoints, scopes, API
+  versioning, and token revocation parameters.
+- HTTP 403 responses from authentication providers now raise `AuthForbidden`.
+
 ## [5.0.2](https://github.com/python-social-auth/social-core/releases/tag/5.0.2) - 2026-06-26
 
 ### Security
