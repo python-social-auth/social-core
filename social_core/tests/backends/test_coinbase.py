@@ -49,7 +49,8 @@ class CoinbaseOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
             "https://login.coinbase.com/oauth2/revoke",
         )
         self.assertEqual(
-            get_querystring(self.backend.auth_url())["scope"], "wallet:user:read"
+            get_querystring(self.backend.auth_url())["scope"],
+            "wallet:user:read,wallet:user:email",
         )
 
     def test_configured_scopes_use_commas_and_include_default(self) -> None:
@@ -57,7 +58,7 @@ class CoinbaseOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
             {
                 "SOCIAL_AUTH_COINBASE_SCOPE": [
                     "wallet:accounts:read",
-                    "wallet:user:email",
+                    "wallet:addresses:read",
                 ]
             }
         )
@@ -66,7 +67,8 @@ class CoinbaseOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
 
         self.assertEqual(
             scope,
-            "wallet:accounts:read,wallet:user:email,wallet:user:read",
+            "wallet:accounts:read,wallet:addresses:read,"
+            "wallet:user:read,wallet:user:email",
         )
 
     def test_default_scope_can_be_ignored(self) -> None:
@@ -127,3 +129,9 @@ class CoinbaseOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
                 "client_secret": "a-secret-key",
             },
         )
+
+    def test_revoke_token_can_be_disabled(self) -> None:
+        self.strategy.set_settings({"SOCIAL_AUTH_COINBASE_REVOKE_TOKEN_URL": ""})
+
+        self.assertIsNone(self.backend.revoke_token("foobar", "uid"))
+        self.assertEqual(len(responses.calls), 0)
