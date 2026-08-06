@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+### Security
+
+- OpenID Connect backends now validate ID tokens returned during token refresh
+  and reject changes to the authenticated identity.
+
 ## [5.0.2](https://github.com/python-social-auth/social-core/releases/tag/5.0.2) - 2026-06-26
 
 ### Security

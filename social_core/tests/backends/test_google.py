@@ -173,6 +173,13 @@ class GoogleOpenIdConnectTest(OpenIdConnectTest):
         }
     )
 
+    def test_legacy_refresh_requires_reauthentication(self) -> None:
+        with self.assertRaisesRegex(AuthTokenError, "reauthentication required"):
+            self.backend.validate_legacy_id_token_context(
+                "foo@bar.com",
+                {"sub": "101010101010101010101"},
+            )
+
     def test_pkce_can_be_enabled_by_setting(self) -> None:
         self.strategy.set_settings(
             {
