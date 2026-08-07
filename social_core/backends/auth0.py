@@ -14,6 +14,7 @@ class Auth0OAuth2(BaseOAuth2):
     """Auth0 OAuth authentication backend"""
 
     name = "auth0"
+    DEFAULT_SCOPE = ["openid", "profile", "email"]
     SCOPE_SEPARATOR = " "
     EXTRA_DATA = [("picture", "picture")]
 
@@ -34,6 +35,8 @@ class Auth0OAuth2(BaseOAuth2):
     def get_user_details(self, response):
         # Obtain JWT and the keys to validate the signature
         id_token = response.get("id_token")
+        if id_token is None:
+            raise AuthTokenError(self, "Missing id_token in Auth0 token response")
         jwks = self.get_json(self.api_path(".well-known/jwks.json"))
         issuer = self.api_path()
         audience = self.setting("KEY")  # CLIENT_ID
