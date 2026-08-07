@@ -109,6 +109,13 @@ class AuthTokenError(AuthException):
         return f"Token error: {msg}"
 
 
+class AuthReauthenticationRequired(AuthTokenError):
+    """The stored authentication context cannot establish token continuity."""
+
+    def __init__(self, backend: BaseAuth) -> None:
+        super().__init__(backend, "reauthentication required")
+
+
 class AuthMissingParameter(AuthException):
     """Missing parameter needed to start or complete the process."""
 
