@@ -16,7 +16,7 @@ from social_core.utils import get_querystring, parse_qs
 
 from .base import BaseBackendTest
 from .oauth import BaseAuthUrlTestMixin, OAuth1AuthUrlTestMixin, OAuth1Test, OAuth2Test
-from .open_id_connect import OpenIdConnectTest
+from .open_id_connect import STORED_ID_TOKEN_CONTEXT_KEY, OpenIdConnectTest
 
 
 class GoogleOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
@@ -173,12 +173,34 @@ class GoogleOpenIdConnectTest(OpenIdConnectTest):
         }
     )
 
-    def test_legacy_refresh_requires_reauthentication(self) -> None:
-        with self.assertRaisesRegex(AuthTokenError, "reauthentication required"):
-            self.backend.validate_legacy_id_token_context(
-                "foo@bar.com",
-                {"sub": "101010101010101010101"},
-            )
+    def test_refresh_preserves_oidc_data_with_google_extra_data(self) -> None:
+        responses.add(
+            responses.GET,
+            url="https://openidconnect.googleapis.com/v1/userinfo",
+            status=200,
+            body=json.dumps(
+                {
+                    "sub": "1234",
+                    "email": "foo@bar.com",
+                    "preferred_username": "foo",
+                }
+            ),
+            content_type="application/json",
+        )
+        self.access_token_kwargs = {"refresh_token": "refresh-token"}
+        self.expected_username = "foo"
+        social = self.do_login().social[0]
+        self.assertIn("id_token", social.extra_data)
+        original_context = social.extra_data[STORED_ID_TOKEN_CONTEXT_KEY]
+        self.assertEqual(original_context["sub"], "1234")
+
+        self.refresh_social(social, self.refresh_response())
+
+        self.assertEqual(social.extra_data["access_token"], "refreshed-access-token")
+        self.assertEqual(
+            social.extra_data[STORED_ID_TOKEN_CONTEXT_KEY],
+            original_context,
+        )
 
     def test_pkce_can_be_enabled_by_setting(self) -> None:
         self.strategy.set_settings(
