@@ -220,6 +220,14 @@ max-complexity = 11  # TODO: should be lower
 max-args = 7
 max-branches = 15
 
+[tool.rumdl]
+disable = [
+  # We do not enforce heading
+  "first-line-heading",
+  # Avoid length limit checks
+  "line-length"
+]
+
 [tool.setuptools]
 packages = ["social_core"]
 
