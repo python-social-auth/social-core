@@ -614,7 +614,7 @@ stricter OAuth, OpenID Connect, and Azure AD validation before upgrading.
 ### Changed
 
 - Updated Azure B2C to extract first email from list if it's a list
-- Replace deprecated Google+ API usage with https://www.googleapis.com/oauth2/v3/userinfo
+- Replace deprecated Google+ API usage with <https://www.googleapis.com/oauth2/v3/userinfo>
 - Updated Azure Tenant to fix Nonetype error
 - Updated comment denoting incorrect setting name
 - Yandex: do not fail when no email is present
