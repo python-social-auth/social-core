@@ -67,9 +67,11 @@ class UserMixin:
         return self.extra_data.get("access_token")
 
     def refresh_token(self, strategy: BaseStrategy, *args, **kwargs) -> None:
-        token = self.extra_data.get("refresh_token") or self.extra_data.get(
-            "access_token"
-        )
+        # A refresh_token is only sent by some providers, and only for some
+        # grant types (RFC 6749 section 4.1.4). Falling back to access_token
+        # here would send it to the token endpoint as a refresh_token, which
+        # the authorization server correctly rejects.
+        token = self.extra_data.get("refresh_token")
         backend = self.get_backend_instance(strategy)
         refresh_token = getattr(backend, "refresh_token", None) if backend else None
         if token and callable(refresh_token):
