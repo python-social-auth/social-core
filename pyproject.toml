@@ -22,7 +22,7 @@ dev = [
   {include-group = "pylint"}
 ]
 pylint = [
-  "pylint==4.0.7"
+  "pylint==4.0.8"
 ]
 
 [project]
