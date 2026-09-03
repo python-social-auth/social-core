@@ -2,8 +2,6 @@ import json
 
 import responses
 
-from social_core.exceptions import AuthTokenError
-
 from .oauth import BaseAuthUrlTestMixin
 from .open_id_connect import OpenIdConnectTest
 
@@ -74,9 +72,12 @@ class CASOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
     def test_everything_works(self) -> None:
         self.do_login()
 
-    def test_legacy_refresh_requires_reauthentication(self) -> None:
-        with self.assertRaisesRegex(AuthTokenError, "reauthentication required"):
-            self.backend.validate_legacy_id_token_context(
-                "cartman",
-                {"sub": self.user_id},
-            )
+    def test_refresh_with_uid_different_from_id_token_subject(self) -> None:
+        social = self.login_for_refresh()
+
+        self.refresh_social(
+            social,
+            self.refresh_response(subject=self.user_id),
+        )
+
+        self.assertEqual(social.extra_data["access_token"], "refreshed-access-token")

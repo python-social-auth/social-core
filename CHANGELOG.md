@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- Simplified OpenID Connect ID-token validation to require core claims before
+  login and preserve an immutable identity context across refreshes. This avoids
+  false mismatches for custom user IDs and valid authorized-party claim changes;
+  legacy associations establish the context on their first validated refresh.
+
 ## [5.1.0](https://github.com/python-social-auth/social-core/releases/tag/5.1.0) - 2026-08-06
 
 ### Added

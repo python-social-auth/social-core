@@ -8,6 +8,7 @@ from social_core.exceptions import (
     AuthFailed,
     AuthForbidden,
     AuthMissingParameter,
+    AuthReauthenticationRequired,
     AuthStateForbidden,
     AuthStateMissing,
     AuthTokenError,
@@ -55,6 +56,14 @@ class AuthFailedDeniedTest(BaseExceptionTestCase):
 class AuthTokenErrorTest(BaseExceptionTestCase):
     exception = AuthTokenError(BaseAuth(TestStrategy(TestStorage)), "Incorrect tokens")
     expected_message = "Token error: Incorrect tokens"
+
+
+class AuthReauthenticationRequiredTest(BaseExceptionTestCase):
+    exception = AuthReauthenticationRequired(BaseAuth(TestStrategy(TestStorage)))
+    expected_message = "Token error: reauthentication required"
+
+    def test_is_token_error(self) -> None:
+        self.assertIsInstance(self.exception, AuthTokenError)
 
 
 class AuthMissingParameterTest(BaseExceptionTestCase):
