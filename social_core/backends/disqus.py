@@ -30,7 +30,9 @@ class DisqusOAuth2(BaseOAuth2):
     ]
 
     def get_user_id(self, details, response):
-        return response["response"]["id"]
+        return self.get_user_id_from_sources(
+            response.get("response"), details, response
+        )
 
     def get_user_details(self, response):
         """Return user details from Disqus account"""

@@ -20,7 +20,12 @@ class KakaoOAuth2(BaseOAuth2):
     ]
 
     def get_user_id(self, details, response):
-        return response["id"]
+        return self.get_user_id_from_sources(
+            response,
+            response.get("properties"),
+            response.get("kakao_account"),
+            details,
+        )
 
     def get_user_details(self, response):
         """Return user details from Kakao account"""

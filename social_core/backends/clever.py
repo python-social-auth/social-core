@@ -19,7 +19,7 @@ class CleverOAuth2(BaseOAuth2):
 
     def get_user_id(self, details, response):
         """Return user unique id provided by service"""
-        return response.get("data", {}).get("id")
+        return self.get_user_id_from_sources(response.get("data"), details)
 
     def get_user_type(self, data):
         return next(iter(data.get("data", {}).get("roles", {}).keys()))

@@ -30,6 +30,7 @@ class CASOpenIdConnectAuth(OpenIdConnectAuth):
     """
 
     name = "cas"
+    ID_KEY = "username"
     STATE_PARAMETER = True
 
     def oidc_endpoint(self):
@@ -39,7 +40,7 @@ class CASOpenIdConnectAuth(OpenIdConnectAuth):
 
     def get_user_id(self, details, response):
         self.log_debug("method: get_user_id, details: %s, %s", details, response)
-        return details.get("username")
+        return super().get_user_id(details, response)
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         data = self.get_json(

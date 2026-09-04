@@ -42,6 +42,7 @@ from .azuread import AzureADOAuth2
 
 class AzureADTenantOAuth2(AzureADOAuth2):
     name = "azuread-tenant-oauth2"
+    ID_KEY = "sub"
     OPENID_CONFIGURATION_URL = "{base_url}/.well-known/openid-configuration{appid}"
     JWKS_URL = "{base_url}/discovery/keys{appid}"
 
@@ -61,10 +62,6 @@ class AzureADTenantOAuth2(AzureADOAuth2):
         return (
             f"?appid={self.setting('KEY')}" if self.setting("KEY") is not None else ""
         )
-
-    def get_user_id(self, details, response):
-        """Use subject (sub) claim as unique id."""
-        return response.get("sub")
 
     def get_id_token_issuer(self, claims: dict[str, Any]) -> str:
         self.validate_configured_tenant(claims)
@@ -92,15 +89,12 @@ class AzureADTenantOAuth2(AzureADOAuth2):
 
 class AzureADV2TenantOAuth2(AzureADTenantOAuth2):
     name = "azuread-v2-tenant-oauth2"
+    ID_KEY = "preferred_username"
     OPENID_CONFIGURATION_URL = "{base_url}/v2.0/.well-known/openid-configuration{appid}"
     AUTHORIZATION_URL = "{base_url}/oauth2/v2.0/authorize"
     ACCESS_TOKEN_URL = "{base_url}/oauth2/v2.0/token"
     JWKS_URL = "{base_url}/discovery/v2.0/keys{appid}"
     DEFAULT_SCOPE = ["openid", "profile", "offline_access"]
-
-    def get_user_id(self, details, response):
-        """Use upn as unique id"""
-        return response.get("preferred_username")
 
     def get_user_details(self, response):
         """Return user details from Azure AD account"""

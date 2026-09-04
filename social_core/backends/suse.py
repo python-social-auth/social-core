@@ -8,6 +8,7 @@ from .open_id import OpenIdAuth
 
 class OpenSUSEOpenId(OpenIdAuth):
     name = "opensuse"
+    ID_KEY = "nickname"
     URL = "https://www.opensuse.org/openid/user/"
 
     def get_user_id(self, details, response):
@@ -15,4 +16,4 @@ class OpenSUSEOpenId(OpenIdAuth):
         Return user unique id provided by service. For openSUSE
         the nickname is original.
         """
-        return details["nickname"]
+        return self.get_user_id_from_sources(details)

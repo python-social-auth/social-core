@@ -14,8 +14,7 @@ class InstagramOAuth2(BaseOAuth2):
     ACCESS_TOKEN_URL = "https://api.instagram.com/oauth/access_token"
 
     def get_user_id(self, details, response):
-        user = response.get("user") or {}
-        return user.get("id")
+        return self.get_user_id_from_sources(response.get("user"), details)
 
     def get_user_details(self, response):
         """Return user details from Instagram account"""

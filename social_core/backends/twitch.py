@@ -43,17 +43,12 @@ class TwitchOAuth2(BaseOAuth2):
     """Twitch OAuth authentication backend"""
 
     name = "twitch"
-    ID_KEY = "_id"
+    ID_KEY = "id"
+    REQUIRES_USER_ID = True
     AUTHORIZATION_URL = "https://id.twitch.tv/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://id.twitch.tv/oauth2/token"
     DEFAULT_SCOPE = ["user:read:email"]
     REDIRECT_STATE = False
-
-    def get_user_id(self, details, response):
-        """
-        Use twitch user id as unique id
-        """
-        return response.get("id")
 
     def get_user_details(self, response):
         return {

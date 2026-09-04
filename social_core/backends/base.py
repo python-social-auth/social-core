@@ -6,7 +6,11 @@ from typing import TYPE_CHECKING, Any, Literal, cast
 
 import requests
 
-from social_core.exceptions import AuthConnectionError, AuthUnknownError
+from social_core.exceptions import (
+    AuthConnectionError,
+    AuthMissingParameter,
+    AuthUnknownError,
+)
 from social_core.registry import REGISTRY
 from social_core.utils import module_member, parse_qs, social_logger, user_agent
 
@@ -30,6 +34,7 @@ class BaseAuth:
     EXTRA_DATA: list[str | tuple[str, str] | tuple[str, str, bool]] | None = None
     GET_ALL_EXTRA_DATA = False
     REQUIRES_EMAIL_VALIDATION = False
+    REQUIRES_USER_ID: bool = False
     SEND_USER_AGENT = True
 
     def __init__(
@@ -229,11 +234,32 @@ class BaseAuth:
         """Return a unique ID for the current user, by default from server
         response or details."""
         id_key = self.id_key()
+        if self.REQUIRES_USER_ID or self.setting("ID_KEY"):
+            return self.get_user_id_from_sources(details, response, id_key=id_key)
         if details:
             user_id = details.get(id_key)
             if user_id:
                 return user_id
         return response.get(id_key)
+
+    def get_user_id_from_sources(
+        self,
+        *sources: Mapping[str, Any] | None,
+        id_key: str | None = None,
+    ):
+        """Return the selected user ID from mappings or fail clearly.
+
+        Sources are searched in order for the configured or explicitly passed
+        ID key. Missing, ``None``, and empty-string values are rejected.
+        """
+        if id_key is None:
+            id_key = self.id_key()
+        for source in sources:
+            if source is not None:
+                user_id = source.get(id_key)
+                if user_id is not None and user_id != "":
+                    return user_id
+        raise AuthMissingParameter(self, id_key)
 
     def get_user_details(self, response) -> dict[str, Any]:
         """Return user details in a known internal structure.

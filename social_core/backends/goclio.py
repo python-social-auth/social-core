@@ -37,4 +37,4 @@ class GoClioOAuth2(BaseOAuth2):
         )
 
     def get_user_id(self, details, response):
-        return response.get("user", {}).get("id")
+        return self.get_user_id_from_sources(response.get("user"), details)

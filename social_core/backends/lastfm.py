@@ -16,6 +16,8 @@ class LastFmAuth(BaseAuth):
     """
 
     name = "lastfm"
+    ID_KEY = "name"
+    REQUIRES_USER_ID = True
     AUTH_URL = "https://www.last.fm/api/auth/?api_key={api_key}"
     EXTRA_DATA = [("key", "session_key")]
 
@@ -47,11 +49,6 @@ class LastFmAuth(BaseAuth):
 
         kwargs.update({"response": response["session"], "backend": self})
         return self.strategy.authenticate(*args, **kwargs)
-
-    def get_user_id(self, details, response):
-        """Return a unique ID for the current user, by default from server
-        response."""
-        return response.get("name")
 
     def get_user_details(self, response):
         fullname, first_name, last_name = self.get_user_names(response["name"])

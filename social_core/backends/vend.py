@@ -12,6 +12,7 @@ from .oauth import BaseOAuth2
 
 class VendOAuth2(BaseOAuth2):
     name = "vend"
+    ID_KEY = "id"
     AUTHORIZATION_URL = "https://secure.vendhq.com/connect"
     ACCESS_TOKEN_URL = "https://{0}.vendhq.com/api/1.0/token"
     REDIRECT_STATE = False
@@ -34,10 +35,9 @@ class VendOAuth2(BaseOAuth2):
             raise AuthInvalidParameter(self, "domain_prefix")
         return prefix
 
-    def scoped_uid(self, response) -> str:
-        user_id = response.get("id")
-        if user_id in (None, ""):
-            raise AuthMissingParameter(self, "id")
+    def scoped_uid(self, details, response) -> str:
+        id_key = self.id_key()
+        user_id = self.get_user_id_from_sources(response, details, id_key=id_key)
         return f"{self.domain_prefix(response)}:{user_id}"
 
     def access_token_url(self):
@@ -45,7 +45,7 @@ class VendOAuth2(BaseOAuth2):
 
     def get_user_id(self, details, response):
         domain_prefix = self.domain_prefix(response)
-        uid = self.scoped_uid(response)
+        uid = self.scoped_uid(details, response)
         if self.strategy.storage.user.get_social_auth(self.name, uid):
             return uid
 

@@ -575,9 +575,14 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
         return userinfo
 
     def get_user_id(self, details, response):
-        if self.id_key() == "sub" and self.id_token is not None:
-            return self.id_token.get("sub")
-        return super().get_user_id(details, response)
+        id_key = self.id_key()
+        if id_key == "sub":
+            return self.get_user_id_from_sources(
+                self.id_token, details, response, id_key=id_key
+            )
+        return self.get_user_id_from_sources(
+            details, response, self.id_token, id_key=id_key
+        )
 
     def get_user_details(self, response):
         """Return user details from the UserInfo response or ID token."""

@@ -24,7 +24,7 @@ class StocktwitsOAuth2(BaseOAuth2):
     ]
 
     def get_user_id(self, details, response):
-        return response["user"]["id"]
+        return self.get_user_id_from_sources(response.get("user"), details)
 
     def get_user_details(self, response):
         """Return user details from Stocktwits account"""

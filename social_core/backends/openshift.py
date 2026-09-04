@@ -12,6 +12,7 @@ from .oauth import BaseOAuth2
 
 class OpenshiftOAuth2(BaseOAuth2):
     name = "openshift"
+    ID_KEY = "uid"
 
     def access_token_url(self):
         return urljoin(append_slash(cast("str", self.setting("URL"))), "oauth/token")
@@ -22,7 +23,7 @@ class OpenshiftOAuth2(BaseOAuth2):
         )
 
     def get_user_id(self, details, response):
-        return response["metadata"]["uid"]
+        return self.get_user_id_from_sources(response.get("metadata"), details)
 
     def get_user_details(self, response):
         """Return user details from openshift account"""

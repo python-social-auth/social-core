@@ -43,6 +43,7 @@ if TYPE_CHECKING:
 
 class AzureADB2COAuth2(AzureADOAuth2):
     name = "azuread-b2c-oauth2"
+    ID_KEY = "sub"
 
     BASE_URL = "https://{authority_host}/{tenant_name}.onmicrosoft.com"
     AUTHORIZATION_URL = "{base_url}/oauth2/v2.0/authorize"
@@ -137,10 +138,6 @@ class AzureADB2COAuth2(AzureADOAuth2):
         extra_arguments = super().auth_extra_arguments()
         extra_arguments["p"] = self.policy
         return extra_arguments
-
-    def get_user_id(self, details, response):
-        """Use subject (sub) claim as unique id."""
-        return response.get("sub")
 
     def get_user_details(self, response):
         """

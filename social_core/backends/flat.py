@@ -12,12 +12,10 @@ class FlatOAuth2(BaseOAuth2):
     """Flat OAuth2"""
 
     name = "flat"
+    REQUIRES_USER_ID = True
     DEFAULT_SCOPE = ["account.public_profile"]
     AUTHORIZATION_URL = "https://flat.io/auth/oauth"
     ACCESS_TOKEN_URL = "https://api.flat.io/oauth/access_token"
-
-    def get_user_id(self, details, response):
-        return response.get("id")
 
     def get_user_details(self, response):
         """Return user details from Flat account"""

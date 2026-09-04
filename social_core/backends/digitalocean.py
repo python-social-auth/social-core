@@ -11,6 +11,7 @@ class DigitalOceanOAuth(BaseOAuth2):
     """
 
     name = "digitalocean"
+    ID_KEY = "uuid"
     AUTHORIZATION_URL = "https://cloud.digitalocean.com/v1/oauth/authorize"
     ACCESS_TOKEN_URL = "https://cloud.digitalocean.com/v1/oauth/token"
     SCOPE_SEPARATOR = " "
@@ -18,7 +19,7 @@ class DigitalOceanOAuth(BaseOAuth2):
 
     def get_user_id(self, details, response):
         """Return user unique id provided by service"""
-        return response["account"].get("uuid")
+        return self.get_user_id_from_sources(response.get("account"), details)
 
     def get_user_details(self, response):
         """Return user details from DigitalOcean account"""

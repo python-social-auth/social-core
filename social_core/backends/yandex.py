@@ -18,10 +18,11 @@ class YandexOpenId(OpenIdAuth):
     """Yandex OpenID authentication backend"""
 
     name = "yandex-openid"
+    ID_KEY = "email"
     URL = "https://openid.yandex.ru"
 
     def get_user_id(self, details, response):
-        return details["email"] or response.identity_url
+        return details.get(self.id_key()) or response.identity_url
 
     def get_user_details(self, response):
         """Generate username from identity url"""

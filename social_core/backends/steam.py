@@ -22,7 +22,10 @@ class SteamOpenId(OpenIdAuth):
     URL = "https://steamcommunity.com/openid"
 
     def get_user_id(self, details, response):
-        """Return user unique id provided by service"""
+        """Return the validated Steam ID from the asserted OpenID URL.
+
+        The ID is protocol-derived, so the configurable ID_KEY does not apply.
+        """
         return self._user_id(response)
 
     def get_user_details(self, response):

@@ -266,6 +266,21 @@ class AzureADV2TenantOAuth2Test(AzureADTenantOAuth2Test):
     )
     TOKEN_VERSION = "2.0"
 
+    def test_configurable_id_key(self) -> None:
+        response = {
+            "preferred_username": "mutable@example.com",
+            "sub": "stable-subject",
+        }
+        self.assertEqual(
+            self.backend.get_user_id({}, response),
+            "mutable@example.com",
+        )
+
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_AZUREAD_V2_TENANT_OAUTH2_ID_KEY": "sub"}
+        )
+        self.assertEqual(self.backend.get_user_id({}, response), "stable-subject")
+
 
 class AzureADOAuth2TokenRequestBodyMixin(TestCase):
     def _token_request_body(self, url_prefix: str) -> dict[str, list[str]]:

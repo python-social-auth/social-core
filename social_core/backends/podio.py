@@ -22,7 +22,9 @@ class PodioOAuth2(BaseOAuth2):
     ]
 
     def get_user_id(self, details, response):
-        return response["ref"]["id"]
+        return self.get_user_id_from_sources(
+            response.get("ref"), response.get("user"), details
+        )
 
     def get_user_details(self, response):
         fullname, first_name, last_name = self.get_user_names(

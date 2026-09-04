@@ -9,8 +9,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Literal
 
-from social_core.exceptions import AuthException
-
 from .oauth import BaseOAuth2
 
 if TYPE_CHECKING:
@@ -23,6 +21,7 @@ class QiitaOAuth2(BaseOAuth2):
     """Qiita OAuth authentication backend"""
 
     name = "qiita"
+    ID_KEY = "id"
 
     AUTHORIZATION_URL = "https://qiita.com/api/v2/oauth/authorize"
     ACCESS_TOKEN_URL = "https://qiita.com/api/v2/access_tokens"
@@ -96,12 +95,8 @@ class QiitaOAuth2(BaseOAuth2):
 
     def get_user_id(self, details, response):
         """Return user id"""
-        user_id = None
-        if self.setting("IDENTIFIED_BY_PERMANENT_ID"):
-            user_id = response.get("permanent_id")
-        else:
-            user_id = response.get("id")
-
-        if user_id is not None:
-            return str(user_id)
-        raise AuthException(self, "failed to get user id")
+        id_key = self.id_key()
+        if not self.setting("ID_KEY") and self.setting("IDENTIFIED_BY_PERMANENT_ID"):
+            id_key = "permanent_id"
+        user_id = self.get_user_id_from_sources(response, details, id_key=id_key)
+        return str(user_id)
