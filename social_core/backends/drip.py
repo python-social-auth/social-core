@@ -10,11 +10,15 @@ from .oauth import BaseOAuth2
 
 class DripOAuth(BaseOAuth2):
     name = "drip"
+    ID_KEY = "email"
     AUTHORIZATION_URL = "https://www.getdrip.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://www.getdrip.com/oauth/token"
 
     def get_user_id(self, details, response):
-        return details["email"]
+        id_key = self.id_key()
+        users = response.get("users")
+        user = users[0] if users else None
+        return self.get_user_id_from_sources(user, details, id_key=id_key)
 
     def get_user_details(self, response):
         return {

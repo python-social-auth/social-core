@@ -14,7 +14,7 @@ class VimeoOAuth1(BaseOAuth1):
     ACCESS_TOKEN_URL = "https://vimeo.com/oauth/access_token"
 
     def get_user_id(self, details, response):
-        return response.get("person", {}).get("id")
+        return self.get_user_id_from_sources(response.get("person"), details)
 
     def get_user_details(self, response):
         """Return user details from Twitter account"""
@@ -43,6 +43,7 @@ class VimeoOAuth2(BaseOAuth2):
     """Vimeo OAuth2 authentication backend"""
 
     name = "vimeo-oauth2"
+    ID_KEY = "uri"
     AUTHORIZATION_URL = "https://api.vimeo.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://api.vimeo.com/oauth/access_token"
     REFRESH_TOKEN_URL = "https://api.vimeo.com/oauth/request_token"
@@ -60,10 +61,12 @@ class VimeoOAuth2(BaseOAuth2):
 
     def get_user_id(self, details, response):
         """Return user id"""
-        try:
-            user_id = response.get("user", {})["uri"].split("/")[-1]
-        except KeyError:
-            user_id = None
+        id_key = self.id_key()
+        user_id = self.get_user_id_from_sources(
+            response.get("user"), details, id_key=id_key
+        )
+        if id_key == "uri":
+            return user_id.split("/")[-1]
         return user_id
 
     def get_user_details(self, response):

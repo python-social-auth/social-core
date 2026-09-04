@@ -13,7 +13,9 @@ class YammerOAuth2(BaseOAuth2):
     EXTRA_DATA = [("id", "id"), ("expires", "expires"), ("mugshot_url", "mugshot_url")]
 
     def get_user_id(self, details, response):
-        return response["user"]["id"]
+        return self.get_user_id_from_sources(
+            response.get("user"), details, response.get("access_token")
+        )
 
     def get_user_details(self, response):
         username = response["user"]["name"]

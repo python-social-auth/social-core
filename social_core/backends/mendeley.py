@@ -8,10 +8,8 @@ BASE_EXTRA_DATA = [("profile_id", "profile_id"), ("name", "name"), ("bio", "bio"
 
 
 class MendeleyMixin:
+    REQUIRES_USER_ID = True
     SCOPE_SEPARATOR = "+"
-
-    def get_user_id(self, details, response):
-        return response["id"]
 
     def get_user_details(self, response):
         """Return user details from Mendeley account"""

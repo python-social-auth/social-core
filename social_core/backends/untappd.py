@@ -106,7 +106,7 @@ class UntappdOAuth2(BaseOAuth2):
         Return a unique ID for the current user, by default from
         server response.
         """
-        return response["user"].get(self.id_key())
+        return self.get_user_id_from_sources(response.get("user"), details)
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""

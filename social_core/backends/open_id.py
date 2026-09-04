@@ -52,7 +52,11 @@ class OpenIdAuth(BaseAuth):
     _consumer = None
 
     def get_user_id(self, details, response):
-        """Return user unique id provided by service"""
+        """Return the protocol-defined identity URL provided by the service.
+
+        OpenID identity is asserted as a URL rather than a response mapping field,
+        so the configurable ID_KEY does not apply to this backend.
+        """
         return response.identity_url
 
     def get_ax_attributes(self) -> list[tuple[str, str]]:

@@ -25,7 +25,7 @@ class StravaOAuth(BaseOAuth2):
     ]
 
     def get_user_id(self, details, response):
-        return response["athlete"]["id"]
+        return self.get_user_id_from_sources(response.get("athlete"), details)
 
     def get_user_details(self, response):
         """Return user details from Strava account"""

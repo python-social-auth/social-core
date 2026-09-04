@@ -10,6 +10,7 @@ class ZoteroOAuth(BaseOAuth1):
     """Zotero OAuth authorization mechanism"""
 
     name = "zotero"
+    ID_KEY = "userID"
     AUTHORIZATION_URL = "https://www.zotero.org/oauth/authorize"
     REQUEST_TOKEN_URL = "https://www.zotero.org/oauth/request"
     ACCESS_TOKEN_URL = "https://www.zotero.org/oauth/access"
@@ -19,7 +20,10 @@ class ZoteroOAuth(BaseOAuth1):
         Return user unique id provided by service. For Ubuntu One
         the nickname should be original.
         """
-        return details["userID"]
+        id_key = self.id_key()
+        return self.get_user_id_from_sources(
+            response.get("access_token"), details, id_key=id_key
+        )
 
     def get_user_details(self, response):
         """Return user details from Zotero API account"""

@@ -31,6 +31,7 @@ class MediaWiki(BaseOAuth1):
     """
 
     name = "mediawiki"
+    ID_KEY = "userID"
     MEDIAWIKI_URL = "https://meta.wikimedia.org/w/index.php"
     SOCIAL_AUTH_MEDIAWIKI_CALLBACK = "oob"
     LEEWAY = 10.0
@@ -174,7 +175,7 @@ class MediaWiki(BaseOAuth1):
                 f"Replay attack detected: {identity['nonce']} != {request_nonce}",
             )
 
-        return {
+        details = {
             "username": identity["username"],
             "userID": identity["sub"],
             "email": identity.get("email"),
@@ -185,9 +186,16 @@ class MediaWiki(BaseOAuth1):
             "registered": identity.get("registered"),
             "blocked": identity.get("blocked"),
         }
+        id_key = self.id_key()
+        if id_key not in details:
+            user_id = identity.get(id_key)
+            if user_id is None:
+                raise AuthMissingParameter(self, id_key)
+            details[id_key] = user_id
+        return details
 
     def get_user_id(self, details, response):
         """
         Get the unique Mediawiki user ID.
         """
-        return details["userID"]
+        return self.get_user_id_from_sources(details)

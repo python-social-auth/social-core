@@ -28,9 +28,9 @@ class BitbucketOAuth2(BaseOAuth2):
 
     def get_user_id(self, details, response):
         id_key = self.id_key()
-        if self.setting("USERNAME_AS_ID", False):
+        if not self.setting("ID_KEY") and self.setting("USERNAME_AS_ID", False):
             id_key = "username"
-        return response.get(id_key)
+        return self.get_user_id_from_sources(response, details, id_key=id_key)
 
     def get_user_details(self, response):
         """Return user details from Bitbucket account"""

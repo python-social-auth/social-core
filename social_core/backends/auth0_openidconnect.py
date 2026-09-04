@@ -51,9 +51,15 @@ class Auth0OpenIdConnectAuth(OpenIdConnectAuth):
 
     def get_user_id(self, details, response):
         """Return current user id."""
-        if self.id_token is not None and self.id_token.get("sub") is not None:
-            return self.id_token["sub"]
-        return details["user_id"]
+        id_key = self.id_key()
+        if id_key == "sub":
+            normalized_details = {"sub": details.get("user_id")}
+            return self.get_user_id_from_sources(
+                self.id_token,
+                normalized_details,
+                id_key=id_key,
+            )
+        return self.get_user_id_from_sources(details, response, self.id_token)
 
     def get_user_details(self, response):
         """Extract user details from Auth0 response"""

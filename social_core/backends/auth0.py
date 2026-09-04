@@ -14,6 +14,7 @@ class Auth0OAuth2(BaseOAuth2):
     """Auth0 OAuth authentication backend"""
 
     name = "auth0"
+    ID_KEY = "user_id"
     DEFAULT_SCOPE = ["openid", "profile", "email"]
     SCOPE_SEPARATOR = " "
     EXTRA_DATA = [("picture", "picture")]
@@ -30,7 +31,7 @@ class Auth0OAuth2(BaseOAuth2):
 
     def get_user_id(self, details, response):
         """Return current user id."""
-        return details["user_id"]
+        return self.get_user_id_from_sources(details)
 
     def get_user_details(self, response):
         # Obtain JWT and the keys to validate the signature
@@ -72,7 +73,7 @@ class Auth0OAuth2(BaseOAuth2):
             raise AuthTokenError(self, signature_error) from signature_error
 
         fullname, first_name, last_name = self.get_user_names(payload["name"])
-        return {
+        details = {
             "username": payload["nickname"],
             "email": payload["email"],
             "email_verified": payload.get("email_verified", False),
@@ -82,3 +83,10 @@ class Auth0OAuth2(BaseOAuth2):
             "picture": payload["picture"],
             "user_id": payload["sub"],
         }
+        id_key = self.id_key()
+        if id_key not in details:
+            user_id = payload.get(id_key)
+            if user_id is None:
+                raise AuthTokenError(self, f"Missing configured user ID claim {id_key}")
+            details[id_key] = user_id
+        return details

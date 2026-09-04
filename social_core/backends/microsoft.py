@@ -11,6 +11,7 @@ from .oauth import BaseOAuth2
 
 class MicrosoftOAuth2(BaseOAuth2):
     name = "microsoft-graph"
+    REQUIRES_USER_ID = True
     SCOPE_SEPARATOR = " "
     AUTHORIZATION_URL = "https://login.microsoftonline.com/common/oauth2/v2.0/authorize"
     ACCESS_TOKEN_URL = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
@@ -39,10 +40,6 @@ class MicrosoftOAuth2(BaseOAuth2):
         return self.do_auth(
             response["access_token"], *args, response=response, **kwargs
         )
-
-    def get_user_id(self, details, response):
-        """Use user account id as unique id"""
-        return response.get("id")
 
     def get_user_details(self, response):
         """Return user details from Microsoft online account"""

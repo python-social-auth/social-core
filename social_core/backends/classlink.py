@@ -11,15 +11,13 @@ class ClasslinkOAuth(BaseOAuth2):
     """
 
     name = "classlink"
+    ID_KEY = "UserId"
+    REQUIRES_USER_ID = True
     AUTHORIZATION_URL = "https://launchpad.classlink.com/oauth2/v2/auth"
     ACCESS_TOKEN_URL = "https://launchpad.classlink.com/oauth2/v2/token"
     DEFAULT_SCOPE = ["profile"]
     REDIRECT_STATE = False
     SCOPE_SEPARATOR = " "
-
-    def get_user_id(self, details, response):
-        """Return user unique id provided by service"""
-        return response["UserId"]
 
     def get_user_details(self, response):
         """Return user details from Classlink account"""

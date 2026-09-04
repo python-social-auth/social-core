@@ -61,6 +61,11 @@ class Auth0OpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
             content_type="application/json",
         )
 
+    def get_id_token(self, *args, **kwargs):
+        id_token = super().get_id_token(*args, **kwargs)
+        id_token["custom_id"] = "token-only-identifier"
+        return id_token
+
     def test_domain_configuration(self) -> None:
         """Test that domain-based URLs are constructed correctly"""
         self.assertEqual(
@@ -159,6 +164,15 @@ class Auth0OpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
             self.backend.get_user_id(details, {"sub": self.user_id}),
             "validated-subject",
         )
+
+    def test_configured_user_id_uses_id_token_claim(self) -> None:
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_AUTH0_OPENIDCONNECT_ID_KEY": "custom_id"}
+        )
+
+        user = self.do_login()
+
+        self.assertEqual(user.social[0].uid, "token-only-identifier")
 
     def test_everything_works(self) -> None:
         self.do_login()

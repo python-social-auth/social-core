@@ -12,6 +12,8 @@ class KickOAuth2(BaseOAuth2PKCE):
     """Kick OAuth2 authentication backend"""
 
     name = "kick"
+    ID_KEY = "user_id"
+    REQUIRES_USER_ID = True
     HOSTNAME = "id.kick.com"
     API_HOSTNAME = "api.kick.com"
     AUTHORIZATION_URL = f"https://{HOSTNAME}/oauth/authorize"
@@ -28,12 +30,6 @@ class KickOAuth2(BaseOAuth2PKCE):
         ("token_type", "token_type"),
         ("scope", "scope"),
     ]
-
-    def get_user_id(self, details, response):
-        """
-        Use Kick user id as unique id
-        """
-        return response.get("user_id")
 
     def get_user_details(self, response):
         """Return user details from Kick account"""

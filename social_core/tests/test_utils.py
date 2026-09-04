@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 import requests
 
 from social_core.backends.base import BaseAuth
-from social_core.exceptions import AuthForbidden
+from social_core.exceptions import AuthForbidden, AuthMissingParameter
 from social_core.pipeline.utils import partial_prepare
 from social_core.utils import (
     PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME,
@@ -799,3 +799,25 @@ class IdKeyConfigurabilityTest(unittest.TestCase):
 
         self.assertEqual(result, "12345")
         strategy.setting.assert_called_with("ID_KEY", default=None, backend=backend)
+
+    def test_get_user_id_rejects_missing_id_key(self) -> None:
+        for configured_id_key, requires_user_id in (
+            ("missing_id", False),
+            (None, True),
+        ):
+            strategy = Mock()
+            strategy.setting = Mock(return_value=configured_id_key)
+            backend = BaseAuth(strategy=strategy)
+            backend.ID_KEY = "missing_id"
+            backend.REQUIRES_USER_ID = requires_user_id
+
+            for response in ({}, {"missing_id": None}, {"missing_id": ""}):
+                with (
+                    self.subTest(
+                        configured_id_key=configured_id_key,
+                        requires_user_id=requires_user_id,
+                        response=response,
+                    ),
+                    self.assertRaisesRegex(AuthMissingParameter, "missing_id"),
+                ):
+                    backend.get_user_id({}, response)

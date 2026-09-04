@@ -77,6 +77,22 @@ class Auth0OAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     def test_login(self) -> None:
         self.do_login()
 
+    def test_login_with_configured_token_claim_id(self) -> None:
+        self.strategy.set_settings({"SOCIAL_AUTH_AUTH0_ID_KEY": "sub"})
+
+        user = self.do_login()
+
+        self.assertEqual(user.social[0].uid, "123456")
+
+    def test_missing_configured_token_claim_raises_token_error(self) -> None:
+        self.strategy.set_settings({"SOCIAL_AUTH_AUTH0_ID_KEY": "missing_claim"})
+
+        with self.assertRaisesRegex(
+            AuthTokenError,
+            "Missing configured user ID claim missing_claim",
+        ):
+            self.do_login()
+
     def test_default_scope(self) -> None:
         self.assertEqual(
             get_querystring(self.backend.auth_url())["scope"],

@@ -15,7 +15,8 @@ class FoursquareOAuth2(BaseOAuth2):
     API_VERSION = "20140128"
 
     def get_user_id(self, details, response):
-        return response["response"]["user"]["id"]
+        data = response.get("response") or {}
+        return self.get_user_id_from_sources(data.get("user"), details)
 
     def get_user_details(self, response):
         """Return user details from Foursquare account"""

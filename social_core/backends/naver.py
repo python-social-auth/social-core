@@ -7,14 +7,12 @@ class NaverOAuth2(BaseOAuth2):
     """Naver OAuth authentication backend"""
 
     name = "naver"
+    REQUIRES_USER_ID = True
     AUTHORIZATION_URL = "https://nid.naver.com/oauth2.0/authorize"
     ACCESS_TOKEN_URL = "https://nid.naver.com/oauth2.0/token"
     EXTRA_DATA = [
         ("id", "id"),
     ]
-
-    def get_user_id(self, details, response):
-        return response.get("id")
 
     def get_user_details(self, response):
         """Return user details from Naver account"""
@@ -36,7 +34,7 @@ class NaverOAuth2(BaseOAuth2):
 
         data = response.json()
 
-        return {
+        user_data = {
             "id": self._fetch(data, "id"),
             "email": self._fetch(data, "email"),
             "username": self._fetch(data, "name"),
@@ -46,6 +44,10 @@ class NaverOAuth2(BaseOAuth2):
             "birthday": self._fetch(data, "birthday"),
             "profile_image": self._fetch(data, "profile_image"),
         }
+        id_key = self.id_key()
+        if id_key not in user_data:
+            user_data[id_key] = self._fetch(data, id_key)
+        return user_data
 
     def auth_headers(self):
         client_id, client_secret = self.get_key_and_secret()

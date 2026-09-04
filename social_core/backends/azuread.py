@@ -44,6 +44,7 @@ from .oauth import BaseOAuth2
 
 class AzureADOAuth2(BaseOAuth2):
     name = "azuread-oauth2"
+    ID_KEY = "upn"
     SCOPE_SEPARATOR = " "
     BASE_URL = "https://{authority_host}/{tenant_id}"
     AUTHORIZATION_URL = "{base_url}/oauth2/authorize"
@@ -122,10 +123,7 @@ class AzureADOAuth2(BaseOAuth2):
 
     def get_user_id(self, details, response):
         """Use upn as unique id"""
-        upn = response.get("upn")
-        if upn is None:
-            raise AuthMissingParameter(self, "upn")
-        return upn
+        return self.get_user_id_from_sources(details, response)
 
     def get_user_details(self, response):
         """Return user details from Azure AD account"""

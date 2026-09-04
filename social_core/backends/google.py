@@ -11,8 +11,12 @@ from .oauth import BaseOAuth1, BaseOAuth2
 
 
 class BaseGoogleAuth(BaseAuth):
+    ID_KEY = "email"
+
     def get_user_id(self, details, response):
         """Use google email as unique id"""
+        if self.setting("ID_KEY"):
+            return super().get_user_id(details, response)
         if self.setting("USE_UNIQUE_USER_ID", False):
             if "sub" in response:
                 return response["sub"]

@@ -11,6 +11,7 @@ class CILogonOAuth2(BaseOAuth2):
     """
 
     name = "cilogon-oauth2"
+    ID_KEY = "sub"
     AUTHORIZATION_URL = "https://cilogon.org/authorize"
     ACCESS_TOKEN_URL = "https://cilogon.org/oauth2/token"
     DEFAULT_SCOPE = ["openid", "email", "profile", "org.cilogon.userinfo"]
@@ -30,7 +31,8 @@ class CILogonOAuth2(BaseOAuth2):
         """Return user unique id provided by service
         In this case it is a combination of the `sub`
         and `iss` respective values."""
-        return f"{response.get('sub', '')} {response.get('iss', '')}"
+        user_id = self.get_user_id_from_sources(response, details)
+        return f"{user_id} {response.get('iss', '')}"
 
     def get_user_details(self, response):
         """Return user details from CI Logon service"""

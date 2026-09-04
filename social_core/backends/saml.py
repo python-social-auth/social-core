@@ -513,6 +513,9 @@ class SAMLAuth(BaseAuth):
         Get the permanent ID for this user from the response.
         We prefix each ID with the name of the IdP so that we can
         connect multiple IdPs to this user.
+
+        SAML identities use the per-IdP ``attr_user_permanent_id`` mapping,
+        rather than the generic configurable ID_KEY.
         """
         idp = self.get_idp(response["idp_name"])
         uid = idp.get_user_permanent_id(response["attributes"])

@@ -13,6 +13,8 @@ from .base import BaseAuth
 
 class DiscourseAuth(BaseAuth):
     name = "discourse"
+    ID_KEY = "email"
+    REQUIRES_USER_ID = True
     EXTRA_DATA = ["username", "name", "avatar_url"]
 
     def auth_url(self) -> str:
@@ -36,9 +38,6 @@ class DiscourseAuth(BaseAuth):
 
     def get_idp_url(self) -> str:
         return f"{self.setting('SERVER_URL')}/session/sso_provider"
-
-    def get_user_id(self, details, response):
-        return response["email"]
 
     def get_user_details(self, response):
         return {
