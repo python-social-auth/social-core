@@ -1,5 +1,6 @@
 import unittest
 from typing import cast
+from unittest.mock import MagicMock
 
 from social_core.storage import (
     AssociationMixin,
@@ -79,6 +80,44 @@ class BrokenUserTests(unittest.TestCase):
     def test_disconnect(self) -> None:
         with self.assertRaisesRegex(NotImplementedError, NOT_IMPLEMENTED_MSG):
             self.user.disconnect(BrokenUser())
+
+
+class UserMixinRefreshTokenTests(unittest.TestCase):
+    def _make_user(self, extra_data: dict) -> BrokenUser:
+        user = BrokenUser()
+        user.extra_data = extra_data
+        user.user = User("foobar")
+        user.uid = "1"
+        return user
+
+    def _make_strategy(self, backend: MagicMock) -> MagicMock:
+        strategy = MagicMock(spec=BrokenStrategy)
+        strategy.get_backend.return_value = backend
+        return strategy
+
+    def test_does_not_send_access_token_as_refresh_token(self) -> None:
+        # No refresh_token was ever issued: refresh_token() must not send
+        # the access_token to the provider in its place.
+        user = self._make_user({"access_token": "the-access-token"})
+        backend = MagicMock()
+        strategy = self._make_strategy(backend)
+
+        user.refresh_token(cast("BaseStrategy", strategy))
+
+        backend.refresh_token.assert_not_called()
+
+    def test_sends_the_actual_refresh_token(self) -> None:
+        user = self._make_user(
+            {"access_token": "the-access-token", "refresh_token": "the-refresh-token"}
+        )
+        backend = MagicMock()
+        backend.refresh_token.return_value = {"access_token": "new-token"}
+        backend.extra_data.return_value = {"access_token": "new-token"}
+        strategy = self._make_strategy(backend)
+
+        user.refresh_token(cast("BaseStrategy", strategy))
+
+        backend.refresh_token.assert_called_once_with("the-refresh-token")
 
 
 class BrokenAssociationTests(unittest.TestCase):
