@@ -19,7 +19,7 @@ dev = [
   "types-defusedxml==0.7.0.20260504",
   "types-oauthlib==3.3.0.20260724",
   "types-requests-oauthlib==2.0.0.20260907",
-  {include-group = "pylint"}
+  { include-group = "pylint" }
 ]
 pylint = [
   "pylint==4.0.8"
@@ -27,20 +27,20 @@ pylint = [
 
 [project]
 authors = [
-  {email = "matiasaguirre@gmail.com", name = "Matias Aguirre"},
-  {email = "michal@weblate.org", name = "Michal Čihař"}
+  { email = "matiasaguirre@gmail.com", name = "Matias Aguirre" },
+  { email = "michal@weblate.org", name = "Michal Čihař" }
 ]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Environment :: Web Environment",
   "Intended Audience :: Developers",
+  "Programming Language :: Python",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
-  "Programming Language :: Python",
   "Topic :: Internet"
 ]
 dependencies = [
@@ -192,6 +192,7 @@ ignore = [
   "ERA001",  # TODO: Found commented-out code
   "FBT",  # TODO: Boolean in function definition
   "FIX002",  # CONFIG: we use TODO
+  'ISC001',  # CONFIG: formatter
   "ISC003",  # TODO: Explicitly concatenated string should be implicitly concatenated
   "N",  # TODO: Naming issues
   "PERF203",  # WONTFIX: This rule is only enforced for Python versions prior to 3.11
@@ -204,8 +205,7 @@ ignore = [
   "S301",  # TODO: `pickle` and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue
   "TD002",  # CONFIG: no detailed TODO documentation is required
   "TD003",  # CONFIG: no detailed TODO documentation is required
-  "TRY003",  # TODO: Avoid specifying long messages outside the exception class
-  'ISC001'  # CONFIG: formatter
+  "TRY003"  # TODO: Avoid specifying long messages outside the exception class
 ]
 select = ["ALL"]
 
