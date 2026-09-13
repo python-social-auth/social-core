@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import base64
 import datetime
 import json
 from calendar import timegm
@@ -9,6 +8,7 @@ from urllib.parse import urlparse
 
 import jwt
 import responses
+from jwt.utils import base64url_encode
 
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 from social_core.exceptions import AuthTokenError
@@ -199,7 +199,7 @@ class OpenIdConnectTest(
         if tamper_message:
             header, msg, sig = body["id_token"].split(".")
             id_token["sub"] = "1235"
-            msg = base64.encodebytes(json.dumps(id_token).encode()).decode()
+            msg = base64url_encode(json.dumps(id_token).encode()).decode()
             body["id_token"] = f"{header}.{msg}.{sig}"
 
         return json.dumps(body)
