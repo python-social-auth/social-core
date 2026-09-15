@@ -72,9 +72,11 @@ class UserMixin:
         # here would send it to the token endpoint as a refresh_token, which
         # the authorization server correctly rejects.
         token = self.extra_data.get("refresh_token")
+        if not token:
+            return
         backend = self.get_backend_instance(strategy)
         refresh_token = getattr(backend, "refresh_token", None) if backend else None
-        if token and callable(refresh_token):
+        if callable(refresh_token):
             assert backend is not None
             response = cast("dict[str, Any]", refresh_token(token, *args, **kwargs))
             extra_data = backend.extra_data(
