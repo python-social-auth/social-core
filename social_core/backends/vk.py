@@ -5,7 +5,6 @@ VK.com OpenAPI, OAuth2 and Iframe application OAuth2 backends, docs at:
 
 from __future__ import annotations
 
-import json
 from hashlib import md5
 from time import time
 from typing import Any, cast
@@ -177,6 +176,25 @@ class VKAppOAuth2(VKOAuth2):
 
     name = "vk-app"
 
+    def _user_profile(self, access_token: str, viewer_id) -> dict[str, Any]:
+        # api_result passes through the user's browser and is not covered by
+        # auth_key. Fetch the profile from VK to avoid trusting
+        # attacker-controlled identity and profile fields.
+        try:
+            response = self.user_data(access_token)
+        except (TypeError, KeyError, IndexError) as exc:
+            raise AuthFailed(self, "Invalid user profile") from exc
+
+        if not response:
+            raise AuthFailed(self, "Invalid user profile")
+
+        profile_user_id = response.get(self.ID_KEY)
+        if profile_user_id is None or str(profile_user_id) != str(viewer_id):
+            raise AuthFailed(self, "User profile ID does not match viewer ID")
+
+        response[self.id_key()] = profile_user_id
+        return response
+
     def auth_complete(self, *args, **kwargs):
         required_params = ("is_app_user", "viewer_id", "access_token", "api_id")
         if not all(param in self.data for param in required_params):
@@ -208,8 +226,7 @@ class VKAppOAuth2(VKOAuth2):
                 return None
 
         request = self.strategy.request_data()
-        response = {self.id_key(): user_id}
-        response.update(json.loads(request["api_result"])["response"][0])
+        response = self._user_profile(cast("str", self.data["access_token"]), user_id)
         return self.strategy.authenticate(
             auth=self,
             backend=self,
