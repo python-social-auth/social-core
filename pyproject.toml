@@ -64,6 +64,7 @@ version = "5.1.0"
 [project.optional-dependencies]
 all = [
   "social-auth-core[azuread]",
+  "social-auth-core[cas]",
   "social-auth-core[google-onetap]",
   "social-auth-core[saml]",
   "social-auth-core[shopify]"
@@ -90,6 +91,9 @@ dev = [
   "types-oauthlib==3.3.0.20260724",
   "types-requests-oauthlib==2.0.0.20260907",
   "types-requests==2.33.0.20260906"
+]
+cas = [
+  "python-cas>=1.7.2"
 ]
 google-onetap = [
   "google-auth>=2.40.0,<2.59"
