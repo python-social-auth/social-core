@@ -72,6 +72,9 @@ all = [
 allpy3 = [
   "social-auth-core[all]"
 ]
+cas = [
+  "python-cas>=1.7.2"
+]
 # This is present until pip implements supports for PEP 735
 # see https://github.com/pypa/pip/issues/12963
 dev = [
@@ -91,9 +94,6 @@ dev = [
   "types-oauthlib==3.3.0.20260724",
   "types-requests-oauthlib==2.0.0.20260907",
   "types-requests==2.33.0.20260906"
-]
-cas = [
-  "python-cas>=1.7.2"
 ]
 google-onetap = [
   "google-auth>=2.40.0,<2.59"
