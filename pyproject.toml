@@ -68,12 +68,16 @@ version = "5.1.1"
 [project.optional-dependencies]
 all = [
   "social-auth-core[azuread]",
+  "social-auth-core[cas]",
   "social-auth-core[google-onetap]",
   "social-auth-core[saml]",
   "social-auth-core[shopify]"
 ]
 allpy3 = [
   "social-auth-core[all]"
+]
+cas = [
+  "python-cas>=1.7.2"
 ]
 # This is present until pip implements supports for PEP 735
 # see https://github.com/pypa/pip/issues/12963
