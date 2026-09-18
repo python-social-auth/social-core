@@ -5,14 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [5.1.1](https://github.com/python-social-auth/social-core/releases/tag/5.1.1) - 2026-09-18
+
+### Security
+
+- VK app authentication now fetches user profiles directly from VK and verifies
+  that the profile ID matches the signed viewer ID, preventing forged callback
+  data from overriding the authenticated identity and profile.
+
+### Added
+
+- Added `AuthReauthenticationRequired`, a subclass of `AuthTokenError`, for
+  OpenID Connect token refreshes that require the user to sign in again.
+
+### Changed
+
+- Updated development dependencies and CI actions.
+- Allowed newer Google Auth versions for the Google One Tap backend.
 
 ### Fixed
 
+- Authentication backends now consistently honor configurable user ID keys.
+- Auth0 now requests the required `openid`, `profile`, and `email` scopes and
+  raises `AuthTokenError` when the token response lacks an ID token.
+- OpenID Connect now validates required ID token claims consistently and handles
+  legacy token refresh identity context more reliably.
 - SAML parsing, decryption, and validation failures now consistently raise
   authentication exceptions, as do unknown or invalid identity provider names.
 - SAML responses without RelayState now include the resolved identity provider
   name when only one provider is configured.
+
+### Removed
+
+- Discontinued OAuth backends: EchoSign, ExactTarget, Pocket, Runkeeper,
+  Skyrock, and Withings.
 
 ## [5.1.0](https://github.com/python-social-auth/social-core/releases/tag/5.1.0) - 2026-08-06
 
