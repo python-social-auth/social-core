@@ -6,7 +6,6 @@ requires = ["setuptools>=78.0.2"]
 dev = [
   "coverage==7.16.1",
   "flake8==7.3.0",
-  "google-auth-stubs==0.3.0",
   "pytest-cov==7.1.0",
   "pytest-github-actions-annotate-failures==0.4.2",
   "pytest-profiling==1.8.1",
@@ -81,7 +80,6 @@ allpy3 = [
 dev = [
   "coverage==7.16.1",
   "flake8==7.3.0",
-  "google-auth-stubs==0.3.0",
   "mypy==2.3.1",
   "pyright==1.1.414",
   "pytest-cov==7.1.0",
