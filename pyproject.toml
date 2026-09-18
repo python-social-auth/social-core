@@ -7,22 +7,27 @@ dev = [
   "coverage==7.16.1",
   "flake8==7.3.0",
   "google-auth-stubs==0.3.0",
-  "mypy==2.3.1",
-  "pyright==1.1.414",
   "pytest-cov==7.1.0",
   "pytest-github-actions-annotate-failures==0.4.2",
   "pytest-profiling==1.8.1",
   "pytest-xdist==3.8.0",
   "pytest==9.1.1",
   "responses==0.26.3",
-  "ty==0.0.82",
-  "types-defusedxml==0.7.0.20260504",
-  "types-oauthlib==3.3.0.20260724",
-  "types-requests-oauthlib==2.0.0.20260907",
-  { include-group = "pylint" }
+  { include-group = "pylint" },
+  { include-group = "types" }
 ]
 pylint = [
   "pylint==4.0.8"
+]
+types = [
+  "mypy==2.3.1",
+  "pyright==1.1.414",
+  "ty==0.0.82",
+  "types-defusedxml==0.7.0.20260504",
+  "types-lxml==2026.2.16",
+  "types-oauthlib==3.3.0.20260724",
+  "types-requests-oauthlib==2.0.0.20260907",
+  "types-requests==2.33.0.20260906"
 ]
 
 [project]
@@ -87,6 +92,7 @@ dev = [
   "responses==0.26.3",
   "ty==0.0.82",
   "types-defusedxml==0.7.0.20260504",
+  "types-lxml==2026.2.16",
   "types-oauthlib==3.3.0.20260724",
   "types-requests-oauthlib==2.0.0.20260907",
   "types-requests==2.33.0.20260906"
