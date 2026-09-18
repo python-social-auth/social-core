@@ -11,13 +11,16 @@ Terminology:
 from __future__ import annotations
 
 import json
-from binascii import Error as BinasciiError
 from typing import Any, cast
 
+# lxml exposes this exception from its C extension.
+# pylint: disable-next=no-name-in-module
+from lxml.etree import XMLSyntaxError
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
-from onelogin.saml2.errors import OneLogin_Saml2_Error
+from onelogin.saml2.errors import OneLogin_Saml2_Error, OneLogin_Saml2_ValidationError
 from onelogin.saml2.response import OneLogin_Saml2_Response
 from onelogin.saml2.settings import OneLogin_Saml2_Settings
+from xmlsec import Error as XMLSecError
 
 from social_core.exceptions import (
     AuthFailed,
@@ -84,6 +87,16 @@ USERNAME_FIELDS = (
 PERSISTENT_FIELDS = (
     OID_USERID,
     "name_id",
+)
+
+# The toolkit can raise parser and crypto errors before its validation error
+# handling runs (including while decrypting an assertion in its constructor).
+SAML_RESPONSE_ERRORS = (
+    OneLogin_Saml2_Error,
+    OneLogin_Saml2_ValidationError,
+    XMLSyntaxError,
+    XMLSecError,
+    ValueError,
 )
 
 
@@ -287,7 +300,7 @@ class SAMLAuth(BaseAuth):
     ) -> None:
         try:
             auth.process_response(request_id=request_id)
-        except OneLogin_Saml2_Error as error:
+        except SAML_RESPONSE_ERRORS as error:
             raise AuthFailed(self, f"SAML login failed: {error}") from error
         errors = auth.get_errors()
         if errors or not auth.is_authenticated():
@@ -308,7 +321,7 @@ class SAMLAuth(BaseAuth):
                 OneLogin_Saml2_Settings(self.generate_saml_config(idp)),
                 saml_response,
             )
-        except (BinasciiError, KeyError, OneLogin_Saml2_Error, ValueError):
+        except (*SAML_RESPONSE_ERRORS, KeyError):
             return None
         return cast("str | None", response.get_in_response_to())
 
@@ -399,6 +412,8 @@ class SAMLAuth(BaseAuth):
                 raise AuthMissingParameter(self, "RelayState.idp")
             # Use the only configured IDP
             idp_name = next(iter(enabled_idps))
+        if not isinstance(idp_name, str) or idp_name not in enabled_idps:
+            raise AuthInvalidParameter(self, "idp")
         idp_config = enabled_idps[idp_name]
         return SAMLIdentityProvider(self, idp_name, **idp_config)
 
@@ -590,7 +605,7 @@ class SAMLAuth(BaseAuth):
             # session state or the request params.
             self.strategy.session_set(kwargs.get("redirect_name", "next"), next_url)
         response = {
-            "idp_name": idp_name,
+            "idp_name": idp.name,
             "attributes": attributes,
             "session_index": auth.get_session_index(),
         }
