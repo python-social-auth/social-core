@@ -16,7 +16,7 @@ dev = [
   { include-group = "types" }
 ]
 pylint = [
-  "pylint==4.0.8"
+  "pylint==4.0.9"
 ]
 types = [
   "mypy==2.3.1",
