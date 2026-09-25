@@ -21,7 +21,7 @@ pylint = [
 types = [
   "mypy==2.3.1",
   "pyright==1.1.414",
-  "ty==0.0.83",
+  "ty==0.0.84",
   "types-defusedxml==0.7.0.20260504",
   "types-lxml==2026.2.16",
   "types-oauthlib==3.3.0.20260724",
@@ -88,7 +88,7 @@ dev = [
   "pytest-xdist==3.8.0",
   "pytest==9.1.1",
   "responses==0.26.3",
-  "ty==0.0.83",
+  "ty==0.0.84",
   "types-defusedxml==0.7.0.20260504",
   "types-lxml==2026.2.16",
   "types-oauthlib==3.3.0.20260724",
