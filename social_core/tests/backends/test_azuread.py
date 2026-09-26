@@ -131,6 +131,7 @@ class AzureADOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         return json.dumps(
             {
                 "access_token": "foobar",
+                "refresh_token": "foobar-refresh-token",
                 "token_type": "bearer",
                 "id_token": self.build_id_token(**id_token_overrides),
                 "expires_in": self.EXPIRES_IN,
