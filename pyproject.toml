@@ -4,7 +4,7 @@ requires = ["setuptools>=78.0.2"]
 
 [dependency-groups]
 dev = [
-  "coverage==7.16.1",
+  "coverage==7.16.2",
   "flake8==7.4.1",
   "pytest-cov==7.1.0",
   "pytest-github-actions-annotate-failures==0.4.2",
@@ -78,7 +78,7 @@ allpy3 = [
 # This is present until pip implements supports for PEP 735
 # see https://github.com/pypa/pip/issues/12963
 dev = [
-  "coverage==7.16.1",
+  "coverage==7.16.2",
   "flake8==7.4.1",
   "mypy==2.3.1",
   "pyright==1.1.414",
