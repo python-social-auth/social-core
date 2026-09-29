@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+
+### Security
+
+- Last.fm authentication now binds callbacks to the browser session that
+  initiated the login, preventing login CSRF and unauthorized account linking.
+
 ## [5.1.1](https://github.com/python-social-auth/social-core/releases/tag/5.1.1) - 2026-09-18
 
 ### Security
