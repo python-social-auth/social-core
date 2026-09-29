@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Last.fm authentication now binds callbacks to the browser session that
   initiated the login, preventing login CSRF and unauthorized account linking.
+- GitHub App authentication now validates OAuth state before exchanging codes.
+  Stateless installation callbacks restart a state-protected OAuth flow,
+  preventing forged installation parameters from enabling login CSRF.
 
 ## [5.1.1](https://github.com/python-social-auth/social-core/releases/tag/5.1.1) - 2026-09-18
 
