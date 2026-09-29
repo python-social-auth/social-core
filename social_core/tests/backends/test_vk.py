@@ -1,4 +1,6 @@
 import json
+from time import time
+from urllib.parse import urlencode
 
 import responses
 
@@ -12,6 +14,104 @@ from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 APP_ID = "12345"
 APP_SECRET = "a-secret-key"
 VIEWER_ID = "424242"
+
+
+class VKontakteOpenAPITest(BaseBackendTest):
+    backend_path = "social_core.backends.vk.VKontakteOpenAPI"
+    expected_username = "vkuser"
+
+    def extra_settings(self) -> dict[str, str | list[str]]:
+        return {
+            f"SOCIAL_AUTH_{self.name}_APP_ID": APP_ID,
+            f"SOCIAL_AUTH_{self.name}_SECRET": APP_SECRET,
+        }
+
+    def signed_session(
+        self,
+        user_id: str = VIEWER_ID,
+        *,
+        expires: int | None = None,
+        signature: str | None = None,
+    ) -> str:
+        session = {
+            "expire": str(expires if expires is not None else int(time()) + 3600),
+            "mid": user_id,
+            "secret": "session-secret",
+            "sid": "session-id",
+        }
+        check_str = "".join(
+            f"{item}={session[item]}" for item in ["expire", "mid", "secret", "sid"]
+        )
+        session["sig"] = signature or vk_sig(check_str + APP_SECRET)
+        return urlencode(session)
+
+    def request_data(self, user_id: str = VIEWER_ID) -> dict[str, str | list[str]]:
+        return {
+            "id": user_id,
+            "nickname": self.expected_username,
+            "first_name": ["VK"],
+            "last_name": ["User"],
+        }
+
+    def do_start(self) -> User:
+        self.strategy.set_request_data(self.request_data(), self.backend)
+        self.strategy.session_set(f"vk_app_{APP_ID}", self.signed_session())
+        return self.backend.complete()
+
+    def test_login(self) -> None:
+        user = self.do_login()
+
+        self.assertEqual(user.username, self.expected_username)
+        self.assertEqual(user.social[0].uid, VIEWER_ID)
+        self.assertEqual(user.social[0].provider, self.backend.name)
+
+    def test_uses_signed_session_id_instead_of_request_id(self) -> None:
+        forged_id = "999999999"
+        request_data = self.request_data(forged_id)
+        self.strategy.set_request_data(request_data, self.backend)
+        self.strategy.session_set(f"vk_app_{APP_ID}", self.signed_session(VIEWER_ID))
+
+        user = self.backend.complete()
+
+        self.assertEqual(user.social[0].uid, VIEWER_ID)
+        self.assertEqual(request_data["id"], forged_id)
+
+    def test_uses_signed_session_id_with_configured_id_key(self) -> None:
+        self.strategy.set_settings({f"SOCIAL_AUTH_{self.name}_ID_KEY": "custom_id"})
+        request_data = self.request_data()
+        request_data["custom_id"] = "999999999"
+        self.strategy.set_request_data(request_data, self.backend)
+        self.strategy.session_set(f"vk_app_{APP_ID}", self.signed_session(VIEWER_ID))
+
+        user = self.backend.complete()
+
+        self.assertEqual(user.social[0].uid, VIEWER_ID)
+
+    def test_rejects_invalid_session_signature(self) -> None:
+        self.strategy.set_request_data(self.request_data(), self.backend)
+        self.strategy.session_set(
+            f"vk_app_{APP_ID}",
+            self.signed_session(signature="0" * 32),
+        )
+
+        with self.assertRaisesRegex(ValueError, "Invalid Hash"):
+            self.backend.complete()
+
+        self.assertEqual(User.cache, {})
+        self.assertEqual(TestUserSocialAuth.cache_by_uid, {})
+
+    def test_rejects_expired_session(self) -> None:
+        self.strategy.set_request_data(self.request_data(), self.backend)
+        self.strategy.session_set(
+            f"vk_app_{APP_ID}",
+            self.signed_session(expires=int(time()) - 1),
+        )
+
+        with self.assertRaisesRegex(ValueError, "Invalid Hash"):
+            self.backend.complete()
+
+        self.assertEqual(User.cache, {})
+        self.assertEqual(TestUserSocialAuth.cache_by_uid, {})
 
 
 class VKOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
