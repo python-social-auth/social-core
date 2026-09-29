@@ -47,7 +47,12 @@ class VKontakteOpenAPI(BaseAuth):
         }
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
-        return self.data
+        response = self.data.copy()
+        # The access_token argument is the mid from the signed session. Request
+        # data passes through the user's browser and must not define identity.
+        response[self.ID_KEY] = access_token
+        response[self.id_key()] = access_token
+        return response
 
     def auth_html(self) -> str:
         """Returns local VK authentication page, not necessary for
