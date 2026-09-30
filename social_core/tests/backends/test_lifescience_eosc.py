@@ -335,7 +335,6 @@ class LifeScienceEoscOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
     def test_login(self) -> None:
         self.do_login()
 
-
     def test_get_user_details(self) -> None:
         response = {
             "preferred_username": "foo@lifescience-ri.eu",
