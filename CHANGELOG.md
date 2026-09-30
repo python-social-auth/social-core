@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+### Added
+
+- Added an optional `user` argument to `do_auth()` and a `BaseAuth.prepare_auth()`
+  hook for backend-specific authentication initiation.
+
 ### Security
 
 - Weixin app authentication now validates OAuth state before exchanging codes,
