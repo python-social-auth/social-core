@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Security
 
+- Facebook App authentication now binds access-token and signed-request
+  callbacks to the browser session, preventing login CSRF and unauthorized
+  account linking. Custom Facebook App templates must preserve the query string
+  in `FACEBOOK_COMPLETE_URI` when submitting the callback.
 - Weixin app authentication now validates OAuth state before exchanging codes,
   preventing login CSRF and unauthorized account linking.
 - Last.fm authentication now binds callbacks to the browser session that
