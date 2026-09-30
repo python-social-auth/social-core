@@ -78,7 +78,12 @@ def _handle_partial(
     return False, None
 
 
-def do_auth(backend: BaseAuth, redirect_name: str = "next") -> HttpResponseProtocol:
+def do_auth(
+    backend: BaseAuth,
+    redirect_name: str = "next",
+    *,
+    user: UserProtocol | None = None,
+) -> HttpResponseProtocol:
     # Save any defined next value into session
     data = backend.strategy.request_data(merge=False)
 
@@ -105,6 +110,7 @@ def do_auth(backend: BaseAuth, redirect_name: str = "next") -> HttpResponseProto
         backend.strategy.session_set(
             redirect_name, redirect_uri or backend.setting("LOGIN_REDIRECT_URL")
         )
+    backend.prepare_auth(user=user)
     return backend.start()
 
 

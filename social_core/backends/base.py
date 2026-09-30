@@ -57,6 +57,9 @@ class BaseAuth:
         """Return setting value from strategy"""
         return self.strategy.setting(name, default=default, backend=self)
 
+    def prepare_auth(self, user: UserProtocol | None = None) -> None:
+        """Prepare backend-specific validation or state before authentication starts."""
+
     def start(self) -> HttpResponseProtocol:
         if self.uses_redirect():
             return self.strategy.redirect(self.auth_url())
