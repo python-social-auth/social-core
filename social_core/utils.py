@@ -379,6 +379,7 @@ def partial_pipeline_result(
         backend, partial, effective_request_data
     )
     if partial and partial_matches:
+        backend.validate_partial_pipeline(partial, user)
         if _partial_pipeline_requires_confirmation(
             partial,
             request_token,

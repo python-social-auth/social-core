@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Security
 
+- Twilio Connect is now association-only: starting and completing a connection
+  requires the same authenticated local user. Twilio callback data can no
+  longer create or authenticate users.
 - Facebook App authentication now binds access-token and signed-request
   callbacks to the browser session, preventing login CSRF and unauthorized
   account linking. Custom Facebook App templates must preserve the query string
