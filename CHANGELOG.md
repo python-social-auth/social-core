@@ -5,10 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [5.2.0](https://github.com/python-social-auth/social-core/releases/tag/5.2.0) - 2026-09-30
 
 ### Added
 
+- Added a CESID AAI OpenID Connect backend.
 - Added an optional `user` argument to `do_auth()` and a `BaseAuth.prepare_auth()`
   hook for backend-specific authentication initiation.
 
@@ -28,6 +29,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - GitHub App authentication now validates OAuth state before exchanging codes.
   Stateless installation callbacks restart a state-protected OAuth flow,
   preventing forged installation parameters from enabling login CSRF.
+- VK OpenAPI authentication now uses the signed session's user ID instead of
+  trusting the ID supplied in callback data.
+
+### Changed
+
+- Updated development dependencies and CI actions.
+- Allowed newer Google Auth versions for the Google One Tap backend.
 
 ## [5.1.1](https://github.com/python-social-auth/social-core/releases/tag/5.1.1) - 2026-09-18
 
