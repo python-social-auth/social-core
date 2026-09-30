@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Security
 
+- Weixin app authentication now validates OAuth state before exchanging codes,
+  preventing login CSRF and unauthorized account linking.
 - Last.fm authentication now binds callbacks to the browser session that
   initiated the login, preventing login CSRF and unauthorized account linking.
 - GitHub App authentication now validates OAuth state before exchanging codes.
