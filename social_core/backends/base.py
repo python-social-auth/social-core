@@ -311,6 +311,11 @@ class BaseAuth:
             self, *partial.args, pipeline_index=partial.next_step, **partial.kwargs
         )
 
+    def validate_partial_pipeline(
+        self, partial: PartialMixin, user: UserProtocol | None = None
+    ) -> None:
+        """Validate backend-specific requirements before resuming a pipeline."""
+
     def auth_extra_arguments(self) -> dict[str, str]:
         """Return extra arguments needed on auth process.
 
