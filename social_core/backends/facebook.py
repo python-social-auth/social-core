@@ -182,6 +182,7 @@ class FacebookAppOAuth2(FacebookOAuth2):
     """Facebook Application Authentication support"""
 
     name = "facebook-app"
+    REDIRECT_STATE = True
 
     def uses_redirect(self) -> bool:
         return False
@@ -208,10 +209,12 @@ class FacebookAppOAuth2(FacebookOAuth2):
             if access_error == "access_denied":
                 raise AuthCanceled(self)
             raise AuthException(self, access_error)
+        self.validate_state()
         return self.do_auth(access_token, response, *args, **kwargs)
 
     def auth_html(self):
         key, _secret = self.get_key_and_secret()
+        state = self.get_or_create_state()
         namespace = self.setting("NAMESPACE", None)
         scope = self.setting("SCOPE", "")
         if scope:
@@ -220,7 +223,7 @@ class FacebookAppOAuth2(FacebookOAuth2):
             "FACEBOOK_APP_NAMESPACE": namespace or key,
             "FACEBOOK_KEY": key,
             "FACEBOOK_EXTENDED_PERMISSIONS": scope,
-            "FACEBOOK_COMPLETE_URI": self.redirect_uri,
+            "FACEBOOK_COMPLETE_URI": self.get_redirect_uri(state),
         }
         tpl = self.setting("LOCAL_HTML", "facebook.html")
         return self.strategy.render_html(tpl=tpl, context=ctx)
