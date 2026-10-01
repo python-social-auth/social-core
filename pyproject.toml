@@ -158,6 +158,7 @@ disable = [
   "too-many-public-methods",
   "unused-argument"
 ]
+extension-pkg-allow-list = ["lxml.etree"]
 
 [tool.pyright]
 pythonVersion = "3.10"

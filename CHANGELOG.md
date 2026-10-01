@@ -31,6 +31,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Azure AD backends support an explicit `AUTHORITY_URL` and opt-in PKCE through
+  `USE_PKCE`. Azure AD B2C exposes a `logout_url()` helper using policy discovery.
 - Reusable `BaseAuth.ASSOCIATION_ONLY` capability for user-bound connections,
   shared by Drip and Twilio Connect.
 - Scoped pipeline request data, stored separately from pipeline arguments.
@@ -38,6 +40,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Azure tenant and B2C backends honor `OPENID_CONFIGURATION_URL` overrides.
+- Azure's `get_auth_token()` uses stored refresh tokens and persists refreshed
+  credentials instead of sending an access token as a refresh token.
 - Resumed authentication and disconnect pipelines consistently expose their
   effective request data without replacing the native framework request.
 - Saved request data is deserialized before use, including strategies that

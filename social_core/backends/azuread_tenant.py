@@ -51,10 +51,8 @@ class AzureADTenantOAuth2(AzureADOAuth2):
     def tenant_id(self) -> str:
         return cast("str", self.setting("TENANT_ID", "common"))
 
-    def openid_configuration_url(self):
-        return self.OPENID_CONFIGURATION_URL.format(
-            base_url=self.base_url, appid=self._appid()
-        )
+    def get_openid_configuration_url_format(self) -> dict[str, str]:
+        return {**super().get_openid_configuration_url_format(), "appid": self._appid()}
 
     def jwks_url(self):
         return self.JWKS_URL.format(base_url=self.base_url, appid=self._appid())
