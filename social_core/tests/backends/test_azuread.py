@@ -273,13 +273,13 @@ class AzureADV2TenantOAuth2Test(AzureADTenantOAuth2Test):
         }
         self.assertEqual(
             self.backend.get_user_id({}, response),
-            "mutable@example.com",
+            "stable-subject",
         )
 
         self.strategy.set_settings(
-            {"SOCIAL_AUTH_AZUREAD_V2_TENANT_OAUTH2_ID_KEY": "sub"}
+            {"SOCIAL_AUTH_AZUREAD_V2_TENANT_OAUTH2_ID_KEY": "preferred_username"}
         )
-        self.assertEqual(self.backend.get_user_id({}, response), "stable-subject")
+        self.assertEqual(self.backend.get_user_id({}, response), "mutable@example.com")
 
 
 class AzureADOAuth2TokenRequestBodyMixin(TestCase):

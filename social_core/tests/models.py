@@ -89,22 +89,25 @@ class TestUserSocialAuth(UserMixin, BaseModel):
 
     NEXT_ID = 1
     cache: dict[int, TestUserSocialAuth] = {}
-    cache_by_uid: dict[str, TestUserSocialAuth] = {}
+    cache_by_uid: dict[tuple[str, str], TestUserSocialAuth] = {}
 
-    def __init__(self, user: User, provider, uid, extra_data=None) -> None:
+    def __init__(
+        self, user: User, provider, uid, extra_data=None, id_key: str = ""
+    ) -> None:
         self.id = TestUserSocialAuth.next_id()
         self.user = user
         self.provider = provider
         self.uid = uid
+        self.id_key = id_key
         self.extra_data = extra_data or {}
         self.user.social.append(self)
-        TestUserSocialAuth.cache_by_uid[uid] = self
+        TestUserSocialAuth.cache_by_uid[(provider, uid)] = self
 
     def save(self) -> None:
         for uid, social_auth in list(TestUserSocialAuth.cache_by_uid.items()):
             if social_auth is self:
                 del TestUserSocialAuth.cache_by_uid[uid]
-        TestUserSocialAuth.cache_by_uid[self.uid] = self
+        TestUserSocialAuth.cache_by_uid[(self.provider, self.uid)] = self
 
     @classmethod
     def reset_cache(cls) -> None:
@@ -152,11 +155,26 @@ class TestUserSocialAuth(UserMixin, BaseModel):
         return None
 
     @classmethod
-    def get_social_auth(cls, provider: str, uid: str):
-        social_user = cls.cache_by_uid.get(uid)
-        if social_user and social_user.provider == provider:
+    def get_social_auth(cls, provider: str, uid: str, id_key: str | None = None):
+        social_user = cls.cache_by_uid.get((provider, uid))
+        if social_user and (id_key is None or social_user.id_key == id_key):
             return social_user
         return None
+
+    @classmethod
+    def get_social_auth_by_extra_data(
+        cls, provider: str, key: str, value: str, id_key: str = ""
+    ):
+        matches = [
+            social
+            for social in cls.cache_by_uid.values()
+            if social.provider == provider
+            and social.id_key == id_key
+            and str(social.extra_data.get(key)) == value
+        ]
+        if len(matches) > 1:
+            raise ValueError("Multiple social-auth associations matched extra data")
+        return matches[0] if len(matches) == 1 else None
 
     @classmethod
     def get_social_auth_for_user(
@@ -173,8 +191,20 @@ class TestUserSocialAuth(UserMixin, BaseModel):
         ]
 
     @classmethod
-    def create_social_auth(cls, user: UserProtocol, uid: str, provider: str):
-        return cls(user=cast("User", user), provider=provider, uid=uid)
+    def create_social_auth(
+        cls, user: UserProtocol, uid: str, provider: str, id_key: str = ""
+    ):
+        return cls(user=cast("User", user), provider=provider, uid=uid, id_key=id_key)
+
+    @classmethod
+    def migrate_social_auth(cls, social, uid: str, id_key: str):
+        existing = cls.get_social_auth(social.provider, uid)
+        if existing is not None and existing is not social:
+            raise ValueError("Social-auth identifier migration conflict")
+        social.uid = uid
+        social.id_key = id_key
+        social.save()
+        return social
 
     @classmethod
     def get_users_by_email(cls, email: str):

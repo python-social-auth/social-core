@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Security
 
+- Tumblr, Deezer, Discourse, SciStarter, and affected Microsoft Entra ID
+  backends now bind accounts to stable provider identifiers. Existing
+  associations record their identifier key and migrate on authentication;
+  strict deployments can disable unverified legacy-identifier migration.
 - Drip is now association-only: connecting requires the same authenticated local
   user at initiation, callback, and partial resumption. Drip email addresses can
   no longer create or authenticate local users, and connecting preserves local
