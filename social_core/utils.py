@@ -221,9 +221,16 @@ def drop_lists(value):
 
 
 def _partial_pipeline_matches_request(
-    backend: BaseAuth, partial: PartialMixin | None, request_data: dict[str, Any]
+    backend: BaseAuth,
+    partial: PartialMixin | None,
+    request_data: dict[str, Any],
+    pipeline_type: str,
 ) -> bool:
-    if not partial or partial.backend != backend.name:
+    if (
+        not partial
+        or partial.backend != backend.name
+        or partial.pipeline_type != pipeline_type
+    ):
         return False
 
     # Normally when resuming a pipeline, request_data will be empty. We only
@@ -247,7 +254,8 @@ def _extend_partial_pipeline(
 ) -> PartialMixin:
     if user:  # don't update user if it's None
         kwargs.setdefault("user", user)
-    kwargs["request"] = request_data
+    partial.request_data = request_data
+    kwargs.pop("request", None)
     partial.extend_kwargs(kwargs)
     return partial
 
@@ -332,12 +340,13 @@ def partial_pipeline_result(
     user: UserProtocol | None = None,
     partial_token: str | None = None,
     *args,
+    pipeline_type: str = "authentication",
     **kwargs,
 ) -> PartialPipelineResult:
-    request_data = backend.strategy.request_data()
+    request_data = backend.strategy.get_request_data()
 
-    partial_argument_name = backend.setting(
-        "PARTIAL_PIPELINE_TOKEN_NAME", "partial_token"
+    partial_argument_name = cast(
+        "str", backend.setting("PARTIAL_PIPELINE_TOKEN_NAME", "partial_token")
     )
     request_token = cast(
         "str | None", partial_token or request_data.get(partial_argument_name)
@@ -376,7 +385,7 @@ def partial_pipeline_result(
 
     partial: PartialMixin | None = backend.strategy.partial_load(selection.token)
     partial_matches = _partial_pipeline_matches_request(
-        backend, partial, effective_request_data
+        backend, partial, effective_request_data, pipeline_type
     )
     if partial and partial_matches:
         backend.validate_partial_pipeline(partial, user)

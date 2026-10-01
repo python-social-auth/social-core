@@ -130,6 +130,24 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
     def test_partial_after_details_and_uid(self) -> None:
         self.assert_profile_preserved(early=False)
 
+    def test_verified_response_resume_scopes_request_data(self) -> None:
+        self.start_partial(self.verified_response())
+        token = self.strategy.session_get(PARTIAL_TOKEN_SESSION_NAME)
+        assert isinstance(token, str)
+        partial = self.strategy.partial_load(token)
+        assert partial is not None
+        partial.request_data = {"sentinel": "saved"}
+        previous_data = self.backend.data
+
+        def authenticate(*args, **kwargs):
+            self.assertEqual(self.strategy.request_data(), {"sentinel": "saved"})
+            self.assertEqual(self.backend.data, {"sentinel": "saved"})
+
+        with patch.object(self.strategy, "authenticate", side_effect=authenticate):
+            self.backend.continue_pipeline(partial)
+        self.assertEqual(self.backend.data, previous_data)
+        self.assertEqual(self.strategy.request_data(), self.strategy.get_request_data())
+
     def test_unsigned_extension_data_stays_excluded(self) -> None:
         result = self.start_partial(self.verified_response(signed_ax=False))
 

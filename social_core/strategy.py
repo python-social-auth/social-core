@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import secrets
+from contextlib import contextmanager
+from contextvars import ContextVar
 from typing import TYPE_CHECKING, Any, Protocol, cast
 
 from .backends.utils import get_backend
@@ -10,7 +12,7 @@ from .exceptions import (
     StrategyMissingFeatureError,
 )
 from .pipeline import DEFAULT_AUTH_PIPELINE, DEFAULT_DISCONNECT_PIPELINE
-from .pipeline.utils import partial_load
+from .pipeline.utils import partial_load, to_plain_dict
 from .store import OpenIdSessionWrapper, OpenIdStore
 from .utils import (
     PARTIAL_TOKEN_PENDING_CONFIRMATION_SESSION_NAME,
@@ -22,6 +24,8 @@ from .utils import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator, Mapping
+
     from .backends.base import BaseAuth
     from .storage import BaseStorage, CodeMixin, PartialMixin, UserProtocol
 
@@ -66,6 +70,9 @@ class BaseStrategy:
         tpl: type[BaseTemplateStrategy] | None = None,
     ) -> None:
         self._storage = storage
+        self._pipeline_request_data: ContextVar[dict[str, Any] | None] = ContextVar(
+            "pipeline_request_data", default=None
+        )
         self.tpl = (tpl or self.DEFAULT_TEMPLATE_STRATEGY)(self)
 
     @property
@@ -266,8 +273,31 @@ class BaseStrategy:
         """Return HTTP response with given content"""
         raise NotImplementedError("Implement in subclass")
 
-    def request_data(self, merge: bool = True):
-        """Return current request data (POST or GET)"""
+    def request_data(self, merge: bool = True) -> dict[str, Any]:
+        """Return effective pipeline data, or data from the current request.
+
+        During a partial resume, merge does not change the replayed mapping.
+        Use get_request_data(), request_get(), or request_post() to read the
+        current framework request without replayed data.
+        """
+        data = self._pipeline_request_data.get()
+        if data is not None:
+            return data
+        return self.get_request_data(merge=merge)
+
+    @contextmanager
+    def pipeline_request_data(self, data: Mapping[str, Any] | None) -> Iterator[None]:
+        """Scope effective request data to one pipeline execution."""
+        token = self._pipeline_request_data.set(
+            to_plain_dict(data) if data is not None else None
+        )
+        try:
+            yield
+        finally:
+            self._pipeline_request_data.reset(token)
+
+    def get_request_data(self, merge: bool = True) -> dict[str, Any]:
+        """Return data from the current framework request (POST or GET)."""
         raise NotImplementedError("Implement in subclass")
 
     def request_host(self) -> str:

@@ -6,6 +6,7 @@ import base64
 import re
 import uuid
 from abc import abstractmethod
+from collections.abc import Mapping
 from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING, Any, Protocol, cast
 
@@ -416,6 +417,21 @@ class PartialMixin:
 
     def extend_kwargs(self, values) -> None:
         self.data["kwargs"].update(values)
+
+    @property
+    def pipeline_type(self) -> str:
+        """Legacy partials may resume authentication, but never disconnect."""
+        return self.data.get("pipeline_type", "authentication")
+
+    @property
+    def request_data(self) -> Mapping[str, Any] | None:
+        """Effective data for a resume, including legacy partial snapshots."""
+        data = self.data.get("request_data", self.kwargs.get("request"))
+        return data if isinstance(data, Mapping) else None
+
+    @request_data.setter
+    def request_data(self, value: Mapping[str, Any]) -> None:
+        self.data["request_data"] = value
 
     @classmethod
     def generate_token(cls) -> str:

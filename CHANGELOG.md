@@ -7,8 +7,30 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+### Breaking
+
+- Strategies must implement `get_request_data()` instead of overriding
+  `request_data()`. The latter now returns effective data for the active partial
+  pipeline, including confirmed external-link data.
+- Pipeline steps no longer receive an automatic `request` argument. Use
+  `strategy.request_data()` for parameters and the framework strategy's
+  `request` attribute for its native request object.
+- Legacy disconnect partials without a pipeline type must restart the disconnect
+  flow. Legacy authentication partials remain resumable.
+
+### Added
+
+- Scoped pipeline request data, stored separately from pipeline arguments.
+  Existing partials with request data in their arguments remain readable.
+
 ### Fixed
 
+- Resumed authentication and disconnect pipelines consistently expose their
+  effective request data without replacing the native framework request.
+- Saved request data is deserialized before use, including strategies that
+  encode mappings as strings or bytes.
+- Partial pipelines are bound to authentication or disconnect so an unrelated
+  saved step cannot skip disconnect permission checks.
 - OpenID Connect partial pipelines now preserve validated ID token claims when
   resuming with a new backend instance, fixing login failures since 5.1.0.
 - Shopify partial pipelines now use the saved shop instead of resume request

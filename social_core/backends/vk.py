@@ -216,7 +216,7 @@ class VKAppOAuth2(VKOAuth2):
             raise AuthFailed(self, "Invalid auth key")
 
         user_check = self.setting("USERMODE")
-        user_id = self.data.get("viewer_id")
+        user_id = self.data["viewer_id"]
         if user_check is not None:
             user_check = int(user_check)
             is_user = 0

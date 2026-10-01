@@ -5,7 +5,7 @@ from hashlib import sha256
 from typing import cast
 from urllib.parse import urlencode
 
-from social_core.exceptions import AuthException, AuthTokenError
+from social_core.exceptions import AuthException, AuthMissingParameter, AuthTokenError
 from social_core.utils import parse_qs
 
 from .base import BaseAuth
@@ -71,6 +71,8 @@ class DiscourseAuth(BaseAuth):
         request_data = self.strategy.request_data()
 
         sso_params = request_data.get("sso")
+        if not sso_params:
+            raise AuthMissingParameter(self, "sso")
         sso_signature = request_data.get("sig")
 
         param_signature = hmac.new(

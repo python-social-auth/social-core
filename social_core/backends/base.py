@@ -2,12 +2,15 @@ from __future__ import annotations
 
 import base64
 import time
+from contextlib import contextmanager
+from contextvars import ContextVar
 from typing import TYPE_CHECKING, Any, Literal, cast
 
 import requests
 
 from social_core.exceptions import (
     AuthConnectionError,
+    AuthForbidden,
     AuthMissingParameter,
     AuthUnknownError,
 )
@@ -15,7 +18,7 @@ from social_core.registry import REGISTRY
 from social_core.utils import module_member, parse_qs, social_logger, user_agent
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
+    from collections.abc import Iterator, Mapping
 
     from requests import Response
     from requests.auth import AuthBase
@@ -44,6 +47,9 @@ class BaseAuth:
             strategy if strategy is not None else REGISTRY.default_strategy
         )
         self.redirect_uri = redirect_uri
+        self._pipeline_type: ContextVar[str] = ContextVar(
+            "pipeline_type", default="authentication"
+        )
         self.data = self.strategy.request_data()
         self.redirect_uri = self.strategy.absolute_uri(self.redirect_uri)
 
@@ -122,7 +128,11 @@ class BaseAuth:
     def pipeline(
         self, pipeline, pipeline_index: int = 0, *args, **kwargs
     ) -> UserProtocol | HttpResponseProtocol | None:
-        out = self.run_pipeline(pipeline, pipeline_index, *args, **kwargs)
+        token = self._pipeline_type.set("authentication")
+        try:
+            out = self.run_pipeline(pipeline, pipeline_index, *args, **kwargs)
+        finally:
+            self._pipeline_type.reset(token)
         if not isinstance(out, dict):
             return cast("HttpResponseProtocol", out)
         user = cast("UserProtocol | None", out.get("user"))
@@ -136,7 +146,16 @@ class BaseAuth:
         pipeline = self.strategy.get_disconnect_pipeline(self)
         kwargs["name"] = self.name
         kwargs["user_storage"] = self.strategy.storage.user
-        return self.run_pipeline(pipeline, *args, **kwargs)
+        token = self._pipeline_type.set("disconnect")
+        try:
+            return self.run_pipeline(pipeline, *args, **kwargs)
+        finally:
+            self._pipeline_type.reset(token)
+
+    @property
+    def pipeline_type(self) -> str:
+        """Type of the currently executing pipeline, saved with its partials."""
+        return self._pipeline_type.get()
 
     def run_pipeline(
         self, pipeline: list[str], pipeline_index=0, *args, **kwargs
@@ -144,7 +163,7 @@ class BaseAuth:
         out = kwargs.copy()
         out.setdefault("strategy", self.strategy)
         out.setdefault("backend", out.pop(self.name, None) or self)
-        out.setdefault("request", self.strategy.request_data())
+        out.pop("request", None)
         out.setdefault("details", {})
 
         if (
@@ -307,9 +326,33 @@ class BaseAuth:
         self, partial: PartialMixin
     ) -> UserProtocol | HttpResponseProtocol | None:
         """Continue previous halted pipeline"""
-        return self.strategy.authenticate(
-            self, *partial.args, pipeline_index=partial.next_step, **partial.kwargs
-        )
+        with self._partial_pipeline_context(partial):
+            return self.strategy.authenticate(
+                self, *partial.args, pipeline_index=partial.next_step, **partial.kwargs
+            )
+
+    def continue_disconnect_pipeline(
+        self, partial: PartialMixin
+    ) -> dict | HttpResponseProtocol:
+        """Continue a halted disconnect with its effective request data."""
+        with self._partial_pipeline_context(partial, pipeline_type="disconnect"):
+            return self.disconnect(
+                *partial.args, pipeline_index=partial.next_step, **partial.kwargs
+            )
+
+    @contextmanager
+    def _partial_pipeline_context(
+        self, partial: PartialMixin, pipeline_type: str = "authentication"
+    ) -> Iterator[None]:
+        if partial.pipeline_type != pipeline_type:
+            raise AuthForbidden(self)
+        previous_data = self.data
+        with self.strategy.pipeline_request_data(partial.request_data):
+            self.data = self.strategy.request_data()
+            try:
+                yield
+            finally:
+                self.data = previous_data
 
     def validate_partial_pipeline(
         self, partial: PartialMixin, user: UserProtocol | None = None

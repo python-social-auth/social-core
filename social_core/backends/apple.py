@@ -99,8 +99,8 @@ class AppleIdAuth(BaseOAuth2):
 
         return jwt.encode(payload, key=private_key, algorithm="ES256", headers=headers)
 
-    def get_key_and_secret(self):
-        client_id = self.data.get("client_id", self.setting("CLIENT"))
+    def get_key_and_secret(self) -> tuple[str, str]:
+        client_id = cast("str", self.data.get("client_id", self.setting("CLIENT")))
         client_secret = self.generate_client_secret()
         return client_id, client_secret
 
