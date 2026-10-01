@@ -13,9 +13,11 @@ from .base import BaseAuth
 
 class DiscourseAuth(BaseAuth):
     name = "discourse"
-    ID_KEY = "email"
+    ID_KEY = "external_id"
+    LEGACY_ID_KEYS = ("email",)
+    MUTABLE_ID_KEYS = ("email",)
     REQUIRES_USER_ID = True
-    EXTRA_DATA = ["username", "name", "avatar_url"]
+    EXTRA_DATA = ["external_id", "username", "name", "avatar_url"]
 
     def auth_url(self) -> str:
         """

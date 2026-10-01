@@ -72,9 +72,17 @@ class BrokenUserTests(unittest.TestCase):
         with self.assertRaisesRegex(NotImplementedError, NOT_IMPLEMENTED_MSG):
             self.user.get_social_auth_for_user(User("foobar"))
 
+    def test_get_social_auth_by_extra_data(self) -> None:
+        with self.assertRaisesRegex(NotImplementedError, NOT_IMPLEMENTED_MSG):
+            self.user.get_social_auth_by_extra_data("foo", "id", "1")
+
     def test_create_social_auth(self) -> None:
         with self.assertRaisesRegex(NotImplementedError, NOT_IMPLEMENTED_MSG):
             self.user.create_social_auth(User("foobar"), "1", "foo")
+
+    def test_migrate_social_auth(self) -> None:
+        with self.assertRaisesRegex(NotImplementedError, NOT_IMPLEMENTED_MSG):
+            self.user.migrate_social_auth(BrokenUser(), "1", "id")
 
     def test_disconnect(self) -> None:
         with self.assertRaisesRegex(NotImplementedError, NOT_IMPLEMENTED_MSG):

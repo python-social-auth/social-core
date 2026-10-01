@@ -43,6 +43,7 @@ from .azuread import AzureADOAuth2
 class AzureADTenantOAuth2(AzureADOAuth2):
     name = "azuread-tenant-oauth2"
     ID_KEY = "sub"
+    LEGACY_ID_KEYS: tuple[str, ...] = ()
     OPENID_CONFIGURATION_URL = "{base_url}/.well-known/openid-configuration{appid}"
     JWKS_URL = "{base_url}/discovery/keys{appid}"
 
@@ -89,7 +90,9 @@ class AzureADTenantOAuth2(AzureADOAuth2):
 
 class AzureADV2TenantOAuth2(AzureADTenantOAuth2):
     name = "azuread-v2-tenant-oauth2"
-    ID_KEY = "preferred_username"
+    ID_KEY = "sub"
+    LEGACY_ID_KEYS: tuple[str, ...] = ("preferred_username",)
+    MUTABLE_ID_KEYS = ("upn", "preferred_username")
     OPENID_CONFIGURATION_URL = "{base_url}/v2.0/.well-known/openid-configuration{appid}"
     AUTHORIZATION_URL = "{base_url}/oauth2/v2.0/authorize"
     ACCESS_TOKEN_URL = "{base_url}/oauth2/v2.0/token"

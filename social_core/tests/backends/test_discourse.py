@@ -33,6 +33,7 @@ class DiscourseTest(BaseBackendTest):
         sso = b64encode(
             urlencode(
                 {
+                    "external_id": "42",
                     "email": "user@example.com",
                     "username": "beepboop",
                     "nonce": "6YRje7xlXhpyeJ6qtvBeTUjHkXo1UCTQmCrzN8GXfja3AoAFk2CieDRYgSqMYi4W",

@@ -44,8 +44,8 @@ class PipelineUserProtocol(UserProtocol, Protocol):
 class UserMixin:
     # Consider tokens that expire in 5 seconds as already expired
     ACCESS_TOKEN_EXPIRED_THRESHOLD = 5
-
     provider = ""
+    id_key = ""
     uid: str
     user: UserProtocol
     extra_data: dict[str, Any]
@@ -266,8 +266,15 @@ class UserMixin:
         raise NotImplementedError("Implement in subclass")
 
     @classmethod
-    def get_social_auth(cls, provider: str, uid: str):
+    def get_social_auth(cls, provider: str, uid: str, id_key: str | None = None):
         """Return UserSocialAuth for given provider and uid"""
+        raise NotImplementedError("Implement in subclass")
+
+    @classmethod
+    def get_social_auth_by_extra_data(
+        cls, provider: str, key: str, value: str, id_key: str = ""
+    ):
+        """Return an unambiguous association matching stored provider data."""
         raise NotImplementedError("Implement in subclass")
 
     @classmethod
@@ -282,8 +289,15 @@ class UserMixin:
         raise NotImplementedError("Implement in subclass")
 
     @classmethod
-    def create_social_auth(cls, user: UserProtocol, uid: str, provider: str):
+    def create_social_auth(
+        cls, user: UserProtocol, uid: str, provider: str, id_key: str = ""
+    ):
         """Create a UserSocialAuth instance for given user"""
+        raise NotImplementedError("Implement in subclass")
+
+    @classmethod
+    def migrate_social_auth(cls, social, uid: str, id_key: str):
+        """Atomically replace an association's identifier and identifier key."""
         raise NotImplementedError("Implement in subclass")
 
 

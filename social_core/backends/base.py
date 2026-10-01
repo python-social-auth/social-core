@@ -50,6 +50,8 @@ class BaseAuth:
     name = ""  # provider name, it's stored in database
     supports_inactive_user = False  # Django auth
     ID_KEY: str = ""
+    LEGACY_ID_KEYS: tuple[str, ...] = ()
+    MUTABLE_ID_KEYS: tuple[str, ...] = ()
     EXTRA_DATA: list[str | tuple[str, str] | tuple[str, str, bool]] | None = None
     GET_ALL_EXTRA_DATA = False
     REQUIRES_EMAIL_VALIDATION = False
@@ -67,6 +69,7 @@ class BaseAuth:
         self._pipeline_type: ContextVar[str] = ContextVar(
             "pipeline_type", default="authentication"
         )
+        self._mutable_id_key_warned = False
         self.data = self.strategy.request_data()
         self.redirect_uri = self.strategy.absolute_uri(self.redirect_uri)
 
@@ -327,14 +330,45 @@ class BaseAuth:
 
     def id_key(self) -> str:
         """Return the ID_KEY to use for this backend, checking settings first."""
-        return self.setting("ID_KEY") or self.ID_KEY
+        configured = self.setting("ID_KEY")
+        id_key = configured or self.ID_KEY
+        if (
+            configured
+            and id_key in self.MUTABLE_ID_KEYS
+            and not self._mutable_id_key_warned
+        ):
+            self.log_warning(
+                "configured ID_KEY %r is mutable and is unsafe as an account identifier",
+                id_key,
+            )
+            self._mutable_id_key_warned = True
+        return id_key
+
+    def get_user_id_for_key(self, details, response, id_key: str):
+        """Return a user identifier selected by an explicit response key."""
+        return self.get_user_id_from_sources(details, response, id_key=id_key)
+
+    def get_legacy_user_ids(self, details, response) -> list[str]:
+        """Return current values of identifiers used by older releases."""
+        if self.setting("ID_KEY"):
+            return []
+        identifiers = []
+        for id_key in self.LEGACY_ID_KEYS:
+            try:
+                identifier = self.get_user_id_for_key(details, response, id_key)
+            except AuthMissingParameter:
+                continue
+            value = str(identifier)
+            if value not in identifiers:
+                identifiers.append(value)
+        return identifiers
 
     def get_user_id(self, details, response):
         """Return a unique ID for the current user, by default from server
         response or details."""
         id_key = self.id_key()
         if self.REQUIRES_USER_ID or self.setting("ID_KEY"):
-            return self.get_user_id_from_sources(details, response, id_key=id_key)
+            return self.get_user_id_for_key(details, response, id_key)
         if details:
             user_id = details.get(id_key)
             if user_id:

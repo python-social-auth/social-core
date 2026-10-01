@@ -42,6 +42,7 @@ class TumblrOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
                             "type": "public",
                             "facebook_opengraph_enabled": "N",
                             "name": "foobar",
+                            "uuid": "t:stable-user-uuid",
                         }
                     ],
                     "default_post_format": "html",

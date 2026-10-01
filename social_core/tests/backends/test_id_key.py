@@ -59,18 +59,20 @@ class ConfigurableIdKeyTest(TestCase):
     )
     explicit_default_keys = (
         ("social_core.backends.auth0.Auth0OAuth2", "user_id"),
-        ("social_core.backends.azuread.AzureADOAuth2", "upn"),
+        ("social_core.backends.azuread.AzureADOAuth2", "sub"),
+        ("social_core.backends.azuread.AzureADOAuth2V2", "sub"),
         ("social_core.backends.azuread_b2c.AzureADB2COAuth2", "sub"),
         ("social_core.backends.azuread_tenant.AzureADTenantOAuth2", "sub"),
         (
             "social_core.backends.azuread_tenant.AzureADV2TenantOAuth2",
-            "preferred_username",
+            "sub",
         ),
         ("social_core.backends.cas.CASOpenIdConnectAuth", "username"),
         ("social_core.backends.cilogon.CILogonOAuth2", "sub"),
         ("social_core.backends.classlink.ClasslinkOAuth", "UserId"),
         ("social_core.backends.digitalocean.DigitalOceanOAuth", "uuid"),
-        ("social_core.backends.discourse.DiscourseAuth", "email"),
+        ("social_core.backends.deezer.DeezerOAuth2", "id"),
+        ("social_core.backends.discourse.DiscourseAuth", "external_id"),
         ("social_core.backends.drip.DripOAuth", "email"),
         ("social_core.backends.google.GoogleOAuth2", "email"),
         ("social_core.backends.kick.KickOAuth2", "user_id"),
@@ -79,8 +81,10 @@ class ConfigurableIdKeyTest(TestCase):
         ("social_core.backends.openshift.OpenshiftOAuth2", "uid"),
         ("social_core.backends.pushbullet.PushbulletOAuth2", "iden"),
         ("social_core.backends.qiita.QiitaOAuth2", "id"),
+        ("social_core.backends.scistarter.SciStarterOAuth2", "profile_id"),
         ("social_core.backends.suse.OpenSUSEOpenId", "nickname"),
         ("social_core.backends.twitch.TwitchOAuth2", "id"),
+        ("social_core.backends.tumblr.TumblrOAuth", "uuid"),
         ("social_core.backends.ubuntu.UbuntuOpenId", "nickname"),
         ("social_core.backends.vimeo.VimeoOAuth2", "uri"),
         ("social_core.backends.yandex.YandexOpenId", "email"),
@@ -88,6 +92,7 @@ class ConfigurableIdKeyTest(TestCase):
     )
     required_default_id_backends = (
         "social_core.backends.classlink.ClasslinkOAuth",
+        "social_core.backends.deezer.DeezerOAuth2",
         "social_core.backends.discourse.DiscourseAuth",
         "social_core.backends.flat.FlatOAuth2",
         "social_core.backends.kakao.KakaoOAuth2",
@@ -97,6 +102,7 @@ class ConfigurableIdKeyTest(TestCase):
         "social_core.backends.mendeley.MendeleyOAuth2",
         "social_core.backends.microsoft.MicrosoftOAuth2",
         "social_core.backends.naver.NaverOAuth2",
+        "social_core.backends.scistarter.SciStarterOAuth2",
         "social_core.backends.twitch.TwitchOAuth2",
     )
 
@@ -309,6 +315,18 @@ class ConfigurableIdKeyTest(TestCase):
         for path, expected in self.explicit_default_keys:
             with self.subTest(path=path):
                 self.assertEqual(self.backend(path).ID_KEY, expected)
+
+    def test_known_mutable_override_warns_once(self) -> None:
+        backend = self.backend(
+            "social_core.backends.azuread.AzureADOAuth2", ID_KEY="upn"
+        )
+
+        with self.assertLogs("social", level="WARNING") as logs:
+            self.assertEqual(backend.id_key(), "upn")
+            self.assertEqual(backend.id_key(), "upn")
+
+        self.assertEqual(len(logs.output), 1)
+        self.assertIn("unsafe as an account identifier", logs.output[0])
 
     def test_lookup_rejects_missing_default_id(self) -> None:
         for path in self.required_default_id_backends:

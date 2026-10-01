@@ -23,7 +23,11 @@ class DeezerOAuth2(BaseOAuth2):
     """Deezer OAuth2 authentication backend"""
 
     name = "deezer"
-    ID_KEY = "name"
+    ID_KEY = "id"
+    REQUIRES_USER_ID = True
+    LEGACY_ID_KEYS = ("name",)
+    MUTABLE_ID_KEYS = ("name",)
+    EXTRA_DATA = ["id"]
     AUTHORIZATION_URL = "https://connect.deezer.com/oauth/auth.php"
     ACCESS_TOKEN_URL = "https://connect.deezer.com/oauth/access_token.php"
     SCOPE_SEPARATOR = ","

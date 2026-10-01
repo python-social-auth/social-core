@@ -44,7 +44,9 @@ from .oauth import BaseOAuth2
 
 class AzureADOAuth2(BaseOAuth2):
     name = "azuread-oauth2"
-    ID_KEY = "upn"
+    ID_KEY = "sub"
+    LEGACY_ID_KEYS: tuple[str, ...] = ("upn",)
+    MUTABLE_ID_KEYS = ("upn", "preferred_username")
     SCOPE_SEPARATOR = " "
     BASE_URL = "https://{authority_host}/{tenant_id}"
     AUTHORIZATION_URL = "{base_url}/oauth2/authorize"
@@ -62,6 +64,9 @@ class AzureADOAuth2(BaseOAuth2):
         ("not_before", "not_before"),
         ("given_name", "first_name"),
         ("family_name", "last_name"),
+        ("sub", "sub"),
+        ("oid", "oid"),
+        ("tid", "tid"),
         ("token_type", "token_type"),
     ]
 
