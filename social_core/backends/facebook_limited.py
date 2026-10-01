@@ -27,9 +27,16 @@ class FacebookLimitedLogin(OpenIdConnectAuth):
         ):
             return None
 
-        # Replace response with the decoded JWT
-        raw_jwt = kwargs.get("response", {}).get("access_token")
-        kwargs["response"] = self.validate_and_return_id_token(raw_jwt, "")
+        # The OIDC parent restores validated claims from trusted partial storage.
+        # Fresh logins must still validate their token, even on a reused backend.
+        if (
+            "pipeline_index" not in kwargs
+            or self.id_token is None
+            or "access_token" in kwargs["response"]
+        ):
+            raw_jwt = kwargs.get("response", {}).get("access_token")
+            self.id_token = self.validate_and_return_id_token(raw_jwt, "")
+        kwargs["response"] = self.id_token.copy()
         return super().authenticate(*args, **kwargs)
 
     def get_user_details(self, response):

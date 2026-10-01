@@ -1,21 +1,29 @@
+import datetime
 import json
-from typing import cast
+from typing import TYPE_CHECKING, cast
 from unittest.mock import patch
 
 from social_core.backends.facebook import API_VERSION
+from social_core.backends.facebook_limited import FacebookLimitedLogin
 from social_core.exceptions import (
     AuthCanceled,
     AuthException,
     AuthMissingParameter,
     AuthStateForbidden,
     AuthStateMissing,
+    AuthTokenError,
     AuthUnknownError,
 )
-from social_core.utils import get_querystring
+from social_core.utils import PARTIAL_TOKEN_SESSION_NAME, get_querystring
 
 from .base import BaseBackendTest
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
-from .open_id_connect import OpenIdConnectTest
+from .open_id_connect import PARTIAL_ID_TOKEN_KEY, OpenIdConnectTest
+
+if TYPE_CHECKING:
+    from social_core.storage import PartialMixin
+    from social_core.strategy import HttpResponseProtocol
+    from social_core.tests.models import User
 
 
 class FacebookOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
@@ -225,7 +233,7 @@ class FacebookAppOAuth2Test(BaseBackendTest):
             self.backend.complete()
 
 
-class FacebookLimitedLoginTest(OpenIdConnectTest):
+class FacebookLimitedLoginTest(OpenIdConnectTest[FacebookLimitedLogin]):
     backend_path = "social_core.backends.facebook_limited.FacebookLimitedLogin"
     issuer = "https://facebook.com"
     openid_config_body = """
@@ -259,6 +267,110 @@ class FacebookLimitedLoginTest(OpenIdConnectTest):
       ]
     }
     """
+
+    def get_id_token(self, *args, **kwargs):
+        return {
+            **super().get_id_token(*args, **kwargs),
+            "name": "Cartman",
+            "email": "cartman@example.com",
+            "picture": "https://example.com/cartman.png",
+        }
+
+    def limited_login_token(self, **kwargs) -> str:
+        return json.loads(self.prepare_access_token_body(access_token=None, **kwargs))[
+            "id_token"
+        ]
+
+    def test_token_login(self) -> None:
+        user = cast("User", self.backend.do_auth(self.limited_login_token()))
+
+        self.assertTrue(user.username)
+        self.assertEqual(user.email, "cartman@example.com")
+        self.assertEqual(user.social[0].uid, "1234")
+        self.assertIsNotNone(self.backend.id_token)
+
+    def test_partial_pipeline_after_token_expires(self) -> None:
+        self.pipeline_settings()
+        pipeline = list(self.strategy.get_pipeline(self.backend))
+        pipeline.remove("social_core.tests.pipeline.ask_for_password")
+        pipeline.insert(0, "social_core.tests.pipeline.ask_for_password")
+        self.strategy.set_settings({"SOCIAL_AUTH_PIPELINE": pipeline})
+        result = self.backend.do_auth(self.limited_login_token())
+
+        for step, value in (("password", "foobar"), ("slug", "foo-bar")):
+            with self.subTest(step=step):
+                self.assertEqual(
+                    cast("HttpResponseProtocol", result).url,
+                    self.strategy.build_absolute_uri(f"/{step}"),
+                )
+                token = self.strategy.session_pop(PARTIAL_TOKEN_SESSION_NAME)
+                partial = self.strategy.partial_load(token)
+                self.assertIsNotNone(partial)
+                partial = cast("PartialMixin", partial)
+                claims = partial.kwargs[PARTIAL_ID_TOKEN_KEY]
+                self.assertEqual(partial.kwargs["response"], claims)
+                self.assertNotIn("access_token", partial.kwargs["response"])
+                self.strategy.session_set(step, value)
+                self.backend = FacebookLimitedLogin(self.strategy)
+                expired_time = datetime.datetime.fromtimestamp(
+                    claims["exp"] + self.backend.ID_TOKEN_MAX_AGE + 1,
+                    datetime.timezone.utc,
+                )
+                with (
+                    patch("jwt.api_jwt.datetime") as jwt_datetime,
+                    patch(
+                        "social_core.backends.open_id_connect.datetime"
+                    ) as oidc_datetime,
+                    patch.object(
+                        self.backend,
+                        "validate_and_return_id_token",
+                        side_effect=AssertionError("JWT must not be revalidated"),
+                    ) as validate,
+                ):
+                    jwt_datetime.now.return_value = expired_time
+                    oidc_datetime.datetime.now.return_value = expired_time
+                    result = self.backend.continue_pipeline(partial)
+                    validate.assert_not_called()
+
+        user = cast("User", result)
+        self.assertTrue(user.username)
+        self.assertEqual(user.email, "cartman@example.com")
+        self.assertEqual(user.social[0].uid, "1234")
+        self.assertEqual(user.password, "foobar")
+        self.assertEqual(user.slug, "foo-bar")
+
+    def test_invalid_token_login(self) -> None:
+        # A reused backend must validate every fresh login.
+        self.backend.do_auth(self.limited_login_token())
+        expired_time = datetime.datetime.now(
+            datetime.timezone.utc
+        ) - datetime.timedelta(seconds=30)
+        for kwargs, message in (
+            ({"expiration_datetime": expired_time}, "Signature has expired"),
+            ({"tamper_message": True}, "Signature verification failed"),
+        ):
+            with (
+                self.subTest(kwargs=kwargs),
+                self.assertRaisesRegex(AuthTokenError, message),
+            ):
+                self.backend.do_auth(self.limited_login_token(**kwargs))
+
+    def test_pipeline_index_does_not_trust_caller_supplied_claims(self) -> None:
+        for reused in (False, True):
+            if reused:
+                self.backend.do_auth(self.limited_login_token())
+            with (
+                self.subTest(reused=reused),
+                self.assertRaisesRegex(AuthTokenError, "Signature verification failed"),
+            ):
+                self.strategy.authenticate(
+                    self.backend,
+                    pipeline_index=0,
+                    response={
+                        "access_token": self.limited_login_token(tamper_message=True)
+                    },
+                    **{PARTIAL_ID_TOKEN_KEY: {"sub": "forged-subject"}},
+                )
 
     def test_invalid_nonce(self) -> None:
         # The nonce isn't generated server-side so the test isn't relevant here.
