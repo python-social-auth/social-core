@@ -17,6 +17,7 @@ class FacebookLimitedLogin(OpenIdConnectAuth):
     OIDC_ENDPOINT = "https://www.facebook.com"
     ACCESS_TOKEN_URL = "https://facebook.com/dialog/oauth/"
     ID_TOKEN_MAX_AGE = 3600
+    _partial_pipeline_resume = False
 
     def authenticate(self, *args, **kwargs):
         if (
@@ -27,17 +28,30 @@ class FacebookLimitedLogin(OpenIdConnectAuth):
         ):
             return None
 
-        # The OIDC parent restores validated claims from trusted partial storage.
-        # Fresh logins must still validate their token, even on a reused backend.
+        # Only continue_pipeline() may authorize reuse of restored claims.
+        # Consume that authorization before entering any pipeline steps.
+        partial_resume = self._partial_pipeline_resume
+        self._partial_pipeline_resume = False
         if (
-            "pipeline_index" not in kwargs
+            not partial_resume
             or self.id_token is None
             or "access_token" in kwargs["response"]
         ):
             raw_jwt = kwargs.get("response", {}).get("access_token")
+            if not raw_jwt:
+                raise AuthTokenError(self, "Missing access_token")
             self.id_token = self.validate_and_return_id_token(raw_jwt, "")
         kwargs["response"] = self.id_token.copy()
         return super().authenticate(*args, **kwargs)
+
+    def continue_pipeline(self, partial):
+        # The OIDC parent restores claims from trusted partial storage before
+        # invoking authenticate(). Never leave resume authorization behind.
+        self._partial_pipeline_resume = True
+        try:
+            return super().continue_pipeline(partial)
+        finally:
+            self._partial_pipeline_resume = False
 
     def get_user_details(self, response):
         return {

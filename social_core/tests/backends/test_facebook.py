@@ -339,6 +339,9 @@ class FacebookLimitedLoginTest(OpenIdConnectTest[FacebookLimitedLogin]):
         self.assertEqual(user.password, "foobar")
         self.assertEqual(user.slug, "foo-bar")
 
+        with self.assertRaisesRegex(AuthTokenError, "Missing access_token"):
+            self.strategy.authenticate(self.backend, pipeline_index=0, response={})
+
     def test_invalid_token_login(self) -> None:
         # A reused backend must validate every fresh login.
         self.backend.do_auth(self.limited_login_token())
@@ -371,6 +374,40 @@ class FacebookLimitedLoginTest(OpenIdConnectTest[FacebookLimitedLogin]):
                     },
                     **{PARTIAL_ID_TOKEN_KEY: {"sub": "forged-subject"}},
                 )
+
+    def test_pipeline_index_without_token_rejects_reused_claims(self) -> None:
+        self.backend.do_auth(self.limited_login_token())
+        claims = cast("dict", self.backend.id_token).copy()
+
+        for response in ({}, claims):
+            with (
+                self.subTest(response=response),
+                self.assertRaisesRegex(AuthTokenError, "Missing access_token"),
+            ):
+                self.strategy.authenticate(
+                    self.backend,
+                    pipeline_index=0,
+                    response=response,
+                    **{PARTIAL_ID_TOKEN_KEY: claims},
+                )
+
+    def test_failed_partial_resume_does_not_allow_claim_reuse(self) -> None:
+        self.pipeline_settings()
+        self.backend.do_auth(self.limited_login_token())
+        token = self.strategy.session_pop(PARTIAL_TOKEN_SESSION_NAME)
+        partial = cast("PartialMixin", self.strategy.partial_load(token))
+        self.backend = FacebookLimitedLogin(self.strategy)
+
+        with (
+            patch.object(
+                self.backend, "authenticate", side_effect=RuntimeError("Resume failed")
+            ),
+            self.assertRaisesRegex(RuntimeError, "Resume failed"),
+        ):
+            self.backend.continue_pipeline(partial)
+
+        with self.assertRaisesRegex(AuthTokenError, "Missing access_token"):
+            self.strategy.authenticate(self.backend, pipeline_index=0, response={})
 
     def test_invalid_nonce(self) -> None:
         # The nonce isn't generated server-side so the test isn't relevant here.
