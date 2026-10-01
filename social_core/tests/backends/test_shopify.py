@@ -1,5 +1,5 @@
 import time
-from typing import cast
+from typing import TYPE_CHECKING, cast
 from unittest.mock import patch
 
 import requests
@@ -7,9 +7,17 @@ import responses
 import shopify
 
 from social_core.exceptions import AuthMissingParameter, AuthStateForbidden
-from social_core.utils import get_querystring, url_add_parameters
+from social_core.utils import (
+    PARTIAL_TOKEN_SESSION_NAME,
+    get_querystring,
+    url_add_parameters,
+)
 
 from .base import BaseBackendTest
+
+if TYPE_CHECKING:
+    from social_core.strategy import HttpResponseProtocol
+    from social_core.tests.models import User
 
 SHOP = "example.myshopify.com"
 ACCESS_TOKEN = "shopify-access-token"
@@ -132,3 +140,34 @@ class ShopifyOAuth2Test(BaseBackendTest):
     def test_partial_pipeline(self) -> None:
         with patch.object(shopify.Session, "request_token", return_value=ACCESS_TOKEN):
             self.do_partial_pipeline()
+
+    def test_partial_pipeline_with_new_requests(self) -> None:
+        self.pipeline_settings()
+        with patch.object(
+            shopify.Session, "request_token", autospec=True, return_value=ACCESS_TOKEN
+        ) as request_token:
+            result = self.do_start()
+            for step, value, request_data in (
+                ("password", "foobar", {}),
+                ("slug", "foo-bar", {"shop": "other.myshopify.com"}),
+            ):
+                self.assertEqual(
+                    cast("HttpResponseProtocol", result).url,
+                    self.strategy.build_absolute_uri(f"/{step}"),
+                )
+                token = self.strategy.session_pop(PARTIAL_TOKEN_SESSION_NAME)
+                self.strategy.session_set(step, value)
+                result = self.resume_partial_with_new_request(token, request_data)
+
+        user = cast("User", result)
+        self.assertEqual(user.social[0].extra_data["shop"], SHOP)
+        self.assertEqual(user.social[0].extra_data["access_token"], ACCESS_TOKEN)
+        self.assertEqual(user.password, "foobar")
+        self.assertEqual(user.slug, "foo-bar")
+        self.assertEqual(request_token.call_count, 1)
+        self.assertEqual(request_token.call_args_list[0].args[1]["shop"], SHOP)
+        self.assertEqual(request_token.call_args_list[0].args[0].url, SHOP)
+
+    def test_extra_data_requires_saved_shop(self) -> None:
+        with self.assertRaises(AuthMissingParameter):
+            self.backend.extra_data(None, SHOP, {"access_token": ACCESS_TOKEN}, {}, {})

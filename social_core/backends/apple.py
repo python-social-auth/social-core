@@ -34,6 +34,8 @@ from jwt.exceptions import PyJWTError
 from social_core.backends.oauth import BaseOAuth2
 from social_core.exceptions import AuthFailed
 
+_USER_NAME_KEY = "_apple_user_name"
+
 if TYPE_CHECKING:
     from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
 
@@ -147,7 +149,10 @@ class AppleIdAuth(BaseOAuth2):
         return decoded
 
     def get_user_details(self, response):
-        name = json.loads(self.data.get("user", "{}")).get("name", {})
+        if _USER_NAME_KEY in response:
+            name = response[_USER_NAME_KEY]
+        else:
+            name = json.loads(self.data.get("user", "{}")).get("name", {})
         fullname, first_name, last_name = self.get_user_names(
             fullname="",
             first_name=name.get("firstName", ""),
@@ -177,5 +182,10 @@ class AppleIdAuth(BaseOAuth2):
         if not jwt_string:
             raise AuthFailed(self, "Missing id_token parameter")
 
-        decoded_data = self.decode_id_token(jwt_string)
+        decoded_data = self.decode_id_token(jwt_string).copy()
+        # Apple sends the name separately from the token. Preserve it before
+        # the pipeline can pause and resume with a different request.
+        decoded_data[_USER_NAME_KEY] = json.loads(self.data.get("user", "{}")).get(
+            "name", {}
+        )
         return super().do_auth(access_token, *args, response=decoded_data, **kwargs)
