@@ -82,6 +82,8 @@ class OAuthAuth(BaseAuth):
         return self.strategy.random_string(32)
 
     def get_or_create_state(self) -> str | None:
+        if self.ASSOCIATION_ONLY:
+            return self.get_association_state()
         if self.STATE_PARAMETER or self.REDIRECT_STATE:
             # Store state in session for further request validation. The state
             # value is passed as state parameter (as specified in OAuth2 spec),
@@ -98,6 +100,8 @@ class OAuthAuth(BaseAuth):
         return state
 
     def get_session_state(self):
+        if self.ASSOCIATION_ONLY:
+            return self.get_association_state()
         return self.strategy.session_get(f"{self.name}_state")
 
     def get_request_state(self):
@@ -474,8 +478,14 @@ class BaseOAuth2(OAuthAuth):
     @handle_http_errors
     def auth_complete(self, *args, **kwargs):
         """Completes login process, must return user instance"""
-        self.process_error(self.data)
-        state = self.validate_state()
+        if self.ASSOCIATION_ONLY:
+            state = self.validate_association_state(
+                self.get_request_state(), kwargs.get("user")
+            )
+            self.process_error(self.data)
+        else:
+            self.process_error(self.data)
+            state = self.validate_state()
         data = params = json = None
         auth_params = self.auth_complete_params(state)
         if self.ACCESS_TOKEN_METHOD == "GET":
@@ -502,6 +512,8 @@ class BaseOAuth2(OAuthAuth):
     @handle_http_errors
     def do_auth(self, access_token, *args, **kwargs):
         """Finish the auth process once the access_token was retrieved"""
+        if self.ASSOCIATION_ONLY:
+            self._bind_association_user(kwargs)
         data = self.user_data(access_token, *args, **kwargs)
         response = kwargs.get("response") or {}
         response.update(data or {})

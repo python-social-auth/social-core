@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+### Security
+
+- Drip is now association-only: connecting requires the same authenticated local
+  user at initiation, callback, and partial resumption. Drip email addresses can
+  no longer create or authenticate local users, and connecting preserves local
+  profile fields.
+
 ### Breaking
 
 - Strategies must implement `get_request_data()` instead of overriding
@@ -20,6 +27,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Reusable `BaseAuth.ASSOCIATION_ONLY` capability for user-bound connections,
+  shared by Drip and Twilio Connect.
 - Scoped pipeline request data, stored separately from pipeline arguments.
   Existing partials with request data in their arguments remain readable.
 

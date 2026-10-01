@@ -300,7 +300,7 @@ class TwilioAuthTest(BaseBackendTest):
     def test_partial_pipeline_rejects_legacy_unbound_partial(self) -> None:
         user = User("existing")
         partial = self.pause_for_user(user)
-        partial.kwargs.pop(self.backend.ASSOCIATION_USER_ID_KEY)
+        partial.kwargs.pop(self.backend.association_user_id_key())
         partial.save()
 
         with self.assertRaises(AuthForbidden):
