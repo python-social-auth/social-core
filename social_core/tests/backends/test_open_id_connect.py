@@ -4,6 +4,7 @@ import copy
 import datetime
 import json
 from typing import Protocol, cast
+from unittest.mock import patch
 
 import jwt
 import responses
@@ -17,7 +18,11 @@ from social_core.exceptions import (
 from social_core.utils import get_querystring, parse_qs
 
 from .oauth import BaseAuthUrlTestMixin
-from .open_id_connect import STORED_ID_TOKEN_CONTEXT_KEY, OpenIdConnectTest
+from .open_id_connect import (
+    PARTIAL_ID_TOKEN_KEY,
+    STORED_ID_TOKEN_CONTEXT_KEY,
+    OpenIdConnectTest,
+)
 
 
 def decode_id_token_context(id_token: str) -> dict:
@@ -129,6 +134,90 @@ class BaseOpenIdConnectTest(
 
     def test_everything_works(self) -> None:
         self.do_login()
+
+    def test_partial_pipeline(self) -> None:
+        self.do_partial_pipeline()
+
+    def test_partial_pipeline_before_details_and_uid(self) -> None:
+        self.pipeline_settings()
+        pipeline = list(self.strategy.get_pipeline(self.backend))
+        pipeline.remove("social_core.tests.pipeline.ask_for_password")
+        pipeline.insert(0, "social_core.tests.pipeline.ask_for_password")
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_PIPELINE": pipeline, "SOCIAL_AUTH_OIDC_ID_KEY": "custom_id"}
+        )
+        get_id_token = self.get_id_token
+
+        def token_with_profile(*args, **kwargs):
+            return {
+                **get_id_token(*args, **kwargs),
+                "custom_id": "token-only-id",
+                "email": "token@example.com",
+            }
+
+        with (
+            patch.object(self, "pipeline_settings"),
+            patch.object(self, "get_id_token", side_effect=token_with_profile),
+        ):
+            user = self.do_partial_pipeline()
+
+        self.assertEqual(user.email, "token@example.com")
+        self.assertEqual(user.social[0].uid, "token-only-id")
+
+    def test_partial_pipeline_after_token_expires(self) -> None:
+        resume = self.resume_partial_pipeline
+
+        def resume_after_expiration(partial):
+            claims = partial.kwargs[PARTIAL_ID_TOKEN_KEY]
+            expired_time = datetime.datetime.fromtimestamp(
+                claims["exp"] + self.backend.ID_TOKEN_MAX_AGE + 1,
+                datetime.timezone.utc,
+            )
+            with (
+                patch("jwt.api_jwt.datetime") as jwt_datetime,
+                patch("social_core.backends.open_id_connect.datetime") as oidc_datetime,
+            ):
+                jwt_datetime.now.return_value = expired_time
+                oidc_datetime.datetime.now.return_value = expired_time
+                return resume(partial)
+
+        with patch.object(
+            self, "resume_partial_pipeline", side_effect=resume_after_expiration
+        ):
+            self.do_partial_pipeline()
+
+    def test_partial_pipeline_without_saved_claims_rejects_token(self) -> None:
+        resume = self.resume_partial_pipeline
+
+        def resume_without_claims(partial):
+            if "password" in partial.kwargs:
+                partial.kwargs.pop(PARTIAL_ID_TOKEN_KEY, None)
+            return resume(partial)
+
+        with (
+            patch.object(
+                self, "resume_partial_pipeline", side_effect=resume_without_claims
+            ),
+            self.assertRaisesRegex(AuthTokenError, "ID token was not validated"),
+        ):
+            self.do_partial_pipeline()
+
+    def test_pipeline_does_not_trust_caller_supplied_claims(self) -> None:
+        user = self.do_login()
+        social = user.social[0]
+        claims = self.backend.id_token
+        self.backend.id_token = None
+
+        with self.assertRaisesRegex(AuthTokenError, "ID token was not validated"):
+            self.backend.pipeline(
+                ["social_core.pipeline.social_auth.load_extra_data"],
+                user=user,
+                uid=social.uid,
+                social=social,
+                details={},
+                response={"id_token": social.extra_data["id_token"]},
+                **{PARTIAL_ID_TOKEN_KEY: claims},
+            )
 
     def test_pkce_disabled_by_default(self) -> None:
         self.do_login()

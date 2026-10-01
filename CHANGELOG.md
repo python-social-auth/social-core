@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+
+### Fixed
+
+- OpenID Connect partial pipelines now preserve validated ID token claims when
+  resuming with a new backend instance, fixing login failures since 5.1.0.
+
 ## [5.2.0](https://github.com/python-social-auth/social-core/releases/tag/5.2.0) - 2026-09-30
 
 ### Added

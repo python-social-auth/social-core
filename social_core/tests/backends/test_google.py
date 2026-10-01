@@ -173,6 +173,12 @@ class GoogleOpenIdConnectTest(OpenIdConnectTest):
         }
     )
 
+    def test_partial_pipeline(self) -> None:
+        self.expected_username = "foo"
+        self.user_data_url = "https://openidconnect.googleapis.com/v1/userinfo"
+        self.user_data_body = json.dumps({"sub": "1234", "email": "foo@bar.com"})
+        self.do_partial_pipeline()
+
     def test_refresh_preserves_oidc_data_with_google_extra_data(self) -> None:
         responses.add(
             responses.GET,

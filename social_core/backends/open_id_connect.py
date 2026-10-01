@@ -27,6 +27,7 @@ from social_core.exceptions import (
 from social_core.utils import cache
 
 _ID_TOKEN_CONTEXT_KEY = "_oidc_id_token_context"
+_VALIDATED_ID_TOKEN_KEY = "_oidc_validated_id_token"
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -34,7 +35,8 @@ if TYPE_CHECKING:
     from jwt.types import Options
     from requests.auth import AuthBase
 
-    from social_core.strategy import BaseStrategy
+    from social_core.storage import PartialMixin, UserProtocol
+    from social_core.strategy import BaseStrategy, HttpResponseProtocol
 
 
 class OpenIdConnectAssociation:
@@ -104,7 +106,27 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
         self, strategy: BaseStrategy | None = None, redirect_uri: str | None = None
     ) -> None:
         super().__init__(strategy, redirect_uri=redirect_uri)
-        self.id_token = None
+        self.id_token: dict[str, Any] | None = None
+
+    def pipeline(
+        self, pipeline, pipeline_index: int = 0, *args, **kwargs
+    ) -> UserProtocol | HttpResponseProtocol | None:
+        # Only persist claims validated by this backend, never caller-supplied
+        # pipeline arguments. Partial storage will carry them across requests.
+        if self.id_token is not None:
+            kwargs[_VALIDATED_ID_TOKEN_KEY] = self.id_token.copy()
+        else:
+            kwargs.pop(_VALIDATED_ID_TOKEN_KEY, None)
+        return super().pipeline(pipeline, pipeline_index, *args, **kwargs)
+
+    def continue_pipeline(
+        self, partial: PartialMixin
+    ) -> UserProtocol | HttpResponseProtocol | None:
+        # Login already consumed the nonce. Restore the validated claims from
+        # trusted partial storage rather than validating the token again.
+        claims = partial.kwargs.get(_VALIDATED_ID_TOKEN_KEY)
+        self.id_token = claims.copy() if isinstance(claims, dict) else None
+        return super().continue_pipeline(partial)
 
     def get_setting_config(
         self, setting_name: str, oidc_name: str, default: str
