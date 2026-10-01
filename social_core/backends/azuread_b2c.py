@@ -29,7 +29,8 @@ See https://nicksnettravels.builttoroam.com/post/2017/01/24/Verifying-Azure-Acti
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, cast
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from social_core.exceptions import AuthException, AuthMissingParameter, AuthTokenError
 
@@ -58,6 +59,7 @@ class AzureADB2COAuth2(AzureADOAuth2):
         ("id_token", "id_token"),
         ("refresh_token", "refresh_token"),
         ("id_token_expires_in", "expires"),
+        ("expires_in", "expires_in"),
         ("exp", "expires_on"),
         ("not_before", "not_before"),
         ("given_name", "first_name"),
@@ -67,8 +69,10 @@ class AzureADB2COAuth2(AzureADOAuth2):
     ]
 
     @property
-    def authority_host(self):
-        return self.setting("AUTHORITY_HOST", f"{self.tenant_name}.b2clogin.com")
+    def authority_host(self) -> str:
+        return cast(
+            "str", self.setting("AUTHORITY_HOST", f"{self.tenant_name}.b2clogin.com")
+        )
 
     @property
     def tenant_name(self):
@@ -87,14 +91,55 @@ class AzureADB2COAuth2(AzureADOAuth2):
 
     @property
     def base_url(self):
+        if authority_url := self.configured_authority_url():
+            return authority_url
         return self.BASE_URL.format(
             tenant_name=self.tenant_name, authority_host=self.authority_host
         )
 
-    def openid_configuration_url(self):
-        return self.OPENID_CONFIGURATION_URL.format(
-            base_url=self.base_url, policy=self.policy
-        )
+    def get_openid_configuration_url_format(self) -> dict[str, str]:
+        return {**super().get_openid_configuration_url_format(), "policy": self.policy}
+
+    def logout_url(
+        self,
+        *,
+        post_logout_redirect_uri: str | None = None,
+        id_token_hint: str | None = None,
+        state: str | None = None,
+    ) -> str:
+        """Build a provider logout URL for the configured sign-in policy."""
+        endpoint = self.openid_configuration().get("end_session_endpoint")
+        if not isinstance(endpoint, str):
+            raise AuthMissingParameter(self, "end_session_endpoint")
+        try:
+            parsed = urlsplit(endpoint)
+            valid = (
+                parsed.scheme == "https"
+                and parsed.hostname
+                and parsed.port != 0
+                and parsed.username is None
+                and parsed.password is None
+                and not parsed.fragment
+                and not any(character.isspace() for character in endpoint)
+            )
+        except ValueError:
+            valid = False
+        if not valid:
+            raise AuthMissingParameter(self, "end_session_endpoint")
+        params = {
+            "client_id": self.setting("KEY"),
+            "post_logout_redirect_uri": post_logout_redirect_uri,
+            "id_token_hint": id_token_hint,
+            "state": state,
+        }
+        supplied = {name: value for name, value in params.items() if value is not None}
+        query = [
+            (name, value)
+            for name, value in parse_qsl(parsed.query, keep_blank_values=True)
+            if name not in supplied
+        ]
+        query.extend(supplied.items())
+        return urlunsplit(parsed._replace(query=urlencode(query)))
 
     def get_access_token_url_format(self) -> dict[str, str]:
         params = super().get_access_token_url_format()
