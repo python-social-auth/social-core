@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import json
 import unittest
 from typing import TYPE_CHECKING, Generic, TypeVar, cast
+from unittest.mock import patch
 
 import requests
 import responses
@@ -143,6 +145,21 @@ class BaseBackendTest(unittest.TestCase, Generic[BackendT]):
         self.assertEqual(data["slug"], slug)
         self.strategy.session_set("slug", data["slug"])
         return slug
+
+    def resume_partial_with_new_request(self, token: str, request_data=None):
+        # Serialize before loading, while users and associations are still IDs.
+        stored = self.strategy.storage.partial.load(token)
+        assert stored is not None
+        stored.data = json.loads(json.dumps(stored.data))
+        partial = self.strategy.partial_load(token)
+        assert partial is not None
+        with patch.object(
+            self.strategy, "request_data", return_value=request_data or {}
+        ):
+            backend = type(self.backend)(
+                self.strategy, redirect_uri=self.backend.redirect_uri
+            )
+            return backend.continue_pipeline(partial)
 
     def do_partial_pipeline(self):
         url = self.strategy.build_absolute_uri("/password")

@@ -9,7 +9,7 @@ from typing import Any
 
 import shopify
 
-from social_core.exceptions import AuthCanceled, AuthFailed
+from social_core.exceptions import AuthCanceled, AuthFailed, AuthMissingParameter
 from social_core.utils import handle_http_errors
 
 from .oauth import BaseOAuth2
@@ -42,9 +42,10 @@ class ShopifyOAuth2(BaseOAuth2):
         """Return access_token and extra defined names to store in
         extra_data field"""
         data = super().extra_data(user, uid, response, details, pipeline_kwargs)
-        session = shopify.Session(
-            self.data.get("shop").strip(), version=self.shopify_api_version
-        )
+        shop = response.get("shop")
+        if not shop:
+            raise AuthMissingParameter(self, "shop")
+        session = shopify.Session(shop.strip(), version=self.shopify_api_version)
         # Get, and store the permanent token
         token = session.request_token(data["access_token"])
         data["access_token"] = token

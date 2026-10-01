@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, cast
 
-from openid.consumer.consumer import CANCEL, FAILURE, SUCCESS, Consumer
-from openid.consumer.discover import DiscoveryFailure
+from openid.consumer.consumer import CANCEL, FAILURE, SUCCESS, Consumer, SuccessResponse
+from openid.consumer.discover import DiscoveryFailure, OpenIDServiceEndpoint
 from openid.extensions import ax, pape, sreg
 from openid.fetchers import HTTPFetchingError
+from openid.message import Message
 
 from social_core.exceptions import (
     AuthCanceled,
@@ -40,6 +41,7 @@ AX_SCHEMA_ATTRS = [
 SREG_ATTR = [("email", "email"), ("fullname", "fullname"), ("nickname", "nickname")]
 OPENID_ID_FIELD = "openid_identifier"
 SESSION_NAME = "openid"
+_VERIFIED_RESPONSE_KEY = "_openid_verified_response"
 
 
 class OpenIdAuth(BaseAuth):
@@ -86,7 +88,7 @@ class OpenIdAuth(BaseAuth):
                 )
 
         # Use Attribute Exchange attributes if provided
-        if ax_names:
+        if ax_names and response.extensionResponse(ax.AXMessage.ns_uri, True):
             resp = cast("Any", ax.FetchResponse).fromSuccessResponse(response)
             if resp:
                 for src, alias in ax_names:
@@ -190,17 +192,49 @@ class OpenIdAuth(BaseAuth):
         """Return trust-root option"""
         return self.setting("OPENID_TRUST_ROOT") or self.strategy.absolute_uri("/")
 
+    @staticmethod
+    def _restore_verified_response(snapshot):
+        if not isinstance(snapshot, dict):
+            raise TypeError
+        endpoint_data = snapshot["endpoint"]
+        message = snapshot["message"]
+        signed_fields = snapshot["signed_fields"]
+        if (
+            not isinstance(endpoint_data, dict)
+            or not isinstance(endpoint_data.get("claimed_id"), str)
+            or not endpoint_data["claimed_id"]
+        ):
+            raise ValueError
+        if not isinstance(message, dict) or not all(
+            isinstance(key, str) and isinstance(value, str)
+            for key, value in message.items()
+        ):
+            raise ValueError
+        if not isinstance(signed_fields, list) or not all(
+            isinstance(field, str) for field in signed_fields
+        ):
+            raise ValueError
+        endpoint = OpenIDServiceEndpoint()
+        vars(endpoint).update(endpoint_data)
+        return SuccessResponse(endpoint, Message.fromPostArgs(message), signed_fields)
+
     def continue_pipeline(self, partial):
         """Continue previous halted pipeline"""
-        response = self.consumer().complete(
-            dict(self.data.items()), self.get_return_to()
-        )
+        try:
+            response = self._restore_verified_response(
+                partial.kwargs.get(_VERIFIED_RESPONSE_KEY)
+            )
+        except (KeyError, TypeError, ValueError) as error:
+            raise AuthFailed(
+                self, "OpenID authentication context is unavailable; restart login"
+            ) from error
+        kwargs = partial.kwargs.copy()
+        kwargs["response"] = response
         return self.strategy.authenticate(
             self,
             *partial.args,
-            response=response,
             pipeline_index=partial.next_step,
-            **partial.kwargs,
+            **kwargs,
         )
 
     def auth_complete(self, *args, **kwargs):
@@ -213,8 +247,16 @@ class OpenIdAuth(BaseAuth):
             raise AuthUnreachableProvider(self) from error
 
         self.process_error(response)
+        response = cast("SuccessResponse", response)
         if session_id := self.data.get(self.strategy.SESSION_SAVE_KEY):
             self.strategy.restore_session(session_id, kwargs)
+        # Retain both the verified message and its signed fields so extension
+        # data keeps the same trust checks after a JSON-serialized partial.
+        kwargs[_VERIFIED_RESPONSE_KEY] = {
+            "endpoint": vars(response.endpoint).copy(),
+            "message": response.message.toPostArgs(),
+            "signed_fields": list(response.signed_fields),
+        }
         return self.strategy.authenticate(self, *args, response=response, **kwargs)
 
     def process_error(self, data) -> None:

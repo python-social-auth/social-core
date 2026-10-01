@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - OpenID Connect partial pipelines now preserve validated ID token claims when
   resuming with a new backend instance, fixing login failures since 5.1.0.
+- Shopify partial pipelines now use the saved shop instead of resume request
+  parameters, and Apple preserves callback names across early pipeline pauses.
+- Legacy OpenID partial pipelines now preserve verified responses and signed
+  extension data instead of repeating callback verification on resume.
 
 ## [5.2.0](https://github.com/python-social-auth/social-core/releases/tag/5.2.0) - 2026-09-30
 
