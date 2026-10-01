@@ -21,7 +21,7 @@ def mail_validation(backend: BaseAuth, details, is_new=False, *args, **kwargs):
     if requires_validation and send_validation:
         # External partial resumes may replay the original validation-link data
         # after a local confirmation request.
-        data = kwargs.get("request") or backend.strategy.request_data()
+        data = backend.strategy.request_data()
         if "verification_code" in data:
             backend.strategy.session_pop("email_validation_address")
             if not backend.strategy.validate_email(

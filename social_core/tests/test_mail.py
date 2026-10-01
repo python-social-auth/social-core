@@ -73,7 +73,10 @@ class MailValidationTest(unittest.TestCase):
         backend.strategy = strategy
         backend.REQUIRES_EMAIL_VALIDATION = True
 
-        with patch.object(strategy, "validate_email", return_value=True) as validate:
+        with (
+            strategy.pipeline_request_data({"verification_code": "123456"}),
+            patch.object(strategy, "validate_email", return_value=True) as validate,
+        ):
             response = call_partial_step(
                 mail_validation_wrapper,
                 strategy,
@@ -81,7 +84,6 @@ class MailValidationTest(unittest.TestCase):
                 0,
                 details={"email": "foo@example.com"},
                 is_new=True,
-                request={"verification_code": "123456"},
             )
 
         self.assertEqual(response, {})

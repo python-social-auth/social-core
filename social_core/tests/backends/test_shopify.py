@@ -87,6 +87,11 @@ class ShopifyOAuth2Test(BaseBackendTest):
         self.assertEqual(query["redirect_uri"], "http://myapp.com")
         self.assertEqual(state, self.strategy.session_get("shopify_state"))
 
+    def test_auth_url_requires_shop(self) -> None:
+        self.strategy.remove_from_request_data("shop")
+        with self.assertRaises(AuthMissingParameter):
+            self.backend.start()
+
     def test_auth_url_reuses_state_for_concurrent_starts(self) -> None:
         first_url = self.backend.start().url
         first_state = get_querystring(first_url)["state"]

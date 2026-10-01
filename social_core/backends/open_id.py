@@ -230,12 +230,13 @@ class OpenIdAuth(BaseAuth):
             ) from error
         kwargs = partial.kwargs.copy()
         kwargs["response"] = response
-        return self.strategy.authenticate(
-            self,
-            *partial.args,
-            pipeline_index=partial.next_step,
-            **kwargs,
-        )
+        with self._partial_pipeline_context(partial):
+            return self.strategy.authenticate(
+                self,
+                *partial.args,
+                pipeline_index=partial.next_step,
+                **kwargs,
+            )
 
     def auth_complete(self, *args, **kwargs):
         """Complete auth process"""

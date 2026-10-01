@@ -350,7 +350,7 @@ class PartialPipelineData(unittest.TestCase):
     def test_returns_partial_when_uid_and_email_do_match(self) -> None:
         email = "foo@example.com"
         backend = self._backend({"uid": email})
-        backend.strategy.request_data.return_value = {backend.ID_KEY: email}
+        backend.strategy.get_request_data.return_value = {backend.ID_KEY: email}
         key, val = ("foo", "bar")
         partial = cast(
             "PartialMixin", partial_pipeline_data(backend, None, *(), **{key: val})
@@ -594,15 +594,10 @@ class PartialPipelineData(unittest.TestCase):
 
         self.assertIsNotNone(result.partial)
         assert result.partial is not None
-        self.assertEqual(
-            result.partial.kwargs["request"]["partial_token"], "external-token"
-        )
-        self.assertEqual(
-            result.partial.kwargs["request"]["verification_code"], "123456"
-        )
-        self.assertEqual(
-            result.partial.kwargs["request"]["partial_pipeline_confirm"], "1"
-        )
+        assert result.partial.request_data is not None
+        self.assertEqual(result.partial.request_data["partial_token"], "external-token")
+        self.assertEqual(result.partial.request_data["verification_code"], "123456")
+        self.assertEqual(result.partial.request_data["partial_pipeline_confirm"], "1")
 
     def test_confirmed_same_session_resume_uses_pending_request_data(self) -> None:
         backend = self._backend(
@@ -624,16 +619,39 @@ class PartialPipelineData(unittest.TestCase):
 
         self.assertIsNotNone(result.partial)
         assert result.partial is not None
-        self.assertEqual(
-            result.partial.kwargs["request"]["partial_token"], "session-token"
+        assert result.partial.request_data is not None
+        self.assertEqual(result.partial.request_data["partial_token"], "session-token")
+        self.assertEqual(result.partial.request_data["verification_code"], "123456")
+
+    def test_confirmation_data_keeps_current_field_precedence(self) -> None:
+        backend = self._backend(
+            request_data={
+                "partial_pipeline_confirm": "1",
+                "verification_code": "current",
+            },
+            session_id=None,
+            pending_resume={
+                "token": "external-token",
+                "request": {
+                    "partial_token": "external-token",
+                    "verification_code": "saved",
+                },
+            },
+            partial_id="external-token",
+            partial_data={PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME: True},
         )
-        self.assertEqual(
-            result.partial.kwargs["request"]["verification_code"], "123456"
-        )
+        result = partial_pipeline_result(backend)
+        self.assertIsNotNone(result.partial)
+        assert result.partial is not None
+        assert result.partial.request_data is not None
+        self.assertEqual(result.partial.request_data["verification_code"], "current")
+        self.assertNotIn("request", result.partial.kwargs)
 
     def test_clean_pipeline_when_uid_does_not_match(self) -> None:
         backend = self._backend({"uid": "foo@example.com"})
-        backend.strategy.request_data.return_value = {backend.ID_KEY: "bar@example.com"}
+        backend.strategy.get_request_data.return_value = {
+            backend.ID_KEY: "bar@example.com"
+        }
         key, val = ("foo", "bar")
         partial = partial_pipeline_data(backend, None, *(), **{key: val})
         self.assertIsNone(partial)
@@ -665,7 +683,7 @@ class PartialPipelineData(unittest.TestCase):
         backend = self._backend({"uid": email})
         # Configure a different ID_KEY via id_key() method
         backend.id_key.return_value = "custom_id"
-        backend.strategy.request_data.return_value = {"custom_id": email}
+        backend.strategy.get_request_data.return_value = {"custom_id": email}
         key, val = ("foo", "bar")
         partial = cast(
             "PartialMixin", partial_pipeline_data(backend, None, *(), **{key: val})
@@ -696,7 +714,7 @@ class PartialPipelineData(unittest.TestCase):
 
         strategy = Mock()
         strategy.request = None
-        strategy.request_data.return_value = request_data or {}
+        strategy.get_request_data.return_value = request_data or {}
         strategy.to_session_value.side_effect = lambda value: value
         strategy.from_session_value.side_effect = lambda value: value
         session_values = {

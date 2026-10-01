@@ -57,9 +57,10 @@ class ShopifyOAuth2(BaseOAuth2):
         scope = self.get_scope()
         state = self.get_or_create_state()
         redirect_uri = self.get_redirect_uri(state)
-        session = shopify.Session(
-            self.data.get("shop").strip(), version=self.shopify_api_version
-        )
+        shop = self.data.get("shop")
+        if not shop:
+            raise AuthMissingParameter(self, "shop")
+        session = shopify.Session(shop.strip(), version=self.shopify_api_version)
         return session.create_permission_url(
             scope=scope, redirect_uri=redirect_uri, state=state
         )

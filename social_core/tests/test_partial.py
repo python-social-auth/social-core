@@ -16,6 +16,7 @@ class PartialDecoratorTestCase(unittest.TestCase):
         self.mock_current_partial.data = {}
 
         self.mock_strategy = Mock()
+        self.mock_strategy.request_data.return_value = {}
         self.mock_backend = Mock()
         self.mock_pipeline_index = Mock()
         self.mock_partial_store = Mock()
