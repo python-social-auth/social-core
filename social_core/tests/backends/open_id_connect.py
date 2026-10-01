@@ -3,7 +3,8 @@ from __future__ import annotations
 import datetime
 import json
 from calendar import timegm
-from typing import Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from unittest.mock import patch
 from urllib.parse import urlparse
 
 import jwt
@@ -15,6 +16,9 @@ from social_core.exceptions import AuthTokenError
 from social_core.utils import parse_qs
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
+
+if TYPE_CHECKING:
+    from social_core.storage import PartialMixin
 
 JWK_KEY = {
     "kty": "RSA",
@@ -38,6 +42,7 @@ JWK_KEY = {
 
 JWK_PUBLIC_KEY = {key: value for key, value in JWK_KEY.items() if key != "d"}
 STORED_ID_TOKEN_CONTEXT_KEY = "_oidc_id_token_context"
+PARTIAL_ID_TOKEN_KEY = "_oidc_validated_id_token"
 OpenIdConnectAuthT = TypeVar("OpenIdConnectAuthT", bound=OpenIdConnectAuth)
 
 
@@ -211,6 +216,35 @@ class OpenIdConnectTest(
         }
         user = self.do_login()
         return user.social[0]
+
+    def resume_partial_pipeline(self, partial: PartialMixin):
+        # Model database serialization and a new backend on every request.
+        partial.data = json.loads(json.dumps(partial.data))
+        backend = type(self.backend)(
+            self.strategy, redirect_uri=self.backend.redirect_uri
+        )
+        self.assertIsNone(backend.id_token)
+        claims = self.backend.id_token
+        result = backend.continue_pipeline(partial)
+        self.assertEqual(backend.id_token, claims)
+        return result
+
+    def do_partial_pipeline(self):
+        with patch.object(
+            self.backend, "continue_pipeline", side_effect=self.resume_partial_pipeline
+        ):
+            user = super().do_partial_pipeline()
+        claims = self.backend.id_token
+        assert claims is not None
+        self.assertEqual(
+            user.social[0].extra_data[STORED_ID_TOKEN_CONTEXT_KEY],
+            {
+                claim: claims[claim]
+                for claim in ("iss", "sub", "aud", "auth_time", "nonce")
+                if claim in claims
+            },
+        )
+        return user
 
     def refresh_response(self, **id_token_kwargs) -> str:
         return self.prepare_access_token_body(

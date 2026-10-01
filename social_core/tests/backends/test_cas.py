@@ -72,6 +72,9 @@ class CASOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
     def test_everything_works(self) -> None:
         self.do_login()
 
+    def test_partial_pipeline(self) -> None:
+        self.do_partial_pipeline()
+
     def test_configured_id_key_uses_raw_attribute(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_CAS_ID_KEY": "preferred_username"})
 
