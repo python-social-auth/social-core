@@ -12,10 +12,19 @@ from social_core.exceptions import (
     AuthConnectionError,
     AuthForbidden,
     AuthMissingParameter,
+    AuthStateForbidden,
+    AuthStateMissing,
     AuthUnknownError,
 )
 from social_core.registry import REGISTRY
-from social_core.utils import module_member, parse_qs, social_logger, user_agent
+from social_core.utils import (
+    constant_time_compare,
+    module_member,
+    parse_qs,
+    social_logger,
+    user_agent,
+    user_is_authenticated,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Iterator, Mapping
@@ -29,7 +38,14 @@ if TYPE_CHECKING:
 
 class BaseAuth:
     """A authentication backend that authenticates the user based on
-    the provider response"""
+    the provider response.
+
+    Set ``ASSOCIATION_ONLY`` to connect provider access to an authenticated local
+    user without updating their profile. Browser flows must start through
+    ``do_auth(user=...)`` and validate callbacks with
+    ``validate_association_state()`` before processing provider credentials.
+    Authentication and disconnect partials remain bound to that local user.
+    """
 
     name = ""  # provider name, it's stored in database
     supports_inactive_user = False  # Django auth
@@ -39,6 +55,7 @@ class BaseAuth:
     REQUIRES_EMAIL_VALIDATION = False
     REQUIRES_USER_ID: bool = False
     SEND_USER_AGENT = True
+    ASSOCIATION_ONLY = False
 
     def __init__(
         self, strategy: BaseStrategy | None = None, redirect_uri: str | None = None
@@ -64,9 +81,65 @@ class BaseAuth:
         return self.strategy.setting(name, default=default, backend=self)
 
     def prepare_auth(self, user: UserProtocol | None = None) -> None:
-        """Prepare backend-specific validation or state before authentication starts."""
+        """Bind association-only authorization to an authenticated local user."""
+        if self.ASSOCIATION_ONLY:
+            user = self.require_association_user(user)
+            self.strategy.session_set(
+                f"{self.name}_state",
+                {"state": self.strategy.random_string(32), "user_id": str(user.id)},
+            )
+
+    def require_association_user(self, user: UserProtocol | None) -> UserProtocol:
+        """Require an authenticated local user for an association-only flow."""
+        if user is None or not user_is_authenticated(user):
+            raise AuthForbidden(self, "Association requires an authenticated user")
+        return user
+
+    def get_association_state(self) -> str:
+        """Return the token from a prepared, user-bound authorization context."""
+        context = self.strategy.session_get(f"{self.name}_state")
+        if not isinstance(context, dict):
+            raise AuthStateMissing(self, "state")
+        state = context.get("state")
+        if not isinstance(state, str) or not state:
+            raise AuthStateMissing(self, "state")
+        return state
+
+    def validate_association_state(
+        self, request_state: Any, user: UserProtocol | None = None
+    ) -> str:
+        """Validate and consume authorization state bound to the current user."""
+        if not request_state:
+            raise AuthMissingParameter(self, "state")
+        state = self.get_association_state()
+        if not isinstance(request_state, (str, bytes)) or not constant_time_compare(
+            request_state, state
+        ):
+            raise AuthStateForbidden(self)
+        user = self.require_association_user(user)
+        context = self.strategy.session_get(f"{self.name}_state")
+        if context.get("user_id") != str(user.id):
+            raise AuthForbidden(self, "Association user mismatch")
+        self.strategy.session_pop(f"{self.name}_state")
+        return state
+
+    def association_user_id_key(self, pipeline_type: str = "authentication") -> str:
+        """Name of the initiator binding saved in pipeline arguments."""
+        operation = "disconnect" if pipeline_type == "disconnect" else "association"
+        return f"{self.name}_{operation}_user_id"
+
+    def _bind_association_user(
+        self, kwargs: dict[str, Any], pipeline_type: str = "authentication"
+    ) -> None:
+        user = self.require_association_user(kwargs.get("user"))
+        key = self.association_user_id_key(pipeline_type)
+        if key in kwargs and kwargs[key] != str(user.id):
+            raise AuthForbidden(self, "Association user mismatch")
+        kwargs[key] = str(user.id)
 
     def start(self) -> HttpResponseProtocol:
+        if self.ASSOCIATION_ONLY:
+            self.get_association_state()
         if self.uses_redirect():
             return self.strategy.redirect(self.auth_url())
         return self.strategy.html(self.auth_html())
@@ -120,6 +193,8 @@ class BaseAuth:
         self.strategy = kwargs.get("strategy") or self.strategy
         self.redirect_uri = kwargs.get("redirect_uri") or self.redirect_uri
         self.data = self.strategy.request_data()
+        if self.ASSOCIATION_ONLY:
+            self._bind_association_user(kwargs)
         kwargs.setdefault("is_new", False)
         pipeline = self.strategy.get_pipeline(self)
         args, kwargs = self.strategy.clean_authenticate_args(*args, **kwargs)
@@ -143,6 +218,8 @@ class BaseAuth:
         return user
 
     def disconnect(self, *args, **kwargs) -> dict:
+        if self.ASSOCIATION_ONLY:
+            self._bind_association_user(kwargs, "disconnect")
         pipeline = self.strategy.get_disconnect_pipeline(self)
         kwargs["name"] = self.name
         kwargs["user_storage"] = self.strategy.storage.user
@@ -358,6 +435,11 @@ class BaseAuth:
         self, partial: PartialMixin, user: UserProtocol | None = None
     ) -> None:
         """Validate backend-specific requirements before resuming a pipeline."""
+        if self.ASSOCIATION_ONLY:
+            user = self.require_association_user(user)
+            key = self.association_user_id_key(partial.pipeline_type)
+            if partial.kwargs.get(key) != str(user.id):
+                raise AuthForbidden(self, "Association user mismatch")
 
     def auth_extra_arguments(self) -> dict[str, str]:
         """Return extra arguments needed on auth process.
