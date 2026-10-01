@@ -137,6 +137,7 @@ class AzureADB2COAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     ) -> str:
         body = {
             "token_type": "bearer",
+            "refresh_token": "foobar-refresh-token",
             "id_token": id_token or self.build_id_token(**overrides),
             "expires_in": self.EXPIRES_IN,
             "expires_on": self.EXPIRES_ON,

@@ -19,6 +19,7 @@ class PayPalOAuth2(BaseOAuth2):
     DEFAULT_SCOPE = ["openid", "profile"]
     REFRESH_TOKEN_METHOD = "POST"
     REDIRECT_STATE = False
+    EXTRA_DATA = [("refresh_token", "refresh_token")]
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         auth_header = {"Authorization": f"Bearer {access_token}"}
