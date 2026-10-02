@@ -8,7 +8,8 @@ import responses
 from cryptography.hazmat.primitives.asymmetric import rsa
 from jwt.algorithms import RSAAlgorithm
 
-from social_core.exceptions import AuthTokenError
+from social_core.exceptions import AuthProviderError, AuthResponseError
+from social_core.tests.exception_helpers import assert_auth_error
 from social_core.utils import get_querystring
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
@@ -162,7 +163,7 @@ class Auth0OAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         responses.add(responses.GET, self.jwks_url, json={})
         token = self.token_response()
 
-        with self.assertRaises(AuthTokenError):
+        with assert_auth_error(self, AuthResponseError, "invalid_claim"):
             self.backend.get_user_details(token)
         responses.replace(responses.GET, self.jwks_url, json={"keys": [JWK_PUBLIC_KEY]})
         self.assertEqual(self.backend.get_user_details(token)["user_id"], "123456")
@@ -279,12 +280,14 @@ class Auth0OAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
                             self.jwks_url,
                             body=requests.ReadTimeout("timed out"),
                         )
-                        expected_error: type[Exception] = requests.ReadTimeout
+                        expected_error: type[Exception] = AuthProviderError
+                        expected_code = "timeout"
                     else:
                         responses.replace(responses.GET, self.jwks_url, json={})
-                        expected_error = AuthTokenError
+                        expected_error = AuthResponseError
+                        expected_code = "invalid_claim"
 
-                    with self.assertRaises(expected_error):
+                    with assert_auth_error(self, expected_error, expected_code):
                         self.backend.get_user_details(rotated_token)
 
                     self.assertEqual(self.backend.get_user_details(token), details)
@@ -310,7 +313,7 @@ class Auth0OAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
             claims, jwt.PyJWK(JWK_KEY).key, algorithm="RS256"
         )
 
-        with self.assertRaises(AuthTokenError) as context:
+        with assert_auth_error(self, AuthResponseError, "invalid_claim") as context:
             self.backend.get_user_details(token)
 
         self.assertIsInstance(context.exception.__cause__, jwt.InvalidAudienceError)
@@ -323,7 +326,7 @@ class Auth0OAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         header, payload, _signature = token["id_token"].split(".")
         token["id_token"] = f"{header}.{payload}.AAAA"
 
-        with self.assertRaises(AuthTokenError) as context:
+        with assert_auth_error(self, AuthResponseError, "invalid_signature") as context:
             self.backend.get_user_details(token)
 
         self.assertIsInstance(context.exception.__cause__, jwt.InvalidSignatureError)
@@ -339,7 +342,7 @@ class Auth0OAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
             claims, unknown_key, algorithm="RS256", headers={"kid": "unknown-key"}
         )
 
-        with self.assertRaises(AuthTokenError):
+        with assert_auth_error(self, AuthResponseError, "invalid_signature"):
             self.backend.get_user_details(token)
 
         self.assertEqual(len(responses.calls), 2)
@@ -363,10 +366,7 @@ class Auth0OAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     def test_missing_configured_token_claim_raises_token_error(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_AUTH0_ID_KEY": "missing_claim"})
 
-        with self.assertRaisesRegex(
-            AuthTokenError,
-            "Missing configured user ID claim missing_claim",
-        ):
+        with assert_auth_error(self, AuthResponseError, "missing_claim"):
             self.do_login()
 
     def test_default_scope(self) -> None:
@@ -386,14 +386,13 @@ class Auth0OAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     def test_missing_id_token_raises_auth_token_error(self) -> None:
         with (
             patch.object(self.backend, "get_json") as get_json,
-            self.assertRaisesRegex(
-                AuthTokenError,
-                "Token error: Missing id_token in Auth0 token response",
-            ),
+            assert_auth_error(self, AuthResponseError, "missing_claim") as caught,
         ):
             self.backend.get_user_details({})
 
         get_json.assert_not_called()
+        self.assertEqual(caught.exception.claim, "id_token")
+        self.assertEqual(caught.exception.stage, "token_validation")
 
     def test_invalid_signature_raises_auth_token_error(self) -> None:
         assert self.access_token_body is not None
@@ -404,7 +403,7 @@ class Auth0OAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
             patch.object(
                 self.backend, "get_json", return_value={"keys": [JWK_PUBLIC_KEY]}
             ),
-            self.assertRaises(AuthTokenError) as context,
+            self.assertRaises(AuthResponseError) as context,
         ):
             self.backend.get_user_details({"id_token": f"{header}.{payload}.AAAA"})
 
@@ -416,7 +415,7 @@ class Auth0OAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
 
         with (
             patch.object(self.backend, "get_json", return_value={}),
-            self.assertRaises(AuthTokenError) as context,
+            self.assertRaises(AuthResponseError) as context,
         ):
             self.backend.get_user_details({"id_token": id_token})
 

@@ -2,7 +2,7 @@ from typing import Any, Literal
 
 import requests
 
-from social_core.exceptions import AuthFailed
+from social_core.exceptions import AuthProviderError, ErrorStage
 from social_core.utils import handle_http_errors
 
 from .oauth import BaseOAuth2
@@ -42,14 +42,28 @@ class UntappdOAuth2(BaseOAuth2):
             params["state"] = state
         return params
 
-    def process_error(self, data) -> None:
+    def process_error(self, data, *, stage: ErrorStage = "callback") -> None:
         """
         All errors from Untappd are contained in the 'meta' key of the
         response.
         """
+        super().process_error(data, stage=stage)
         response_code = data.get("meta", {}).get("http_code")
         if response_code is not None and response_code != requests.codes.ok:
-            raise AuthFailed(self, data["meta"]["error_detail"])
+            code = (
+                "rate_limited"
+                if response_code == 429
+                else "unavailable"
+                if response_code >= 500
+                else "http_error"
+            )
+            raise AuthProviderError(
+                self,
+                data["meta"].get("error_detail"),
+                code=code,
+                status_code=response_code,
+                stage=stage,
+            )
 
     @handle_http_errors
     def auth_complete(self, *args, **kwargs):
@@ -74,7 +88,7 @@ class UntappdOAuth2(BaseOAuth2):
             },
         )
 
-        self.process_error(response)
+        self.process_error(response, stage="token_exchange")
 
         # Both the access_token and the rest of the response are
         # buried in the 'response' key
@@ -114,7 +128,7 @@ class UntappdOAuth2(BaseOAuth2):
         response = self.get_json(
             self.USER_INFO_URL, params={"access_token": access_token, "compact": "true"}
         )
-        self.process_error(response)
+        self.process_error(response, stage="user_info")
 
         # The response data is buried in the 'response' key
         return response["response"]

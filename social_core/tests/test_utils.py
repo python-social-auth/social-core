@@ -6,8 +6,9 @@ from unittest.mock import Mock, patch
 import requests
 
 from social_core.backends.base import BaseAuth
-from social_core.exceptions import AuthForbidden, AuthMissingParameter
+from social_core.exceptions import AuthProviderError, AuthResponseError
 from social_core.pipeline.utils import partial_prepare
+from social_core.tests.exception_helpers import assert_auth_error
 from social_core.utils import (
     PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME,
     PARTIAL_TOKEN_PENDING_CONFIRMATION_SESSION_NAME,
@@ -867,10 +868,13 @@ class HandleHttpErrorsTest(unittest.TestCase):
 
         for status_code in (401, 403):
             with self.subTest(status_code=status_code):
-                response = Mock(status_code=status_code, text="Access denied")
+                response = Mock(
+                    spec=requests.Response, status_code=status_code, headers={}
+                )
+                response.json.side_effect = ValueError
                 error = requests.HTTPError(response=response)
 
-                with self.assertRaises(AuthForbidden) as context:
+                with self.assertRaises(AuthProviderError) as context:
                     fail(backend, error)
 
                 self.assertIs(context.exception.__cause__, error)
@@ -938,6 +942,6 @@ class IdKeyConfigurabilityTest(unittest.TestCase):
                         requires_user_id=requires_user_id,
                         response=response,
                     ),
-                    self.assertRaisesRegex(AuthMissingParameter, "missing_id"),
+                    assert_auth_error(self, AuthResponseError, "missing_claim"),
                 ):
                     backend.get_user_id({}, response)

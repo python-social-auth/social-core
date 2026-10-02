@@ -1,6 +1,8 @@
 from typing import Any
 from urllib.parse import urlencode
 
+from social_core.exceptions import SocialAuthBaseException
+
 from .oauth import BaseOAuth2
 
 
@@ -39,6 +41,8 @@ class SalesforceOAuth2(BaseOAuth2):
         url = f"{user_id_url}?{urlencode({'access_token': access_token})}"
         try:
             return self.get_json(url)
+        except SocialAuthBaseException:
+            raise
         except ValueError:
             return None
 

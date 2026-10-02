@@ -8,7 +8,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, cast
 from urllib.parse import urljoin
 
-from social_core.exceptions import AuthMissingParameter
+from social_core.exceptions import AuthConfigurationError
 from social_core.utils import append_slash
 
 from .github import GithubOAuth2, GithubOrganizationOAuth2, GithubTeamOAuth2
@@ -21,7 +21,12 @@ class GithubEnterpriseMixin:
     def _required_setting(self, name: str) -> str:
         value = cast("GithubOAuth2", self).setting(name)
         if not value:
-            raise AuthMissingParameter(cast("BaseAuth", self), name)
+            raise AuthConfigurationError(
+                cast("BaseAuth", self),
+                parameter=name,
+                code="missing_setting",
+                stage="callback",
+            )
         return cast("str", value)
 
     def api_url(self):

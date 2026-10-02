@@ -5,7 +5,7 @@ from hashlib import sha256
 from typing import cast
 from urllib.parse import urlencode
 
-from social_core.exceptions import AuthException, AuthMissingParameter, AuthTokenError
+from social_core.exceptions import AuthInputError, AuthResponseError
 from social_core.utils import parse_qs
 
 from .base import BaseAuth
@@ -75,7 +75,9 @@ class DiscourseAuth(BaseAuth):
 
         sso_params = request_data.get("sso")
         if not sso_params:
-            raise AuthMissingParameter(self, "sso")
+            raise AuthInputError(
+                self, parameter="sso", code="missing_parameter", stage="callback"
+            )
         sso_signature = request_data.get("sig")
 
         param_signature = hmac.new(
@@ -83,7 +85,12 @@ class DiscourseAuth(BaseAuth):
         ).hexdigest()
 
         if not hmac.compare_digest(str(sso_signature), str(param_signature)):
-            raise AuthException(self, "Could not verify discourse login")
+            raise AuthResponseError(
+                self,
+                "Could not verify discourse login",
+                code="invalid_signature",
+                stage="callback",
+            )
 
         decoded_params = urlsafe_b64decode(sso_params.encode("utf8")).decode("ascii")
 
@@ -93,7 +100,12 @@ class DiscourseAuth(BaseAuth):
         if nonce_obj:
             self.delete_nonce(nonce_obj)
         else:
-            raise AuthTokenError(self, "Incorrect id_token: nonce")
+            raise AuthResponseError(
+                self,
+                "Incorrect id_token: nonce",
+                code="nonce_mismatch",
+                stage="callback",
+            )
 
         kwargs.update({"sso": "", "sig": "", "backend": self, "response": response})
         return self.strategy.authenticate(*args, **kwargs)

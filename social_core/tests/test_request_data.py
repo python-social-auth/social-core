@@ -6,7 +6,7 @@ from types import MappingProxyType
 from unittest.mock import patch
 
 from social_core.backends.base import BaseAuth
-from social_core.exceptions import AuthForbidden
+from social_core.exceptions import AuthPolicyError
 from social_core.pipeline.utils import partial_load, partial_prepare
 from social_core.utils import PARTIAL_TOKEN_SESSION_NAME, partial_pipeline_result
 
@@ -208,14 +208,14 @@ class PipelineRequestDataTest(unittest.TestCase):
         partial = partial_prepare(self.strategy, self.backend, 1)
         with (
             patch.object(self.backend, "run_pipeline") as run_pipeline,
-            self.assertRaises(AuthForbidden),
+            self.assertRaises(AuthPolicyError),
         ):
             self.backend.continue_disconnect_pipeline(partial)
         run_pipeline.assert_not_called()
         partial.data["pipeline_type"] = "disconnect"
         with (
             patch.object(self.strategy, "authenticate") as authenticate,
-            self.assertRaises(AuthForbidden),
+            self.assertRaises(AuthPolicyError),
         ):
             self.backend.continue_pipeline(partial)
         authenticate.assert_not_called()

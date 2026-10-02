@@ -1,208 +1,344 @@
+"""Authentication failures with stable, framework-independent recovery metadata."""
+
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Literal
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from social_core.backends.base import BaseAuth
+
+ErrorSource = Literal[
+    "configuration",
+    "request",
+    "session",
+    "provider_response",
+    "local_policy",
+    "storage",
+    "unknown",
+]
+ErrorStage = Literal[
+    "begin",
+    "callback",
+    "token_exchange",
+    "token_validation",
+    "user_info",
+    "pipeline",
+    "refresh",
+    "disconnect",
+    "unknown",
+]
+RecoveryAction = Literal[
+    "none",
+    "correct_input",
+    "restart_login",
+    "reauthenticate",
+    "retry_later",
+    "check_provider_profile",
+    "use_existing_account",
+    "contact_administrator",
+]
+
+# Safe defaults only: provider descriptions and identifiers belong in detail/context.
+REASONS: dict[str, tuple[str, ErrorSource, RecoveryAction]] = {
+    "missing_setting": (
+        "Authentication configuration is incomplete.",
+        "configuration",
+        "contact_administrator",
+    ),
+    "invalid_setting": (
+        "Authentication configuration is invalid.",
+        "configuration",
+        "contact_administrator",
+    ),
+    "unsupported_feature": (
+        "The authentication integration does not support this feature.",
+        "configuration",
+        "contact_administrator",
+    ),
+    "backend_missing": (
+        "The authentication backend is unavailable.",
+        "configuration",
+        "contact_administrator",
+    ),
+    "missing_parameter": (
+        "A required authentication parameter is missing.",
+        "request",
+        "correct_input",
+    ),
+    "invalid_parameter": (
+        "An authentication parameter is invalid.",
+        "request",
+        "correct_input",
+    ),
+    "session_context_missing": (
+        "The authentication session is unavailable. Please restart login.",
+        "session",
+        "restart_login",
+    ),
+    "state_mismatch": (
+        "The authentication response does not match the session.",
+        "session",
+        "restart_login",
+    ),
+    "user_mismatch": (
+        "The authentication session belongs to a different user.",
+        "session",
+        "restart_login",
+    ),
+    "malformed_response": (
+        "The authentication provider returned an invalid response.",
+        "provider_response",
+        "contact_administrator",
+    ),
+    "missing_claim": (
+        "The authentication response is missing a required field.",
+        "provider_response",
+        "contact_administrator",
+    ),
+    "invalid_claim": (
+        "An authentication response field could not be verified.",
+        "provider_response",
+        "contact_administrator",
+    ),
+    "invalid_signature": (
+        "The authentication response signature could not be verified.",
+        "provider_response",
+        "contact_administrator",
+    ),
+    "nonce_mismatch": (
+        "The authentication response could not be matched to the request.",
+        "provider_response",
+        "restart_login",
+    ),
+    "response_expired": (
+        "The authentication response has expired.",
+        "provider_response",
+        "restart_login",
+    ),
+    "response_not_yet_valid": (
+        "The authentication response is not yet valid.",
+        "provider_response",
+        "contact_administrator",
+    ),
+    "invalid_expiry": (
+        "Stored authentication expiry data is invalid.",
+        "storage",
+        "contact_administrator",
+    ),
+    "profile_email_missing": (
+        "The provider did not supply an email address.",
+        "provider_response",
+        "check_provider_profile",
+    ),
+    "authorization_code_rejected": (
+        "The authorization code was rejected. Please restart login.",
+        "provider_response",
+        "restart_login",
+    ),
+    "credential_rejected": (
+        "The authentication credentials were rejected.",
+        "provider_response",
+        "reauthenticate",
+    ),
+    "token_revoked": (
+        "The authentication token has been revoked.",
+        "provider_response",
+        "reauthenticate",
+    ),
+    "reauthentication_required": (
+        "Please authenticate with the provider again.",
+        "storage",
+        "reauthenticate",
+    ),
+    "email_verification_rejected": (
+        "The email confirmation could not be verified.",
+        "request",
+        "restart_login",
+    ),
+    "authentication_disallowed": (
+        "Authentication is not allowed by the application policy.",
+        "local_policy",
+        "contact_administrator",
+    ),
+    "membership_required": (
+        "The account does not have the required membership.",
+        "local_policy",
+        "contact_administrator",
+    ),
+    "disconnect_disallowed": (
+        "This account cannot be disconnected without another authentication method.",
+        "local_policy",
+        "none",
+    ),
+    "identity_in_use": (
+        "This identity is already associated with another account.",
+        "storage",
+        "use_existing_account",
+    ),
+    "email_in_use": (
+        "This email address is already in use.",
+        "storage",
+        "use_existing_account",
+    ),
+    "username_in_use": (
+        "This username is already in use.",
+        "storage",
+        "use_existing_account",
+    ),
+    "identifier_migration_conflict": (
+        "The stored authentication identity could not be migrated safely.",
+        "storage",
+        "contact_administrator",
+    ),
+    "connection_failed": (
+        "The authentication provider could not be reached.",
+        "provider_response",
+        "retry_later",
+    ),
+    "timeout": (
+        "The authentication provider did not respond in time.",
+        "provider_response",
+        "retry_later",
+    ),
+    "tls_error": (
+        "A secure connection to the authentication provider could not be established.",
+        "provider_response",
+        "contact_administrator",
+    ),
+    "rate_limited": (
+        "The authentication provider is temporarily limiting requests.",
+        "provider_response",
+        "retry_later",
+    ),
+    "unavailable": (
+        "The authentication provider is temporarily unavailable.",
+        "provider_response",
+        "retry_later",
+    ),
+    "http_error": (
+        "The authentication provider rejected the request.",
+        "provider_response",
+        "contact_administrator",
+    ),
+    "authorization_declined": (
+        "Authentication process canceled",
+        "provider_response",
+        "none",
+    ),
+    "unknown_error": (
+        "Authentication could not be completed.",
+        "unknown",
+        "contact_administrator",
+    ),
+}
 
 
 class SocialAuthBaseException(ValueError):
-    """Base class for pipeline exceptions."""
+    """Broad catch boundary for social-auth failures, including configuration."""
+
+    default_code = "unknown_error"
+
+    def __init__(  # noqa: PLR0913
+        self,
+        backend: BaseAuth | None = None,
+        *details: object,
+        code: str | None = None,
+        source: ErrorSource | None = None,
+        stage: ErrorStage = "unknown",
+        recovery: RecoveryAction | None = None,
+        parameter: str | None = None,
+        claim: str | None = None,
+        provider_code: str | int | None = None,
+        status_code: int | None = None,
+        retry_after: str | None = None,
+        context: Mapping[str, Any] | None = None,
+    ) -> None:
+        self.backend = backend
+        self.code = code or self.default_code
+        message, default_source, default_recovery = REASONS.get(
+            self.code, REASONS[self.default_code]
+        )
+        self.source = source or default_source
+        self.stage = stage
+        self.recovery = recovery or default_recovery
+        self.parameter = parameter
+        self.claim = claim
+        self.provider_code = provider_code
+        self.status_code = status_code
+        self.retry_after = retry_after
+        self.detail = " ".join(str(detail) for detail in details)
+        self.context = dict(context or {})
+        super().__init__(message)
+
+    def public_metadata(self) -> dict[str, str]:
+        """Return non-identifying fields for client transports."""
+        return {
+            "error_code": self.code,
+            "error_source": self.source,
+            "error_stage": self.stage,
+            "error_recovery": self.recovery,
+        }
 
 
-class SocialAuthImproperlyConfiguredError(SocialAuthBaseException):
-    """Raised when configuration is invalid."""
+class AuthConfigurationError(SocialAuthBaseException):
+    """The integration needs configuration or implementation changes."""
 
-
-class StrategyMissingFeatureError(SocialAuthBaseException):
-    """Strategy does not support this."""
-
-    def __init__(self, strategy_name: str, feature_name: str) -> None:
-        self.strategy_name = strategy_name
-        self.feature_name = feature_name
-        super().__init__()
-
-    def __str__(self) -> str:
-        return f"Strategy {self.strategy_name} does not support {self.feature_name}"
-
-
-class DefaultStrategyMissingError(SocialAuthBaseException):
-    """Default strategy is not configured."""
-
-    def __str__(self) -> str:
-        return "Default strategy is not configured"
-
-
-class StrategyMissingBackendError(SocialAuthBaseException):
-    """Strategy storage backend is not configured."""
-
-    def __str__(self) -> str:
-        return "Strategy storage backend is not configured"
-
-
-class WrongBackend(SocialAuthBaseException):
-    def __init__(self, backend_name: str) -> None:
-        self.backend_name = backend_name
-        super().__init__()
-
-    def __str__(self) -> str:
-        return f'Incorrect authentication service "{self.backend_name}"'
-
-
-class MissingBackend(WrongBackend):
-    def __str__(self) -> str:
-        return f'Missing backend "{self.backend_name}" entry'
-
-
-class NotAllowedToDisconnect(SocialAuthBaseException):
-    """User is not allowed to disconnect it's social account."""
-
-    def __str__(self) -> str:
-        return "This account is not allowed to be disconnected."
+    default_code = "invalid_setting"
 
 
 class AuthException(SocialAuthBaseException):
-    """Auth process exception."""
-
-    def __init__(self, backend: BaseAuth, *args, **kwargs) -> None:
-        self.backend = backend
-        super().__init__(*args, **kwargs)
+    """Broad catch boundary for authentication-flow failures."""
 
 
-class AuthFailed(AuthException):
-    """Auth process failed for some reason."""
+class AuthInputError(AuthException):
+    """The application or browser supplied missing or invalid input."""
 
-    def __str__(self) -> str:
-        msg = super().__str__()
-        if msg == "access_denied":
-            return "Authentication process was canceled"
-        return f"Authentication failed: {msg}"
+    default_code = "invalid_parameter"
+
+
+class AuthSessionError(AuthException):
+    """Authentication cannot be bound to its initiating session or user."""
+
+    default_code = "session_context_missing"
+
+
+class AuthResponseError(AuthException):
+    """A provider response cannot be parsed or validated."""
+
+    default_code = "malformed_response"
+
+
+class AuthCredentialError(AuthException):
+    """Credentials were rejected or another provider login is required."""
+
+    default_code = "credential_rejected"
+
+
+class AuthPolicyError(AuthException):
+    """A local authentication or disconnect policy rejected the operation."""
+
+    default_code = "authentication_disallowed"
+
+
+class AuthAssociationError(AuthException):
+    """A local account or stored authentication identity conflicts."""
+
+    default_code = "identity_in_use"
+
+
+class AuthProviderError(AuthException):
+    """A provider request failed at the transport or HTTP boundary."""
+
+    default_code = "http_error"
 
 
 class AuthCanceled(AuthException):
-    """Auth process was canceled by user."""
+    """Authorization was explicitly declined or canceled."""
 
-    def __init__(self, *args, **kwargs) -> None:
-        self.response = kwargs.pop("response", None)
-        super().__init__(*args, **kwargs)
-
-    def __str__(self) -> str:
-        msg = super().__str__()
-        if msg:
-            return f"Authentication process canceled: {msg}"
-        return "Authentication process canceled"
+    default_code = "authorization_declined"
 
 
 class AuthUnknownError(AuthException):
-    """Unknown auth process error."""
-
-    def __str__(self) -> str:
-        msg = super().__str__()
-        return f"An unknown error happened while authenticating {msg}"
-
-
-class AuthTokenError(AuthException):
-    """Auth token error."""
-
-    def __str__(self) -> str:
-        msg = super().__str__()
-        return f"Token error: {msg}"
-
-
-class AuthReauthenticationRequired(AuthTokenError):
-    """The stored authentication context cannot establish token continuity."""
-
-    def __init__(self, backend: BaseAuth) -> None:
-        super().__init__(backend, "reauthentication required")
-
-
-class AuthMissingParameter(AuthException):
-    """Missing parameter needed to start or complete the process."""
-
-    def __init__(self, backend: BaseAuth, parameter: str, *args, **kwargs) -> None:
-        self.parameter = parameter
-        super().__init__(backend, *args, **kwargs)
-
-    def __str__(self) -> str:
-        return f"Missing needed parameter {self.parameter}"
-
-
-class AuthInvalidParameter(AuthMissingParameter):
-    """Invalid value for parameter to start or complete the process."""
-
-    def __str__(self) -> str:
-        return f"Invalid value for parameter {self.parameter}"
-
-
-class AuthNotImplementedParameter(AuthMissingParameter):
-    """Optional parameter not implemented to start or complete the process."""
-
-    def __str__(self) -> str:
-        return f"Not implemented parameter {self.parameter}"
-
-
-class AuthStateMissing(AuthException):
-    """State parameter is incorrect."""
-
-    def __str__(self) -> str:
-        return "Session value state missing."
-
-
-class AuthStateForbidden(AuthException):
-    """State parameter is incorrect."""
-
-    def __str__(self) -> str:
-        return "Wrong state parameter given."
-
-
-class AuthAlreadyAssociated(AuthException):
-    """A different user has already associated the target social account"""
-
-    def __str__(self) -> str:
-        return "This account is already in use."
-
-
-class AuthTokenRevoked(AuthException):
-    """User revoked the access_token in the provider."""
-
-    def __str__(self) -> str:
-        return "User revoke access to the token"
-
-
-class AuthForbidden(AuthException):
-    """Authentication for this user is forbidden"""
-
-    def __str__(self) -> str:
-        return "Your credentials aren't allowed"
-
-
-class AuthUnreachableProvider(AuthException):
-    """Cannot reach the provider"""
-
-    def __str__(self) -> str:
-        return "The authentication provider could not be reached"
-
-
-class InvalidEmail(AuthException):
-    def __str__(self) -> str:
-        return "Email couldn't be validated"
-
-
-class AuthConnectionError(AuthException):
-    """Connection error duing authentication."""
-
-    def __str__(self) -> str:
-        msg = super().__str__()
-        return f"Connection error: {msg}"
-
-
-class InvalidExpiryValue(SocialAuthBaseException):
-    """Invalid expiry value in extra_data."""
-
-    def __init__(self, field_name: str, value: object) -> None:
-        self.field_name = field_name
-        self.value = value
-        super().__init__()
-
-    def __str__(self) -> str:
-        return f"Invalid expiry value for field '{self.field_name}': {self.value}"
+    """The authentication failure has no known structured classification."""

@@ -1,8 +1,6 @@
 import unittest
 
-from social_core.exceptions import (
-    DefaultStrategyMissingError,
-)
+from social_core.exceptions import AuthConfigurationError
 from social_core.registry import REGISTRY
 
 from .strategy import TestStrategy
@@ -10,7 +8,7 @@ from .strategy import TestStrategy
 
 class StrategyRegistryTestCase(unittest.TestCase):
     def test_missing(self) -> None:
-        with self.assertRaises(DefaultStrategyMissingError):
+        with self.assertRaises(AuthConfigurationError):
             self.assertIsNotNone(REGISTRY.default_strategy)
 
     def test_set(self) -> None:

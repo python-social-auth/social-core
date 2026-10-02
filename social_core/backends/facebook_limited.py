@@ -5,7 +5,7 @@ Facebook Limited Login backend, docs at:
 
 from typing import Any
 
-from social_core.exceptions import AuthTokenError
+from social_core.exceptions import AuthResponseError
 
 from .open_id_connect import OpenIdConnectAuth
 
@@ -41,7 +41,9 @@ class FacebookLimitedLogin(OpenIdConnectAuth):
         ):
             raw_jwt = kwargs.get("response", {}).get("access_token")
             if not raw_jwt:
-                raise AuthTokenError(self, "Missing access_token")
+                raise AuthResponseError(
+                    self, "Missing access_token", code="missing_claim", stage="callback"
+                )
             self.id_token = self.validate_and_return_id_token(raw_jwt, "")
         kwargs["response"] = self.id_token.copy()
         return super().authenticate(*args, **kwargs)
@@ -69,8 +71,8 @@ class FacebookLimitedLogin(OpenIdConnectAuth):
     def validate_claims(self, id_token) -> None:
         try:
             super().validate_claims(id_token)
-        except AuthTokenError as e:
-            if "Incorrect id_token: nonce" in e.args:
+        except AuthResponseError as e:
+            if e.code == "nonce_mismatch":
                 # Ignore errors about nonce. We can't validate it since it's not generated server-side.
                 return
             raise

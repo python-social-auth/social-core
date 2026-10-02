@@ -2,7 +2,7 @@ from urllib.parse import urlencode
 
 from requests import HTTPError
 
-from social_core.exceptions import AuthCanceled
+from social_core.exceptions import AuthProviderError
 
 from .oauth import OAuth1AuthUrlTestMixin, OAuth1Test
 
@@ -39,23 +39,25 @@ class EvernoteOAuth1CanceledTest(EvernoteOAuth1Test):
     access_token_status = 401
 
     def test_login(self) -> None:
-        with self.assertRaises(AuthCanceled) as cm:
+        with self.assertRaises(AuthProviderError) as cm:
             self.do_login()
-        self.assertIsNotNone(cm.exception.response)
+        assert isinstance(cm.exception.__cause__, HTTPError)
+        self.assertIsNotNone(cm.exception.__cause__.response)
 
     def test_partial_pipeline(self) -> None:
-        with self.assertRaises(AuthCanceled) as cm:
+        with self.assertRaises(AuthProviderError) as cm:
             self.do_partial_pipeline()
-        self.assertIsNotNone(cm.exception.response)
+        assert isinstance(cm.exception.__cause__, HTTPError)
+        self.assertIsNotNone(cm.exception.__cause__.response)
 
 
 class EvernoteOAuth1ErrorTest(EvernoteOAuth1Test):
     access_token_status = 500
 
     def test_login(self) -> None:
-        with self.assertRaises(HTTPError):
+        with self.assertRaises(AuthProviderError):
             self.do_login()
 
     def test_partial_pipeline(self) -> None:
-        with self.assertRaises(HTTPError):
+        with self.assertRaises(AuthProviderError):
             self.do_partial_pipeline()

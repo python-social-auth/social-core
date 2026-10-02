@@ -3,7 +3,8 @@ from unittest.mock import patch
 
 import jwt
 
-from social_core.exceptions import AuthException, AuthMissingParameter
+from social_core.exceptions import AuthException, AuthResponseError
+from social_core.tests.exception_helpers import assert_auth_error
 
 from .base import BaseBackendTest
 
@@ -39,6 +40,9 @@ class MediaWikiTest(BaseBackendTest):
             self.backend.get_user_details(response)
 
         self.assertIs(context.exception.__cause__, error)
+        self.assertIsInstance(context.exception, AuthResponseError)
+        self.assertEqual(context.exception.code, "invalid_claim")
+        self.assertEqual(context.exception.stage, "user_info")
 
     def test_configured_id_key_preserves_identity_claim(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_MEDIAWIKI_ID_KEY": "sub"})
@@ -73,7 +77,7 @@ class MediaWikiTest(BaseBackendTest):
             self.strategy.set_settings(
                 {"SOCIAL_AUTH_MEDIAWIKI_ID_KEY": "missing_claim"}
             )
-            with self.assertRaisesRegex(AuthMissingParameter, "missing_claim"):
+            with assert_auth_error(self, AuthResponseError, "missing_claim"):
                 self.backend.get_user_details(response)
 
         self.assertEqual(details["sub"], "stable-subject")

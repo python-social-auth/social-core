@@ -35,7 +35,7 @@ from __future__ import annotations
 from typing import Any, cast
 from uuid import UUID
 
-from social_core.exceptions import AuthMissingParameter, AuthTokenError
+from social_core.exceptions import AuthResponseError
 
 from .azuread import AzureADOAuth2
 
@@ -77,7 +77,9 @@ class AzureADTenantOAuth2(AzureADOAuth2):
 
         tenant_id = claims.get("tid")
         if not isinstance(tenant_id, str) or not tenant_id:
-            raise AuthMissingParameter(self, "tid")
+            raise AuthResponseError(
+                self, claim="tid", code="missing_claim", stage="token_validation"
+            )
 
         try:
             token_tenant_uuid = UUID(tenant_id)
@@ -85,7 +87,13 @@ class AzureADTenantOAuth2(AzureADOAuth2):
             token_tenant_uuid = None
 
         if configured_tenant_uuid != token_tenant_uuid:
-            raise AuthTokenError(self, "Token tenant does not match configured tenant")
+            raise AuthResponseError(
+                self,
+                "Token tenant does not match configured tenant",
+                code="invalid_claim",
+                claim="tid",
+                stage="token_validation",
+            )
 
 
 class AzureADV2TenantOAuth2(AzureADTenantOAuth2):

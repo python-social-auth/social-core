@@ -12,9 +12,11 @@ from typing import Any, Literal, cast
 
 from social_core.exceptions import (
     AuthCanceled,
-    AuthException,
-    AuthMissingParameter,
+    AuthInputError,
+    AuthProviderError,
+    AuthResponseError,
     AuthUnknownError,
+    ErrorStage,
 )
 from social_core.utils import constant_time_compare, handle_http_errors, parse_qs
 
@@ -85,11 +87,15 @@ class FacebookOAuth2(BaseOAuth2):
         version = self.setting("API_VERSION", API_VERSION)
         return self.get_json(self.USER_DATA_URL.format(version=version), params=params)
 
-    def process_error(self, data) -> None:
-        super().process_error(data)
+    def process_error(self, data, *, stage: ErrorStage = "callback") -> None:
+        super().process_error(data, stage=stage)
         if data.get("error_code"):
-            raise AuthCanceled(
-                self, data.get("error_message") or data.get("error_code")
+            provider_code = data["error_code"]
+            raise AuthProviderError(
+                self,
+                data.get("error_message"),
+                provider_code=provider_code,
+                stage=stage,
             )
 
     @handle_http_errors
@@ -97,7 +103,9 @@ class FacebookOAuth2(BaseOAuth2):
         """Completes login process, must return user instance"""
         self.process_error(self.data)
         if not self.data.get("code"):
-            raise AuthMissingParameter(self, "code")
+            raise AuthInputError(
+                self, parameter="code", code="missing_parameter", stage="callback"
+            )
         state = self.validate_state()
         key, secret = self.get_key_and_secret()
         response = self.request(
@@ -109,6 +117,7 @@ class FacebookOAuth2(BaseOAuth2):
                 "code": self.data["code"],
             },
             method=self.ACCESS_TOKEN_METHOD,
+            stage="token_exchange",
         )
         # API v2.3 returns a JSON, according to the documents linked at issue
         # #592, but it seems that this needs to be enabled(?), otherwise the
@@ -148,7 +157,10 @@ class FacebookOAuth2(BaseOAuth2):
             # account on further logins), this app cannot allow it to
             # continue with the auth process.
             raise AuthUnknownError(
-                self, "An error occurred while retrieving users Facebook data"
+                self,
+                "An error occurred while retrieving users Facebook data",
+                code="unknown_error",
+                stage="callback",
             )
 
         data["access_token"] = access_token
@@ -197,7 +209,13 @@ class FacebookAppOAuth2(FacebookOAuth2):
             _key, _secret = self.get_key_and_secret()
             response = self.load_signed_request(self.data["signed_request"])
             if "user_id" not in response and "oauth_token" not in response:
-                raise AuthException(self, "Missing user_id or oauth_token")
+                raise AuthResponseError(
+                    self,
+                    "Missing user_id or oauth_token",
+                    code="missing_claim",
+                    claim="user_id",
+                    stage="callback",
+                )
 
             if response is not None:
                 access_token = (
@@ -209,8 +227,12 @@ class FacebookAppOAuth2(FacebookOAuth2):
         if access_token is None:
             access_error = self.data.get("error")
             if access_error == "access_denied":
-                raise AuthCanceled(self)
-            raise AuthException(self, access_error)
+                raise AuthCanceled(
+                    self, code="authorization_declined", stage="callback"
+                )
+            raise AuthResponseError(
+                self, access_error, code="malformed_response", stage="callback"
+            )
         self.validate_state()
         return self.do_auth(access_token, response, *args, **kwargs)
 
@@ -241,7 +263,12 @@ class FacebookAppOAuth2(FacebookOAuth2):
             sig, payload = signed_request.split(".", 1)
         except ValueError as error:
             # ignore if can't split on dot
-            raise AuthException(self, "Invalid signed request") from error
+            raise AuthResponseError(
+                self,
+                "Invalid signed request",
+                code="invalid_signature",
+                stage="callback",
+            ) from error
         sig = base64_url_decode(sig)
         payload_json_bytes = base64_url_decode(payload)
         data = json.loads(payload_json_bytes.decode("utf-8", "replace"))
@@ -255,4 +282,6 @@ class FacebookAppOAuth2(FacebookOAuth2):
             time.time() - 86400
         ):
             return data
-        raise AuthException(self, "Invalid signature")
+        raise AuthResponseError(
+            self, "Invalid signature", code="invalid_signature", stage="callback"
+        )

@@ -1,5 +1,7 @@
 from typing import Any
 
+from social_core.exceptions import SocialAuthBaseException
+
 from .oauth import BaseOAuth2
 
 
@@ -43,5 +45,7 @@ class DigitalOceanOAuth(BaseOAuth2):
         auth_header = {"Authorization": f"Bearer {access_token}"}
         try:
             return self.get_json(url, headers=auth_header)
+        except SocialAuthBaseException:
+            raise
         except ValueError:
             return None

@@ -1,7 +1,7 @@
 from urllib.parse import urlparse
 
 from social_core.backends.open_id_connect import OpenIdConnectAuth
-from social_core.exceptions import AuthMissingParameter
+from social_core.exceptions import AuthConfigurationError
 
 
 class Auth0OpenIdConnectAuth(OpenIdConnectAuth):
@@ -27,7 +27,9 @@ class Auth0OpenIdConnectAuth(OpenIdConnectAuth):
         """Return Auth0 domain without scheme or surrounding slashes."""
         domain = self.setting("DOMAIN")
         if not domain:
-            raise AuthMissingParameter(self, "DOMAIN")
+            raise AuthConfigurationError(
+                self, parameter="DOMAIN", code="missing_setting", stage="callback"
+            )
 
         domain = domain.strip()
         parsed = urlparse(domain)
@@ -36,7 +38,9 @@ class Auth0OpenIdConnectAuth(OpenIdConnectAuth):
 
         domain = domain.strip("/")
         if not domain:
-            raise AuthMissingParameter(self, "DOMAIN")
+            raise AuthConfigurationError(
+                self, parameter="DOMAIN", code="missing_setting", stage="callback"
+            )
         return domain
 
     def api_path(self, path="") -> str:

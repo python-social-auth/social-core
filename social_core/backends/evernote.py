@@ -7,10 +7,6 @@ from __future__ import annotations
 
 from typing import Any
 
-from requests import HTTPError
-
-from social_core.exceptions import AuthCanceled
-
 from .oauth import BaseOAuth1
 
 
@@ -52,15 +48,9 @@ class EvernoteOAuth(BaseOAuth1):
 
     def access_token(self, token):
         """Return request for access token value"""
-        try:
-            return self.get_querystring(
-                self.ACCESS_TOKEN_URL, auth=self.oauth_auth(token)
-            )
-        except HTTPError as err:
-            # Evernote returns a 401 error when AuthCanceled
-            if err.response.status_code == 401:
-                raise AuthCanceled(self, response=err.response) from err
-            raise
+        return self.get_querystring(
+            self.ACCESS_TOKEN_URL, auth=self.oauth_auth(token), stage="token_exchange"
+        )
 
     def extra_data(
         self,

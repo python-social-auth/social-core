@@ -49,7 +49,7 @@ class BungieOAuth2(BaseOAuth2):
             auth=self.auth_complete_credentials(),
             method=self.ACCESS_TOKEN_METHOD,
         )
-        self.process_error(response)
+        self.process_error(response, stage="token_exchange")
         return self.do_auth(
             response["access_token"], *args, response=response, **kwargs
         )

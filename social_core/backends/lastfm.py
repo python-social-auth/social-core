@@ -1,9 +1,10 @@
 import hashlib
 
 from social_core.exceptions import (
-    AuthMissingParameter,
-    AuthStateForbidden,
-    AuthStateMissing,
+    AuthInputError,
+    AuthProviderError,
+    AuthResponseError,
+    AuthSessionError,
 )
 from social_core.utils import (
     constant_time_compare,
@@ -63,11 +64,15 @@ class LastFmAuth(BaseAuth):
         state = self.get_session_state()
         request_state = self.get_request_state()
         if not request_state:
-            raise AuthMissingParameter(self, "state")
+            raise AuthInputError(
+                self, parameter="state", code="missing_parameter", stage="callback"
+            )
         if not state:
-            raise AuthStateMissing(self, "state")
+            raise AuthSessionError(
+                self, "state", code="session_context_missing", stage="callback"
+            )
         if not constant_time_compare(request_state, state):
-            raise AuthStateForbidden(self)
+            raise AuthSessionError(self, code="state_mismatch", stage="callback")
 
     def get_redirect_uri(self, state: str | None = None) -> str:
         uri = self.strategy.absolute_uri(self.redirect_uri)
@@ -82,7 +87,9 @@ class LastFmAuth(BaseAuth):
         key, secret = self.get_key_and_secret()
         token = self.data.get("token")
         if not token:
-            raise AuthMissingParameter(self, "token")
+            raise AuthInputError(
+                self, parameter="token", code="missing_parameter", stage="callback"
+            )
 
         # Usage of md5 is mandated by the API: https://www.last.fm/api/webauth
         signature = hashlib.md5(  # noqa: S324
@@ -99,9 +106,36 @@ class LastFmAuth(BaseAuth):
                 "format": "json",
             },
             method="POST",
+            stage="token_exchange",
         )
 
-        kwargs.update({"response": response["session"], "backend": self})
+        if not isinstance(response, dict):
+            raise AuthResponseError(
+                self, code="malformed_response", stage="token_exchange"
+            )
+        if "error" in response:
+            provider_code = response["error"]
+            code = "http_error"
+            if provider_code == 29:
+                code = "rate_limited"
+            elif provider_code in (11, 16):
+                code = "unavailable"
+            raise AuthProviderError(
+                self,
+                response.get("message"),
+                provider_code=provider_code,
+                code=code,
+                stage="token_exchange",
+            )
+        session = response.get("session")
+        if not isinstance(session, dict):
+            raise AuthResponseError(
+                self,
+                code="missing_claim" if session is None else "malformed_response",
+                claim="session",
+                stage="token_exchange",
+            )
+        kwargs.update({"response": session, "backend": self})
         return self.strategy.authenticate(*args, **kwargs)
 
     def get_user_details(self, response):

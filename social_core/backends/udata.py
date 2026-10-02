@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from social_core.exceptions import AuthMissingParameter
+from social_core.exceptions import AuthConfigurationError
 
 from .oauth import BaseOAuth2
 
@@ -33,7 +33,12 @@ class UdataBaseOAuth2(BaseOAuth2):
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Load user data from service."""
         if self.USER_DATA_URL is None:
-            raise AuthMissingParameter(self, "USER_DATA_URL")
+            raise AuthConfigurationError(
+                self,
+                parameter="USER_DATA_URL",
+                code="missing_setting",
+                stage="user_info",
+            )
         return self.get_json(self.USER_DATA_URL, params={"access_token": access_token})
 
 

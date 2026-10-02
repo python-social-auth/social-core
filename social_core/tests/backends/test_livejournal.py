@@ -4,7 +4,7 @@ from urllib.parse import urlencode
 import pytest
 import responses
 
-from social_core.exceptions import AuthMissingParameter
+from social_core.exceptions import AuthInputError
 
 from .open_id import OpenIdTest
 
@@ -94,7 +94,7 @@ session_type:DH-SHA1
 
     def test_failed_login(self) -> None:
         self._setup_handlers()
-        with self.assertRaises(AuthMissingParameter):
+        with self.assertRaises(AuthInputError):
             self.do_login()
 
     def test_openid_url_uses_https(self) -> None:

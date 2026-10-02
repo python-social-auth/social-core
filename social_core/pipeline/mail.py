@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, cast
 
-from social_core.exceptions import InvalidEmail
+from social_core.exceptions import AuthCredentialError
 
 from .partial import partial_step
 
@@ -27,7 +27,9 @@ def mail_validation(backend: BaseAuth, details, is_new=False, *args, **kwargs):
             if not backend.strategy.validate_email(
                 details["email"], data["verification_code"]
             ):
-                raise InvalidEmail(backend)
+                raise AuthCredentialError(
+                    backend, code="email_verification_rejected", stage="pipeline"
+                )
             return None
         current_partial = kwargs["current_partial"]
         backend.strategy.send_email_validation(

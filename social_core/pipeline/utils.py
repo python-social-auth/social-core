@@ -3,9 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any, cast
 
-from social_core.exceptions import (
-    StrategyMissingBackendError,
-)
+from social_core.exceptions import AuthConfigurationError
 
 if TYPE_CHECKING:
     from social_core.backends.base import BaseAuth
@@ -43,7 +41,9 @@ def partial_prepare(
     **kwargs,
 ) -> PartialMixin:
     if strategy.storage is None:
-        raise StrategyMissingBackendError
+        raise AuthConfigurationError(
+            code="missing_setting", parameter="storage", stage="pipeline"
+        )
     kwargs.update(
         {
             "response": kwargs.get("response") or {},
@@ -86,14 +86,18 @@ def partial_store(
     strategy: BaseStrategy, backend: BaseAuth, next_step, *args, **kwargs
 ) -> PartialMixin:
     if strategy.storage is None:
-        raise StrategyMissingBackendError
+        raise AuthConfigurationError(
+            code="missing_setting", parameter="storage", stage="pipeline"
+        )
     partial = partial_prepare(strategy, backend, next_step, *args, **kwargs)
     return strategy.storage.partial.store(partial)
 
 
 def partial_load(strategy: BaseStrategy, token: str) -> PartialMixin | None:
     if strategy.storage is None:
-        raise StrategyMissingBackendError
+        raise AuthConfigurationError(
+            code="missing_setting", parameter="storage", stage="pipeline"
+        )
     partial = strategy.storage.partial.load(token)
 
     if partial:

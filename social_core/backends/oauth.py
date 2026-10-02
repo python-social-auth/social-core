@@ -9,18 +9,19 @@ from requests_oauthlib import OAuth1
 
 from social_core.exceptions import (
     AuthCanceled,
-    AuthException,
-    AuthFailed,
-    AuthMissingParameter,
-    AuthStateForbidden,
-    AuthStateMissing,
-    AuthTokenError,
-    AuthUnknownError,
+    AuthConfigurationError,
+    AuthInputError,
+    AuthProviderError,
+    AuthResponseError,
+    AuthSessionError,
+    ErrorStage,
+    SocialAuthBaseException,
 )
 from social_core.utils import (
     constant_time_compare,
     handle_http_errors,
     parse_qs,
+    provider_error,
     url_add_parameters,
     wrap_access_token_error,
 )
@@ -49,7 +50,7 @@ class OAuthAuth(BaseAuth):
     """
 
     AUTHORIZATION_URL = ""
-    ACCESS_TOKEN_URL = ""
+    ACCESS_TOKEN_URL: str = ""
     ACCESS_TOKEN_METHOD: Literal["GET", "POST"] = "POST"
     ACCESS_TOKEN_PAYLOAD: Literal["form", "json"] = "form"
     REVOKE_TOKEN_URL: str = ""
@@ -118,11 +119,15 @@ class OAuthAuth(BaseAuth):
         state = self.get_session_state()
         request_state = self.get_request_state()
         if not request_state:
-            raise AuthMissingParameter(self, "state")
+            raise AuthInputError(
+                self, parameter="state", code="missing_parameter", stage="callback"
+            )
         if not state:
-            raise AuthStateMissing(self, "state")
+            raise AuthSessionError(
+                self, "state", code="session_context_missing", stage="callback"
+            )
         if not constant_time_compare(request_state, state):
-            raise AuthStateForbidden(self)
+            raise AuthSessionError(self, code="state_mismatch", stage="callback")
         return state
 
     def get_redirect_uri(self, state: str | None = None) -> str:
@@ -191,6 +196,7 @@ class OAuthAuth(BaseAuth):
                 headers=headers,
                 data=data,
                 method=self.REVOKE_TOKEN_METHOD,
+                stage="disconnect",
             )
             return self.process_revoke_token_response(response)
         return None
@@ -205,7 +211,7 @@ class BaseOAuth1(OAuthAuth):
 
     """
 
-    REQUEST_TOKEN_URL = ""
+    REQUEST_TOKEN_URL: str = ""
     REQUEST_TOKEN_METHOD: Literal["GET", "POST"] = "GET"
     OAUTH_TOKEN_PARAMETER_NAME = "oauth_token"
     REDIRECT_URI_PARAMETER_NAME = "redirect_uri"
@@ -216,11 +222,21 @@ class BaseOAuth1(OAuthAuth):
         token = self.set_unauthorized_token()
         return self.oauth_authorization_request(token)
 
-    def process_error(self, data) -> None:
+    def process_error(self, data, *, stage: ErrorStage = "callback") -> None:
         if "oauth_problem" in data:
             if data["oauth_problem"] == "user_refused":
-                raise AuthCanceled(self, "User refused the access")
-            raise AuthUnknownError(self, f"Error was {data['oauth_problem']}")
+                raise AuthCanceled(
+                    self,
+                    "User refused the access",
+                    code="authorization_declined",
+                    stage=stage,
+                )
+            raise AuthProviderError(
+                self,
+                provider_code=data["oauth_problem"],
+                code="http_error",
+                stage=stage,
+            )
 
     @handle_http_errors
     def auth_complete(self, *args, **kwargs):
@@ -247,12 +263,22 @@ class BaseOAuth1(OAuthAuth):
         name = self.name + self.UNATHORIZED_TOKEN_SUFIX
         unauthed_tokens = self.strategy.session_get(name, [])
         if not unauthed_tokens:
-            raise AuthTokenError(self, "Missing unauthorized token")
+            raise AuthSessionError(
+                self,
+                "Missing unauthorized token",
+                code="session_context_missing",
+                stage="callback",
+            )
 
         data_token = self.data.get(self.OAUTH_TOKEN_PARAMETER_NAME)
 
         if data_token is None:
-            raise AuthTokenError(self, "Missing unauthorized token")
+            raise AuthSessionError(
+                self,
+                "Missing unauthorized token",
+                code="session_context_missing",
+                stage="callback",
+            )
 
         token = None
         for utoken in unauthed_tokens:
@@ -266,7 +292,12 @@ class BaseOAuth1(OAuthAuth):
                 token = utoken
                 break
         else:
-            raise AuthTokenError(self, "Incorrect tokens")
+            raise AuthSessionError(
+                self,
+                "Incorrect tokens",
+                code="state_mismatch",
+                stage="callback",
+            )
         return token
 
     def set_unauthorized_token(self):
@@ -291,6 +322,7 @@ class BaseOAuth1(OAuthAuth):
             params=params,
             auth=OAuth1(key, secret, callback_uri=self.get_redirect_uri(state)),
             method=self.REQUEST_TOKEN_METHOD,
+            stage="begin",
         )
         content = response.content
         if response.encoding or response.apparent_encoding:
@@ -324,9 +356,16 @@ class BaseOAuth1(OAuthAuth):
             resource_owner_key = token.get("oauth_token")
             resource_owner_secret = token.get("oauth_token_secret")
             if not resource_owner_key:
-                raise AuthTokenError(self, "Missing oauth_token")
+                raise AuthResponseError(
+                    self, "Missing oauth_token", code="missing_claim", stage="callback"
+                )
             if not resource_owner_secret:
-                raise AuthTokenError(self, "Missing oauth_token_secret")
+                raise AuthResponseError(
+                    self,
+                    "Missing oauth_token_secret",
+                    code="missing_claim",
+                    stage="callback",
+                )
         else:
             resource_owner_key = None
             resource_owner_secret = None
@@ -355,6 +394,7 @@ class BaseOAuth1(OAuthAuth):
             self.access_token_url(),
             auth=self.oauth_auth(token),
             method=self.ACCESS_TOKEN_METHOD,
+            stage="token_exchange",
         )
 
     def user_data(self, access_token: dict, *args, **kwargs) -> dict[str, Any] | None:
@@ -446,7 +486,7 @@ class BaseOAuth2(OAuthAuth):
         )
         return data
 
-    def request_access_token(
+    def request_access_token(  # noqa: PLR0913
         self,
         url: str,
         method: Literal["GET", "POST", "DELETE"] = "GET",
@@ -455,9 +495,11 @@ class BaseOAuth2(OAuthAuth):
         json: dict | None = None,
         auth: tuple[str, str] | AuthBase | None = None,
         params: dict | None = None,
+        *,
+        stage: ErrorStage = "token_exchange",
     ) -> dict[Any, Any]:
-        with wrap_access_token_error(self):
-            return self.get_json(
+        with wrap_access_token_error(self, stage=stage):
+            response = self.get_json(
                 url,
                 method=method,
                 headers=headers,
@@ -465,15 +507,20 @@ class BaseOAuth2(OAuthAuth):
                 auth=auth,
                 params=params,
                 json=json,
+                stage=stage,
             )
 
-    def process_error(self, data) -> None:
-        if data.get("error"):
-            if "denied" in data["error"] or "cancelled" in data["error"]:
-                raise AuthCanceled(self, data.get("error_description", ""))
-            raise AuthFailed(self, data.get("error_description") or data["error"])
+        if not isinstance(response, dict):
+            raise AuthResponseError(self, code="malformed_response", stage=stage)
+        self.process_error(response, stage=stage)
+        return response
+
+    def process_error(self, data, *, stage: ErrorStage = "callback") -> None:
+        error = provider_error(self, data, stage=stage)
+        if error is not None:
+            raise error
         if "denied" in data:
-            raise AuthCanceled(self, data["denied"])
+            raise AuthCanceled(self, stage=stage)
 
     @handle_http_errors
     def auth_complete(self, *args, **kwargs):
@@ -504,10 +551,18 @@ class BaseOAuth2(OAuthAuth):
             auth=self.auth_complete_credentials(),
             method=self.ACCESS_TOKEN_METHOD,
         )
-        self.process_error(response)
-        return self.do_auth(
-            response["access_token"], *args, response=response, **kwargs
-        )
+        self.process_error(response, stage="token_exchange")
+        access_token = self.get_access_token(response)
+        return self.do_auth(access_token, *args, response=response, **kwargs)
+
+    def get_access_token(self, response: dict[str, Any]) -> str:
+        """Extract a usable access token before profile lookup or pipeline execution."""
+        access_token = response.get("access_token")
+        if not isinstance(access_token, str) or not access_token:
+            raise AuthResponseError(
+                self, code="missing_claim", claim="access_token", stage="token_exchange"
+            )
+        return access_token
 
     @handle_http_errors
     def do_auth(self, access_token, *args, **kwargs):
@@ -549,8 +604,20 @@ class BaseOAuth2(OAuthAuth):
             auth=self.refresh_token_auth(),
             data=params if not is_get else None,
             params=params if is_get else None,
+            stage="refresh",
         )
-        return self.process_refresh_token_response(request, *args, **kwargs)
+        try:
+            response = self.process_refresh_token_response(request, *args, **kwargs)
+        except SocialAuthBaseException:
+            raise
+        except ValueError as json_error:
+            raise AuthResponseError(
+                self, code="malformed_response", stage="refresh"
+            ) from json_error
+        if not isinstance(response, dict):
+            raise AuthResponseError(self, code="malformed_response", stage="refresh")
+        self.process_error(response, stage="refresh")
+        return response
 
     def refresh_token_url(self):
         return self.REFRESH_TOKEN_URL or self.access_token_url()
@@ -599,7 +666,13 @@ class BaseOAuth2PKCE(BaseOAuth2):
             return encoded.decode().replace("=", "")  # remove padding
         if method == "plain":
             return code_verifier
-        raise AuthException(self, "Unsupported code challenge method.")
+        raise AuthConfigurationError(
+            self,
+            "Unsupported code challenge method.",
+            code="invalid_setting",
+            parameter="PKCE_CODE_CHALLENGE_METHOD",
+            stage="begin",
+        )
 
     def auth_params(self, state=None):
         params = super().auth_params(state=state)

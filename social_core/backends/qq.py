@@ -18,6 +18,8 @@ if TYPE_CHECKING:
 
     from requests.auth import AuthBase
 
+    from social_core.exceptions import ErrorStage
+
 
 class QQOAuth2(BaseOAuth2):
     name = "qq"
@@ -75,7 +77,7 @@ class QQOAuth2(BaseOAuth2):
         response["openid"] = openid
         return response
 
-    def request_access_token(
+    def request_access_token(  # noqa: PLR0913
         self,
         url: str,
         method: Literal["GET", "POST", "DELETE"] = "GET",
@@ -84,11 +86,14 @@ class QQOAuth2(BaseOAuth2):
         json: dict | None = None,
         auth: tuple[str, str] | AuthBase | None = None,
         params: dict | None = None,
+        *,
+        stage: ErrorStage = "token_exchange",
     ) -> dict[Any, Any]:
-        with wrap_access_token_error(self):
+        with wrap_access_token_error(self, stage=stage):
             response = self.request(
                 url,
                 method=method,
+                stage=stage,
                 headers=headers,
                 data=data,
                 json=json,

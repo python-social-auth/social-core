@@ -8,7 +8,7 @@ import responses
 
 from social_core.actions import do_disconnect
 from social_core.backends.oauth import BaseOAuth2
-from social_core.exceptions import AuthForbidden
+from social_core.exceptions import AuthPolicyError
 from social_core.tests.models import User
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
@@ -89,7 +89,7 @@ class WhitelistEmailsTest(DummyOAuth2Test):
 
     def test_invalid_login(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_WHITELISTED_EMAILS": ["foo2@bar.com"]})
-        with self.assertRaises(AuthForbidden):
+        with self.assertRaises(AuthPolicyError):
             self.do_login()
 
     def test_login_case_sensitive_local_part(self) -> None:
@@ -108,7 +108,7 @@ class WhitelistDomainsTest(DummyOAuth2Test):
 
     def test_invalid_login(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_WHITELISTED_EMAILS": ["bar2.com"]})
-        with self.assertRaises(AuthForbidden):
+        with self.assertRaises(AuthPolicyError):
             self.do_login()
 
 

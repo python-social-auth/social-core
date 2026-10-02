@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from social_core.exceptions import AuthFailed
+from social_core.exceptions import AuthResponseError
 
 from .open_id import OpenIdAuth
 
@@ -57,8 +57,15 @@ class SteamOpenId(OpenIdAuth):
 
     def _user_id(self, response):
         if not response.identity_url.startswith(self.URL):
-            raise AuthFailed(self, "Openid identifier mismatch")
+            raise AuthResponseError(
+                self,
+                "Openid identifier mismatch",
+                code="invalid_claim",
+                stage="user_info",
+            )
         user_id = response.identity_url.rsplit("/", 1)[-1]
         if not user_id.isdigit():
-            raise AuthFailed(self, "Missing Steam Id")
+            raise AuthResponseError(
+                self, "Missing Steam Id", code="missing_claim", stage="user_info"
+            )
         return user_id

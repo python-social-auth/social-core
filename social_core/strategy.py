@@ -6,11 +6,7 @@ from contextvars import ContextVar
 from typing import TYPE_CHECKING, Any, Protocol, cast
 
 from .backends.utils import get_backend
-from .exceptions import (
-    SocialAuthImproperlyConfiguredError,
-    StrategyMissingBackendError,
-    StrategyMissingFeatureError,
-)
+from .exceptions import AuthConfigurationError
 from .pipeline import DEFAULT_AUTH_PIPELINE, DEFAULT_DISCONNECT_PIPELINE
 from .pipeline.utils import partial_load, to_plain_dict
 from .store import OpenIdSessionWrapper, OpenIdStore
@@ -78,7 +74,7 @@ class BaseStrategy:
     @property
     def storage(self) -> type[BaseStorage]:
         if self._storage is None:
-            raise StrategyMissingBackendError
+            raise AuthConfigurationError(code="missing_setting", parameter="storage")
         return self._storage
 
     def setting(self, name: str, default=None, backend: BaseAuth | None = None):
@@ -114,7 +110,13 @@ class BaseStrategy:
 
         This is only called if get_session_id returns a value.
         """
-        raise StrategyMissingFeatureError(self.__class__.__name__, "session restore")
+        raise AuthConfigurationError(
+            None,
+            self.__class__.__name__,
+            "session restore",
+            code="unsupported_feature",
+            stage="callback",
+        )
 
     def openid_session_dict(self, name: str) -> OpenIdSessionWrapper:
         # Many frameworks are switching the session serialization from Pickle
@@ -199,8 +201,11 @@ class BaseStrategy:
     ) -> CodeMixin:
         email_validation = self.setting("EMAIL_VALIDATION_FUNCTION")
         if not email_validation:
-            raise SocialAuthImproperlyConfiguredError(
-                "EMAIL_VALIDATION_FUNCTION missing"
+            raise AuthConfigurationError(
+                None,
+                parameter="EMAIL_VALIDATION_FUNCTION",
+                code="missing_setting",
+                stage="pipeline",
             )
         send_email = module_member(email_validation)
         code = self.storage.code.make_code(email)

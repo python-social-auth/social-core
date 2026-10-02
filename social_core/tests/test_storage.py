@@ -1,6 +1,8 @@
 import unittest
 from typing import cast
+from unittest.mock import Mock
 
+from social_core.exceptions import AuthConfigurationError
 from social_core.storage import (
     AssociationMixin,
     BaseStorage,
@@ -47,6 +49,22 @@ class BrokenStorage(BaseStorage):
 
 class BrokenUserTests(unittest.TestCase):
     user = BrokenUser
+
+    def test_missing_backend_is_the_only_ignored_configuration_failure(self):
+        user = BrokenUser()
+        user.extra_data = {"refresh_token": "token", "access_token": "expired"}
+        for code in ("backend_missing", "invalid_setting", "missing_setting"):
+            error = AuthConfigurationError(code=code)
+            strategy = Mock(spec=BaseStrategy)
+            strategy.get_backend.side_effect = error
+            with self.subTest(code=code):
+                if code == "backend_missing":
+                    self.assertIsNone(user.get_backend_instance(strategy))
+                    user.refresh_token(strategy)
+                else:
+                    with self.assertRaises(AuthConfigurationError) as caught:
+                        user.refresh_token(strategy)
+                    self.assertIs(caught.exception, error)
 
     def test_get_username(self) -> None:
         with self.assertRaisesRegex(NotImplementedError, NOT_IMPLEMENTED_MSG):

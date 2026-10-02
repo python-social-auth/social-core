@@ -6,7 +6,7 @@ from urllib.parse import parse_qs, urlencode, urlparse
 import requests
 import responses
 
-from social_core.exceptions import AuthException, AuthMissingParameter
+from social_core.exceptions import AuthException, AuthInputError
 
 from .base import BaseBackendTest
 
@@ -19,7 +19,7 @@ class DiscourseTest(BaseBackendTest):
     raw_complete_url = "/complete/{0}/"
 
     def test_missing_sso_parameter(self) -> None:
-        with self.assertRaises(AuthMissingParameter):
+        with self.assertRaises(AuthInputError):
             self.backend.complete()
 
     def post_start(self) -> None:

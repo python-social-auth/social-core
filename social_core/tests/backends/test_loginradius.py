@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import responses
 
-from social_core.exceptions import AuthMissingParameter, AuthStateForbidden
+from social_core.exceptions import AuthInputError, AuthSessionError
 from social_core.utils import get_querystring
 
 from .base import BaseBackendTest
@@ -90,7 +90,7 @@ class LoginRadiusAuthTest(BaseBackendTest):
         self.backend.start()
         self.strategy.set_request_data({"token": "loginradius-token"}, self.backend)
 
-        with self.assertRaises(AuthMissingParameter):
+        with self.assertRaises(AuthInputError):
             self.backend.complete()
 
     def test_complete_rejects_mismatched_redirect_state(self) -> None:
@@ -100,7 +100,7 @@ class LoginRadiusAuthTest(BaseBackendTest):
             self.backend,
         )
 
-        with self.assertRaises(AuthStateForbidden):
+        with self.assertRaises(AuthSessionError):
             self.backend.complete()
 
     def test_login(self) -> None:

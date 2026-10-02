@@ -5,7 +5,7 @@ Vend  OAuth2 backend:
 import re
 from typing import Any
 
-from social_core.exceptions import AuthInvalidParameter, AuthMissingParameter
+from social_core.exceptions import AuthInputError, AuthResponseError
 
 from .oauth import BaseOAuth2
 
@@ -26,14 +26,33 @@ class VendOAuth2(BaseOAuth2):
     )
 
     def domain_prefix(self, response=None) -> str:
-        prefix = (response or {}).get("domain_prefix") or self.data.get("domain_prefix")
+        from_response = response is not None and "domain_prefix" in response
+        prefix = (
+            response["domain_prefix"]
+            if response is not None and from_response
+            else self.data.get("domain_prefix")
+        )
+        family = AuthResponseError if from_response else AuthInputError
+        fields: dict[str, Any] = {
+            "claim": "domain_prefix" if from_response else None,
+            "parameter": None if from_response else "domain_prefix",
+            "stage": "user_info" if from_response else "callback",
+        }
         if not prefix:
-            raise AuthMissingParameter(self, "domain_prefix")
+            raise family(
+                self,
+                code="missing_claim" if from_response else "missing_parameter",
+                **fields,
+            )
         if isinstance(prefix, (list, tuple)):
             prefix = prefix[0] if prefix else ""
         prefix = str(prefix).lower()
         if not self.DOMAIN_PREFIX_RE.match(prefix):
-            raise AuthInvalidParameter(self, "domain_prefix")
+            raise family(
+                self,
+                code="invalid_claim" if from_response else "invalid_parameter",
+                **fields,
+            )
         return prefix
 
     def scoped_uid(self, details, response) -> str:
