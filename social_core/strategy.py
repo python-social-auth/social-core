@@ -215,6 +215,9 @@ class BaseStrategy:
             return False
         if verification_code.verified:
             return False
+        expiry = self.setting("EMAIL_VALIDATION_EXPIRED_THRESHOLD", 7 * 24 * 60 * 60)
+        if expiry and verification_code.is_expired(expiry):
+            return False
         verification_code.verify()
         return True
 

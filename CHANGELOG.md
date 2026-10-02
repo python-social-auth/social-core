@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Security
 
+- Email validation codes expire after seven days by default. Configure
+  `SOCIAL_AUTH_EMAIL_VALIDATION_EXPIRED_THRESHOLD` to change their lifetime.
+  Storage integrations must persist each code's creation `timestamp`; undated
+  codes are rejected when expiry is enabled.
 - Tumblr, Deezer, Discourse, SciStarter, and affected Microsoft Entra ID
   backends now bind accounts to stable provider identifiers. Existing
   associations record their identifier key and migrate on authentication;
