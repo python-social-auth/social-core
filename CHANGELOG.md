@@ -49,6 +49,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Auth0 caches signing keys by JWKS URL for 24 hours and refreshes them when
+  a token references an unknown key ID or a token without a key ID fails
+  signature verification. Refreshes preserve other domains' cached keys and
+  retain existing keys if fetching or parsing replacements fails.
 - Exclude tests and their key fixtures from wheels while retaining them in
   source distributions for downstream testing.
 - VK OAuth2 accepts aliased and conditional `EXTRA_DATA` entries when requesting

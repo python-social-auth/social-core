@@ -585,6 +585,12 @@ class cache:
 
     It maintains a cache per class and method arguments, so subclasses have a
     different cache entry for the same cached method.
+
+    Call ``method.invalidate()`` to clear all entries, or
+    ``method.invalidate(instance, *args, **kwargs)`` to clear one entry.
+    Call ``method.refresh(instance, *args, **kwargs)`` to replace one entry
+    only after the underlying method succeeds. Failed refreshes propagate
+    their exception and preserve the existing value and expiry time.
     """
 
     def __init__(self, ttl: int) -> None:
@@ -594,6 +600,12 @@ class cache:
         ] = {}
 
     def __call__(self, fn):
+        def refresh(this, *args, **kwargs):
+            cached_value = fn(this, *args, **kwargs)
+            cache_key = (this.__class__, args, tuple(sorted(kwargs.items())))
+            self.cache[cache_key] = (time.time(), cached_value)
+            return cached_value
+
         def wrapped(this, *args, **kwargs):
             now = time.time()
             last_updated = None
@@ -616,7 +628,14 @@ class cache:
             return cached_value
 
         cast("Any", wrapped).invalidate = self._invalidate
+        cast("Any", wrapped).refresh = refresh
         return wrapped
 
-    def _invalidate(self) -> None:
-        self.cache.clear()
+    def _invalidate(
+        self, this: object | None = None, *args: Any, **kwargs: Any
+    ) -> None:
+        if this is None:
+            self.cache.clear()
+        else:
+            cache_key = (this.__class__, args, tuple(sorted(kwargs.items())))
+            self.cache.pop(cache_key, None)

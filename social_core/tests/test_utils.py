@@ -15,6 +15,7 @@ from social_core.utils import (
     PARTIAL_TOKEN_PENDING_SESSION_NAME,
     PARTIAL_TOKEN_SESSION_NAME,
     build_absolute_uri,
+    cache,
     handle_http_errors,
     is_url,
     partial_pipeline_data,
@@ -29,7 +30,108 @@ from .models import TestPartial, TestStorage
 from .strategy import TestStrategy
 
 if TYPE_CHECKING:
+    from typing import Any
+
     from social_core.storage import PartialMixin, UserProtocol
+
+
+class CacheTest(unittest.TestCase):
+    def test_invalidate_one_entry_preserves_other_arguments_and_classes(self) -> None:
+        fetch = Mock(side_effect=lambda *_args, **_kwargs: object())
+        cached: Any = cache(ttl=86400)(fetch)
+        owner = object()
+        other_owner = Mock()
+        first = cached(owner, "first", variant="a")
+        other_argument = cached(owner, "second", variant="a")
+        other_keyword = cached(owner, "first", variant="b")
+        other_class = cached(other_owner, "first", variant="a")
+
+        cached.invalidate(owner, "first", variant="a")
+
+        self.assertIsNot(cached(owner, "first", variant="a"), first)
+        self.assertIs(cached(owner, "second", variant="a"), other_argument)
+        self.assertIs(cached(owner, "first", variant="b"), other_keyword)
+        self.assertIs(cached(other_owner, "first", variant="a"), other_class)
+        self.assertEqual(fetch.call_count, 5)
+
+    def test_invalidate_all_entries_remains_supported(self) -> None:
+        fetch = Mock(side_effect=lambda *_args: object())
+        cached: Any = cache(ttl=86400)(fetch)
+        owner = object()
+        first = cached(owner, "first")
+        second = cached(owner, "second")
+
+        cached.invalidate()
+
+        self.assertIsNot(cached(owner, "first"), first)
+        self.assertIsNot(cached(owner, "second"), second)
+        self.assertEqual(fetch.call_count, 4)
+
+    def test_invalidate_missing_entry_preserves_cached_values(self) -> None:
+        fetch = Mock(return_value=object())
+        cached: Any = cache(ttl=86400)(fetch)
+        owner = object()
+        value = cached(owner, "present")
+
+        cached.invalidate(owner, "missing")
+
+        self.assertIs(cached(owner, "present"), value)
+        fetch.assert_called_once_with(owner, "present")
+
+    def test_refresh_replaces_only_matching_entry(self) -> None:
+        fetch = Mock(side_effect=lambda *_args, **_kwargs: object())
+        cached: Any = cache(ttl=86400)(fetch)
+        owner = object()
+        other_owner = Mock()
+        first = cached(owner, "first", variant="a")
+        other_argument = cached(owner, "second", variant="a")
+        other_keyword = cached(owner, "first", variant="b")
+        other_class = cached(other_owner, "first", variant="a")
+
+        refreshed = cached.refresh(owner, "first", variant="a")
+
+        self.assertIsNot(refreshed, first)
+        self.assertIs(cached(owner, "first", variant="a"), refreshed)
+        self.assertIs(cached(owner, "second", variant="a"), other_argument)
+        self.assertIs(cached(owner, "first", variant="b"), other_keyword)
+        self.assertIs(cached(other_owner, "first", variant="a"), other_class)
+        self.assertEqual(fetch.call_count, 5)
+
+    def test_failed_refresh_preserves_value_and_expiry_time(self) -> None:
+        fetch = Mock(return_value=object())
+        cached: Any = cache(ttl=86400)(fetch)
+        owner = object()
+        with patch("social_core.utils.time.time", return_value=1000):
+            value = cached(owner, "first")
+        fetch.side_effect = RuntimeError("fetch failed")
+
+        with (
+            patch("social_core.utils.time.time", return_value=2000),
+            self.assertRaisesRegex(RuntimeError, "fetch failed"),
+        ):
+            cached.refresh(owner, "first")
+
+        self.assertEqual(fetch.call_count, 2)
+        with patch("social_core.utils.time.time", return_value=1000 + 86400):
+            self.assertIs(cached(owner, "first"), value)
+        self.assertEqual(fetch.call_count, 2)
+        with patch("social_core.utils.time.time", return_value=1000 + 86401):
+            self.assertIs(cached(owner, "first"), value)
+        self.assertEqual(fetch.call_count, 3)
+
+    def test_successful_refresh_renews_expiry_time(self) -> None:
+        fetch = Mock(side_effect=lambda *_args: object())
+        cached: Any = cache(ttl=86400)(fetch)
+        owner = object()
+        with patch("social_core.utils.time.time", return_value=1000):
+            first = cached(owner, "first")
+        with patch("social_core.utils.time.time", return_value=2000):
+            refreshed = cached.refresh(owner, "first")
+
+        self.assertIsNot(refreshed, first)
+        with patch("social_core.utils.time.time", return_value=1000 + 86401):
+            self.assertIs(cached(owner, "first"), refreshed)
+        self.assertEqual(fetch.call_count, 2)
 
 
 class SanitizeRedirectTest(unittest.TestCase):
