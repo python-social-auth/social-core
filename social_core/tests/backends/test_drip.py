@@ -10,13 +10,13 @@ import responses
 from social_core.actions import do_auth, do_complete, do_disconnect
 from social_core.backends.drip import DripOAuth
 from social_core.exceptions import (
-    AuthAlreadyAssociated,
+    AuthAssociationError,
     AuthCanceled,
-    AuthForbidden,
-    AuthMissingParameter,
-    AuthStateForbidden,
-    AuthStateMissing,
+    AuthInputError,
+    AuthResponseError,
+    AuthSessionError,
 )
+from social_core.tests.exception_helpers import assert_auth_error
 from social_core.tests.models import TestPartial, TestUserSocialAuth, User
 from social_core.utils import PARTIAL_TOKEN_SESSION_NAME, get_querystring, parse_qs
 
@@ -121,16 +121,16 @@ class DripOAuthTest(OAuth2Test, BaseAuthUrlTestMixin):
         self.assertEqual(untyped_user.fullname, "Local Name")
 
     def test_start_requires_authenticated_user(self) -> None:
-        with self.assertRaises(AuthForbidden):
+        with self.assertRaises(AuthSessionError):
             do_auth(self.backend)
         user = User("anonymous")
         cast(Any, user).is_authenticated = False  # noqa: TC006
-        with self.assertRaises(AuthForbidden):
+        with self.assertRaises(AuthSessionError):
             do_auth(self.backend, user=user)
         self.assertIsNone(self.strategy.session_get("drip_state"))
 
     def test_direct_start_requires_prepared_context(self) -> None:
-        with self.assertRaises(AuthStateMissing):
+        with self.assertRaises(AuthSessionError):
             self.backend.start()
 
     def test_auth_url_parameters(self) -> None:
@@ -142,15 +142,15 @@ class DripOAuthTest(OAuth2Test, BaseAuthUrlTestMixin):
         state = self.start_for_user(user)
         context = {"state": state, "user_id": str(user.id)}
         cases: tuple[tuple[dict[str, Any], Any, User | None, type[Exception]], ...] = (
-            ({}, context, user, AuthMissingParameter),
-            ({"state": "wrong"}, context, user, AuthStateForbidden),
-            ({"state": {"invalid": "state"}}, context, user, AuthStateForbidden),
-            ({"state": state}, None, user, AuthStateMissing),
-            ({"state": state}, "legacy-state", user, AuthStateMissing),
-            ({"state": state}, {"state": []}, user, AuthStateMissing),
-            ({"state": state}, {"state": state}, user, AuthForbidden),
-            ({"state": state}, context, None, AuthForbidden),
-            ({"state": state}, context, User("other"), AuthForbidden),
+            ({}, context, user, AuthInputError),
+            ({"state": "wrong"}, context, user, AuthSessionError),
+            ({"state": {"invalid": "state"}}, context, user, AuthSessionError),
+            ({"state": state}, None, user, AuthSessionError),
+            ({"state": state}, "legacy-state", user, AuthSessionError),
+            ({"state": state}, {"state": []}, user, AuthSessionError),
+            ({"state": state}, {"state": state}, user, AuthSessionError),
+            ({"state": state}, context, None, AuthSessionError),
+            ({"state": state}, context, User("other"), AuthSessionError),
         )
         for data, stored, current_user, exception in cases:
             with self.subTest(data=data, stored=stored, user=current_user):
@@ -164,7 +164,7 @@ class DripOAuthTest(OAuth2Test, BaseAuthUrlTestMixin):
         user = User("existing")
         self.complete_for_user(user)
         calls = len(responses.calls)
-        with self.assertRaises(AuthStateMissing):
+        with self.assertRaises(AuthSessionError):
             self.backend.complete(user=user)
         self.assertEqual(len(responses.calls), calls)
 
@@ -174,7 +174,7 @@ class DripOAuthTest(OAuth2Test, BaseAuthUrlTestMixin):
         second = self.start_for_user(user)
         self.assertNotEqual(first, second)
         self.strategy.set_request_data({"state": first}, self.backend)
-        with self.assertRaises(AuthStateForbidden):
+        with self.assertRaises(AuthSessionError):
             self.backend.complete(user=user)
         self.assertEqual(len(responses.calls), 0)
 
@@ -202,7 +202,7 @@ class DripOAuthTest(OAuth2Test, BaseAuthUrlTestMixin):
             victim, "other@example.com", "drip"
         )
         self.prepare_callback(attacker)
-        with self.assertRaises(AuthAlreadyAssociated):
+        with self.assertRaises(AuthAssociationError):
             self.backend.complete(user=attacker)
         self.assertIs(social.user, victim)
         self.assertEqual(attacker.social, [])
@@ -223,7 +223,7 @@ class DripOAuthTest(OAuth2Test, BaseAuthUrlTestMixin):
         for user in (None, User("anonymous")):
             if user is not None:
                 cast(Any, user).is_authenticated = False  # noqa: TC006
-            with self.subTest(user=user), self.assertRaises(AuthForbidden):
+            with self.subTest(user=user), self.assertRaises(AuthSessionError):
                 self.backend.do_auth("token", user=user)
         self.assertEqual(len(responses.calls), 0)
 
@@ -239,14 +239,14 @@ class DripOAuthTest(OAuth2Test, BaseAuthUrlTestMixin):
         self.assertEqual(user.social[0].extra_data["access_token"], "token")
 
     def test_authenticate_requires_authenticated_user(self) -> None:
-        with self.assertRaises(AuthForbidden):
+        with self.assertRaises(AuthSessionError):
             self.strategy.authenticate(backend=self.backend, response={"users": []})
         self.assertEqual(len(User.cache), 0)
 
     def test_pipeline_rejects_mismatched_initiator(self) -> None:
         user = User("existing")
         other = User("other")
-        with self.assertRaises(AuthForbidden):
+        with self.assertRaises(AuthSessionError):
             self.strategy.authenticate(
                 backend=self.backend,
                 response={},
@@ -279,7 +279,7 @@ class DripOAuthTest(OAuth2Test, BaseAuthUrlTestMixin):
     def test_missing_configured_id_raises_missing_parameter(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_DRIP_ID_KEY": "missing_id"})
 
-        with self.assertRaisesRegex(AuthMissingParameter, "missing_id"):
+        with assert_auth_error(self, AuthResponseError, "missing_claim"):
             self.backend.get_user_id({}, {"users": [{}]})
 
     def test_partial_resumes_for_initiator_with_new_backend(self) -> None:
@@ -311,7 +311,7 @@ class DripOAuthTest(OAuth2Test, BaseAuthUrlTestMixin):
         user = User("existing")
         self.pause_for_user(user)
         for current_user in (None, User("other")):
-            with self.subTest(user=current_user), self.assertRaises(AuthForbidden):
+            with self.subTest(user=current_user), self.assertRaises(AuthSessionError):
                 do_complete(self.backend, login=Mock(), user=current_user)
         self.assertEqual(user.social, [])
 
@@ -320,7 +320,7 @@ class DripOAuthTest(OAuth2Test, BaseAuthUrlTestMixin):
         partial = self.pause_for_user(user)
         partial.kwargs.pop("drip_association_user_id")
         partial.save()
-        with self.assertRaises(AuthForbidden):
+        with self.assertRaises(AuthSessionError):
             do_complete(self.backend, login=Mock(), user=user)
 
     def test_disconnect_partial_binding(self) -> None:
@@ -339,7 +339,7 @@ class DripOAuthTest(OAuth2Test, BaseAuthUrlTestMixin):
         )
         do_disconnect(self.backend, user)
         for current_user in (None, User("other")):
-            with self.subTest(user=current_user), self.assertRaises(AuthForbidden):
+            with self.subTest(user=current_user), self.assertRaises(AuthSessionError):
                 do_disconnect(self.backend, cast("User", current_user))
         self.assertIn(social, user.social)
         self.strategy.session_set("password", "secret")

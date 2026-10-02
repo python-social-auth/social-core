@@ -36,7 +36,7 @@ class VimeoOAuth1(BaseOAuth1):
         return self.get_json(
             "https://vimeo.com/api/rest/v2",
             params={"format": "json", "method": "vimeo.people.getInfo"},
-            auth=self.oauth_auth(access_token),
+            auth=self.oauth_auth(access_token, stage="user_info"),
         )
 
 

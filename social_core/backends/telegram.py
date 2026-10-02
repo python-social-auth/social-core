@@ -5,7 +5,11 @@ import hmac
 import time
 from typing import TYPE_CHECKING, Any
 
-from social_core.exceptions import AuthFailed, AuthMissingParameter
+from social_core.exceptions import (
+    AuthConfigurationError,
+    AuthInputError,
+    AuthResponseError,
+)
 from social_core.utils import handle_http_errors
 
 from .base import BaseAuth
@@ -23,13 +27,23 @@ class TelegramAuth(BaseAuth):
     def verify_data(self, response) -> None:
         bot_token = self.setting("BOT_TOKEN")
         if bot_token is None:
-            raise AuthMissingParameter(self, "SOCIAL_AUTH_TELEGRAM_BOT_TOKEN")
+            raise AuthConfigurationError(
+                self,
+                parameter="SOCIAL_AUTH_TELEGRAM_BOT_TOKEN",
+                code="missing_setting",
+                stage="callback",
+            )
 
         received_hash_string = response.get("hash")
         auth_date = response.get("auth_date")
 
         if received_hash_string is None or auth_date is None:
-            raise AuthMissingParameter(self, "hash or auth_date")
+            raise AuthInputError(
+                self,
+                parameter="hash or auth_date",
+                code="missing_parameter",
+                stage="callback",
+            )
 
         data_check_lines = [f"{k}={v}" for k, v in response.items() if k != "hash"]
         data_check_string = "\n".join(sorted(data_check_lines))
@@ -38,11 +52,27 @@ class TelegramAuth(BaseAuth):
             secret_key, msg=data_check_string.encode(), digestmod=hashlib.sha256
         ).hexdigest()
         current_timestamp = int(time.time())
-        auth_timestamp = int(auth_date)
+        if not isinstance(auth_date, (str, int)) or isinstance(auth_date, bool):
+            raise AuthInputError(
+                self, parameter="auth_date", code="invalid_parameter", stage="callback"
+            )
+        try:
+            auth_timestamp = int(auth_date)
+        except (ValueError, TypeError) as error:
+            raise AuthInputError(
+                self, parameter="auth_date", code="invalid_parameter", stage="callback"
+            ) from error
         if current_timestamp - auth_timestamp > 86400:
-            raise AuthFailed(self, "Auth date is outdated")
+            raise AuthResponseError(
+                self, "Auth date is outdated", code="response_expired", stage="callback"
+            )
         if built_hash != received_hash_string:
-            raise AuthFailed(self, "Invalid hash supplied")
+            raise AuthResponseError(
+                self,
+                "Invalid hash supplied",
+                code="invalid_signature",
+                stage="callback",
+            )
 
     def extra_data(
         self,

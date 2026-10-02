@@ -5,6 +5,7 @@ from urllib.parse import urljoin
 from social_core.utils import append_slash, cache
 
 from .open_id_connect import OpenIdConnectAuth
+from .utils import load_oidc_config
 
 
 class Fence(OpenIdConnectAuth):
@@ -28,7 +29,7 @@ class Fence(OpenIdConnectAuth):
 
     @cache(ttl=86400)
     def oidc_config(self):
-        return self.get_json(self._url(".well-known/openid-configuration"))
+        return load_oidc_config(self, self._url(".well-known/openid-configuration"))
 
     def get_user_details(self, response):
         return {

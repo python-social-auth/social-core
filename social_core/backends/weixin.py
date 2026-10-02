@@ -6,9 +6,7 @@ Weixin OAuth2 backend
 from typing import Any
 from urllib.parse import urlencode
 
-from requests import HTTPError
-
-from social_core.exceptions import AuthCanceled, AuthUnknownError
+from social_core.exceptions import AuthProviderError, AuthUnknownError, ErrorStage
 
 from .oauth import BaseOAuth2
 
@@ -27,6 +25,16 @@ class WeixinOAuth2(BaseOAuth2):
         ("nickname", "username"),
         ("headimgurl", "profile_image_url"),
     ]
+
+    def process_error(self, data, *, stage: ErrorStage = "callback") -> None:
+        super().process_error(data, stage=stage)
+        if data.get("errcode"):
+            raise AuthProviderError(
+                self,
+                data.get("errmsg"),
+                provider_code=data["errcode"],
+                stage=stage,
+            )
 
     def get_user_details(self, response):
         """Return user details from Weixin. API URL is:
@@ -49,6 +57,7 @@ class WeixinOAuth2(BaseOAuth2):
                 "openid": kwargs["response"]["openid"],
             },
         )
+        self._process_error(data, stage="user_info")
         nickname = data.get("nickname")
         if nickname:
             # weixin api has some encode bug, here need handle
@@ -93,17 +102,12 @@ class WeixinOAuth2(BaseOAuth2):
                 headers=self.auth_headers(),
                 method=self.ACCESS_TOKEN_METHOD,
             )
-        except HTTPError as err:
-            if err.response.status_code == 400:
-                raise AuthCanceled(self, response=err.response) from err
-            raise
         except KeyError as err:
-            raise AuthUnknownError(self) from err
-        if "errcode" in response:
-            raise AuthCanceled(self)
-        self.process_error(response)
+            raise AuthUnknownError(
+                self, code="unknown_error", stage="callback"
+            ) from err
         return self.do_auth(
-            response["access_token"], *args, response=response, **kwargs
+            self.get_access_token(response), *args, response=response, **kwargs
         )
 
 
@@ -150,27 +154,3 @@ class WeixinOAuth2APP(WeixinOAuth2):
             "appid": appid,
             "secret": secret,
         }
-
-    def auth_complete(self, *args, **kwargs):
-        """Completes login process, must return user instance"""
-        self.process_error(self.data)
-        try:
-            response = self.request_access_token(
-                self.ACCESS_TOKEN_URL,
-                data=self.auth_complete_params(self.validate_state()),
-                headers=self.auth_headers(),
-                method=self.ACCESS_TOKEN_METHOD,
-            )
-        except HTTPError as err:
-            if err.response.status_code == 400:
-                raise AuthCanceled(self) from err
-            raise
-        except KeyError as err:
-            raise AuthUnknownError(self) from err
-
-        if "errcode" in response:
-            raise AuthCanceled(self)
-        self.process_error(response)
-        return self.do_auth(
-            response["access_token"], *args, response=response, **kwargs
-        )

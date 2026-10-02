@@ -38,7 +38,10 @@ import jwt
 import responses
 from jwt.algorithms import RSAAlgorithm
 
-from social_core.exceptions import AuthMissingParameter, AuthTokenError
+from social_core.exceptions import (
+    AuthConfigurationError,
+    AuthResponseError,
+)
 
 from .azuread import AzureOAuth2TestMixin
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
@@ -184,13 +187,13 @@ class AzureADOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin, AzureOAuth2TestMixin):
             }
         )
 
-        with self.assertRaises(AuthTokenError):
+        with self.assertRaises(AuthResponseError):
             self.do_start()
 
     def test_login_rejects_wrong_id_token_audience(self) -> None:
         self.access_token_body = self.build_access_token_body(aud="other-app")
 
-        with self.assertRaises(AuthTokenError):
+        with self.assertRaises(AuthResponseError):
             self.do_start()
 
     def test_login_rejects_wrong_id_token_issuer(self) -> None:
@@ -198,13 +201,13 @@ class AzureADOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin, AzureOAuth2TestMixin):
             iss="https://sts.windows.net/00000000-0000-0000-0000-000000000000/"
         )
 
-        with self.assertRaises(AuthTokenError):
+        with self.assertRaises(AuthResponseError):
             self.do_start()
 
     def test_login_rejects_invalid_id_token_tenant_id(self) -> None:
         self.access_token_body = self.build_access_token_body(tid=None)
 
-        with self.assertRaises(AuthMissingParameter):
+        with self.assertRaises(AuthResponseError):
             self.do_start()
 
     def test_openid_configuration_and_jwks_cache_shared_by_url(self) -> None:
@@ -263,7 +266,7 @@ class AzureADTenantOAuth2Test(AzureADOAuth2Test):
             tid=other_tenant_id,
         )
 
-        with self.assertRaises(AuthTokenError):
+        with self.assertRaises(AuthResponseError):
             self.do_start()
 
     def test_authority_override_preserves_configured_tenant_restriction(self) -> None:
@@ -423,7 +426,7 @@ class AzureADOAuth2FederatedIdentityCredentialFromFileTest(
                 {"OAUTH2_FEDERATED_TOKEN_FILE": "/no/such/file"},
                 clear=False,
             ),
-            self.assertRaises(AuthMissingParameter),
+            self.assertRaises(AuthConfigurationError),
         ):
             self.do_login()
 
@@ -438,7 +441,7 @@ class AzureADOAuth2FederatedIdentityCredentialFromFileTest(
                 },
                 clear=False,
             ),
-            self.assertRaises(AuthMissingParameter),
+            self.assertRaises(AuthConfigurationError),
         ):
             self.do_login()
 
@@ -459,27 +462,27 @@ class AzureADOAuth2FederatedIdentityCredentialFromFileTest(
 
 class AzureADOAuth2MissingCredentialsTest(AzureADOAuth2Test):
     def test_login_with_pkce(self) -> None:
-        with self.assertRaises(AuthMissingParameter):
+        with self.assertRaises(AuthConfigurationError):
             super().test_login_with_pkce()
 
     def test_partial_pipeline_with_pkce(self) -> None:
-        with self.assertRaises(AuthMissingParameter):
+        with self.assertRaises(AuthConfigurationError):
             super().test_partial_pipeline_with_pkce()
 
     def test_login_with_authority_override(self) -> None:
-        with self.assertRaises(AuthMissingParameter):
+        with self.assertRaises(AuthConfigurationError):
             super().test_login_with_authority_override()
 
     def test_get_auth_token_uses_real_refresh_token(self) -> None:
-        with self.assertRaises(AuthMissingParameter):
+        with self.assertRaises(AuthConfigurationError):
             super().test_get_auth_token_uses_real_refresh_token()
 
     def test_get_auth_token_without_refresh_token(self) -> None:
-        with self.assertRaises(AuthMissingParameter):
+        with self.assertRaises(AuthConfigurationError):
             super().test_get_auth_token_without_refresh_token()
 
     def test_get_auth_token_keeps_valid_token(self) -> None:
-        with self.assertRaises(AuthMissingParameter):
+        with self.assertRaises(AuthConfigurationError):
             super().test_get_auth_token_keeps_valid_token()
 
     def extra_settings(self):
@@ -498,30 +501,34 @@ class AzureADOAuth2MissingCredentialsTest(AzureADOAuth2Test):
                 },
                 clear=False,
             ),
-            self.assertRaises(AuthMissingParameter),
+            self.assertRaises(AuthConfigurationError),
         ):
             self.do_login()
 
     def test_login(self) -> None:
-        with self.assertRaises(AuthMissingParameter):
+        with self.assertRaises(AuthConfigurationError):
             super().test_login()
 
     def test_partial_pipeline(self) -> None:
-        with self.assertRaises(AuthMissingParameter):
+        with self.assertRaises(AuthConfigurationError):
             super().test_partial_pipeline()
 
     def test_refresh_token(self) -> None:
-        with self.assertRaises(AuthMissingParameter):
+        with self.assertRaises(AuthConfigurationError):
             super().test_refresh_token()
 
     def test_login_rejects_invalid_id_token_signature(self) -> None:
-        with self.assertRaises(AuthMissingParameter):
+        with self.assertRaises(AuthConfigurationError):
             super().test_login_rejects_invalid_id_token_signature()
 
     def test_login_rejects_wrong_id_token_audience(self) -> None:
-        with self.assertRaises(AuthMissingParameter):
+        with self.assertRaises(AuthConfigurationError):
             super().test_login_rejects_wrong_id_token_audience()
 
     def test_login_rejects_wrong_id_token_issuer(self) -> None:
-        with self.assertRaises(AuthMissingParameter):
+        with self.assertRaises(AuthConfigurationError):
             super().test_login_rejects_wrong_id_token_issuer()
+
+    def test_login_rejects_invalid_id_token_tenant_id(self) -> None:
+        with self.assertRaises(AuthConfigurationError):
+            super().test_login_rejects_invalid_id_token_tenant_id()

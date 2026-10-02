@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from .exceptions import DefaultStrategyMissingError
+from .exceptions import AuthConfigurationError
 
 if TYPE_CHECKING:
     from .strategy import BaseStrategy
@@ -18,7 +18,9 @@ class Registry:
     @property
     def default_strategy(self) -> BaseStrategy:
         if self._default_strategy is None:
-            raise DefaultStrategyMissingError
+            raise AuthConfigurationError(
+                code="missing_setting", parameter="default_strategy"
+            )
         return self._default_strategy
 
     @default_strategy.setter

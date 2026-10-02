@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import inspect
 import time
 import warnings
 from contextlib import contextmanager
@@ -10,16 +11,19 @@ from typing import TYPE_CHECKING, Any, Literal, cast
 import requests
 
 from social_core.exceptions import (
-    AuthConnectionError,
-    AuthForbidden,
-    AuthMissingParameter,
-    AuthStateForbidden,
-    AuthStateMissing,
-    AuthUnknownError,
+    AuthConfigurationError,
+    AuthInputError,
+    AuthPolicyError,
+    AuthProviderError,
+    AuthResponseError,
+    AuthSessionError,
+    ErrorStage,
+    SocialAuthBaseException,
 )
 from social_core.registry import REGISTRY
 from social_core.utils import (
     constant_time_compare,
+    http_error,
     module_member,
     normalize_user_names,
     parse_qs,
@@ -90,26 +94,37 @@ class BaseAuth:
     def prepare_auth(self, user: UserProtocol | None = None) -> None:
         """Bind association-only authorization to an authenticated local user."""
         if self.ASSOCIATION_ONLY:
-            user = self.require_association_user(user)
+            user = self.require_association_user(user, stage="begin")
             self.strategy.session_set(
                 f"{self.name}_state",
                 {"state": self.strategy.random_string(32), "user_id": str(user.id)},
             )
 
-    def require_association_user(self, user: UserProtocol | None) -> UserProtocol:
+    def require_association_user(
+        self, user: UserProtocol | None, *, stage: ErrorStage = "user_info"
+    ) -> UserProtocol:
         """Require an authenticated local user for an association-only flow."""
         if user is None or not user_is_authenticated(user):
-            raise AuthForbidden(self, "Association requires an authenticated user")
+            raise AuthSessionError(
+                self,
+                "Association requires an authenticated user",
+                code="session_context_missing",
+                stage=stage,
+            )
         return user
 
     def get_association_state(self) -> str:
         """Return the token from a prepared, user-bound authorization context."""
         context = self.strategy.session_get(f"{self.name}_state")
         if not isinstance(context, dict):
-            raise AuthStateMissing(self, "state")
+            raise AuthSessionError(
+                self, "state", code="session_context_missing", stage="callback"
+            )
         state = context.get("state")
         if not isinstance(state, str) or not state:
-            raise AuthStateMissing(self, "state")
+            raise AuthSessionError(
+                self, "state", code="session_context_missing", stage="callback"
+            )
         return state
 
     def validate_association_state(
@@ -117,16 +132,23 @@ class BaseAuth:
     ) -> str:
         """Validate and consume authorization state bound to the current user."""
         if not request_state:
-            raise AuthMissingParameter(self, "state")
+            raise AuthInputError(
+                self, parameter="state", code="missing_parameter", stage="callback"
+            )
         state = self.get_association_state()
         if not isinstance(request_state, (str, bytes)) or not constant_time_compare(
             request_state, state
         ):
-            raise AuthStateForbidden(self)
-        user = self.require_association_user(user)
+            raise AuthSessionError(self, code="state_mismatch", stage="callback")
+        user = self.require_association_user(user, stage="callback")
         context = self.strategy.session_get(f"{self.name}_state")
         if context.get("user_id") != str(user.id):
-            raise AuthForbidden(self, "Association user mismatch")
+            raise AuthSessionError(
+                self,
+                "Association user mismatch",
+                code="user_mismatch",
+                stage="callback",
+            )
         self.strategy.session_pop(f"{self.name}_state")
         return state
 
@@ -138,10 +160,18 @@ class BaseAuth:
     def _bind_association_user(
         self, kwargs: dict[str, Any], pipeline_type: str = "authentication"
     ) -> None:
-        user = self.require_association_user(kwargs.get("user"))
+        stage: ErrorStage = (
+            "disconnect" if pipeline_type == "disconnect" else "user_info"
+        )
+        user = self.require_association_user(kwargs.get("user"), stage=stage)
         key = self.association_user_id_key(pipeline_type)
         if key in kwargs and kwargs[key] != str(user.id):
-            raise AuthForbidden(self, "Association user mismatch")
+            raise AuthSessionError(
+                self,
+                "Association user mismatch",
+                code="user_mismatch",
+                stage=stage,
+            )
         kwargs[key] = str(user.id)
 
     def start(self) -> HttpResponseProtocol:
@@ -168,13 +198,30 @@ class BaseAuth:
         """Completes login process, must return user instance"""
         raise NotImplementedError("Implement in subclass")
 
-    def process_error(self, data) -> None:
+    def process_error(self, data, *, stage: ErrorStage = "callback") -> None:
         """Hook to process provider response errors.
 
         Default implementation is a no-op. Backends that can detect
         provider-specific error payloads should override this method and
         raise an appropriate exception when needed.
         """
+
+    def _process_error(self, data, *, stage: ErrorStage) -> None:
+        """Call the error hook, including overrides predating the stage keyword."""
+        kwargs: dict[str, ErrorStage]
+        try:
+            inspect.signature(self.process_error).bind(data, stage=stage)
+        except TypeError:
+            # Check the signature before calling so a TypeError inside the hook
+            # is propagated without invoking it twice.
+            kwargs = {}
+        else:
+            kwargs = {"stage": stage}
+        try:
+            self.process_error(data, **kwargs)
+        except SocialAuthBaseException as error:
+            error.stage = stage
+            raise
 
     def authenticate(
         self, *args, **kwargs
@@ -302,7 +349,13 @@ class BaseAuth:
             elif len(entry) == 1:
                 name = alias = entry[0]
             else:
-                raise AuthUnknownError(self, f"Invalid EXTRA_DATA item: {entry!r}")
+                raise AuthConfigurationError(
+                    self,
+                    f"Invalid EXTRA_DATA item: {entry!r}",
+                    code="invalid_setting",
+                    parameter="EXTRA_DATA",
+                    stage="pipeline",
+                )
             value = response.get(name, details.get(name, details.get(alias)))
             if discard and not value:
                 continue
@@ -360,7 +413,9 @@ class BaseAuth:
         for id_key in self.LEGACY_ID_KEYS:
             try:
                 identifier = self.get_user_id_for_key(details, response, id_key)
-            except AuthMissingParameter:
+            except AuthResponseError as error:
+                if error.code != "missing_claim":
+                    raise
                 continue
             value = str(identifier)
             if value not in identifiers:
@@ -396,7 +451,9 @@ class BaseAuth:
                 user_id = source.get(id_key)
                 if user_id is not None and user_id != "":
                     return user_id
-        raise AuthMissingParameter(self, id_key)
+        raise AuthResponseError(
+            self, claim=id_key, code="missing_claim", stage="user_info"
+        )
 
     def get_user_details(self, response) -> dict[str, Any]:
         """Return provider-supplied user details in a known internal structure.
@@ -462,7 +519,9 @@ class BaseAuth:
         self, partial: PartialMixin, pipeline_type: str = "authentication"
     ) -> Iterator[None]:
         if partial.pipeline_type != pipeline_type:
-            raise AuthForbidden(self)
+            raise AuthPolicyError(
+                self, code="authentication_disallowed", stage="callback"
+            )
         previous_data = self.data
         with self.strategy.pipeline_request_data(partial.request_data):
             self.data = self.strategy.request_data()
@@ -476,10 +535,15 @@ class BaseAuth:
     ) -> None:
         """Validate backend-specific requirements before resuming a pipeline."""
         if self.ASSOCIATION_ONLY:
-            user = self.require_association_user(user)
+            user = self.require_association_user(user, stage="callback")
             key = self.association_user_id_key(partial.pipeline_type)
             if partial.kwargs.get(key) != str(user.id):
-                raise AuthForbidden(self, "Association user mismatch")
+                raise AuthSessionError(
+                    self,
+                    "Association user mismatch",
+                    code="user_mismatch",
+                    stage="callback",
+                )
 
     def auth_extra_arguments(self) -> dict[str, str]:
         """Return extra arguments needed on auth process.
@@ -519,6 +583,7 @@ class BaseAuth:
         auth: tuple[str, str] | AuthBase | None = None,
         params: dict | None = None,
         timeout: float | None = None,
+        stage: ErrorStage = "user_info",
     ) -> Response:
         headers = {} if headers is None else dict(headers)
         proxies = self.setting("PROXIES")
@@ -547,9 +612,30 @@ class BaseAuth:
                 proxies=proxies,
                 verify=verify,
             )
-        except requests.ConnectionError as err:
-            raise AuthConnectionError(self, str(err)) from err
-        response.raise_for_status()
+        except requests.exceptions.SSLError as error:
+            raise AuthProviderError(self, code="tls_error", stage=stage) from error
+        except requests.Timeout as error:
+            raise AuthProviderError(self, code="timeout", stage=stage) from error
+        except (
+            requests.exceptions.InvalidURL,
+            requests.exceptions.InvalidSchema,
+            requests.exceptions.MissingSchema,
+        ) as error:
+            raise AuthConfigurationError(
+                self, code="invalid_setting", parameter="url", stage=stage
+            ) from error
+        except requests.ConnectionError as error:
+            raise AuthProviderError(
+                self, code="connection_failed", stage=stage
+            ) from error
+        except requests.HTTPError as error:
+            raise http_error(self, error, stage=stage) from error
+        except requests.RequestException as error:
+            raise AuthProviderError(self, stage=stage) from error
+        try:
+            response.raise_for_status()
+        except requests.HTTPError as error:
+            raise http_error(self, error, stage=stage) from error
         return response
 
     def get_json(  # noqa: PLR0913, PLR0917
@@ -562,8 +648,9 @@ class BaseAuth:
         auth: tuple[str, str] | AuthBase | None = None,
         params: dict | None = None,
         timeout: float | None = None,
+        stage: ErrorStage = "user_info",
     ) -> dict[Any, Any]:
-        return self.request(
+        response = self.request(
             url,
             method=method,
             headers=headers,
@@ -572,7 +659,14 @@ class BaseAuth:
             auth=auth,
             params=params,
             timeout=timeout,
-        ).json()
+            stage=stage,
+        )
+        try:
+            return response.json()
+        except ValueError as error:
+            raise AuthResponseError(
+                self, code="malformed_response", stage=stage
+            ) from error
 
     def get_querystring(self, url, *args, **kwargs) -> dict[str, str]:
         return parse_qs(self.request(url, *args, **kwargs).text)

@@ -1,6 +1,6 @@
 from typing import cast
 
-from social_core.exceptions import AuthMissingParameter
+from social_core.exceptions import AuthInputError
 
 from .base import BaseAuth
 
@@ -21,7 +21,9 @@ class LegacyAuth(BaseAuth):
         """Completes login process, must return user instance"""
         id_key = self.id_key()
         if id_key not in self.data:
-            raise AuthMissingParameter(self, id_key)
+            raise AuthInputError(
+                self, parameter=id_key, code="missing_parameter", stage="callback"
+            )
         kwargs.update({"response": self.data, "backend": self})
         return self.strategy.authenticate(*args, **kwargs)
 

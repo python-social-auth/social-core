@@ -14,6 +14,8 @@ if TYPE_CHECKING:
 
     from requests.auth import AuthBase
 
+    from social_core.exceptions import ErrorStage
+
 
 class LoginRadiusAuth(BaseOAuth2):
     """LoginRadius BaseOAuth2 authentication backend."""
@@ -44,7 +46,7 @@ class LoginRadiusAuth(BaseOAuth2):
             },
         )
 
-    def request_access_token(
+    def request_access_token(  # noqa: PLR0913
         self,
         url: str,
         method: Literal["GET", "POST", "DELETE"] = "GET",
@@ -53,10 +55,13 @@ class LoginRadiusAuth(BaseOAuth2):
         json: dict | None = None,
         auth: tuple[str, str] | AuthBase | None = None,
         params: dict | None = None,
+        *,
+        stage: ErrorStage = "token_exchange",
     ) -> dict[Any, Any]:
         return super().request_access_token(
             url,
             method=method,
+            stage=stage,
             headers=headers,
             data=data,
             json=json,

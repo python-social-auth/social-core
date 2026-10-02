@@ -7,7 +7,7 @@ import jwt
 import responses
 from jwt.algorithms import RSAAlgorithm
 
-from social_core.exceptions import AuthFailed
+from social_core.exceptions import AuthResponseError
 from social_core.utils import PARTIAL_TOKEN_SESSION_NAME
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
@@ -55,7 +55,9 @@ class AppleIdTest(OAuth2Test, BaseAuthUrlTestMixin):
             f"SOCIAL_AUTH_{self.name}_SCOPE": ["name", "email"],
         }
 
-    def build_id_token(self, **overrides) -> str:
+    def build_id_token(
+        self, *, kid: str | None = RSA_PRIVATE_JWT_KEY["kid"], **overrides
+    ) -> str:
         auth_time = int(time())
         payload = {
             "aud": "a-client-id",
@@ -73,7 +75,7 @@ class AppleIdTest(OAuth2Test, BaseAuthUrlTestMixin):
                 RSAAlgorithm.from_jwk(json.dumps(RSA_PRIVATE_JWT_KEY)),
             ),
             algorithm="RS256",
-            headers={"kid": RSA_PRIVATE_JWT_KEY["kid"]},
+            headers={"kid": kid} if kid is not None else {},
         )
 
     def add_apple_jwk_response(self) -> None:
@@ -180,8 +182,30 @@ class AppleIdTest(OAuth2Test, BaseAuthUrlTestMixin):
         self.assertEqual(decoded["iss"], "https://appleid.apple.com")
         self.assertEqual(decoded["aud"], "a-client-id")
 
+    def test_decode_id_token_accepts_key_without_identifier(self) -> None:
+        key = {
+            name: value for name, value in RSA_PUBLIC_JWT_KEY.items() if name != "kid"
+        }
+        with patch.object(self.backend, "get_json", return_value={"keys": [key]}):
+            decoded = self.backend.decode_id_token(self.build_id_token(kid=None))
+        self.assertEqual(decoded["sub"], token_data["sub"])
+
+    def test_decode_id_token_ignores_unkeyed_entry_when_identifier_matches(
+        self,
+    ) -> None:
+        unkeyed = {
+            name: value for name, value in RSA_PUBLIC_JWT_KEY.items() if name != "kid"
+        }
+        with patch.object(
+            self.backend,
+            "get_json",
+            return_value={"keys": [unkeyed, RSA_PUBLIC_JWT_KEY]},
+        ):
+            decoded = self.backend.decode_id_token(self.build_id_token())
+        self.assertEqual(decoded["sub"], token_data["sub"])
+
     def test_decode_id_token_rejects_wrong_issuer(self) -> None:
         self.add_apple_jwk_response()
 
-        with self.assertRaises(AuthFailed):
+        with self.assertRaises(AuthResponseError):
             self.backend.decode_id_token(self.build_id_token(iss="https://example.com"))

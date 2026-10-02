@@ -13,6 +13,12 @@ class YammerOAuth2(BaseOAuth2):
     ACCESS_TOKEN_URL = "https://www.yammer.com/oauth2/access_token"
     EXTRA_DATA = [("id", "id"), ("expires", "expires"), ("mugshot_url", "mugshot_url")]
 
+    def get_access_token(self, response):
+        token = response.get("access_token")
+        if isinstance(token, dict):
+            return super().get_access_token({"access_token": token.get("token")})
+        return super().get_access_token(response)
+
     def get_user_id(self, details, response):
         return self.get_user_id_from_sources(
             response.get("user"), details, response.get("access_token")

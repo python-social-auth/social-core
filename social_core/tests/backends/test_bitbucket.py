@@ -2,7 +2,7 @@ import json
 
 import responses
 
-from social_core.exceptions import AuthForbidden
+from social_core.exceptions import AuthResponseError
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
@@ -121,12 +121,12 @@ class BitbucketOAuth2FailTest(BitbucketOAuth2Test):
         self.strategy.set_settings(
             {"SOCIAL_AUTH_BITBUCKET_OAUTH2_VERIFIED_EMAILS_ONLY": True}
         )
-        with self.assertRaises(AuthForbidden):
+        with self.assertRaises(AuthResponseError):
             super().test_login()
 
     def test_partial_pipeline(self) -> None:
         self.strategy.set_settings(
             {"SOCIAL_AUTH_BITBUCKET_OAUTH2_VERIFIED_EMAILS_ONLY": True}
         )
-        with self.assertRaises(AuthForbidden):
+        with self.assertRaises(AuthResponseError):
             super().test_partial_pipeline()

@@ -16,8 +16,14 @@ try:
 except ImportError:
     SAML_MODULE_ENABLED = False
 
-from social_core.exceptions import AuthFailed, AuthMissingParameter
+from social_core.exceptions import (
+    AuthConfigurationError,
+    AuthInputError,
+    AuthResponseError,
+    AuthSessionError,
+)
 from social_core.pipeline.social_auth import social_names
+from social_core.tests.exception_helpers import assert_auth_error
 from social_core.tests.models import User
 
 from .base import BaseBackendTest
@@ -33,6 +39,48 @@ class SAMLTest(BaseBackendTest):
     backend_path = "social_core.backends.saml.SAMLAuth"
     expected_username = "myself"
     response_fixture = "saml_response.txt"
+
+    def test_missing_idp_certificates_report_the_active_operation(self) -> None:
+        config = self.backend.get_idp("testshib").conf.copy()
+        config.pop("x509cert", None)
+        config.pop("x509certMulti", None)
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_SAML_ENABLED_IDPS": {"testshib": config}}
+        )
+        self.strategy.set_request_data(
+            {
+                "idp": "testshib",
+                "RelayState": json.dumps({"idp": "testshib"}),
+                "SAMLResponse": "response",
+            },
+            self.backend,
+        )
+        self.strategy.session_set(
+            self.authn_request_id_session_key("testshib"), "request-id"
+        )
+        for operation, stage in (
+            (self.backend.auth_url, "begin"),
+            (self.backend.auth_complete, "callback"),
+            (lambda: self.backend.request_logout("testshib", None), "disconnect"),
+            (
+                lambda: self.backend.process_logout("testshib", lambda: None),
+                "disconnect",
+            ),
+        ):
+            with (
+                self.subTest(stage=stage),
+                self.assertRaises(AuthConfigurationError) as caught,
+            ):
+                operation()
+            self.assertEqual(caught.exception.stage, stage)
+            self.assertEqual(caught.exception.code, "missing_setting")
+            self.assertEqual(caught.exception.parameter, "x509cert")
+        with (
+            patch.object(self.backend, "_response_in_response_to", return_value=None),
+            self.assertRaises(AuthConfigurationError) as caught,
+        ):
+            self.backend.auth_complete()
+        self.assertEqual(caught.exception.stage, "callback")
 
     def authn_request_id_session_key(self, idp_name: str) -> str:
         return f"{self.backend.name}_{idp_name}_authn_request_id"
@@ -155,7 +203,7 @@ class SAMLTest(BaseBackendTest):
         """
         Logging in without an idp param should raise AuthMissingParameter
         """
-        with self.assertRaises(AuthMissingParameter):
+        with self.assertRaises(AuthInputError):
             self.do_start()
 
     def test_login_no_idp_in_saml_response(self) -> None:
@@ -165,7 +213,7 @@ class SAMLTest(BaseBackendTest):
         """
         self.response_fixture = "saml_response_no_idp_name.txt"
 
-        with self.assertRaises(AuthMissingParameter):
+        with self.assertRaises(AuthInputError):
             self.do_start()
 
     def test_relay_state_session_restored_after_saml_response_validation(
@@ -424,7 +472,7 @@ class SAMLTest(BaseBackendTest):
             patch.object(self.strategy, "restore_session", restore_session),
             patch.object(self.strategy, "authenticate", authenticate),
             patch.object(self.backend, "_create_saml_auth", return_value=ValidAuth()),
-            self.assertRaisesRegex(AuthFailed, "invalid InResponseTo"),
+            assert_auth_error(self, AuthSessionError, "state_mismatch"),
         ):
             self.backend.complete()
 
@@ -491,7 +539,7 @@ class SAMLTest(BaseBackendTest):
                 return_value="STALE_ID",
             ),
             patch.object(self.backend, "_create_saml_auth", return_value=ValidAuth()),
-            self.assertRaisesRegex(AuthFailed, "invalid InResponseTo"),
+            assert_auth_error(self, AuthSessionError, "state_mismatch"),
         ):
             self.backend.complete()
 
@@ -547,7 +595,7 @@ class SAMLTest(BaseBackendTest):
             patch.object(self.strategy, "restore_session", restore_session),
             patch.object(self.strategy, "authenticate", authenticate),
             patch.object(self.backend, "_create_saml_auth", return_value=InvalidAuth()),
-            self.assertRaises(AuthFailed),
+            self.assertRaises(AuthResponseError),
         ):
             self.backend.complete()
 
@@ -605,7 +653,7 @@ class SAMLTest(BaseBackendTest):
                 return_value="TEST_ID",
             ),
             patch.object(self.backend, "_create_saml_auth", return_value=InvalidAuth()),
-            self.assertRaises(AuthFailed),
+            self.assertRaises(AuthResponseError),
         ):
             self.backend.complete()
 
@@ -623,7 +671,7 @@ class SAMLTest(BaseBackendTest):
 
         with (
             patch.object(self.backend, "_create_saml_auth") as create_saml_auth,
-            self.assertRaisesRegex(AuthFailed, "missing AuthnRequest ID"),
+            assert_auth_error(self, AuthSessionError, "session_context_missing"),
         ):
             self.backend.complete(user=User("victim"))
 
@@ -671,7 +719,7 @@ class SAMLTest(BaseBackendTest):
                         "_create_saml_auth",
                         return_value=ValidAuth(in_response_to),
                     ),
-                    self.assertRaisesRegex(AuthFailed, "invalid InResponseTo"),
+                    assert_auth_error(self, AuthSessionError, "state_mismatch"),
                 ):
                     self.backend.complete(user=User("victim"))
 
@@ -868,7 +916,7 @@ class SAMLTest(BaseBackendTest):
                 return_value="OTHER_ID",
             ),
             patch.object(self.backend, "_create_saml_auth", return_value=ValidAuth()),
-            self.assertRaisesRegex(AuthFailed, "invalid InResponseTo"),
+            assert_auth_error(self, AuthSessionError, "state_mismatch"),
         ):
             self.backend.complete()
 
@@ -894,7 +942,7 @@ class SAMLTest(BaseBackendTest):
                 return_value="TEST_ID",
             ),
             patch.object(self.backend, "_create_saml_auth", return_value=ValidAuth()),
-            self.assertRaisesRegex(AuthFailed, "missing AuthnRequest ID"),
+            assert_auth_error(self, AuthSessionError, "session_context_missing"),
         ):
             self.backend.complete()
 

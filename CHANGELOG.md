@@ -24,6 +24,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Breaking
 
+- Authentication exceptions now expose stable reason codes, failure sources,
+  operation stages, and suggested recovery. Only `SocialAuthBaseException` and
+  `AuthException` retain broad catch compatibility; migrate removed specialized
+  classes using the exception reference in social-docs.
+- HTTP failures no longer infer cancellation from HTTP 400 or token expiry from
+  HTTP 401. Provider diagnostics are separate from safe exception messages.
 - Strategies must implement `get_request_data()` instead of overriding
   `request_data()`. The latter now returns effective data for the active partial
   pipeline, including confirmed external-link data.

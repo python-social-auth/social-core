@@ -36,7 +36,12 @@ from urllib.parse import urlsplit
 
 import jwt
 
-from social_core.exceptions import AuthException, AuthMissingParameter, AuthTokenError
+from social_core.backends.utils import jwt_error, load_oidc_config
+from social_core.exceptions import (
+    AuthConfigurationError,
+    AuthResponseError,
+    ErrorStage,
+)
 from social_core.utils import cache
 
 from .oauth import BaseOAuth2PKCE
@@ -112,20 +117,33 @@ class AzureADOAuth2(BaseOAuth2PKCE):
                     return authority_url.rstrip("/")
             except ValueError:
                 pass
-        raise AuthException(self, "AUTHORITY_URL must be an HTTPS base authority URL")
+        raise AuthConfigurationError(
+            self,
+            "AUTHORITY_URL must be an HTTPS base authority URL",
+            code="invalid_setting",
+            parameter="AUTHORITY_URL",
+        )
+
+    def _get_base_url(self, *, stage: ErrorStage) -> str:
+        """Resolve the authority through subclass properties at the caller's stage."""
+        try:
+            return self.base_url
+        except AuthConfigurationError as error:
+            error.stage = stage
+            raise
 
     def get_openid_configuration_url_format(self) -> dict[str, str]:
         return {
             "authority_host": self.authority_host,
-            "base_url": self.base_url,
+            "base_url": self._get_base_url(stage="token_validation"),
             "tenant_id": self.tenant_id,
         }
 
     def get_authorization_url_format(self) -> dict[str, str]:
-        return {"base_url": self.base_url}
+        return {"base_url": self._get_base_url(stage="begin")}
 
     def get_access_token_url_format(self) -> dict[str, str]:
-        return {"base_url": self.base_url}
+        return {"base_url": self._get_base_url(stage="token_exchange")}
 
     def openid_configuration_url(self) -> str:
         url = cast(
@@ -136,7 +154,7 @@ class AzureADOAuth2(BaseOAuth2PKCE):
 
     @cache(ttl=86400)
     def get_openid_configuration(self, url: str) -> dict[str, Any]:
-        return self.get_json(url)
+        return load_oidc_config(self, url, stage="token_validation")
 
     def openid_configuration(self) -> dict[str, Any]:
         configuration = self.get_openid_configuration(self.openid_configuration_url())
@@ -145,15 +163,27 @@ class AzureADOAuth2(BaseOAuth2PKCE):
     def jwks_uri(self) -> str:
         uri = self.setting("JWKS_URI") or self.openid_configuration().get("jwks_uri")
         if not isinstance(uri, str):
-            raise AuthMissingParameter(self, "jwks_uri")
+            raise AuthResponseError(
+                self, claim="jwks_uri", code="missing_claim", stage="token_validation"
+            )
         return uri
 
     @cache(ttl=86400)
     def get_jwks_keys_for_uri(self, uri: str) -> list[dict[str, Any]]:
-        jwks = self.get_json(uri)
+        jwks = self.get_json(uri, stage="token_validation")
+        if not isinstance(jwks, dict):
+            raise AuthResponseError(
+                self, code="malformed_response", stage="token_validation"
+            )
         keys = jwks.get("keys")
-        if not isinstance(keys, list):
-            raise AuthMissingParameter(self, "keys")
+        if keys is None:
+            raise AuthResponseError(
+                self, claim="keys", code="missing_claim", stage="token_validation"
+            )
+        if not isinstance(keys, list) or not all(isinstance(key, dict) for key in keys):
+            raise AuthResponseError(
+                self, claim="keys", code="malformed_response", stage="token_validation"
+            )
         return cast("list[dict[str, Any]]", keys)
 
     def get_jwks_keys(self) -> list[dict[str, Any]]:
@@ -201,7 +231,7 @@ class AzureADOAuth2(BaseOAuth2PKCE):
                 },
             )
         except jwt.PyJWTError as error:
-            raise AuthTokenError(self, error) from error
+            raise jwt_error(self, error) from error
 
     def resolve_tenant_issuer(
         self, issuer: str, claims: dict[str, Any], parameter: str
@@ -211,24 +241,30 @@ class AzureADOAuth2(BaseOAuth2PKCE):
 
         tenant_id = claims.get("tid")
         if not isinstance(tenant_id, str) or not tenant_id:
-            raise AuthMissingParameter(self, parameter)
+            raise AuthResponseError(
+                self, claim=parameter, code="missing_claim", stage="token_validation"
+            )
         return issuer.replace("{tenantid}", tenant_id).replace("{tenantId}", tenant_id)
 
     def get_id_token_issuer(self, claims: dict[str, Any]) -> str:
         issuer = self.openid_configuration().get("issuer")
         if not isinstance(issuer, str):
-            raise AuthMissingParameter(self, "issuer")
+            raise AuthResponseError(
+                self, claim="issuer", code="missing_claim", stage="token_validation"
+            )
         return self.resolve_tenant_issuer(issuer, claims, "tid")
 
     def get_id_token_key(self, id_token: str) -> dict[str, Any]:
         try:
             header = jwt.get_unverified_header(id_token)
         except jwt.PyJWTError as error:
-            raise AuthTokenError(self, error) from error
+            raise jwt_error(self, error) from error
 
         key_id = header.get("kid")
         if not key_id:
-            raise AuthMissingParameter(self, "kid")
+            raise AuthResponseError(
+                self, claim="kid", code="missing_claim", stage="token_validation"
+            )
 
         for key in self.get_jwks_keys():
             if key.get("kid") == key_id:
@@ -238,7 +274,12 @@ class AzureADOAuth2(BaseOAuth2PKCE):
         for key in self.get_jwks_keys():
             if key.get("kid") == key_id:
                 return key
-        raise AuthTokenError(self, "Signature key not found")
+        raise AuthResponseError(
+            self,
+            "Signature key not found",
+            code="invalid_signature",
+            stage="token_validation",
+        )
 
     def validate_key_issuer(self, key: dict[str, Any], claims: dict[str, Any]) -> None:
         key_issuer = key.get("issuer")
@@ -247,7 +288,12 @@ class AzureADOAuth2(BaseOAuth2PKCE):
 
         expected_issuer = self.resolve_tenant_issuer(key_issuer, claims, "tid")
         if expected_issuer != claims.get("iss"):
-            raise AuthTokenError(self, "Token issuer does not match signing key issuer")
+            raise AuthResponseError(
+                self,
+                "Token issuer does not match signing key issuer",
+                code="invalid_claim",
+                stage="token_validation",
+            )
 
     def get_jwt_algorithms(self) -> list[str]:
         return cast("list[str]", self.setting("JWT_ALGORITHMS", self.JWT_ALGORITHMS))
@@ -270,7 +316,7 @@ class AzureADOAuth2(BaseOAuth2PKCE):
                 leeway=cast("int", self.setting("JWT_LEEWAY", default=0)),
             )
         except jwt.PyJWTError as error:
-            raise AuthTokenError(self, error) from error
+            raise jwt_error(self, error) from error
 
     def auth_extra_arguments(self):
         """Return extra arguments needed on auth process."""
@@ -315,7 +361,7 @@ class AzureADOAuth2(BaseOAuth2PKCE):
             params["client_secret"] = client_secret
             return params
 
-        assertion = self.client_assertion(required=True)
+        assertion = self.client_assertion(required=True, stage="refresh")
         params.update(
             {
                 "client_assertion_type": self.client_assertion_type(),
@@ -339,7 +385,7 @@ class AzureADOAuth2(BaseOAuth2PKCE):
         if params.get("client_secret"):
             return params
 
-        assertion = self.client_assertion(required=True)
+        assertion = self.client_assertion(required=True, stage="token_exchange")
         params.update(
             {
                 "client_assertion_type": self.client_assertion_type(),
@@ -348,7 +394,9 @@ class AzureADOAuth2(BaseOAuth2PKCE):
         )
         return params
 
-    def client_assertion(self, *, required: bool = False) -> str | None:
+    def client_assertion(
+        self, *, required: bool = False, stage: ErrorStage = "callback"
+    ) -> str | None:
         if cast("str | None", self.setting("SECRET")):
             return None
 
@@ -365,19 +413,34 @@ class AzureADOAuth2(BaseOAuth2PKCE):
         )
         if not token_path:
             if required:
-                raise AuthMissingParameter(self, "client_assertion")
+                raise AuthConfigurationError(
+                    self,
+                    parameter="client_assertion",
+                    code="missing_setting",
+                    stage=stage,
+                )
             return None
 
         try:
             assertion = Path(token_path).read_text(encoding="utf-8").strip()
         except OSError as error:
             if required:
-                raise AuthMissingParameter(self, "client_assertion") from error
+                raise AuthConfigurationError(
+                    self,
+                    parameter="client_assertion",
+                    code="missing_setting",
+                    stage=stage,
+                ) from error
             return None
 
         if not assertion:
             if required:
-                raise AuthMissingParameter(self, "client_assertion")
+                raise AuthConfigurationError(
+                    self,
+                    parameter="client_assertion",
+                    code="missing_setting",
+                    stage=stage,
+                )
             return None
 
         return assertion

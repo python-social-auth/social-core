@@ -5,7 +5,7 @@ Twitter OAuth1 backend, docs at:
 
 from typing import Any
 
-from social_core.exceptions import AuthCanceled
+from social_core.exceptions import AuthCanceled, ErrorStage
 
 from .oauth import BaseOAuth1
 
@@ -23,10 +23,10 @@ class TwitterOAuth(BaseOAuth1):
     ACCESS_TOKEN_URL = "https://api.twitter.com/oauth/access_token"
     REDIRECT_STATE = True
 
-    def process_error(self, data) -> None:
+    def process_error(self, data, *, stage: ErrorStage = "callback") -> None:
         if "denied" in data:
-            raise AuthCanceled(self)
-        super().process_error(data)
+            raise AuthCanceled(self, code="authorization_declined", stage=stage)
+        super().process_error(data, stage=stage)
 
     def get_user_details(self, response):
         """Return user details from Twitter account"""
@@ -46,5 +46,5 @@ class TwitterOAuth(BaseOAuth1):
         return self.get_json(
             "https://api.twitter.com/1.1/account/verify_credentials.json",
             params={"include_email": "true"},
-            auth=self.oauth_auth(access_token),
+            auth=self.oauth_auth(access_token, stage="user_info"),
         )

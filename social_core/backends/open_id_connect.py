@@ -18,11 +18,13 @@ from jwt import (
 from jwt.utils import base64url_decode
 
 from social_core.backends.oauth import BaseOAuth2PKCE
+from social_core.backends.utils import jwt_error, load_oidc_config
 from social_core.exceptions import (
-    AuthInvalidParameter,
-    AuthMissingParameter,
-    AuthReauthenticationRequired,
-    AuthTokenError,
+    AuthConfigurationError,
+    AuthCredentialError,
+    AuthResponseError,
+    ErrorStage,
+    SocialAuthBaseException,
 )
 from social_core.utils import cache
 
@@ -130,43 +132,69 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
         return super().continue_pipeline(partial)
 
     def get_setting_config(
-        self, setting_name: str, oidc_name: str, default: str
+        self,
+        setting_name: str,
+        oidc_name: str,
+        default: str,
+        *,
+        stage: ErrorStage = "begin",
     ) -> str:
         value = self.setting(setting_name, default)
+        if value is not None and not isinstance(value, str):
+            raise AuthConfigurationError(
+                self, parameter=setting_name, code="invalid_setting", stage=stage
+            )
         if not value:
-            value = self.oidc_config().get(oidc_name)
+            try:
+                value = self.oidc_config().get(oidc_name)
+            except SocialAuthBaseException as error:
+                error.stage = stage
+                raise
 
         if not isinstance(value, str):
-            raise AuthMissingParameter(self, setting_name)
+            raise AuthResponseError(
+                self, claim=oidc_name, code="missing_claim", stage=stage
+            )
         return value
 
     def authorization_url(self) -> str:
         return self.get_setting_config(
-            "AUTHORIZATION_URL", "authorization_endpoint", self.AUTHORIZATION_URL
+            "AUTHORIZATION_URL",
+            "authorization_endpoint",
+            self.AUTHORIZATION_URL,
+            stage="begin",
         )
 
     def access_token_url(self) -> str:
         return self.get_setting_config(
-            "ACCESS_TOKEN_URL", "token_endpoint", self.ACCESS_TOKEN_URL
+            "ACCESS_TOKEN_URL",
+            "token_endpoint",
+            self.ACCESS_TOKEN_URL,
+            stage="token_exchange",
         )
 
     def revoke_token_url(self, token, uid) -> str:
         return self.get_setting_config(
-            "REVOKE_TOKEN_URL", "revocation_endpoint", self.REVOKE_TOKEN_URL
+            "REVOKE_TOKEN_URL",
+            "revocation_endpoint",
+            self.REVOKE_TOKEN_URL,
+            stage="disconnect",
         )
 
     def id_token_issuer(self) -> str:
         return self.get_setting_config(
-            "ID_TOKEN_ISSUER", "issuer", self.ID_TOKEN_ISSUER
+            "ID_TOKEN_ISSUER", "issuer", self.ID_TOKEN_ISSUER, stage="token_validation"
         )
 
     def userinfo_url(self) -> str:
         return self.get_setting_config(
-            "USERINFO_URL", "userinfo_endpoint", self.USERINFO_URL
+            "USERINFO_URL", "userinfo_endpoint", self.USERINFO_URL, stage="user_info"
         )
 
     def jwks_uri(self) -> str:
-        return self.get_setting_config("JWKS_URI", "jwks_uri", self.JWKS_URI)
+        return self.get_setting_config(
+            "JWKS_URI", "jwks_uri", self.JWKS_URI, stage="token_validation"
+        )
 
     def use_basic_auth(self) -> bool:
         method = self.setting(
@@ -174,7 +202,13 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
         )
         if method:
             return method == "client_secret_basic"
-        methods = self.oidc_config().get("token_endpoint_auth_methods_supported", [])
+        try:
+            methods = self.oidc_config().get(
+                "token_endpoint_auth_methods_supported", []
+            )
+        except SocialAuthBaseException as error:
+            error.stage = "token_exchange"
+            raise
         return not methods or "client_secret_basic" in methods
 
     def oidc_endpoint(self) -> str:
@@ -182,7 +216,9 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
 
     @cache(ttl=86400)
     def oidc_config(self) -> dict[Any, Any]:
-        return self.get_json(f"{self.oidc_endpoint()}/.well-known/openid-configuration")
+        return load_oidc_config(
+            self, f"{self.oidc_endpoint()}/.well-known/openid-configuration"
+        )
 
     @cache(ttl=86400)
     def get_jwks_keys(self):
@@ -193,8 +229,18 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
         # keys.append({'key': client_secret, 'kty': 'oct'})
 
     def get_remote_jwks_keys(self):
-        response = self.request(self.jwks_uri())
-        return loads(response.text)["keys"]
+        response = self.request(self.jwks_uri(), stage="token_validation")
+        try:
+            keys = loads(response.text)["keys"]
+        except (ValueError, KeyError, TypeError) as error:
+            raise AuthResponseError(
+                self, code="malformed_response", stage="token_validation"
+            ) from error
+        if not isinstance(keys, list) or any(not isinstance(key, dict) for key in keys):
+            raise AuthResponseError(
+                self, code="malformed_response", stage="token_validation"
+            )
+        return keys
 
     def auth_params(self, state=None):  # noqa: C901, PLR0912
         """Return extra arguments needed on auth process."""
@@ -204,13 +250,13 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
         display = self.setting("DISPLAY", default=self.DISPLAY)
         if display is not None:
             if not display:
-                raise AuthMissingParameter(
-                    self, "OpenID Connect display value cannot be empty string."
+                raise AuthConfigurationError(
+                    self, parameter="display", code="invalid_setting", stage="begin"
                 )
 
             if display not in ("page", "popup", "touch", "wap"):
-                raise AuthMissingParameter(
-                    self, f"Invalid OpenID Connect display value: {display}"
+                raise AuthConfigurationError(
+                    self, parameter="display", code="invalid_setting", stage="begin"
                 )
 
             params["display"] = display
@@ -218,46 +264,63 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
         prompt = self.setting("PROMPT", default=self.PROMPT)
         if prompt is not None:
             if not prompt:
-                raise AuthInvalidParameter(self, "prompt")
+                raise AuthConfigurationError(
+                    self, parameter="prompt", code="invalid_setting", stage="begin"
+                )
 
             for prompt_token in prompt.split():
                 if prompt_token not in ("none", "login", "consent", "select_account"):
-                    raise AuthInvalidParameter(self, "prompt")
+                    raise AuthConfigurationError(
+                        self, parameter="prompt", code="invalid_setting", stage="begin"
+                    )
 
             params["prompt"] = prompt
 
         max_age = self.setting("MAX_AGE", default=self.MAX_AGE)
         if max_age is not None:
             if max_age < 0:
-                raise AuthInvalidParameter(self, "max_age")
+                raise AuthConfigurationError(
+                    self, parameter="max_age", code="invalid_setting", stage="begin"
+                )
 
             params["max_age"] = max_age
 
         ui_locales = self.setting("UI_LOCALES", default=self.UI_LOCALES)
         if ui_locales is not None:
             if not ui_locales:
-                raise AuthInvalidParameter(self, "ui_locales")
+                raise AuthConfigurationError(
+                    self, parameter="ui_locales", code="invalid_setting", stage="begin"
+                )
 
             params["ui_locales"] = ui_locales
 
         id_token_hint = self.setting("ID_TOKEN_HINT", default=self.ID_TOKEN_HINT)
         if id_token_hint is not None:
             if not id_token_hint:
-                raise AuthInvalidParameter(self, "id_token_hint")
+                raise AuthConfigurationError(
+                    self,
+                    parameter="id_token_hint",
+                    code="invalid_setting",
+                    stage="begin",
+                )
 
             params["id_token_hint"] = id_token_hint
 
         login_hint = self.setting("LOGIN_HINT", default=self.LOGIN_HINT)
         if login_hint is not None:
             if not login_hint:
-                raise AuthInvalidParameter(self, "login_hint")
+                raise AuthConfigurationError(
+                    self, parameter="login_hint", code="invalid_setting", stage="begin"
+                )
 
             params["login_hint"] = login_hint
 
         acr_values = self.setting("ACR_VALUES", default=self.ACR_VALUES)
         if acr_values is not None:
             if not acr_values:
-                raise AuthInvalidParameter(self, "acr_values")
+                raise AuthConfigurationError(
+                    self, parameter="acr_values", code="invalid_setting", stage="begin"
+                )
 
             params["acr_values"] = acr_values
 
@@ -286,12 +349,31 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
         utc_timestamp = timegm(datetime.datetime.now(datetime.timezone.utc).timetuple())
 
         if "nbf" in id_token and utc_timestamp < id_token["nbf"]:
-            raise AuthTokenError(self, "Incorrect id_token: nbf")
+            raise AuthResponseError(
+                self,
+                "Incorrect id_token: nbf",
+                code="response_not_yet_valid",
+                stage="token_validation",
+            )
 
         # Verify the token was issued in the last 10 minutes
         iat_leeway = self.setting("ID_TOKEN_MAX_AGE", self.ID_TOKEN_MAX_AGE)
-        if "iat" not in id_token or utc_timestamp > id_token["iat"] + iat_leeway:
-            raise AuthTokenError(self, "Incorrect id_token: iat")
+        if "iat" not in id_token:
+            raise AuthResponseError(
+                self,
+                "Missing id_token claim: iat",
+                claim="iat",
+                code="missing_claim",
+                stage="token_validation",
+            )
+        if utc_timestamp > id_token["iat"] + iat_leeway:
+            raise AuthResponseError(
+                self,
+                "Incorrect id_token: iat",
+                claim="iat",
+                code="response_expired",
+                stage="token_validation",
+            )
 
     def validate_claims(self, id_token) -> None:
         self.validate_temporal_claims(id_token)
@@ -299,13 +381,23 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
         # Validate the nonce to ensure the request was not modified
         nonce = id_token.get("nonce")
         if not nonce:
-            raise AuthTokenError(self, "Incorrect id_token: nonce")
+            raise AuthResponseError(
+                self,
+                "Incorrect id_token: nonce",
+                code="nonce_mismatch",
+                stage="token_validation",
+            )
 
         nonce_obj = self.get_nonce(nonce)
         if nonce_obj:
             self.remove_nonce(nonce_obj.id)
         else:
-            raise AuthTokenError(self, "Incorrect id_token: nonce")
+            raise AuthResponseError(
+                self,
+                "Incorrect id_token: nonce",
+                code="nonce_mismatch",
+                stage="token_validation",
+            )
 
     def find_valid_key(self, id_token):
         kid = jwt.get_unverified_header(id_token).get("kid")
@@ -344,10 +436,15 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
         try:
             key = self.find_valid_key(id_token)
         except PyJWTError as error:
-            raise AuthTokenError(self, str(error)) from error
+            raise jwt_error(self, error) from error
 
         if not key:
-            raise AuthTokenError(self, "Signature verification failed")
+            raise AuthResponseError(
+                self,
+                "Signature verification failed",
+                code="invalid_signature",
+                stage="token_validation",
+            )
 
         try:
             rsakey = jwt.PyJWK(key)
@@ -364,20 +461,37 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
                 leeway=cast("int", self.setting("JWT_LEEWAY", self.JWT_LEEWAY)),
             )
         except ExpiredSignatureError as error:
-            raise AuthTokenError(self, "Signature has expired") from error
+            raise AuthResponseError(
+                self,
+                "Signature has expired",
+                code="response_expired",
+                stage="token_validation",
+            ) from error
         except InvalidAudienceError as error:
             # compatibility with jose error message
-            raise AuthTokenError(self, "Token error: Invalid audience") from error
+            raise AuthResponseError(
+                self,
+                "Token error: Invalid audience",
+                claim="aud",
+                code="invalid_claim",
+                stage="token_validation",
+            ) from error
         except InvalidTokenError as error:
-            raise AuthTokenError(self, str(error)) from error
+            raise jwt_error(self, error) from error
         except PyJWTError as error:
-            raise AuthTokenError(self, "Invalid signature") from error
+            raise jwt_error(self, error) from error
 
         # pyjwt does not validate OIDC claims
         # see https://github.com/jpadilla/pyjwt/pull/296
         self.validate_authorized_party(claims, client_id)
         if not self.validate_at_hash(claims, access_token, key):
-            raise AuthTokenError(self, "Invalid access token")
+            raise AuthResponseError(
+                self,
+                "Invalid access token",
+                claim="at_hash",
+                code="invalid_claim",
+                stage="token_validation",
+            )
 
         return claims
 
@@ -394,13 +508,18 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
 
     def validate_and_return_refresh_id_token(self, id_token, access_token):
         """Validate an ID token returned by a refresh request."""
-        claims = self.decode_and_validate_id_token(id_token, access_token)
-        self.validate_required_id_token_claims(claims)
-        self.validate_temporal_claims(claims)
+        try:
+            claims = self.decode_and_validate_id_token(id_token, access_token)
+            self.validate_required_id_token_claims(claims)
+            self.validate_temporal_claims(claims)
+        except SocialAuthBaseException as error:
+            # Preserve decoder overrides while reporting the active operation.
+            error.stage = "refresh"
+            raise
 
         return claims
 
-    def request_access_token(
+    def request_access_token(  # noqa: PLR0913
         self,
         url: str,
         method: Literal["GET", "POST", "DELETE"] = "GET",
@@ -409,6 +528,8 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
         json: dict | None = None,
         auth: tuple[str, str] | AuthBase | None = None,
         params: dict | None = None,
+        *,
+        stage: ErrorStage = "token_exchange",
     ) -> dict[Any, Any]:
         """
         Retrieve the access token. Also, validate the id_token and
@@ -417,6 +538,7 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
         response = super().request_access_token(
             url,
             method=method,
+            stage=stage,
             headers=headers,
             data=data,
             json=json,
@@ -424,10 +546,14 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
             params=params,
         )
         for parameter in ("id_token", "access_token"):
-            if parameter not in response:
-                raise AuthTokenError(
+            token = response.get(parameter)
+            if not isinstance(token, str) or not token:
+                raise AuthResponseError(
                     self,
                     f"Missing {parameter} in OpenID Connect token response",
+                    claim=parameter,
+                    code="missing_claim",
+                    stage="token_validation",
                 )
         self.id_token = self.validate_and_return_id_token(
             response["id_token"], response["access_token"]
@@ -440,15 +566,19 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
         if id_token is None:
             return data
 
-        access_token = data.get("access_token")
-        if access_token is None:
-            raise AuthTokenError(
-                self,
-                "Missing access_token in OpenID Connect refresh response",
-            )
+        for parameter in ("id_token", "access_token"):
+            token = data.get(parameter)
+            if not isinstance(token, str) or not token:
+                raise AuthResponseError(
+                    self,
+                    f"Missing {parameter} in OpenID Connect refresh response",
+                    claim=parameter,
+                    code="missing_claim",
+                    stage="refresh",
+                )
 
         self.id_token = self.validate_and_return_refresh_id_token(
-            id_token, access_token
+            id_token, data["access_token"]
         )
         return data
 
@@ -468,13 +598,25 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
         if (
             isinstance(audience, list) and len(audience) > 1 and "azp" not in claims
         ) or ("azp" in claims and claims["azp"] != client_id):
-            raise AuthTokenError(self, "Incorrect id_token: azp")
+            raise AuthResponseError(
+                self,
+                "Incorrect id_token: azp",
+                claim="azp",
+                code="invalid_claim",
+                stage="token_validation",
+            )
 
     def validate_required_id_token_claims(self, claims) -> None:
         """Validate claims required in every ID token."""
         for claim in ("iss", "sub", "aud", "exp"):
             if claim not in claims:
-                raise AuthTokenError(self, f"Incorrect id_token: {claim}")
+                raise AuthResponseError(
+                    self,
+                    f"Incorrect id_token: {claim}",
+                    claim=claim,
+                    code="missing_claim",
+                    stage="token_validation",
+                )
 
     @staticmethod
     def _id_token_context(claims) -> dict[str, Any]:
@@ -490,28 +632,49 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
         if not isinstance(previous, dict) or any(
             claim not in previous for claim in ("iss", "sub", "aud")
         ):
-            raise AuthReauthenticationRequired(self)
+            raise AuthCredentialError(
+                self, code="reauthentication_required", stage="refresh"
+            )
 
         for claim in ("iss", "sub"):
             if previous[claim] != current[claim]:
-                raise AuthTokenError(self, f"Incorrect refreshed id_token: {claim}")
+                raise AuthResponseError(
+                    self,
+                    f"Incorrect refreshed id_token: {claim}",
+                    claim=claim,
+                    code="invalid_claim",
+                    stage="refresh",
+                )
 
         try:
             previous_audiences = self.id_token_audiences(previous["aud"])
         except ValueError as error:
-            raise AuthReauthenticationRequired(self) from error
+            raise AuthCredentialError(
+                self, code="reauthentication_required", stage="refresh"
+            ) from error
         try:
             current_audiences = self.id_token_audiences(current["aud"])
         except ValueError as error:
-            raise AuthTokenError(self, "Incorrect id_token: aud") from error
+            raise AuthResponseError(
+                self, "Incorrect id_token: aud", code="invalid_claim", stage="refresh"
+            ) from error
         if previous_audiences != current_audiences:
-            raise AuthTokenError(self, "Incorrect refreshed id_token: aud")
+            raise AuthResponseError(
+                self,
+                "Incorrect refreshed id_token: aud",
+                claim="aud",
+                code="invalid_claim",
+                stage="refresh",
+            )
 
         for claim in ("auth_time", "nonce"):
             if claim in current and previous.get(claim) != current[claim]:
-                raise AuthTokenError(
+                raise AuthResponseError(
                     self,
                     f"Incorrect refreshed id_token: {claim}",
+                    claim=claim,
+                    code="invalid_claim",
+                    stage="refresh",
                 )
 
     def extra_data(
@@ -533,7 +696,12 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
         if pipeline_kwargs:
             if response_id_token is not None:
                 if self.id_token is None:
-                    raise AuthTokenError(self, "ID token was not validated")
+                    raise AuthResponseError(
+                        self,
+                        "ID token was not validated",
+                        code="invalid_claim",
+                        stage="pipeline",
+                    )
                 data[_ID_TOKEN_CONTEXT_KEY] = self._id_token_context(self.id_token)
             return data
 
@@ -542,7 +710,12 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
         if response_id_token is None:
             return data
         if self.id_token is None:
-            raise AuthTokenError(self, "ID token was not validated")
+            raise AuthResponseError(
+                self,
+                "ID token was not validated",
+                code="invalid_claim",
+                stage="refresh",
+            )
 
         if previous_context is None:
             # Legacy associations have no original claim context. Their refreshes
@@ -572,7 +745,9 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
 
         id_token_sub = self.id_token.get("sub") if self.id_token is not None else None
         if userinfo["sub"] != id_token_sub:
-            raise AuthTokenError(self, "Invalid UserInfo sub")
+            raise AuthResponseError(
+                self, "Invalid UserInfo sub", code="invalid_claim", stage="user_info"
+            )
 
         return userinfo
 

@@ -8,7 +8,9 @@ class TumblrOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
     backend_path = "social_core.backends.tumblr.TumblrOAuth"
     user_data_url = "https://api.tumblr.com/v2/user/info"
     expected_username = "foobar"
-    access_token_body = json.dumps({"access_token": "foobar", "token_type": "bearer"})
+    access_token_body = urlencode(
+        {"oauth_token": "foobar", "oauth_token_secret": "foobar-secret"}
+    )
     request_token_body = urlencode(
         {
             "oauth_token_secret": "foobar-secret",

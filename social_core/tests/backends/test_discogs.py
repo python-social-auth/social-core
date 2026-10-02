@@ -14,8 +14,8 @@ class DiscsogsOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
         f"/complete/{0}/?oauth_verifier=wimblewomblefartfart&oauth_token={_test_token}"
     )
 
-    access_token_body = json.dumps(
-        {"access_token": _test_token, "token_type": "bearer"}
+    access_token_body = urlencode(
+        {"oauth_token": _test_token, "oauth_token_secret": "xyz789"}
     )
     request_token_body = urlencode(
         {

@@ -8,7 +8,7 @@ import requests
 import responses
 
 from social_core.backends.oauth import BaseOAuth1, BaseOAuth2, OAuthAuth
-from social_core.exceptions import AuthMissingParameter, AuthStateForbidden
+from social_core.exceptions import AuthInputError, AuthSessionError
 from social_core.tests.models import User
 from social_core.utils import get_querystring, parse_qs, url_add_parameters
 
@@ -156,7 +156,7 @@ class OAuth2StateTestMixin(Generic[BaseOAuth2BackendT]):
         case.backend.start()
         case.strategy.set_request_data({"code": "foobar"}, case.backend)
 
-        with case.assertRaises(AuthMissingParameter):
+        with case.assertRaises(AuthInputError):
             case.backend.complete()
 
     def test_complete_rejects_mismatched_state_parameter(self) -> None:
@@ -166,7 +166,7 @@ class OAuth2StateTestMixin(Generic[BaseOAuth2BackendT]):
             {"code": "foobar", "state": "invalid-state"}, case.backend
         )
 
-        with case.assertRaises(AuthStateForbidden):
+        with case.assertRaises(AuthSessionError):
             case.backend.complete()
 
 

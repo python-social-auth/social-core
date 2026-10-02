@@ -72,9 +72,8 @@ class YahooOAuth2(BaseOAuth2):
             headers=self.auth_headers(),
             method=self.ACCESS_TOKEN_METHOD,
         )
-        self.process_error(response)
         return self.do_auth(
-            response["access_token"], *args, response=response, **kwargs
+            self.get_access_token(response), *args, response=response, **kwargs
         )
 
     def refresh_token_params(self, token, *args, **kwargs):

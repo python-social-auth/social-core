@@ -4,7 +4,7 @@ from unittest.mock import patch
 import jwt
 from jwt import InvalidAudienceError
 
-from social_core.exceptions import AuthTokenError
+from social_core.exceptions import AuthResponseError
 
 from .base import BaseBackendTest
 
@@ -21,7 +21,7 @@ class PingOpenIdConnectTest(BaseBackendTest):
     def test_invalid_jwk_raises_auth_token_error(self) -> None:
         with (
             patch.object(self.backend, "get_jwks_keys", return_value=[{}]),
-            self.assertRaises(AuthTokenError) as context,
+            self.assertRaises(AuthResponseError) as context,
         ):
             self.backend.validate_and_return_id_token("token", "access-token")
 
@@ -44,14 +44,15 @@ class PingOpenIdConnectTest(BaseBackendTest):
                 "social_core.backends.ping.jwt.decode",
                 side_effect=InvalidAudienceError,
             ),
-            self.assertRaises(AuthTokenError) as context,
+            self.assertRaises(AuthResponseError) as context,
         ):
             self.backend.validate_and_return_refresh_id_token(
                 "token",
                 "access-token",
             )
 
-        self.assertEqual(context.exception.args, ("Invalid audience",))
+        self.assertEqual(context.exception.code, "invalid_claim")
+        self.assertEqual(context.exception.stage, "refresh")
 
     def test_refresh_retains_common_id_token_validation(self) -> None:
         claims = {
@@ -73,11 +74,12 @@ class PingOpenIdConnectTest(BaseBackendTest):
             ),
             patch("social_core.backends.ping.jwt.PyJWK"),
             patch("social_core.backends.ping.jwt.decode", return_value=claims),
-            self.assertRaises(AuthTokenError) as context,
+            self.assertRaises(AuthResponseError) as context,
         ):
             self.backend.validate_and_return_refresh_id_token(
                 "token",
                 "access-token",
             )
 
-        self.assertEqual(context.exception.args, ("Invalid access token",))
+        self.assertEqual(context.exception.code, "invalid_claim")
+        self.assertEqual(context.exception.stage, "refresh")

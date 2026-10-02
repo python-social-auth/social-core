@@ -23,9 +23,11 @@ from onelogin.saml2.settings import OneLogin_Saml2_Settings
 from xmlsec import Error as XMLSecError
 
 from social_core.exceptions import (
-    AuthFailed,
-    AuthInvalidParameter,
-    AuthMissingParameter,
+    AuthConfigurationError,
+    AuthInputError,
+    AuthResponseError,
+    AuthSessionError,
+    ErrorStage,
 )
 from social_core.utils import constant_time_compare, user_is_authenticated
 
@@ -127,7 +129,12 @@ class SAMLIdentityProvider:
         setting = "attr_user_permanent_id"
         uid = self.get_attr(attributes, setting, PERSISTENT_FIELDS)
         if not uid:
-            raise AuthInvalidParameter(self.backend, "attr_user_permanent_id")
+            raise AuthResponseError(
+                self.backend,
+                claim="attr_user_permanent_id",
+                code="invalid_claim",
+                stage="user_info",
+            )
         return uid
 
     # Attributes processing:
@@ -185,9 +192,11 @@ class SAMLIdentityProvider:
         except KeyError as error:
             if validate:
                 # Fail if configured or required attribute is not present
-                raise AuthMissingParameter(
+                raise AuthResponseError(
                     self.backend,
-                    f"{attribute_name} (configured by {conf_key})",
+                    claim=attribute_name,
+                    code="missing_claim",
+                    stage="user_info",
                 ) from error
             return None
 
@@ -242,7 +251,9 @@ class SAMLIdentityProvider:
         if cert:
             result["x509certMulti"] = cert
             return result
-        raise KeyError("IDP must contain x509cert or x509certMulti")
+        raise AuthConfigurationError(
+            self.backend, parameter="x509cert", code="missing_setting"
+        )
 
 
 class SAMLAuth(BaseAuth):
@@ -302,18 +313,43 @@ class SAMLAuth(BaseAuth):
         try:
             auth.process_response(request_id=request_id)
         except SAML_RESPONSE_ERRORS as error:
-            raise AuthFailed(self, f"SAML login failed: {error}") from error
+            if (
+                isinstance(error, OneLogin_Saml2_Error)
+                and error.code == OneLogin_Saml2_Error.SAML_RESPONSE_NOT_FOUND
+            ):
+                raise AuthInputError(
+                    self,
+                    code="missing_parameter",
+                    parameter="SAMLResponse",
+                    stage="callback",
+                ) from error
+            raise AuthResponseError(
+                self,
+                f"SAML login failed: {error}",
+                code="malformed_response",
+                stage="callback",
+            ) from error
         errors = auth.get_errors()
         if errors or not auth.is_authenticated():
             reason = auth.get_last_error_reason()
-            raise AuthFailed(self, f"SAML login failed: {errors} ({reason})")
+            raise AuthResponseError(
+                self,
+                f"SAML login failed: {errors} ({reason})",
+                code="malformed_response",
+                stage="callback",
+            )
 
     def _validate_in_response_to(
         self, auth: OneLogin_Saml2_Auth, request_id: str
     ) -> None:
         in_response_to = auth.get_last_response_in_response_to()
         if not in_response_to or not constant_time_compare(in_response_to, request_id):
-            raise AuthFailed(self, "SAML login failed: invalid InResponseTo")
+            raise AuthSessionError(
+                self,
+                "SAML login failed: invalid InResponseTo",
+                code="state_mismatch",
+                stage="callback",
+            )
 
     def _response_in_response_to(self, idp: SAMLIdentityProvider) -> str | None:
         try:
@@ -322,6 +358,9 @@ class SAMLAuth(BaseAuth):
                 OneLogin_Saml2_Settings(self.generate_saml_config(idp)),
                 saml_response,
             )
+        except AuthConfigurationError as error:
+            error.stage = "callback"
+            raise
         except (*SAML_RESPONSE_ERRORS, KeyError):
             return None
         return cast("str | None", response.get_in_response_to())
@@ -339,7 +378,12 @@ class SAMLAuth(BaseAuth):
             and not request_id
             and not session_id
         ):
-            raise AuthFailed(self, "SAML login failed: missing AuthnRequest ID")
+            raise AuthSessionError(
+                self,
+                "SAML login failed: missing AuthnRequest ID",
+                code="session_context_missing",
+                stage="callback",
+            )
 
     def _validate_processed_response_request_id(
         self,
@@ -351,11 +395,21 @@ class SAMLAuth(BaseAuth):
         in_response_to = get_in_response_to() if get_in_response_to else None
         if in_response_to:
             if not request_id:
-                raise AuthFailed(self, "SAML login failed: missing AuthnRequest ID")
+                raise AuthSessionError(
+                    self,
+                    "SAML login failed: missing AuthnRequest ID",
+                    code="session_context_missing",
+                    stage="callback",
+                )
             self._validate_in_response_to(auth, request_id)
             return True
         if user_is_authenticated(kwargs.get("user")):
-            raise AuthFailed(self, "SAML login failed: invalid InResponseTo")
+            raise AuthSessionError(
+                self,
+                "SAML login failed: invalid InResponseTo",
+                code="state_mismatch",
+                stage="callback",
+            )
         return False
 
     def _validate_auth_response(
@@ -379,7 +433,12 @@ class SAMLAuth(BaseAuth):
                     "str | None", self.strategy.session_get(request_id_key)
                 )
                 if not request_id:
-                    raise AuthFailed(self, "SAML login failed: missing AuthnRequest ID")
+                    raise AuthSessionError(
+                        self,
+                        "SAML login failed: missing AuthnRequest ID",
+                        code="session_context_missing",
+                        stage="callback",
+                    )
             else:
                 self._process_response(auth)
                 self.strategy.restore_session(session_id, kwargs)
@@ -393,7 +452,12 @@ class SAMLAuth(BaseAuth):
             return True, True
         if response_in_response_to:
             if not request_id:
-                raise AuthFailed(self, "SAML login failed: missing AuthnRequest ID")
+                raise AuthSessionError(
+                    self,
+                    "SAML login failed: missing AuthnRequest ID",
+                    code="session_context_missing",
+                    stage="callback",
+                )
             self._process_response(auth, request_id)
             self._validate_in_response_to(auth, request_id)
             return False, True
@@ -410,11 +474,18 @@ class SAMLAuth(BaseAuth):
         if idp_name is None:
             # RelayState was missing, perhaps an IdP initiated flow
             if len(enabled_idps) != 1:
-                raise AuthMissingParameter(self, "RelayState.idp")
+                raise AuthInputError(
+                    self,
+                    parameter="RelayState.idp",
+                    code="missing_parameter",
+                    stage="callback",
+                )
             # Use the only configured IDP
             idp_name = next(iter(enabled_idps))
         if not isinstance(idp_name, str) or idp_name not in enabled_idps:
-            raise AuthInvalidParameter(self, "idp")
+            raise AuthInputError(
+                self, parameter="idp", code="invalid_parameter", stage="callback"
+            )
         idp_config = enabled_idps[idp_name]
         return SAMLIdentityProvider(self, idp_name, **idp_config)
 
@@ -493,15 +564,24 @@ class SAMLAuth(BaseAuth):
         }
         return OneLogin_Saml2_Auth(request_info, config)
 
+    def _get_saml_auth(self, idp: SAMLIdentityProvider, *, stage: ErrorStage):
+        try:
+            return self._create_saml_auth(idp)
+        except AuthConfigurationError as error:
+            error.stage = stage
+            raise
+
     def auth_url(self):
         """Get the URL to which we must redirect in order to
         authenticate the user"""
         try:
             idp_name = self.strategy.request_data()["idp"]
         except KeyError as error:
-            raise AuthMissingParameter(self, "idp") from error
+            raise AuthInputError(
+                self, parameter="idp", code="missing_parameter", stage="begin"
+            ) from error
         idp = self.get_idp(idp_name)
-        auth = self._create_saml_auth(idp=idp)
+        auth = self._get_saml_auth(idp, stage="begin")
         # Below, return_to sets the RelayState, which can contain
         # arbitrary data.  We use it to store the specific SAML IdP
         # name, since we multiple IdPs share the same auth_complete
@@ -549,7 +629,9 @@ class SAMLAuth(BaseAuth):
 
         # Validate that the data is dict
         if not isinstance(relay_state, dict):
-            raise AuthInvalidParameter(self, "RelayState")
+            raise AuthInputError(
+                self, parameter="RelayState", code="invalid_parameter", stage="callback"
+            )
 
         return relay_state
 
@@ -572,7 +654,12 @@ class SAMLAuth(BaseAuth):
             idp_name = relay_state.get("idp")
 
             if not idp_name:
-                raise AuthInvalidParameter(self, "RelayState.idp")
+                raise AuthInputError(
+                    self,
+                    parameter="RelayState.idp",
+                    code="invalid_parameter",
+                    stage="callback",
+                )
 
             session_id = relay_state.get(self.strategy.SESSION_SAVE_KEY)
             next_url = relay_state.get("next")
@@ -585,7 +672,7 @@ class SAMLAuth(BaseAuth):
         self._check_missing_request_id(request_id, session_id, kwargs)
         response_in_response_to = self._response_in_response_to(idp)
 
-        auth = self._create_saml_auth(idp)
+        auth = self._get_saml_auth(idp, stage="callback")
         session_restored, request_id_validated = self._validate_auth_response(
             auth,
             request_id_key,
@@ -630,7 +717,7 @@ class SAMLAuth(BaseAuth):
 
     def request_logout(self, idp_name, social_auth, return_to=None):
         idp = self.get_idp(idp_name)
-        auth = self._create_saml_auth(idp)
+        auth = self._get_saml_auth(idp, stage="disconnect")
         name_id = social_auth.extra_data["name_id"]
         session_index = social_auth.extra_data["session_index"]
         return auth.logout(
@@ -639,7 +726,7 @@ class SAMLAuth(BaseAuth):
 
     def process_logout(self, idp_name, delete_session_cb):
         idp = self.get_idp(idp_name)
-        auth = self._create_saml_auth(idp)
+        auth = self._get_saml_auth(idp, stage="disconnect")
         url = auth.process_slo(delete_session_cb=delete_session_cb)
         errors = auth.get_errors()
         return url, errors

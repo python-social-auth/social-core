@@ -9,7 +9,7 @@ from typing import Any
 
 import shopify
 
-from social_core.exceptions import AuthCanceled, AuthFailed, AuthMissingParameter
+from social_core.exceptions import AuthInputError, AuthResponseError
 from social_core.utils import handle_http_errors
 
 from .oauth import BaseOAuth2
@@ -45,10 +45,17 @@ class ShopifyOAuth2(BaseOAuth2):
         data = super().extra_data(user, uid, response, details, pipeline_kwargs)
         shop = response.get("shop")
         if not shop:
-            raise AuthMissingParameter(self, "shop")
+            raise AuthInputError(
+                self, parameter="shop", code="missing_parameter", stage="callback"
+            )
         session = shopify.Session(shop.strip(), version=self.shopify_api_version)
         # Get, and store the permanent token
-        token = session.request_token(data["access_token"])
+        try:
+            token = session.request_token(data["access_token"])
+        except shopify.ValidationException as error:
+            raise AuthInputError(
+                self, code="invalid_parameter", stage="callback"
+            ) from error
         data["access_token"] = token
         return dict(data)
 
@@ -60,7 +67,9 @@ class ShopifyOAuth2(BaseOAuth2):
         redirect_uri = self.get_redirect_uri(state)
         shop = self.data.get("shop")
         if not shop:
-            raise AuthMissingParameter(self, "shop")
+            raise AuthInputError(
+                self, parameter="shop", code="missing_parameter", stage="begin"
+            )
         session = shopify.Session(shop.strip(), version=self.shopify_api_version)
         return session.create_permission_url(
             scope=scope, redirect_uri=redirect_uri, state=state
@@ -76,14 +85,25 @@ class ShopifyOAuth2(BaseOAuth2):
         try:
             shop_url = self.data.get("shop")
             shopify.Session.setup(api_key=key, secret=secret)
+            if not shopify.Session.validate_hmac(self.data):
+                raise AuthResponseError(
+                    self, code="invalid_signature", stage="callback"
+                )
             shopify_session = shopify.Session(
                 shop_url, version=self.shopify_api_version, token=self.data
             )
             access_token = shopify_session.token
         except shopify.ValidationException as error:
-            raise AuthCanceled(self) from error
+            raise AuthInputError(
+                self, code="invalid_parameter", stage="callback"
+            ) from error
         if not access_token:
-            raise AuthFailed(self, "Authentication Failed")
+            raise AuthResponseError(
+                self,
+                "Authentication Failed",
+                code="malformed_response",
+                stage="callback",
+            )
         return self.do_auth(
             access_token, shop_url, shopify_session.url, *args, **kwargs
         )

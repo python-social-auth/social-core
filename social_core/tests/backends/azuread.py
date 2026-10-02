@@ -9,7 +9,7 @@ from urllib.parse import parse_qs, urlsplit
 
 import responses
 
-from social_core.exceptions import AuthException
+from social_core.exceptions import AuthConfigurationError
 
 if TYPE_CHECKING:
     from social_core.backends.azuread import AzureADOAuth2
@@ -38,8 +38,20 @@ class AzureOAuth2TestMixin:
                 case.strategy.set_settings(
                     {f"SOCIAL_AUTH_{case.name}_AUTHORITY_URL": authority}
                 )
-                with case.assertRaises(AuthException):
-                    case.backend.authorization_url()
+                for operation, stage in (
+                    (case.backend.authorization_url, "begin"),
+                    (case.backend.access_token_url, "token_exchange"),
+                    (case.backend.refresh_token_url, "refresh"),
+                    (case.backend.openid_configuration_url, "token_validation"),
+                ):
+                    with (
+                        case.subTest(stage=stage),
+                        case.assertRaises(AuthConfigurationError) as caught,
+                    ):
+                        operation()
+                    case.assertEqual(caught.exception.stage, stage)
+                    case.assertEqual(caught.exception.parameter, "AUTHORITY_URL")
+                    case.assertEqual(caught.exception.source, "configuration")
 
     def test_authority_host_fallback(self) -> None:
         case = cast("OAuth2Test[AzureADOAuth2]", self)

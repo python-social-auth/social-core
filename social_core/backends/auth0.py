@@ -7,7 +7,8 @@ from typing import TYPE_CHECKING
 
 import jwt
 
-from social_core.exceptions import AuthTokenError
+from social_core.backends.utils import jwt_error
+from social_core.exceptions import AuthResponseError
 from social_core.utils import cache
 
 from .oauth import BaseOAuth2
@@ -44,7 +45,11 @@ class Auth0OAuth2(BaseOAuth2):
     @cache(ttl=86400)
     def get_jwks_keys_for_uri(self, uri: str) -> list[jwt.PyJWK]:
         """Cache parsed signing keys separately for each Auth0 domain."""
-        jwks = self.get_json(uri)
+        jwks = self.get_json(uri, stage="token_validation")
+        if not isinstance(jwks, dict):
+            raise AuthResponseError(
+                self, code="malformed_response", stage="token_validation"
+            )
         try:
             return jwt.PyJWKSet.from_dict(jwks).keys
         except jwt.PyJWKSetError:
@@ -71,7 +76,13 @@ class Auth0OAuth2(BaseOAuth2):
         # Obtain JWT and the keys to validate the signature
         id_token = response.get("id_token")
         if id_token is None:
-            raise AuthTokenError(self, "Missing id_token in Auth0 token response")
+            raise AuthResponseError(
+                self,
+                "Missing id_token in Auth0 token response",
+                code="missing_claim",
+                claim="id_token",
+                stage="token_validation",
+            )
         jwks_uri = self.api_path(".well-known/jwks.json")
         cached_keys: Any = self.get_jwks_keys_for_uri
         try:
@@ -90,25 +101,35 @@ class Auth0OAuth2(BaseOAuth2):
                 keys = cached_keys.refresh(self, jwks_uri)
                 payload = self._decode_id_token(id_token, keys)
         except jwt.PyJWTError as error:
-            raise AuthTokenError(self, error) from error
+            raise jwt_error(self, error) from error
 
-        fullname = payload["name"]
+        subject = payload.get("sub")
+        if not isinstance(subject, str) or not subject:
+            raise AuthResponseError(
+                self, claim="sub", code="missing_claim", stage="token_validation"
+            )
+        fullname = payload.get("name", "")
         first_name = ""
         last_name = ""
         details = {
-            "username": payload["nickname"],
-            "email": payload["email"],
+            "username": payload.get("nickname", ""),
+            "email": payload.get("email", ""),
             "email_verified": payload.get("email_verified", False),
             "fullname": fullname,
             "first_name": first_name,
             "last_name": last_name,
-            "picture": payload["picture"],
-            "user_id": payload["sub"],
+            "picture": payload.get("picture", ""),
+            "user_id": subject,
         }
         id_key = self.id_key()
         if id_key not in details:
             user_id = payload.get(id_key)
             if user_id is None:
-                raise AuthTokenError(self, f"Missing configured user ID claim {id_key}")
+                raise AuthResponseError(
+                    self,
+                    f"Missing configured user ID claim {id_key}",
+                    code="missing_claim",
+                    stage="user_info",
+                )
             details[id_key] = user_id
         return details

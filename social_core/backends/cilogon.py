@@ -1,5 +1,7 @@
 from typing import Any
 
+from social_core.exceptions import SocialAuthBaseException
+
 from .oauth import BaseOAuth2
 
 
@@ -25,6 +27,8 @@ class CILogonOAuth2(BaseOAuth2):
         data = {"access_token": access_token}
         try:
             return self.get_json(url, method="POST", data=data)
+        except SocialAuthBaseException:
+            raise
         except ValueError:
             return None
 

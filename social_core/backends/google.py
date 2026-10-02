@@ -97,7 +97,7 @@ class GoogleOAuth(BaseGoogleAuth, BaseOAuth1):
         """Return user data from Google API"""
         return self.get_querystring(
             "https://www.googleapis.com/userinfo/email",
-            auth=self.oauth_auth(access_token),
+            auth=self.oauth_auth(access_token, stage="user_info"),
         )
 
     def get_key_and_secret(self):

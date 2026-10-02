@@ -14,7 +14,8 @@ from jwt import (
 from jwt.utils import base64url_decode
 
 from social_core.backends.open_id_connect import OpenIdConnectAuth
-from social_core.exceptions import AuthTokenError
+from social_core.backends.utils import jwt_error
+from social_core.exceptions import AuthResponseError
 
 
 class PingOpenIdConnect(OpenIdConnectAuth):
@@ -46,10 +47,15 @@ class PingOpenIdConnect(OpenIdConnectAuth):
         try:
             key = self.find_valid_key(id_token)
         except PyJWTError as error:
-            raise AuthTokenError(self, str(error)) from error
+            raise jwt_error(self, error) from error
 
         if not key:
-            raise AuthTokenError(self, "Signature verification failed")
+            raise AuthResponseError(
+                self,
+                "Signature verification failed",
+                code="invalid_signature",
+                stage="token_validation",
+            )
 
         if "alg" not in key:
             key["alg"] = "RS256"
@@ -66,18 +72,31 @@ class PingOpenIdConnect(OpenIdConnectAuth):
                 leeway=cast("int", self.setting("JWT_LEEWAY", self.JWT_LEEWAY)),
             )
         except ExpiredSignatureError as error:
-            raise AuthTokenError(self, "Signature has expired") from error
+            raise AuthResponseError(
+                self,
+                "Signature has expired",
+                code="response_expired",
+                stage="token_validation",
+            ) from error
         except InvalidAudienceError as error:
             # compatibility with jose error message
-            raise AuthTokenError(self, "Invalid audience") from error
+            raise AuthResponseError(
+                self, "Invalid audience", code="invalid_claim", stage="token_validation"
+            ) from error
         except InvalidTokenError as error:
-            raise AuthTokenError(self, str(error)) from error
+            raise jwt_error(self, error) from error
         except PyJWTError as error:
-            raise AuthTokenError(self, "Invalid signature") from error
+            raise jwt_error(self, error) from error
 
         self.validate_authorized_party(claims, client_id)
         if not self.validate_at_hash(claims, access_token, key):
-            raise AuthTokenError(self, "Invalid access token")
+            raise AuthResponseError(
+                self,
+                "Invalid access token",
+                claim="at_hash",
+                code="invalid_claim",
+                stage="token_validation",
+            )
 
         return claims
 

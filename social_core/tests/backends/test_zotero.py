@@ -1,6 +1,7 @@
 from urllib.parse import urlencode
 
-from social_core.exceptions import AuthMissingParameter
+from social_core.exceptions import AuthResponseError
+from social_core.tests.exception_helpers import assert_auth_error
 
 from .oauth import OAuth1AuthUrlTestMixin, OAuth1Test
 
@@ -57,7 +58,7 @@ class ZoteroOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
     def test_missing_configured_id_raises_missing_parameter(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_ZOTERO_ID_KEY": "missing_id"})
 
-        with self.assertRaisesRegex(AuthMissingParameter, "missing_id"):
+        with assert_auth_error(self, AuthResponseError, "missing_claim"):
             self.backend.get_user_id({}, {"access_token": {}})
 
     def test_partial_pipeline(self) -> None:
