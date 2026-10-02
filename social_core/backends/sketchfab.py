@@ -24,7 +24,9 @@ class SketchfabOAuth2(BaseOAuth2):
         email = user_data.get("email", "")
         username = user_data["username"]
         name = user_data.get("displayName", "")
-        fullname, first_name, last_name = self.get_user_names(name)
+        fullname = name
+        first_name = ""
+        last_name = ""
         return {
             "username": username,
             "fullname": fullname,

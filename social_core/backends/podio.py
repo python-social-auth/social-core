@@ -27,9 +27,9 @@ class PodioOAuth2(BaseOAuth2):
         )
 
     def get_user_details(self, response):
-        fullname, first_name, last_name = self.get_user_names(
-            response["profile"]["name"]
-        )
+        fullname = response["profile"]["name"]
+        first_name = ""
+        last_name = ""
         return {
             "username": f"user_{response['user']['user_id']}",
             "email": response["user"]["mail"],

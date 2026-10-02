@@ -24,11 +24,9 @@ class SeznamOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Seznam account"""
-        fullname, first_name, last_name = self.get_user_names(
-            response.get("name"),
-            first_name=response.get("firstname"),
-            last_name=response.get("lastname"),
-        )
+        fullname = response.get("name")
+        first_name = response.get("firstname")
+        last_name = response.get("lastname")
         return {
             "username": response.get("username"),
             "email": response.get("email") or "",

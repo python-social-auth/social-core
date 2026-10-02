@@ -153,11 +153,9 @@ class AppleIdAuth(BaseOAuth2):
             name = response[_USER_NAME_KEY]
         else:
             name = json.loads(self.data.get("user", "{}")).get("name", {})
-        fullname, first_name, last_name = self.get_user_names(
-            fullname="",
-            first_name=name.get("firstName", ""),
-            last_name=name.get("lastName", ""),
-        )
+        fullname = ""
+        first_name = name.get("firstName", "")
+        last_name = name.get("lastName", "")
 
         email = response.get("email", "")
         apple_id = response.get(self.id_key(), "")

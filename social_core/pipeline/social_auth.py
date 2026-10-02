@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from social_core.exceptions import AuthAlreadyAssociated, AuthException, AuthForbidden
+from social_core.utils import normalize_user_names
 
 if TYPE_CHECKING:
     from social_core.backends.base import BaseAuth
@@ -11,6 +12,30 @@ if TYPE_CHECKING:
 
 def social_details(backend: BaseAuth, details, response, *args, **kwargs):
     return {"details": dict(backend.get_user_details(response), **details)}
+
+
+def social_names(backend: BaseAuth, details, *args, **kwargs):
+    """Populate missing full or component names using provider details."""
+    names = normalize_user_names(
+        details.get("fullname"),
+        details.get("first_name"),
+        details.get("last_name"),
+        firstlast_from_full=bool(backend.setting("FIRSTLAST_FROM_FULL", True)),
+        full_from_firstlast=bool(backend.setting("FULL_FROM_FIRSTLAST", True)),
+    )
+    normalized = details.copy()
+    # Preserve missing/None values when the provider supplied no name, so a
+    # subsequent login (notably Apple) does not clear an existing user name.
+    if any(names):
+        normalized.update(
+            zip(("fullname", "first_name", "last_name"), names, strict=True)
+        )
+    else:
+        for name in ("fullname", "first_name", "last_name"):
+            value = normalized.get(name)
+            if isinstance(value, str):
+                normalized[name] = value.strip()
+    return {"details": normalized}
 
 
 def social_uid(backend: BaseAuth, details, response, *args, **kwargs):

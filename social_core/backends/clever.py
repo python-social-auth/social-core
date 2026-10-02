@@ -26,10 +26,9 @@ class CleverOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Classlink account"""
-        fullname, first_name, last_name = self.get_user_names(
-            first_name=response.get("data", {}).get("name", {}).get("first", None),
-            last_name=response.get("data", {}).get("name", {}).get("last", None),
-        )
+        fullname = ""
+        first_name = response.get("data", {}).get("name", {}).get("first", None)
+        last_name = response.get("data", {}).get("name", {}).get("last", None)
         email = response.get("data", {}).get("email")
         username = (
             response.get("data", {})

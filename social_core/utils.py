@@ -62,6 +62,31 @@ class PartialPipelineSelection:
     pending_resume: bool = False
 
 
+def normalize_user_names(
+    fullname: str | None = "",
+    first_name: str | None = "",
+    last_name: str | None = "",
+    *,
+    firstlast_from_full: bool = True,
+    full_from_firstlast: bool = True,
+) -> tuple[str, str, str]:
+    """Fill missing name representations without replacing supplied names."""
+    fullname = (fullname or "").strip()
+    first_name = (first_name or "").strip()
+    last_name = (last_name or "").strip()
+    if firstlast_from_full and fullname and not (first_name or last_name):
+        first_name, _, last_name = fullname.partition(" ")
+        first_name, last_name = first_name.strip(), last_name.strip()
+    if full_from_firstlast and not fullname:
+        if first_name and re.search(
+            rf"(?<!\S){re.escape(first_name)}(?!\S)", last_name
+        ):
+            fullname = last_name
+        else:
+            fullname = f"{first_name} {last_name}".strip()
+    return fullname, first_name, last_name
+
+
 def module_member(name):
     mod, member = name.rsplit(".", 1)
     module = import_module(mod)

@@ -121,13 +121,12 @@ class OpenIdAuth(BaseAuth):
         last_name = values.get("last_name") or ""
         email = values.get("email") or ""
 
-        if not fullname and first_name and last_name:
-            fullname = f"{first_name} {last_name}"
-        elif fullname:
+        username_first, username_last = first_name, last_name
+        if fullname:
             try:
-                first_name, last_name = fullname.rsplit(" ", 1)
+                username_first, username_last = fullname.rsplit(" ", 1)
             except ValueError:
-                last_name = fullname
+                username_last = fullname
 
         username_key = cast("str", self.setting("USERNAME_KEY") or self.USERNAME_KEY)
         values.update(
@@ -136,7 +135,7 @@ class OpenIdAuth(BaseAuth):
                 "first_name": first_name,
                 "last_name": last_name,
                 "username": values.get(username_key)
-                or (first_name.title() + last_name.title()),
+                or (username_first.title() + username_last.title()),
                 "email": email,
             }
         )

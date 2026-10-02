@@ -28,11 +28,10 @@ class MapMyFitnessOAuth2(BaseOAuth2):
     def get_user_details(self, response):
         first = response.get("first_name", "")
         last = response.get("last_name", "")
-        full = (first + last).strip()
         return {
             "username": response["username"],
             "email": response["email"],
-            "fullname": full,
+            "fullname": "",
             "first_name": first,
             "last_name": last,
         }

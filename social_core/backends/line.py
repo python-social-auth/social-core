@@ -73,9 +73,9 @@ class LineOAuth2(BaseOAuth2):
         )
 
     def get_user_details(self, response):
-        fullname, first_name, last_name = self.get_user_names(
-            response.get("displayName")
-        )
+        fullname = response.get("displayName")
+        first_name = ""
+        last_name = ""
         username = response.get("userId")
         picture_url = response.get("pictureUrl")
         status_message = response.get("statusMessage")

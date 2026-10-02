@@ -34,10 +34,9 @@ class VKontakteOpenAPI(BaseAuth):
     def get_user_details(self, response):
         """Return user details from VK.com request"""
         nickname = response.get("nickname") or ""
-        fullname, first_name, last_name = self.get_user_names(
-            first_name=response.get("first_name", [""])[0],
-            last_name=response.get("last_name", [""])[0],
-        )
+        fullname = ""
+        first_name = response.get("first_name", [""])[0]
+        last_name = response.get("last_name", [""])[0]
         return {
             "username": response["id"] if len(nickname) == 0 else nickname,
             "email": "",
@@ -105,9 +104,9 @@ class VKOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from VK.com account"""
-        fullname, first_name, last_name = self.get_user_names(
-            first_name=response.get("first_name"), last_name=response.get("last_name")
-        )
+        fullname = ""
+        first_name = response.get("first_name")
+        last_name = response.get("last_name")
         return {
             "username": response.get("screen_name"),
             "email": response.get("email", ""),

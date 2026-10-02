@@ -29,9 +29,9 @@ class LiveOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Live Connect account"""
-        fullname, first_name, last_name = self.get_user_names(
-            first_name=response.get("first_name"), last_name=response.get("last_name")
-        )
+        fullname = ""
+        first_name = response.get("first_name")
+        last_name = response.get("last_name")
         return {
             "username": response.get("name"),
             "email": response.get("emails", {}).get("account", ""),

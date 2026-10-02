@@ -31,9 +31,9 @@ class PinterestOAuth2(BaseOAuth2):
         return response
 
     def get_user_details(self, response):
-        fullname, first_name, last_name = self.get_user_names(
-            first_name=response["first_name"], last_name=response["last_name"]
-        )
+        fullname = ""
+        first_name = response["first_name"]
+        last_name = response["last_name"]
 
         return {
             "username": response.get("username"),

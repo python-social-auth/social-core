@@ -348,8 +348,8 @@ class LifeScienceEoscOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
                 "username": "foo@lifescience-ri.eu",
                 "email": "email@example.com",
                 "fullname": "Foo Bar",
-                "first_name": "Foo",
-                "last_name": "Bar",
+                "first_name": "",
+                "last_name": "",
             },
         )
 

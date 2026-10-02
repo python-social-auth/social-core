@@ -38,9 +38,9 @@ class YahooOAuth2(BaseOAuth2):
         To Get user email you need the profile private read permission.
         """
 
-        fullname, first_name, last_name = self.get_user_names(
-            first_name=response.get("given_name"), last_name=response.get("family_name")
-        )
+        fullname = ""
+        first_name = response.get("given_name")
+        last_name = response.get("family_name")
 
         email = response.get("email")
         return {

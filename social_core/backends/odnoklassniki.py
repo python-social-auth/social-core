@@ -37,11 +37,9 @@ class OdnoklassnikiOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Odnoklassniki request"""
-        fullname, first_name, last_name = self.get_user_names(
-            fullname=unquote(response["name"]),
-            first_name=unquote(response["first_name"]),
-            last_name=unquote(response["last_name"]),
-        )
+        fullname = unquote(response["name"])
+        first_name = unquote(response["first_name"])
+        last_name = unquote(response["last_name"])
         return {
             "username": response["uid"],
             "email": response.get("email", ""),
@@ -82,11 +80,9 @@ class OdnoklassnikiApp(BaseAuth):
         }
 
     def get_user_details(self, response):
-        fullname, first_name, last_name = self.get_user_names(
-            fullname=unquote(response["name"]),
-            first_name=unquote(response["first_name"]),
-            last_name=unquote(response["last_name"]),
-        )
+        fullname = unquote(response["name"])
+        first_name = unquote(response["first_name"])
+        last_name = unquote(response["last_name"])
         return {
             "username": response["uid"],
             "email": "",

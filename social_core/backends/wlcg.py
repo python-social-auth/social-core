@@ -19,9 +19,9 @@ class WLCGOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from WLCG IAM service"""
-        fullname, first_name, last_name = self.get_user_names(
-            first_name=response.get("given_name"), last_name=response.get("family_name")
-        )
+        fullname = ""
+        first_name = response.get("given_name")
+        last_name = response.get("family_name")
         return {
             "username": response.get("email"),
             "email": response.get("email"),

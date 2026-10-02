@@ -72,7 +72,9 @@ class Auth0OAuth2(BaseOAuth2):
             # raise the last exception found during iteration
             raise AuthTokenError(self, signature_error) from signature_error
 
-        fullname, first_name, last_name = self.get_user_names(payload["name"])
+        fullname = payload["name"]
+        first_name = ""
+        last_name = ""
         details = {
             "username": payload["nickname"],
             "email": payload["email"],
