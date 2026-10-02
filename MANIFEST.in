@@ -7,3 +7,5 @@ recursive-exclude .tox *
 recursive-exclude social_core *.pyc
 
 recursive-include social_core/static *.svg NOTICE LICENSE.amplify-ui
+
+include scripts/check_distribution.py

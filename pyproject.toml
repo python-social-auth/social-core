@@ -234,14 +234,20 @@ disable = [
 ]
 
 [tool.setuptools]
-packages = ["social_core"]
+include-package-data = false
 
 [tool.setuptools.package-data]
 social_core = [
+  "py.typed",
   "static/social_auth/icons/*.svg",
   "static/social_auth/LICENSE.amplify-ui",
   "static/social_auth/NOTICE"
 ]
+
+[tool.setuptools.packages.find]
+exclude = ["social_core.tests", "social_core.tests.*"]
+include = ["social_core", "social_core.*"]
+namespaces = false
 
 [tool.tomlsort]
 ignore_case = true
