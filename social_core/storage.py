@@ -75,7 +75,11 @@ class UserMixin:
         refresh_token = getattr(backend, "refresh_token", None) if backend else None
         if token and callable(refresh_token):
             assert backend is not None
-            response = cast("dict[str, Any]", refresh_token(token, *args, **kwargs))
+            refresh_kwargs = backend.get_refresh_token_kwargs(self.extra_data)
+            refresh_kwargs.update(kwargs)
+            response = cast(
+                "dict[str, Any]", refresh_token(token, *args, **refresh_kwargs)
+            )
             extra_data = backend.extra_data(
                 self.user, self.uid, response, self.extra_data or {}, {}
             )

@@ -35,6 +35,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- VK ID OAuth2 backend (`vk-id`) with mandatory S256 PKCE, payload callbacks,
+  server-side profiles, and device-bound refresh tokens with automatic renewal.
 - Azure AD backends support an explicit `AUTHORITY_URL` and opt-in PKCE through
   `USE_PKCE`. Azure AD B2C exposes a `logout_url()` helper using policy discovery.
 - Reusable `BaseAuth.ASSOCIATION_ONLY` capability for user-bound connections,
@@ -44,6 +46,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- VK OAuth2 accepts aliased and conditional `EXTRA_DATA` entries when requesting
+  profile fields, and requests the supported `photo_50` field while preserving
+  the legacy `photo` and `user_photo` response keys.
 - Azure tenant and B2C backends honor `OPENID_CONFIGURATION_URL` overrides.
 - Azure's `get_auth_token()` uses stored refresh tokens and persists refreshed
   credentials instead of sending an access token as a refresh token.

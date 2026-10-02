@@ -416,6 +416,10 @@ class BaseAuth:
         """
         raise NotImplementedError("Implement in subclass")
 
+    def get_refresh_token_kwargs(self, extra_data: dict[str, Any]) -> dict[str, Any]:
+        """Return default refresh arguments from stored account credentials."""
+        return {}
+
     def get_user_names(self, fullname="", first_name="", last_name=""):
         warnings.warn(
             "BaseAuth.get_user_names() is deprecated. Return provider-supplied "
