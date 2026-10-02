@@ -49,6 +49,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Exclude tests and their key fixtures from wheels while retaining them in
+  source distributions for downstream testing.
 - VK OAuth2 accepts aliased and conditional `EXTRA_DATA` entries when requesting
   profile fields, and requests the supported `photo_50` field while preserving
   the legacy `photo` and `user_photo` response keys.
