@@ -8,6 +8,8 @@ from .open_id import OpenIdAuth
 
 class OpenSUSEOpenId(OpenIdAuth):
     name = "opensuse"
+    title = "openSUSE"
+    icon = "opensuse.svg"
     ID_KEY = "nickname"
     URL = "https://www.opensuse.org/openid/user/"
 

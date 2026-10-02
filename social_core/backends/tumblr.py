@@ -12,6 +12,7 @@ from .oauth import BaseOAuth1
 
 class TumblrOAuth(BaseOAuth1):
     name = "tumblr"
+    title = "Tumblr"
     ID_KEY = "uuid"
     LEGACY_ID_KEYS = ("name",)
     MUTABLE_ID_KEYS = ("name",)

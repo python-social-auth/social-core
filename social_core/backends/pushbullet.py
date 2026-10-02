@@ -7,6 +7,7 @@ class PushbulletOAuth2(BaseOAuth2):
     """pushbullet OAuth authentication backend"""
 
     name = "pushbullet"
+    title = "Pushbullet"
     EXTRA_DATA = [("id", "id")]
     ID_KEY = "iden"
     AUTHORIZATION_URL = "https://www.pushbullet.com/authorize"

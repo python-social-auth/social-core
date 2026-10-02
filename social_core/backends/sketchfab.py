@@ -11,6 +11,7 @@ from .oauth import BaseOAuth2
 
 class SketchfabOAuth2(BaseOAuth2):
     name = "sketchfab"
+    title = "Sketchfab"
     ID_KEY = "uid"
     AUTHORIZATION_URL = "https://sketchfab.com/oauth2/authorize/"
     ACCESS_TOKEN_URL = "https://sketchfab.com/oauth2/token/"

@@ -14,6 +14,8 @@ class Auth0OAuth2(BaseOAuth2):
     """Auth0 OAuth authentication backend"""
 
     name = "auth0"
+    title = "Auth0"
+    icon = "auth0.svg"
     ID_KEY = "user_id"
     DEFAULT_SCOPE = ["openid", "profile", "email"]
     SCOPE_SEPARATOR = " "

@@ -7,6 +7,7 @@ class GrafanaOAuth2(BaseOAuth2):
     """Grafana OAuth authentication backend"""
 
     name = "grafana"
+    title = "Grafana"
     AUTHORIZATION_URL = "https://grafana.com/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://grafana.com/api/oauth2/token"
     DEFAULT_SCOPE = ["profile", "email"]

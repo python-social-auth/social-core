@@ -14,6 +14,7 @@ class UffdOAuth2(BaseOAuth2):
     """
 
     name = "uffd"
+    title = "uffd"
     REFRESH_TOKEN_METHOD = "POST"
     SCOPE_SEPARATOR = " "
     STATE_PARAMETER = True

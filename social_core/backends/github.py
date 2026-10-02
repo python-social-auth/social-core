@@ -17,6 +17,8 @@ class GithubOAuth2(BaseOAuth2):
     """Github OAuth authentication backend"""
 
     name = "github"
+    title = "GitHub"
+    icon = "github.svg"
     API_URL = "https://api.github.com/"
     AUTHORIZATION_URL = "https://github.com/login/oauth/authorize"
     ACCESS_TOKEN_URL = "https://github.com/login/oauth/access_token"
@@ -98,6 +100,8 @@ class GithubOrganizationOAuth2(GithubMemberOAuth2):
     """Github OAuth2 authentication backend for organizations"""
 
     name = "github-org"
+    title = "GitHub Organization"
+    icon = "github.svg"
     no_member_string = "User doesn't belong to the organization"
 
     def member_url(self, user_data):
@@ -111,6 +115,8 @@ class GithubTeamOAuth2(GithubMemberOAuth2):
     """Github OAuth2 authentication backend for teams"""
 
     name = "github-team"
+    title = "GitHub Team"
+    icon = "github.svg"
     no_member_string = "User doesn't belong to the team"
 
     def member_url(self, user_data):
@@ -129,6 +135,8 @@ class GithubAppAuth(GithubOAuth2):
     """
 
     name = "github-app"
+    title = "GitHub App"
+    icon = "github.svg"
 
     def auth_complete(self, *args, **kwargs):
         if not self.get_request_state() and all(

@@ -10,6 +10,7 @@ from .oauth import BaseOAuth2
 
 class DripOAuth(BaseOAuth2):
     name = "drip"
+    title = "Drip"
     ASSOCIATION_ONLY = True
     ID_KEY = "email"
     AUTHORIZATION_URL = "https://www.getdrip.com/oauth/authorize"

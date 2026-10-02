@@ -7,6 +7,7 @@ class NaverOAuth2(BaseOAuth2):
     """Naver OAuth authentication backend"""
 
     name = "naver"
+    title = "NAVER"
     REQUIRES_USER_ID = True
     AUTHORIZATION_URL = "https://nid.naver.com/oauth2.0/authorize"
     ACCESS_TOKEN_URL = "https://nid.naver.com/oauth2.0/token"

@@ -8,6 +8,7 @@ from social_core.backends.open_id_connect import OpenIdConnectAuth
 
 class EInfraCZOpenIdConnect(OpenIdConnectAuth):
     name = "e-infra_cz"
+    title = "e-INFRA CZ"
     OIDC_ENDPOINT = "https://login.e-infra.cz/oidc"
     EXTRA_DATA = [
         ("expires_in", "expires_in", True),

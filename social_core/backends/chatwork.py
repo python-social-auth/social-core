@@ -11,6 +11,7 @@ class ChatworkOAuth2(BaseOAuth2):
     """Chatwork OAuth authentication backend"""
 
     name = "chatwork"
+    title = "Chatwork"
     API_URL = "https://api.chatwork.com/v2"
     AUTHORIZATION_URL = "https://www.chatwork.com/packages/oauth2/login.php"
     ACCESS_TOKEN_URL = "https://oauth.chatwork.com/token"

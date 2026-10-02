@@ -8,6 +8,8 @@ from social_core.exceptions import AuthException, AuthTokenError
 
 class GoogleOneTap(BaseGoogleAuth, BaseAuth):
     name = "google-onetap"
+    title = "Google"
+    icon = "google.svg"
     CSRF_KEY = "g_csrf_token"
     CREDENTIAL_KEY = "credential"
 

@@ -12,6 +12,7 @@ class BattleNetOAuth2(BaseOAuth2):
     """battle.net Oauth2 backend"""
 
     name = "battlenet-oauth2"
+    title = "Battle.net"
     ID_KEY = "accountId"
     REDIRECT_STATE = False
     AUTHORIZATION_URL = "https://eu.battle.net/oauth/authorize"

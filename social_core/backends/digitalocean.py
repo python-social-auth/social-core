@@ -11,6 +11,8 @@ class DigitalOceanOAuth(BaseOAuth2):
     """
 
     name = "digitalocean"
+    title = "DigitalOcean"
+    icon = "digital-ocean.svg"
     ID_KEY = "uuid"
     AUTHORIZATION_URL = "https://cloud.digitalocean.com/v1/oauth/authorize"
     ACCESS_TOKEN_URL = "https://cloud.digitalocean.com/v1/oauth/token"

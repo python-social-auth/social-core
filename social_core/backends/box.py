@@ -12,6 +12,7 @@ class BoxOAuth2(BaseOAuth2):
     """Box.net OAuth authentication backend"""
 
     name = "box"
+    title = "Box"
     AUTHORIZATION_URL = "https://www.box.com/api/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://www.box.com/api/oauth2/token"
     REVOKE_TOKEN_URL = "https://www.box.com/api/oauth2/revoke"

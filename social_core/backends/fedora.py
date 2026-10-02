@@ -17,6 +17,8 @@ class FedoraOpenIdConnect(OpenIdConnectAuth):
     """
 
     name = "fedora-oidc"
+    title = "Fedora"
+    icon = "fedora.svg"
     USERNAME_KEY = "nickname"
     OIDC_ENDPOINT = "https://id.fedoraproject.org"
     DEFAULT_SCOPE = [
@@ -34,5 +36,7 @@ class FedoraOpenId(OpenIdAuth):
     """
 
     name = "fedora"
+    title = "Fedora OpenID"
+    icon = "fedora.svg"
     URL = "https://id.fedoraproject.org"
     USERNAME_KEY = "nickname"

@@ -12,6 +12,7 @@ class PatreonOAuth2(BaseOAuth2):
     """Patreon OAuth2 authentication backend"""
 
     name = "patreon"
+    title = "Patreon"
     AUTHORIZATION_URL = "https://www.patreon.com/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://www.patreon.com/api/oauth2/token"
     REVOKE_TOKEN_URL = "https://www.patreon.com/oauth2/revoke"

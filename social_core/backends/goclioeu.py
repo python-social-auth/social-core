@@ -5,6 +5,7 @@ from .goclio import GoClioOAuth2
 
 class GoClioEuOAuth2(GoClioOAuth2):
     name = "goclioeu"
+    title = "Clio (Europe)"
     AUTHORIZATION_URL = "https://app.goclio.eu/oauth/authorize/"
     ACCESS_TOKEN_URL = "https://app.goclio.eu/oauth/token/"
 

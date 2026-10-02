@@ -12,6 +12,7 @@ class KakaoOAuth2(BaseOAuth2):
     """Kakao OAuth authentication backend"""
 
     name = "kakao"
+    title = "Kakao"
     AUTHORIZATION_URL = "https://kauth.kakao.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://kauth.kakao.com/oauth/token"
     REDIRECT_STATE = False

@@ -27,6 +27,8 @@ class FacebookOAuth2(BaseOAuth2):
     """Facebook OAuth2 authentication backend"""
 
     name = "facebook"
+    title = "Facebook"
+    icon = "facebook.svg"
     REDIRECT_STATE = False
     RESPONSE_TYPE = None
     SCOPE_SEPARATOR = ","
@@ -180,6 +182,8 @@ class FacebookAppOAuth2(FacebookOAuth2):
     """Facebook Application Authentication support"""
 
     name = "facebook-app"
+    title = "Facebook"
+    icon = "facebook.svg"
     REDIRECT_STATE = True
 
     def uses_redirect(self) -> bool:

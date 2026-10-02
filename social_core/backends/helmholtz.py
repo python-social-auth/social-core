@@ -8,6 +8,7 @@ from social_core.backends.open_id_connect import OpenIdConnectAuth
 
 class HelmholtzOpenIdConnect(OpenIdConnectAuth):
     name = "helmholtz"
+    title = "Helmholtz AAI"
     OIDC_ENDPOINT = "https://login.helmholtz.de/oauth2"
     # In order to get any scopes, you have to register your service with
     # the OP

@@ -12,6 +12,7 @@ class GiteaOAuth2(BaseOAuth2):
     """Gitea OAuth authentication backend"""
 
     name = "gitea"
+    title = "Gitea"
     API_URL = "https://gitea.com"
     AUTHORIZATION_URL = "https://gitea.com/login/oauth/authorize"
     ACCESS_TOKEN_URL = "https://gitea.com/login/oauth/access_token"

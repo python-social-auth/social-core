@@ -12,6 +12,7 @@ class RedditOAuth2(BaseOAuth2):
     """Reddit OAuth2 authentication backend"""
 
     name = "reddit"
+    title = "Reddit"
     AUTHORIZATION_URL = "https://ssl.reddit.com/api/v1/authorize"
     ACCESS_TOKEN_URL = "https://ssl.reddit.com/api/v1/access_token"
     REFRESH_TOKEN_METHOD = "POST"

@@ -12,6 +12,7 @@ class EVEOnlineOAuth2(BaseOAuth2):
     """EVE Online OAuth authentication backend"""
 
     name = "eveonline"
+    title = "EVE Online"
     BASE_URL = "https://login.eveonline.com/oauth"
     AUTHORIZATION_URL = f"{BASE_URL}/authorize"
     ACCESS_TOKEN_URL = f"{BASE_URL}/token"

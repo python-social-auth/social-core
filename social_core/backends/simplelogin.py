@@ -12,6 +12,7 @@ class SimpleLoginOAuth2(BaseOAuth2):
     """SimpleLogin OAuth authentication backend"""
 
     name = "simplelogin"
+    title = "SimpleLogin"
     AUTHORIZATION_URL = "https://app.simplelogin.io/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://app.simplelogin.io/oauth2/token"
     REDIRECT_STATE = False

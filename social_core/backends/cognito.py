@@ -5,6 +5,7 @@ from social_core.backends.oauth import BaseOAuth2
 
 class CognitoOAuth2(BaseOAuth2):
     name = "cognito"
+    title = "Amazon Cognito"
     ID_KEY = "username"
     DEFAULT_SCOPE = ["openid", "profile", "email"]
     REDIRECT_STATE = False

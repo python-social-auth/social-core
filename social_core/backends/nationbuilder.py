@@ -12,6 +12,7 @@ class NationBuilderOAuth2(BaseOAuth2):
     """NationBuilder OAuth2 authentication backend"""
 
     name = "nationbuilder"
+    title = "NationBuilder"
     AUTHORIZATION_URL = "https://{slug}.nationbuilder.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://{slug}.nationbuilder.com/oauth/token"
     REDIRECT_STATE = False

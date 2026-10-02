@@ -21,6 +21,8 @@ class StackoverflowOAuth2(BaseOAuth2):
     """Stackoverflow OAuth2 authentication backend"""
 
     name = "stackoverflow"
+    title = "Stack Overflow"
+    icon = "stackoverflow.svg"
     ID_KEY = "user_id"
     AUTHORIZATION_URL = "https://stackexchange.com/oauth"
     ACCESS_TOKEN_URL = "https://stackexchange.com/oauth/access_token"

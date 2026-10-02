@@ -44,6 +44,8 @@ if TYPE_CHECKING:
 
 class AzureADB2COAuth2(AzureADOAuth2):
     name = "azuread-b2c-oauth2"
+    title = "Azure AD B2C"
+    icon = "microsoft.svg"
     ID_KEY = "sub"
 
     BASE_URL = "https://{authority_host}/{tenant_name}.onmicrosoft.com"

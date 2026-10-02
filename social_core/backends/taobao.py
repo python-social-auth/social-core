@@ -7,6 +7,7 @@ class TAOBAOAuth(BaseOAuth2):
     """Taobao OAuth authentication mechanism"""
 
     name = "taobao"
+    title = "Taobao"
     ID_KEY = "taobao_user_id"
     AUTHORIZATION_URL = "https://oauth.taobao.com/authorize"
     ACCESS_TOKEN_URL = "https://oauth.taobao.com/token"

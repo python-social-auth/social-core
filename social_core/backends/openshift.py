@@ -12,6 +12,7 @@ from .oauth import BaseOAuth2
 
 class OpenshiftOAuth2(BaseOAuth2):
     name = "openshift"
+    title = "OpenShift"
     ID_KEY = "uid"
 
     def access_token_url(self):

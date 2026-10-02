@@ -10,6 +10,7 @@ from .oauth import BaseOAuth2
 
 class InstagramOAuth2(BaseOAuth2):
     name = "instagram"
+    title = "Instagram"
     AUTHORIZATION_URL = "https://api.instagram.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://api.instagram.com/oauth/access_token"
 

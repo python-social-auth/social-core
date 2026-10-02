@@ -30,6 +30,7 @@ class CASOpenIdConnectAuth(OpenIdConnectAuth):
     """
 
     name = "cas"
+    title = "CAS"
     ID_KEY = "username"
     STATE_PARAMETER = True
 

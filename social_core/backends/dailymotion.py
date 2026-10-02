@@ -12,6 +12,7 @@ class DailymotionOAuth2(BaseOAuth2):
     """Dailymotion OAuth authentication backend"""
 
     name = "dailymotion"
+    title = "Dailymotion"
     EXTRA_DATA = [("id", "id")]
     ID_KEY = "username"
     AUTHORIZATION_URL = "https://api.dailymotion.com/oauth/authorize"

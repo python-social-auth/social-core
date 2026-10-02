@@ -13,6 +13,7 @@ class TwitchOpenIdConnect(OpenIdConnectAuth):
     """Twitch OpenID Connect authentication backend"""
 
     name = "twitch"
+    title = "Twitch"
     USERNAME_KEY = "preferred_username"
     OIDC_ENDPOINT = "https://id.twitch.tv/oauth2"
     DEFAULT_SCOPE = ["openid", "user:read:email"]
@@ -43,6 +44,7 @@ class TwitchOAuth2(BaseOAuth2):
     """Twitch OAuth authentication backend"""
 
     name = "twitch"
+    title = "Twitch"
     ID_KEY = "id"
     REQUIRES_USER_ID = True
     AUTHORIZATION_URL = "https://id.twitch.tv/oauth2/authorize"

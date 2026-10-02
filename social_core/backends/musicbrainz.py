@@ -7,6 +7,8 @@ class MusicBrainzOAuth2(BaseOAuth2):
     """MusicBrainz OAuth authentication backend"""
 
     name = "musicbrainz"
+    title = "MusicBrainz"
+    icon = "musicbrainz.svg"
     AUTHORIZATION_URL = "https://musicbrainz.org/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://musicbrainz.org/oauth2/token"
     ID_KEY = "metabrainz_user_id"

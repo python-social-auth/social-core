@@ -21,6 +21,7 @@ class QiitaOAuth2(BaseOAuth2):
     """Qiita OAuth authentication backend"""
 
     name = "qiita"
+    title = "Qiita"
     ID_KEY = "id"
 
     AUTHORIZATION_URL = "https://qiita.com/api/v2/oauth/authorize"

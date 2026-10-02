@@ -9,6 +9,7 @@ from .oauth import BaseOAuth2
 
 class ArcGISOAuth2(BaseOAuth2):
     name = "arcgis"
+    title = "ArcGIS"
     ID_KEY = "username"
     AUTHORIZATION_URL = "https://www.arcgis.com/sharing/rest/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://www.arcgis.com/sharing/rest/oauth2/token"

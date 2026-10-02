@@ -11,6 +11,7 @@ from .open_id import OpenIdAuth
 
 class OpenInfraOpenId(OpenIdAuth):
     name = "openinfra"
+    title = "OpenInfraID"
     URL = "id.openinfra.dev"
 
     def get_user_details(self, response):

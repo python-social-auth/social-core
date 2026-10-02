@@ -14,6 +14,7 @@ class SoundcloudOAuth2(BaseOAuth2):
     """Soundcloud OAuth authentication backend"""
 
     name = "soundcloud"
+    title = "SoundCloud"
     AUTHORIZATION_URL = "https://soundcloud.com/connect"
     ACCESS_TOKEN_URL = "https://api.soundcloud.com/oauth2/token"
     SCOPE_SEPARATOR = ","

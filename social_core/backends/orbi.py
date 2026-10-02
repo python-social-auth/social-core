@@ -11,6 +11,7 @@ class OrbiOAuth2(BaseOAuth2):
     """Orbi OAuth2 authentication backend"""
 
     name = "orbi"
+    title = "Orbi"
     AUTHORIZATION_URL = "https://login.orbi.kr/oauth/authorize"
     ACCESS_TOKEN_URL = "https://login.orbi.kr/oauth/token"
     EXTRA_DATA = [

@@ -12,6 +12,7 @@ class MapMyFitnessOAuth2(BaseOAuth2):
     """MapMyFitness OAuth authentication backend"""
 
     name = "mapmyfitness"
+    title = "MapMyFitness"
     REQUIRES_USER_ID = True
     AUTHORIZATION_URL = "https://www.mapmyfitness.com/v7.0/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://oauth2-api.mapmyapi.com/v7.0/oauth2/access_token"

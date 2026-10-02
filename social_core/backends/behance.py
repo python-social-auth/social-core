@@ -14,6 +14,7 @@ class BehanceOAuth2(BaseOAuth2):
     """Behance OAuth authentication backend"""
 
     name = "behance"
+    title = "Behance"
     AUTHORIZATION_URL = "https://www.behance.net/v2/oauth/authenticate"
     ACCESS_TOKEN_URL = "https://www.behance.net/v2/oauth/token"
     SCOPE_SEPARATOR = "|"

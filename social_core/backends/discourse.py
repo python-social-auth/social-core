@@ -13,6 +13,7 @@ from .base import BaseAuth
 
 class DiscourseAuth(BaseAuth):
     name = "discourse"
+    title = "Discourse"
     ID_KEY = "external_id"
     LEGACY_ID_KEYS = ("email",)
     MUTABLE_ID_KEYS = ("email",)

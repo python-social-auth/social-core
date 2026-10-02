@@ -19,6 +19,7 @@ class TripItOAuth(BaseOAuth1):
     """TripIt OAuth authentication backend"""
 
     name = "tripit"
+    title = "TripIt"
     AUTHORIZATION_URL = "https://www.tripit.com/oauth/authorize"
     REQUEST_TOKEN_URL = "https://api.tripit.com/oauth/request_token"
     ACCESS_TOKEN_URL = "https://api.tripit.com/oauth/access_token"

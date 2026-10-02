@@ -1,0 +1,169 @@
+Authentication icon provenance
+==============================
+
+These official logos identify the corresponding authentication providers.
+Artwork was downloaded directly from provider websites or repositories on
+2026-10-02. Copyright and trademark rights remain with the respective owners;
+the Python package's BSD license does not relicense these assets. Each provider's
+artwork and branding terms apply independently. No authorship or ownership of
+these logos is claimed by social-auth or Weblate contributors.
+
+Unless explicitly described below, files are unmodified provider artwork,
+including original colors, proportions, and padding. Line endings and trailing whitespace
+are normalized where needed. Applications are responsible
+for following the providers' sign-in and brand-use guidance when displaying them.
+
+amazon.svg
+  Owner: Amazon.com, Inc. or its affiliates.
+  Source repository: https://github.com/aws-amplify/amplify-ui
+  Source revision: 646d717d4b14ca170c77cedaccef00adbd162ada
+  Source file: packages/react/src/components/Authenticator/FederatedSignIn/FederatedSignInButtons/FederatedSignInButton.tsx
+  Source URL: https://github.com/aws-amplify/amplify-ui/blob/646d717d4b14ca170c77cedaccef00adbd162ada/packages/react/src/components/Authenticator/FederatedSignIn/FederatedSignInButtons/FederatedSignInButton.tsx
+  Extracted the AmazonIcon SVG from AWS Amplify's federated sign-in component.
+  JSX presentation attributes were removed and fillRule/clipRule converted to
+  SVG attributes. Original vector paths, colors, and viewBox are preserved.
+  Source code license: Apache-2.0 (see LICENSE.amplify-ui).
+  Upstream NOTICE:
+    Amplify for UI
+    Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+  Branding guidance: https://developer.amazon.com/docs/login-with-amazon/brand.html
+  Amazon and all related logos are trademarks of Amazon.com, Inc. or its affiliates.
+
+auth0.svg
+  Owner: Okta, Inc. (Auth0).
+  Source page: https://auth0.com/
+  Download: https://cdn.auth0.com/website/website/favicons/auth0-favicon.svg
+  Unmodified current Auth0 website icon.
+
+bitbucket.svg
+  Owner: Atlassian.
+  Source page and guidelines: https://atlassian.design/foundations/logos
+  Download: https://atlassian.design/assets/1f181c2c377d/logos/bitbucket_app.zip
+  Archive member: Bitbucket/SVG/Bitbucket_icon.svg
+  Unmodified current Bitbucket app icon.
+
+facebook.svg
+  Owner: Meta Platforms, Inc.
+  Source page and guidelines: https://www.meta.com/brand/resources/facebook/logo/
+  Download: Facebook Brand Asset Pack (download link on the source page).
+  Archive member: Facebook Brand Asset Pack/Logo/Primary Logo/Facebook_Logo_Primary.ai
+  Converted the PDF-compatible Illustrator artwork to SVG using pdftocairo
+  (Poppler 25.03.0): pdftocairo -svg Facebook_Logo_Primary.ai facebook.svg
+  Vector geometry, sRGB colors, proportions, and artboard padding are preserved.
+  The CDN download URL is temporary; obtain copies through the source page.
+
+fedora.svg
+  Owner: Red Hat, Inc. on behalf of the Fedora Project.
+  Source page: https://fedoraproject.org/
+  Download: https://fedoraproject.org/assets/images/logos/fedora-logo-official.svg
+  Guidelines: https://docs.fedoraproject.org/en-US/project/brand/
+  Extracted the symbol (path1626) from the project's official website logo.
+  The wordmark and editor metadata are omitted. Original symbol geometry and
+  blue color are preserved, with clear space around the symbol.
+
+github.svg
+  Owner: GitHub, Inc.
+  Source page and guidelines: https://brand.github.com/foundations/logo
+  Download: https://brand.github.com/GitHub_Logos.zip
+  Archive member: GitHub Logos/SVG/GitHub_Invertocat_Black_Clearspace.svg
+  Unmodified black Invertocat with the supplied clear space.
+  GitHub and the Invertocat logo design are trademarks of GitHub, Inc.
+
+gitlab.svg
+  Owner: GitLab, Inc.
+  Source page: https://about.gitlab.com/press/press-kit/
+  Download: https://about.gitlab.com/images/press/gitlab-logo-500-rgb.svg
+  Guidelines: https://handbook.gitlab.com/handbook/marketing/brand-and-product-marketing/brand/brand-activation/brand-standards/
+  Full-color Tanuki symbol. The viewBox is cropped to remove excessive
+  artboard padding while retaining clear space; paths and colors are unchanged.
+
+google.svg
+  Owner: Google LLC.
+  Source page and guidelines: https://developers.google.com/identity/branding-guidelines
+  Download: https://developers.google.com/static/identity/images/signin-assets.zip
+  Archive member: Android + Web/SVG/Light/Theme=Light, Show text=No, Shape=Square, Platform=Android+Web.svg
+  Unmodified pre-approved light square icon-mode sign-in artwork.
+
+microsoft.svg
+  Owner: Microsoft Corporation.
+  Source page and guidelines: https://learn.microsoft.com/en-us/entra/identity-platform/howto-add-branding-in-apps
+  Download: https://learn.microsoft.com/en-us/entra/identity-platform/media/howto-add-branding-in-apps/ms-symbollockup_mssymbol_19.svg
+  Unmodified Microsoft symbol supplied for custom sign-in buttons.
+
+musicbrainz.svg
+  Owner: MetaBrainz Foundation.
+  Source repository: https://github.com/metabrainz/metabrainz.org
+  Download: https://raw.githubusercontent.com/metabrainz/metabrainz.org/master/frontend/img/projects/musicbrainz.svg
+  Unmodified MusicBrainz symbol from the foundation's website source.
+
+opensuse.svg
+  Owner: openSUSE Project / SUSE.
+  Source page: https://www.opensuse.org/
+  Download: https://static.opensuse.org/mask-icon.svg
+  Guidelines: https://en.opensuse.org/openSUSE:Trademark_guidelines
+  Unmodified monochrome openSUSE symbol used by the project's website.
+
+stackoverflow.svg
+  Owner: Stack Exchange, Inc.
+  Source page and guidelines: https://stackoverflow.design/brand/logo/
+  Download folder: https://drive.google.com/drive/folders/1BFngjCdvgmVowR30qjj4RV6e_aWjGOUc
+  Download: https://drive.google.com/uc?export=download&id=1m0b3pFs3okrw26cXNlFmZ5mkYGmI51gY
+  File: Symbol/Regular/stack-overflow-symbol-off-black.svg
+  Unmodified current off-black Stack Overflow symbol.
+
+ubuntu.svg
+  Owner: Canonical Ltd.
+  Source page: https://discourse.ubuntu.com/t/ubuntu-merchandise-assets/67314
+  Download: https://drive.google.com/uc?export=download&id=1FdksWTDREMNjnfBtN6HbxO7dZUQSchFm
+  File: Circle of Friends - round (SVG).
+  Guidelines: https://design.ubuntu.com/brand
+  Unmodified current Ubuntu Circle of Friends artwork.
+
+x.svg
+  Owner: X Corp.
+  Source page: https://about.x.com/es/who-we-are/brand-toolkit
+  Download: https://about.x.com/content/dam/about-twitter/x/brand-toolkit/x-logo.zip
+  Archive member: logo.svg
+  Guidelines: https://about.x.com/content/dam/about-twitter/x/brand-toolkit/x-brand-guidelines.pdf
+  Current X logo rendered in the permitted black color variant; paths and
+  proportions are unchanged.
+
+apple.svg
+  Owner: Apple Inc.
+  Source page: https://developer.apple.com/design/resources/
+  Download: https://devimages-cdn.apple.com/design/resources/download/Logo-Sign-in-with-Apple.dmg
+  Archive member: Sign in with Apple - Logo Only/SVG/Logo - SIWA - Logo-only - Black.svg
+  Guidelines: https://developer.apple.com/design/human-interface-guidelines/sign-in-with-apple/
+  Black logo-only sign-in artwork. The viewBox is cropped to remove excessive
+  artboard padding while retaining clear space; paths and colors are unchanged.
+
+digital-ocean.svg
+  Owner: DigitalOcean, LLC.
+  Source page: https://www.digitalocean.com/press
+  Download: https://web-platforms.sfo2.cdn.digitaloceanspaces.com/DO%20Logo%20Assets.zip
+  Archive member: DO Logo Assets/SVG/DO_Logo_icon_blue.svg
+  Guidelines: https://www.digitalocean.com/legal/trademark-usage-guidelines
+  Unmodified blue icon artwork.
+  DigitalOcean and all related logos are trademarks of DigitalOcean, LLC or its affiliates.
+
+docker.svg
+  Owner: Docker, Inc.
+  Source page and guidelines: https://www.docker.com/company/newsroom/media-resources/
+  Download: https://www.docker.com/static/Docker-Logos-1.zip
+  Archive member: docker-logos/SVG/docker-mark-ocean-blue.svg
+  Unmodified Ocean Blue symbol artwork.
+
+hubspot.svg
+  Owner: HubSpot, Inc.
+  Source page: https://knowledge.hubspot.com/
+  Download: https://www.hubspot.com/hubfs/assets/hubspot.com/global/Sprocket2025.svg
+  Guidelines: https://www.hubspot.com/partners/technology/branding-guidelines
+  Unmodified official orange sprocket artwork used by HubSpot's website.
+
+salesforce.svg
+  Owner: Salesforce, Inc.
+  Source page and guidelines: https://brand.salesforce.com/
+  Download: https://salesforce.widen.net/s/mzhhvlhsdg/salesforce-corporate-logo-all
+  Archive member: Logo Assets for Upload/Cloud Logo RGB/Salesforce-Corporate-Logo-Cloud-RBG.svg
+  The original blue cloud outline and viewBox are retained. The wordmark is
+  omitted following the provider's small-size guidance (below 40 pixels).

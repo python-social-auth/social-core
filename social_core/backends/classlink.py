@@ -11,6 +11,7 @@ class ClasslinkOAuth(BaseOAuth2):
     """
 
     name = "classlink"
+    title = "ClassLink"
     ID_KEY = "UserId"
     REQUIRES_USER_ID = True
     AUTHORIZATION_URL = "https://launchpad.classlink.com/oauth2/v2/auth"

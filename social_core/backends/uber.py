@@ -10,6 +10,7 @@ from .oauth import BaseOAuth2
 
 class UberOAuth2(BaseOAuth2):
     name = "uber"
+    title = "Uber"
     ID_KEY = "uuid"
     SCOPE_SEPARATOR = " "
     AUTHORIZATION_URL = "https://login.uber.com/oauth/authorize"

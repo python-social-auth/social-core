@@ -7,6 +7,7 @@ from social_core.backends.open_id_connect import OpenIdConnectAuth
 
 class CesidOpenIdConnect(OpenIdConnectAuth):
     name = "cesid"
+    title = "CESiD AAI"
     OIDC_ENDPOINT = "https://login.cesid.cesnet.cz/cas/oidc"
     EXTRA_DATA = [
         ("expires_in", "expires_in", True),

@@ -12,6 +12,7 @@ class CodingOAuth2(BaseOAuth2):
     """Coding OAuth authentication backend"""
 
     name = "coding"
+    title = "CODING"
     API_URL = "https://coding.net/api/"
     AUTHORIZATION_URL = "https://coding.net/oauth_authorize.html"
     ACCESS_TOKEN_URL = "https://coding.net/api/oauth/access_token"

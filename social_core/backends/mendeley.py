@@ -30,6 +30,7 @@ class MendeleyMixin:
 
 class MendeleyOAuth2(MendeleyMixin, BaseOAuth2):
     name = "mendeley-oauth2"
+    title = "Mendeley"
     AUTHORIZATION_URL = "https://api-oauth2.mendeley.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://api-oauth2.mendeley.com/oauth/token"
     DEFAULT_SCOPE = ["all"]

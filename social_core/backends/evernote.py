@@ -33,6 +33,7 @@ class EvernoteOAuth(BaseOAuth1):
     """
 
     name = "evernote"
+    title = "Evernote"
     ID_KEY = "edam_userId"
     AUTHORIZATION_URL = "https://www.evernote.com/OAuth.action"
     REQUEST_TOKEN_URL = "https://www.evernote.com/oauth"
@@ -83,6 +84,7 @@ class EvernoteOAuth(BaseOAuth1):
 
 class EvernoteSandboxOAuth(EvernoteOAuth):
     name = "evernote-sandbox"
+    title = "Evernote (Sandbox)"
     AUTHORIZATION_URL = "https://sandbox.evernote.com/OAuth.action"
     REQUEST_TOKEN_URL = "https://sandbox.evernote.com/oauth"
     ACCESS_TOKEN_URL = "https://sandbox.evernote.com/oauth"

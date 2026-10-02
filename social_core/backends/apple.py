@@ -42,6 +42,8 @@ if TYPE_CHECKING:
 
 class AppleIdAuth(BaseOAuth2):
     name = "apple-id"
+    title = "Apple"
+    icon = "apple.svg"
 
     JWK_URL = "https://appleid.apple.com/auth/keys"
     AUTHORIZATION_URL = "https://appleid.apple.com/auth/authorize"

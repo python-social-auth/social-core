@@ -8,5 +8,6 @@ from .legacy import LegacyAuth
 
 class UsernameAuth(LegacyAuth):
     name = "username"
+    title = "Username"
     ID_KEY = "username"
     EXTRA_DATA = ["username"]

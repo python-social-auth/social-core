@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 
 class TelegramAuth(BaseAuth):
     name = "telegram"
+    title = "Telegram"
     ID_KEY = "id"
 
     def verify_data(self, response) -> None:

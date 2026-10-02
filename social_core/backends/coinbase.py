@@ -12,6 +12,7 @@ API_VERSION = "2022-01-06"
 
 class CoinbaseOAuth2(BaseOAuth2):
     name = "coinbase"
+    title = "Coinbase"
     SCOPE_SEPARATOR = ","
     DEFAULT_SCOPE = ["wallet:user:read", "wallet:user:email"]
     AUTHORIZATION_URL = "https://login.coinbase.com/oauth2/auth"

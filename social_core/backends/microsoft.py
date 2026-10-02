@@ -11,6 +11,8 @@ from .oauth import BaseOAuth2
 
 class MicrosoftOAuth2(BaseOAuth2):
     name = "microsoft-graph"
+    title = "Microsoft"
+    icon = "microsoft.svg"
     REQUIRES_USER_ID = True
     SCOPE_SEPARATOR = " "
     AUTHORIZATION_URL = "https://login.microsoftonline.com/common/oauth2/v2.0/authorize"

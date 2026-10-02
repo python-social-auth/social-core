@@ -7,6 +7,7 @@ class PixelPinOpenIDConnect(OpenIdConnectAuth):
     """PixelPin OpenID Connect authentication backend"""
 
     name = "pixelpin-openidconnect"
+    title = "PixelPin"
     ID_KEY = "sub"
     AUTHORIZATION_URL = "https://login.pixelpin.io/connect/authorize"
     ACCESS_TOKEN_URL = "https://login.pixelpin.io/connect/token"

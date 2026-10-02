@@ -12,6 +12,7 @@ class PhabricatorOAuth2(BaseOAuth2):
     """Phabricator OAuth authentication backend"""
 
     name = "phabricator"
+    title = "Phabricator"
     API_URL = "https://secure.phabricator.com"
     AUTHORIZATION_URL = "https://secure.phabricator.com/oauthserver/auth/"
     ACCESS_TOKEN_URL = "https://secure.phabricator.com/oauthserver/token/"

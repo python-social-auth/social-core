@@ -12,6 +12,7 @@ class MeetupOAuth2(BaseOAuth2):
     """Meetup OAuth2 authentication backend"""
 
     name = "meetup"
+    title = "Meetup"
     AUTHORIZATION_URL = "https://secure.meetup.com/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://secure.meetup.com/oauth2/access"
     DEFAULT_SCOPE = ["basic"]

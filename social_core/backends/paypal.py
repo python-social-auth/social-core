@@ -10,6 +10,7 @@ class PayPalOAuth2(BaseOAuth2):
     """
 
     name = "paypal-oauth2"
+    title = "PayPal"
     ID_KEY = "user_id"
     AUTHORIZATION_URL = "https://www.paypal.com/connect"
     ACCESS_TOKEN_URL = "https://api.paypal.com/v1/oauth2/token"
@@ -62,6 +63,7 @@ class PayPalOAuth2(BaseOAuth2):
 
 class PayPalOAuth2Sandbox(PayPalOAuth2):
     name = "paypal-oauth2-sandbox"
+    title = "PayPal (Sandbox)"
     AUTHORIZATION_URL = "https://www.sandbox.paypal.com/connect"
     ACCESS_TOKEN_URL = "https://api.sandbox.paypal.com/v1/oauth2/token"
     USER_DATA_URL = (

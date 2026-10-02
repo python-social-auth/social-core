@@ -11,6 +11,7 @@ class JustGivingOAuth2(BaseOAuth2):
     """Just Giving OAuth authentication backend"""
 
     name = "justgiving"
+    title = "JustGiving"
     ID_KEY = "userId"
     AUTHORIZATION_URL = "https://identity.justgiving.com/connect/authorize"
     ACCESS_TOKEN_URL = "https://identity.justgiving.com/connect/token"

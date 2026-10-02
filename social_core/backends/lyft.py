@@ -10,6 +10,7 @@ from .oauth import BaseOAuth2
 
 class LyftOAuth2(BaseOAuth2):
     name = "lyft"
+    title = "Lyft"
     ID_KEY = "id"
     SCOPE_SEPARATOR = " "
     AUTHORIZATION_URL = "https://api.lyft.com/oauth/authorize"

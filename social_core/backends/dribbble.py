@@ -13,6 +13,7 @@ class DribbbleOAuth2(BaseOAuth2):
     """Dribbble OAuth authentication backend"""
 
     name = "dribbble"
+    title = "Dribbble"
     AUTHORIZATION_URL = "https://dribbble.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://dribbble.com/oauth/token"
     SCOPE_SEPARATOR = ","

@@ -9,6 +9,7 @@ class VimeoOAuth1(BaseOAuth1):
     """Vimeo OAuth authentication backend"""
 
     name = "vimeo"
+    title = "Vimeo"
     AUTHORIZATION_URL = "https://vimeo.com/oauth/authorize"
     REQUEST_TOKEN_URL = "https://vimeo.com/oauth/request_token"
     ACCESS_TOKEN_URL = "https://vimeo.com/oauth/access_token"
@@ -43,6 +44,7 @@ class VimeoOAuth2(BaseOAuth2):
     """Vimeo OAuth2 authentication backend"""
 
     name = "vimeo-oauth2"
+    title = "Vimeo"
     ID_KEY = "uri"
     AUTHORIZATION_URL = "https://api.vimeo.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://api.vimeo.com/oauth/access_token"

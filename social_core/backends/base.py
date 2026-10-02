@@ -50,6 +50,8 @@ class BaseAuth:
     """
 
     name = ""  # provider name, it's stored in database
+    title: str | None = None  # human-readable sign-in label
+    icon: str | None = None  # filename in static/social_auth/icons
     supports_inactive_user = False  # Django auth
     ID_KEY: str = ""
     LEGACY_ID_KEYS: tuple[str, ...] = ()

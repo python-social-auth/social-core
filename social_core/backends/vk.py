@@ -37,6 +37,7 @@ class VKontakteOpenAPI(BaseAuth):
     """VK.COM OpenAPI authentication backend"""
 
     name = "vk-openapi"
+    title = "VK"
     ID_KEY = "id"
 
     def get_user_details(self, response):
@@ -105,6 +106,7 @@ class VKOAuth2(BaseOAuth2):
     """VKOAuth2 authentication backend"""
 
     name = "vk-oauth2"
+    title = "VK"
     ID_KEY = "id"
     AUTHORIZATION_URL = "https://oauth.vk.ru/authorize"
     ACCESS_TOKEN_URL = "https://oauth.vk.ru/access_token"
@@ -194,6 +196,7 @@ class VKIDOAuth2(BaseOAuth2PKCE):
     """VK ID authentication using mandatory PKCE and device-bound tokens."""
 
     name = "vk-id"
+    title = "VK ID"
     ID_KEY = "id"
     REQUIRES_USER_ID = True
     AUTHORIZATION_URL = "https://id.vk.ru/authorize"
@@ -370,6 +373,7 @@ class VKAppOAuth2(VKOAuth2):
     """VK.com Application Authentication support"""
 
     name = "vk-app"
+    title = "VK"
 
     def _user_profile(self, access_token: str, viewer_id) -> dict[str, Any]:
         # api_result passes through the user's browser and is not covered by

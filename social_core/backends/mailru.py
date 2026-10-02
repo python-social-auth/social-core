@@ -14,6 +14,7 @@ class MailruOAuth2(BaseOAuth2):
     """Mail.ru authentication backend"""
 
     name = "mailru-oauth2"
+    title = "Mail.ru"
     ID_KEY = "uid"
     AUTHORIZATION_URL = "https://connect.mail.ru/oauth/authorize"
     ACCESS_TOKEN_URL = "https://connect.mail.ru/oauth/token"
@@ -49,6 +50,7 @@ class MailruOAuth2(BaseOAuth2):
 
 class MRGOAuth2(BaseOAuth2):
     name = "mailru"
+    title = "Mail.ru"
     ID_KEY = "email"
     AUTHORIZATION_URL = "https://oauth.mail.ru/login"
     ACCESS_TOKEN_URL = "https://oauth.mail.ru/token"

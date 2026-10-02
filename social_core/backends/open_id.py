@@ -48,6 +48,7 @@ class OpenIdAuth(BaseAuth):
     """Generic OpenID authentication backend"""
 
     name = "openid"
+    title = "OpenID"
     URL: str | None = None
     USERNAME_KEY = "username"
 

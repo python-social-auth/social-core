@@ -12,6 +12,7 @@ class ORCIDOAuth2(BaseOAuth2):
     """ORCID OAuth2 authentication backend"""
 
     name = "orcid"
+    title = "ORCID"
     ID_KEY = "orcid"
     AUTHORIZATION_URL = "https://orcid.org/oauth/authorize"
     ACCESS_TOKEN_URL = "https://orcid.org/oauth/token"
@@ -138,6 +139,7 @@ class ORCIDOAuth2Sandbox(ORCIDOAuth2):
     """ORCID OAuth2 Sandbox authentication backend"""
 
     name = "orcid-sandbox"
+    title = "ORCID (Sandbox)"
     AUTHORIZATION_URL = "https://sandbox.orcid.org/oauth/authorize"
     ACCESS_TOKEN_URL = "https://sandbox.orcid.org/oauth/token"
     USER_ID_URL = "https://sandbox.orcid.org/oauth/userinfo"

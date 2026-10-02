@@ -10,6 +10,7 @@ from .oauth import BaseOAuth2
 
 class StravaOAuth(BaseOAuth2):
     name = "strava"
+    title = "Strava"
     AUTHORIZATION_URL = "https://www.strava.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://www.strava.com/oauth/token"
     # Strava doesn't check for parameters in redirect_uri and directly appends

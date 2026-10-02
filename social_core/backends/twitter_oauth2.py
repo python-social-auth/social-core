@@ -13,6 +13,8 @@ class TwitterOAuth2(BaseOAuth2PKCE):
     """Twitter OAuth2 authentication backend"""
 
     name = "twitter-oauth2"
+    title = "X"
+    icon = "x.svg"
     AUTHORIZATION_URL = "https://twitter.com/i/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://api.twitter.com/2/oauth2/token"
     DEFAULT_SCOPE = ["users.read", "tweet.read"]

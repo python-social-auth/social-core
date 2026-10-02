@@ -18,6 +18,7 @@ CHECKIN_ENV_ENDPOINTS: dict[str, str] = {
 
 class EGICheckinOpenIdConnect(OpenIdConnectAuth):
     name = "egi-checkin"
+    title = "EGI Check-in"
     # Check-in provides 3 environments: production, demo and development
     # Set the one to use as "prod", "demo" or "dev"
     CHECKIN_ENV: Literal["prod", "demo", "dev"] = "prod"

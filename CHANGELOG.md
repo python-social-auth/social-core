@@ -35,6 +35,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Human-readable `title` and optional `icon` metadata for authentication
+  backends, with packaged icons shared with Django applications. Backend
+  identifiers remain unchanged; display labels follow current service branding.
 - VK ID OAuth2 backend (`vk-id`) with mandatory S256 PKCE, payload callbacks,
   server-side profiles, and device-bound refresh tokens with automatic renewal.
 - Azure AD backends support an explicit `AUTHORITY_URL` and opt-in PKCE through

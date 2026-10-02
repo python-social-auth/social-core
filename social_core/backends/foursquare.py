@@ -10,6 +10,7 @@ from .oauth import BaseOAuth2
 
 class FoursquareOAuth2(BaseOAuth2):
     name = "foursquare"
+    title = "Foursquare"
     AUTHORIZATION_URL = "https://foursquare.com/oauth2/authenticate"
     ACCESS_TOKEN_URL = "https://foursquare.com/oauth2/access_token"
     API_VERSION = "20140128"

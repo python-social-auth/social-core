@@ -12,6 +12,7 @@ class SeznamOAuth2(BaseOAuth2):
     """Seznam OAuth authentication backend"""
 
     name = "seznam-oauth2"
+    title = "Seznam"
     API_URL = "https://login.szn.cz/api/v1/user"
     AUTHORIZATION_URL = "https://login.szn.cz/api/v1/oauth/auth"
     ACCESS_TOKEN_URL = "https://login.szn.cz/api/v1/oauth/token"

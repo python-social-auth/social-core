@@ -13,6 +13,7 @@ class SlackOAuth2(BaseOAuth2):
     """Slack OAuth authentication backend"""
 
     name = "slack"
+    title = "Slack"
     AUTHORIZATION_URL = "https://slack.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://slack.com/api/oauth.access"
     DEFAULT_SCOPE = ["identity.basic", "identity.email"]

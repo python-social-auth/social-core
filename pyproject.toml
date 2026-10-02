@@ -236,6 +236,13 @@ disable = [
 [tool.setuptools]
 packages = ["social_core"]
 
+[tool.setuptools.package-data]
+social_core = [
+  "static/social_auth/icons/*.svg",
+  "static/social_auth/LICENSE.amplify-ui",
+  "static/social_auth/NOTICE"
+]
+
 [tool.tomlsort]
 ignore_case = true
 sort_inline_arrays = true

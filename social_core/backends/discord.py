@@ -10,6 +10,7 @@ from .oauth import BaseOAuth2
 
 class DiscordOAuth2(BaseOAuth2):
     name = "discord"
+    title = "Discord"
     HOSTNAME = "discord.com"
     AUTHORIZATION_URL = f"https://{HOSTNAME}/api/oauth2/authorize"
     ACCESS_TOKEN_URL = f"https://{HOSTNAME}/api/oauth2/token"

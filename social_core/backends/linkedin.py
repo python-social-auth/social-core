@@ -27,6 +27,7 @@ class LinkedinOpenIdConnect(OpenIdConnectAuth):
     """
 
     name = "linkedin-openidconnect"
+    title = "LinkedIn"
     # Settings from https://www.linkedin.com/oauth/.well-known/openid-configuration
     OIDC_ENDPOINT = "https://www.linkedin.com/oauth"
 
@@ -54,6 +55,7 @@ class LinkedinOpenIdConnect(OpenIdConnectAuth):
 
 class LinkedinOAuth2(BaseOAuth2):
     name = "linkedin-oauth2"
+    title = "LinkedIn"
     AUTHORIZATION_URL = "https://www.linkedin.com/oauth/v2/authorization"
     ACCESS_TOKEN_URL = "https://www.linkedin.com/oauth/v2/accessToken"
     USER_DETAILS_URL = "https://api.linkedin.com/v2/me?projection=({projection})"
@@ -186,6 +188,7 @@ class LinkedinOAuth2(BaseOAuth2):
 
 class LinkedinMobileOAuth2(LinkedinOAuth2):
     name = "linkedin-mobile-oauth2"
+    title = "LinkedIn"
 
     def user_data_headers(self, access_token):
         headers = super().user_data_headers(access_token)
