@@ -378,6 +378,7 @@ class CodeMixin:
     email = ""
     code = ""
     verified = False
+    timestamp: datetime | None = None
 
     @abstractmethod
     def save(self): ...
@@ -385,6 +386,16 @@ class CodeMixin:
     def verify(self) -> None:
         self.verified = True
         self.save()
+
+    def is_expired(self, seconds: int) -> bool:
+        """Return whether the code has reached its lifetime, or has no timestamp."""
+        if self.timestamp is None:
+            return True
+        timestamp = self.timestamp
+        if timestamp.tzinfo is None:
+            timestamp = timestamp.replace(tzinfo=timezone.utc)
+        timestamp = timestamp.astimezone(timezone.utc)
+        return datetime.now(timezone.utc) >= timestamp + timedelta(seconds=seconds)
 
     @classmethod
     def generate_code(cls):
@@ -396,6 +407,7 @@ class CodeMixin:
         code.email = email
         code.code = cls.generate_code()
         code.verified = False
+        code.timestamp = datetime.now(timezone.utc)
         code.save()
         return code
 
