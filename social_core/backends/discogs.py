@@ -14,6 +14,7 @@ class DiscogsOAuth1(BaseOAuth1):
     """
 
     name = "discogs"
+    title = "Discogs"
 
     OAUTH_TOKEN_PARAMETER_NAME = "oauth_token"
 

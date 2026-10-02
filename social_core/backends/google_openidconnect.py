@@ -11,6 +11,8 @@ from .open_id_connect import OpenIdConnectAuth
 
 class GoogleOpenIdConnect(GoogleOAuth2, OpenIdConnectAuth):
     name = "google-openidconnect"
+    title = "Google"
+    icon = "google.svg"
     OIDC_ENDPOINT = "https://accounts.google.com"
     # differs from value in discovery document
     # http://openid.net/specs/openid-connect-core-1_0.html#rfc.section.15.6.2

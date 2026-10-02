@@ -290,6 +290,7 @@ class SAMLAuth(BaseAuth):
     """
 
     name = "saml"
+    title = "SAML"
     EXTRA_DATA = []
 
     def _authn_request_id_session_key(self, idp_name: str) -> str:

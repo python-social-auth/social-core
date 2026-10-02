@@ -19,6 +19,7 @@ class ShopifyOAuth2(BaseOAuth2):
     """Shopify OAuth2 authentication backend"""
 
     name = "shopify"
+    title = "Shopify"
     ID_KEY = "shop"
     EXTRA_DATA = [("shop", "shop"), ("website", "website"), ("expires", "expires")]
     REDIRECT_STATE = False

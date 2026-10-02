@@ -8,6 +8,7 @@ from .oauth import BaseOAuth2
 
 class AsanaOAuth2(BaseOAuth2):
     name = "asana"
+    title = "Asana"
     AUTHORIZATION_URL = "https://app.asana.com/-/oauth_authorize"
     ACCESS_TOKEN_URL = "https://app.asana.com/-/oauth_token"
     REFRESH_TOKEN_URL = "https://app.asana.com/-/oauth_token"

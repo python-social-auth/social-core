@@ -12,6 +12,7 @@ class StripeOAuth2(BaseOAuth2):
     """Stripe OAuth2 authentication backend"""
 
     name = "stripe"
+    title = "Stripe"
     ID_KEY = "stripe_user_id"
     AUTHORIZATION_URL = "https://connect.stripe.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://connect.stripe.com/oauth/token"

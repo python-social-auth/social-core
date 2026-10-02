@@ -11,6 +11,7 @@ class UpworkOAuth(BaseOAuth1):
     """Upwork OAuth authentication backend"""
 
     name = "upwork"
+    title = "Upwork"
     ID_KEY = "id"
     AUTHORIZATION_URL = "https://www.upwork.com/services/api/auth"
     REQUEST_TOKEN_URL = "https://www.upwork.com/api/auth/v1/oauth/token/request"

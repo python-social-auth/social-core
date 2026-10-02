@@ -41,6 +41,8 @@ class GithubEnterpriseOAuth2(GithubEnterpriseMixin, GithubOAuth2):
     """Github Enterprise OAuth authentication backend"""
 
     name = "github-enterprise"
+    title = "GitHub Enterprise"
+    icon = "github.svg"
 
 
 class GithubEnterpriseOrganizationOAuth2(
@@ -50,6 +52,8 @@ class GithubEnterpriseOrganizationOAuth2(
     organizations"""
 
     name = "github-enterprise-org"
+    title = "GitHub Enterprise Organization"
+    icon = "github.svg"
     DEFAULT_SCOPE = ["read:org"]
 
 
@@ -57,4 +61,6 @@ class GithubEnterpriseTeamOAuth2(GithubEnterpriseMixin, GithubTeamOAuth2):
     """Github Enterprise OAuth2 authentication backend for teams"""
 
     name = "github-enterprise-team"
+    title = "GitHub Enterprise Team"
+    icon = "github.svg"
     DEFAULT_SCOPE = ["read:org"]

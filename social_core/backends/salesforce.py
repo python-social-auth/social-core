@@ -8,6 +8,8 @@ class SalesforceOAuth2(BaseOAuth2):
     """Salesforce OAuth2 authentication backend"""
 
     name = "salesforce-oauth2"
+    title = "Salesforce"
+    icon = "salesforce.svg"
     AUTHORIZATION_URL = "https://login.salesforce.com/services/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://login.salesforce.com/services/oauth2/token"
     REVOKE_TOKEN_URL = "https://login.salesforce.com/services/oauth2/revoke"
@@ -45,6 +47,7 @@ class SalesforceOAuth2Sandbox(SalesforceOAuth2):
     """Salesforce OAuth2 authentication testing backend"""
 
     name = "salesforce-oauth2-sandbox"
+    title = "Salesforce (Sandbox)"
     AUTHORIZATION_URL = "https://test.salesforce.com/services/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://test.salesforce.com/services/oauth2/token"
     REVOKE_TOKEN_URL = "https://test.salesforce.com/services/oauth2/revoke"

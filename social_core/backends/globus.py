@@ -9,6 +9,7 @@ from social_core.backends.open_id_connect import OpenIdConnectAuth
 
 class GlobusOpenIdConnect(OpenIdConnectAuth):
     name = "globus"
+    title = "Globus"
     OIDC_ENDPOINT = "https://auth.globus.org"
     JWT_ALGORITHMS = ["RS256", "RS512"]
     EXTRA_DATA = [

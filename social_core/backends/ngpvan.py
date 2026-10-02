@@ -15,6 +15,7 @@ class ActionIDOpenID(OpenIdAuth):
     """
 
     name = "actionid-openid"
+    title = "ActionID"
     URL = "https://accounts.ngpvan.com/Home/Xrds"
     USERNAME_KEY = "email"
 

@@ -12,6 +12,7 @@ class StocktwitsOAuth2(BaseOAuth2):
     """Stockwiths OAuth2 backend"""
 
     name = "stocktwits"
+    title = "Stocktwits"
     AUTHORIZATION_URL = "https://api.stocktwits.com/api/2/oauth/authorize"
     ACCESS_TOKEN_URL = "https://api.stocktwits.com/api/2/oauth/token"
     SCOPE_SEPARATOR = ","

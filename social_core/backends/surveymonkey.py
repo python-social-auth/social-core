@@ -12,6 +12,7 @@ class SurveyMonkeyOAuth2(BaseOAuth2):
     """SurveyMonkey OAuth2 authentication backend"""
 
     name = "surveymonkey"
+    title = "SurveyMonkey"
     AUTHORIZATION_URL = "https://api.surveymonkey.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://api.surveymonkey.com/oauth/token"
     USER_DATA_URL = "/v3/users/me"

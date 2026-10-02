@@ -31,6 +31,7 @@ class MediaWiki(BaseOAuth1):
     """
 
     name = "mediawiki"
+    title = "MediaWiki"
     ID_KEY = "userID"
     MEDIAWIKI_URL = "https://meta.wikimedia.org/w/index.php"
     SOCIAL_AUTH_MEDIAWIKI_CALLBACK = "oob"

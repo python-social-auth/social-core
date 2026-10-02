@@ -25,6 +25,7 @@ class LastFmAuth(BaseAuth):
     """
 
     name = "lastfm"
+    title = "Last.fm"
     ID_KEY = "name"
     REQUIRES_USER_ID = True
     AUTH_URL = "https://www.last.fm/api/auth/?api_key={api_key}"

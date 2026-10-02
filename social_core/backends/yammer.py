@@ -8,6 +8,7 @@ from .oauth import BaseOAuth2
 
 class YammerOAuth2(BaseOAuth2):
     name = "yammer"
+    title = "Microsoft Viva Engage"
     AUTHORIZATION_URL = "https://www.yammer.com/dialog/oauth"
     ACCESS_TOKEN_URL = "https://www.yammer.com/oauth2/access_token"
     EXTRA_DATA = [("id", "id"), ("expires", "expires"), ("mugshot_url", "mugshot_url")]
@@ -36,6 +37,7 @@ class YammerOAuth2(BaseOAuth2):
 
 class YammerStagingOAuth2(YammerOAuth2):
     name = "yammer-staging"
+    title = "Microsoft Viva Engage (Staging)"
     AUTHORIZATION_URL = "https://www.staging.yammer.com/dialog/oauth"
     ACCESS_TOKEN_URL = "https://www.staging.yammer.com/oauth2/access_token"
     REQUEST_TOKEN_URL = "https://www.staging.yammer.com/oauth2/request_token"

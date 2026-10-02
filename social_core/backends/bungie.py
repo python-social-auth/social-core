@@ -9,6 +9,7 @@ from social_core.backends.oauth import BaseOAuth2
 
 class BungieOAuth2(BaseOAuth2):
     name = "bungie"
+    title = "Bungie"
     ID_KEY = "membership_id"
     AUTHORIZATION_URL = "https://www.bungie.net/en/oauth/authorize/"
     ACCESS_TOKEN_URL = "https://www.bungie.net/platform/app/oauth/token/"

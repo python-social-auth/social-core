@@ -8,6 +8,7 @@ from social_core.backends.open_id_connect import OpenIdConnectAuth
 
 class ElixirOpenIdConnect(OpenIdConnectAuth):
     name = "elixir"
+    title = "ELIXIR AAI"
     OIDC_ENDPOINT = "https://login.elixir-czech.org/oidc"
     EXTRA_DATA = [
         ("expires_in", "expires_in", True),

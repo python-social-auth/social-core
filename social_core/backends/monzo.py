@@ -9,6 +9,7 @@ class MonzoOAuth2(BaseOAuth2):
     """
 
     name = "monzo"
+    title = "Monzo"
 
     AUTHORIZATION_URL = "https://auth.getmondo.co.uk/"
     ACCESS_TOKEN_URL = "https://api.monzo.com/oauth2/token"

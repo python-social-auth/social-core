@@ -29,6 +29,7 @@ class OdnoklassnikiOAuth2(BaseOAuth2):
     """Odnoklassniki authentication backend"""
 
     name = "odnoklassniki-oauth2"
+    title = "Odnoklassniki"
     ID_KEY = "uid"
     SCOPE_SEPARATOR = ";"
     AUTHORIZATION_URL = "https://connect.ok.ru/oauth/authorize"
@@ -62,6 +63,7 @@ class OdnoklassnikiApp(BaseAuth):
     """Odnoklassniki iframe app authentication backend"""
 
     name = "odnoklassniki-app"
+    title = "Odnoklassniki"
     ID_KEY = "uid"
     API_URL = "https://api.ok.ru/"
 

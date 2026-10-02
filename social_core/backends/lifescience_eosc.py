@@ -8,6 +8,7 @@ from social_core.backends.open_id_connect import OpenIdConnectAuth
 
 class LifeScienceEoscOpenIdConnect(OpenIdConnectAuth):
     name = "life_science_eosc"
+    title = "Life Science Login (EOSC)"
     OIDC_ENDPOINT = "https://login.aai.lifescience-ri.eu/cas/oidc"
     EXTRA_DATA = [
         ("expires_in", "expires_in", True),

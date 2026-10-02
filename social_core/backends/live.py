@@ -10,6 +10,8 @@ from .oauth import BaseOAuth2
 
 class LiveOAuth2(BaseOAuth2):
     name = "live"
+    title = "Microsoft"
+    icon = "microsoft.svg"
     AUTHORIZATION_URL = "https://login.live.com/oauth20_authorize.srf"
     ACCESS_TOKEN_URL = "https://login.live.com/oauth20_token.srf"
     SCOPE_SEPARATOR = ","

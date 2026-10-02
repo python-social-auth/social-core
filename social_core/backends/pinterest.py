@@ -10,6 +10,7 @@ from .oauth import BaseOAuth2
 
 class PinterestOAuth2(BaseOAuth2):
     name = "pinterest"
+    title = "Pinterest"
     ID_KEY = "user_id"
     AUTHORIZATION_URL = "https://api.pinterest.com/oauth/"
     ACCESS_TOKEN_URL = "https://api.pinterest.com/v1/oauth/token"

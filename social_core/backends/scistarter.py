@@ -7,6 +7,7 @@ from .oauth import BaseOAuth2
 
 class SciStarterOAuth2(BaseOAuth2):
     name = "scistarter"
+    title = "SciStarter"
     ID_KEY = "profile_id"
     REQUIRES_USER_ID = True
     LEGACY_ID_KEYS = ("email",)

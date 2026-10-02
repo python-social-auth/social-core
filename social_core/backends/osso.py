@@ -8,6 +8,7 @@ class OssoOAuth2(BaseOAuth2):
     """Osso OAuth authentication backend"""
 
     name = "osso"
+    title = "Osso"
     REDIRECT_STATE = False
     STATE_PARAMETER = True
     AUTHORIZATION_URL = "{osso_base_url}/oauth/authorize"

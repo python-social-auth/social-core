@@ -19,6 +19,7 @@ class LoginRadiusAuth(BaseOAuth2):
     """LoginRadius BaseOAuth2 authentication backend."""
 
     name = "loginradius"
+    title = "LoginRadius"
     ID_KEY = "ID"
     ACCESS_TOKEN_URL = "https://api.loginradius.com/api/v2/access_token"
     PROFILE_URL = "https://api.loginradius.com/api/v2/userprofile"

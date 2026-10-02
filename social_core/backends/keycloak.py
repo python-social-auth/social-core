@@ -99,6 +99,7 @@ class KeycloakOAuth2(BaseOAuth2):  # pylint: disable=abstract-method
     """
 
     name = "keycloak"
+    title = "Keycloak"
     ID_KEY = "username"
     REDIRECT_STATE = False
 

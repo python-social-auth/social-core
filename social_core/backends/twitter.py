@@ -14,6 +14,8 @@ class TwitterOAuth(BaseOAuth1):
     """Twitter OAuth authentication backend"""
 
     name = "twitter"
+    title = "X"
+    icon = "x.svg"
     EXTRA_DATA = [("id", "id")]
     REQUEST_TOKEN_METHOD = "POST"
     AUTHORIZATION_URL = "https://api.twitter.com/oauth/authenticate"

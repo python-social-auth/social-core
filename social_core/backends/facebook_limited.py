@@ -14,6 +14,8 @@ class FacebookLimitedLogin(OpenIdConnectAuth):
     """Facebook Limited Login (OIDC) backend"""
 
     name = "facebook-limited-login"
+    title = "Facebook"
+    icon = "facebook.svg"
     OIDC_ENDPOINT = "https://www.facebook.com"
     ACCESS_TOKEN_URL = "https://facebook.com/dialog/oauth/"
     ID_TOKEN_MAX_AGE = 3600

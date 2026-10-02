@@ -12,6 +12,7 @@ class TrelloOAuth(BaseOAuth1):
     """Trello OAuth authentication backend"""
 
     name = "trello"
+    title = "Trello"
     ID_KEY = "username"
     AUTHORIZATION_URL = "https://trello.com/1/OAuthAuthorizeToken"
     REQUEST_TOKEN_URL = "https://trello.com/1/OAuthGetRequestToken"

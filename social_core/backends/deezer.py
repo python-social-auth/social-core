@@ -23,6 +23,7 @@ class DeezerOAuth2(BaseOAuth2):
     """Deezer OAuth2 authentication backend"""
 
     name = "deezer"
+    title = "Deezer"
     ID_KEY = "id"
     REQUIRES_USER_ID = True
     LEGACY_ID_KEYS = ("name",)

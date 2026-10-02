@@ -5,3 +5,5 @@ recursive-include social_core/tests *.txt *.json
 
 recursive-exclude .tox *
 recursive-exclude social_core *.pyc
+
+recursive-include social_core/static *.svg NOTICE LICENSE.amplify-ui

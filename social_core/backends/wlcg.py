@@ -10,6 +10,7 @@ class WLCGOAuth2(BaseOAuth2):
     """
 
     name = "wlcg"
+    title = "WLCG"
     API_URL = "https://wlcg.cloud.cnaf.infn.it"
     AUTHORIZATION_URL = "https://wlcg.cloud.cnaf.infn.it/authorize"
     ACCESS_TOKEN_URL = "https://wlcg.cloud.cnaf.infn.it/token"

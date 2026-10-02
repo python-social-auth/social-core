@@ -5,6 +5,7 @@ from .oauth import BaseOAuth2PKCE
 
 class EtsyOAuth2(BaseOAuth2PKCE):
     name = "etsy"
+    title = "Etsy"
     ID_KEY = "user_id"
     AUTHORIZATION_URL = "https://www.etsy.com/oauth/connect"
     ACCESS_TOKEN_URL = "https://api.etsy.com/v3/public/oauth/token"

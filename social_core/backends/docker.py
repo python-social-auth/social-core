@@ -10,6 +10,8 @@ from .oauth import BaseOAuth2
 
 class DockerOAuth2(BaseOAuth2):
     name = "docker"
+    title = "Docker"
+    icon = "docker.svg"
     ID_KEY = "user_id"
     AUTHORIZATION_URL = "https://hub.docker.com/api/v1.1/o/authorize/"
     ACCESS_TOKEN_URL = "https://hub.docker.com/api/v1.1/o/token/"

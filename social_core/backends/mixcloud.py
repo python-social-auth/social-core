@@ -10,6 +10,7 @@ from .oauth import BaseOAuth2
 
 class MixcloudOAuth2(BaseOAuth2):
     name = "mixcloud"
+    title = "Mixcloud"
     ID_KEY = "username"
     AUTHORIZATION_URL = "https://www.mixcloud.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://www.mixcloud.com/oauth/access_token"

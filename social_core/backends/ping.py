@@ -19,6 +19,7 @@ from social_core.exceptions import AuthTokenError
 
 class PingOpenIdConnect(OpenIdConnectAuth):
     name = "ping"
+    title = "Ping Identity"
     # OIDC_ENDPOINT has the form 'https://auth.pingone.com/<APP ID>/as'
     OIDC_ENDPOINT = ""
     REDIRECT_STATE = False

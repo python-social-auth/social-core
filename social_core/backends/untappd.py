@@ -12,6 +12,7 @@ class UntappdOAuth2(BaseOAuth2):
     """Untappd OAuth2 authentication backend"""
 
     name = "untappd"
+    title = "Untappd"
     AUTHORIZATION_URL = "https://untappd.com/oauth/authenticate/"
     ACCESS_TOKEN_URL = "https://untappd.com/oauth/authorize/"
     BASE_API_URL = "https://api.untappd.com"

@@ -21,6 +21,7 @@ if TYPE_CHECKING:
 
 class QQOAuth2(BaseOAuth2):
     name = "qq"
+    title = "QQ"
     ID_KEY = "openid"
     AUTHORIZE_URL = "https://graph.qq.com/oauth2.0/authorize"
     ACCESS_TOKEN_URL = "https://graph.qq.com/oauth2.0/token"

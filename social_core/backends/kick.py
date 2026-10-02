@@ -12,6 +12,7 @@ class KickOAuth2(BaseOAuth2PKCE):
     """Kick OAuth2 authentication backend"""
 
     name = "kick"
+    title = "Kick"
     ID_KEY = "user_id"
     REQUIRES_USER_ID = True
     HOSTNAME = "id.kick.com"

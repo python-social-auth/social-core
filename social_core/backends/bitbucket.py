@@ -14,6 +14,8 @@ from .oauth import BaseOAuth2
 
 class BitbucketOAuth2(BaseOAuth2):
     name = "bitbucket-oauth2"
+    title = "Bitbucket"
+    icon = "bitbucket.svg"
     SCOPE_SEPARATOR = " "
     AUTHORIZATION_URL = "https://bitbucket.org/site/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://bitbucket.org/site/oauth2/access_token"

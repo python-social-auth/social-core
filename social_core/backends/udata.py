@@ -41,6 +41,7 @@ class DatagouvfrOAuth2(UdataBaseOAuth2):
     """Datagouvfr OAuth authentication backend."""
 
     name = "datagouv"
+    title = "data.gouv.fr"
     ACCESS_TOKEN_URL = "https://www.data.gouv.fr/oauth/token"
     AUTHORIZATION_URL = "https://www.data.gouv.fr/oauth/authorize"
     USER_DATA_URL = "https://www.data.gouv.fr/api/1/me/"

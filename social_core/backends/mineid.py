@@ -7,6 +7,7 @@ class MineIDOAuth2(BaseOAuth2):
     """MineID OAuth2 authentication backend"""
 
     name = "mineid"
+    title = "MineID"
     AUTHORIZATION_URL = "{scheme}://{host}/oauth/authorize"
     ACCESS_TOKEN_URL = "{scheme}://{host}/oauth/access_token"
     SCOPE_SEPARATOR = ","

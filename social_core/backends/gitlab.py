@@ -17,6 +17,8 @@ class GitLabOAuth2(BaseOAuth2):
     """GitLab OAuth authentication backend"""
 
     name = "gitlab"
+    title = "GitLab"
+    icon = "gitlab.svg"
     API_URL = "https://gitlab.com"
     AUTHORIZATION_URL = "https://gitlab.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://gitlab.com/oauth/token"

@@ -7,6 +7,8 @@ from .open_id import OpenIdAuth
 
 class UbuntuOpenId(OpenIdAuth):
     name = "ubuntu"
+    title = "Ubuntu"
+    icon = "ubuntu.svg"
     ID_KEY = "nickname"
     URL = "https://login.ubuntu.com"
 

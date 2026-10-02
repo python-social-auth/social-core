@@ -65,6 +65,7 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
     """
 
     name = "oidc"
+    title = "OpenID Connect"
     # Override OIDC_ENDPOINT in your subclass to enable autoconfig of OIDC
     OIDC_ENDPOINT: str | None = None
     ID_TOKEN_MAX_AGE = 600

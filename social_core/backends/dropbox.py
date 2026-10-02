@@ -10,6 +10,7 @@ from .oauth import BaseOAuth2
 
 class DropboxOAuth2V2(BaseOAuth2):
     name = "dropbox-oauth2"
+    title = "Dropbox"
     ID_KEY = "uid"
     AUTHORIZATION_URL = "https://www.dropbox.com/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://api.dropboxapi.com/oauth2/token"

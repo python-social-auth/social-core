@@ -16,6 +16,8 @@ class BitbucketDataCenterOAuth2(BaseOAuth2PKCE):
     """
 
     name = "bitbucket-datacenter-oauth2"
+    title = "Bitbucket Data Center"
+    icon = "bitbucket.svg"
     ID_KEY = "id"
     SCOPE_SEPARATOR = " "
     REFRESH_TOKEN_METHOD = "POST"

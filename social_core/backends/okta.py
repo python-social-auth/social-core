@@ -47,6 +47,7 @@ class OktaOAuth2(OktaMixin, BaseOAuth2):
     """Okta OAuth authentication backend"""
 
     name = "okta-oauth2"
+    title = "Okta"
     REDIRECT_STATE = False
     SCOPE_SEPARATOR = " "
     ID_KEY = "preferred_username"

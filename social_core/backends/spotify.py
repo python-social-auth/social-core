@@ -13,6 +13,7 @@ class SpotifyOAuth2(BaseOAuth2):
     """Spotify OAuth2 authentication backend"""
 
     name = "spotify"
+    title = "Spotify"
     ID_KEY = "id"
     AUTHORIZATION_URL = "https://accounts.spotify.com/authorize"
     ACCESS_TOKEN_URL = "https://accounts.spotify.com/api/token"

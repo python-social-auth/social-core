@@ -14,3 +14,4 @@ class VaultOpenIdConnect(OpenIdConnectAuth):
     """
 
     name = "vault"
+    title = "HashiCorp Vault"

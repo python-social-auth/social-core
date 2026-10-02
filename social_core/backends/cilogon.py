@@ -11,6 +11,7 @@ class CILogonOAuth2(BaseOAuth2):
     """
 
     name = "cilogon-oauth2"
+    title = "CILogon"
     ID_KEY = "sub"
     AUTHORIZATION_URL = "https://cilogon.org/authorize"
     ACCESS_TOKEN_URL = "https://cilogon.org/oauth2/token"

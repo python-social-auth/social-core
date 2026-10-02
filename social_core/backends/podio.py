@@ -12,6 +12,7 @@ class PodioOAuth2(BaseOAuth2):
     """Podio OAuth authentication backend"""
 
     name = "podio"
+    title = "Podio"
     AUTHORIZATION_URL = "https://podio.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://podio.com/oauth/token"
     EXTRA_DATA = [

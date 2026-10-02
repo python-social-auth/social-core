@@ -10,6 +10,8 @@ from .oauth import BaseOAuth2
 
 class AmazonOAuth2(BaseOAuth2):
     name = "amazon"
+    title = "Amazon"
+    icon = "amazon.svg"
     ID_KEY = "user_id"
     AUTHORIZATION_URL = "https://www.amazon.com/ap/oa"
     ACCESS_TOKEN_URL = "https://api.amazon.com/auth/o2/token"

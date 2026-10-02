@@ -11,6 +11,7 @@ class CleverOAuth2(BaseOAuth2):
     """
 
     name = "clever"
+    title = "Clever"
     AUTHORIZATION_URL = "https://clever.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://clever.com/oauth/tokens"
     REDIRECT_STATE = False

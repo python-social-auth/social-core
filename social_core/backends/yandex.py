@@ -18,6 +18,7 @@ class YandexOpenId(OpenIdAuth):
     """Yandex OpenID authentication backend"""
 
     name = "yandex-openid"
+    title = "Yandex"
     ID_KEY = "email"
     URL = "https://openid.yandex.ru"
 
@@ -38,6 +39,7 @@ class YandexOAuth2(BaseOAuth2):
     """Legacy Yandex OAuth2 authentication backend"""
 
     name = "yandex-oauth2"
+    title = "Yandex"
     AUTHORIZATION_URL = "https://oauth.yandex.com/authorize"
     ACCESS_TOKEN_URL = "https://oauth.yandex.com/token"
     REDIRECT_STATE = False
@@ -67,6 +69,7 @@ class YandexOAuth2(BaseOAuth2):
 
 class YaruOAuth2(BaseOAuth2):
     name = "yaru"
+    title = "Я.ру"  # noqa: RUF001 - original service branding
     AUTHORIZATION_URL = "https://oauth.yandex.com/authorize"
     ACCESS_TOKEN_URL = "https://oauth.yandex.com/token"
     REDIRECT_STATE = False

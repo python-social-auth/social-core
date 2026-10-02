@@ -17,6 +17,7 @@ class XingOAuth(BaseOAuth1):
     """Xing OAuth authentication backend"""
 
     name = "xing"
+    title = "XING"
     AUTHORIZATION_URL = "https://api.xing.com/v1/authorize"
     REQUEST_TOKEN_URL = "https://api.xing.com/v1/request_token"
     ACCESS_TOKEN_URL = "https://api.xing.com/v1/access_token"

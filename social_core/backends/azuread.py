@@ -44,6 +44,8 @@ from .oauth import BaseOAuth2PKCE
 
 class AzureADOAuth2(BaseOAuth2PKCE):
     name = "azuread-oauth2"
+    title = "Microsoft"
+    icon = "microsoft.svg"
     ID_KEY = "sub"
     LEGACY_ID_KEYS: tuple[str, ...] = ("upn",)
     MUTABLE_ID_KEYS = ("upn", "preferred_username")
@@ -396,6 +398,8 @@ class AzureADOAuth2V2(AzureADOAuth2):
     allow them."""
 
     name = "azuread-oauth2-v2"
+    title = "Microsoft"
+    icon = "microsoft.svg"
     AUTHORIZATION_URL = "{base_url}/oauth2/v2.0/authorize"
     ACCESS_TOKEN_URL = "{base_url}/oauth2/v2.0/token"
     OPENID_CONFIGURATION_URL = "{base_url}/v2.0/.well-known/openid-configuration"

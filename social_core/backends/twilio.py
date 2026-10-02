@@ -17,6 +17,7 @@ class TwilioAuth(BaseAuth):
     """Associate Twilio Connect access with an authenticated local user."""
 
     name = "twilio"
+    title = "Twilio"
     ID_KEY = "AccountSid"
     REDIRECT_STATE = True
     ASSOCIATION_ONLY = True

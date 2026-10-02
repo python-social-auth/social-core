@@ -10,6 +10,7 @@ class ZoteroOAuth(BaseOAuth1):
     """Zotero OAuth authorization mechanism"""
 
     name = "zotero"
+    title = "Zotero"
     ID_KEY = "userID"
     AUTHORIZATION_URL = "https://www.zotero.org/oauth/authorize"
     REQUEST_TOKEN_URL = "https://www.zotero.org/oauth/request"
