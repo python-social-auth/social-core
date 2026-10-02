@@ -9,7 +9,7 @@ from hashlib import md5
 from typing import Any, cast
 from urllib.parse import unquote
 
-from social_core.exceptions import AuthFailed
+from social_core.exceptions import AuthInputError, AuthResponseError
 
 from .base import BaseAuth
 from .oauth import BaseOAuth2
@@ -126,7 +126,12 @@ class OdnoklassnikiApp(BaseAuth):
         ):
             details = details[0]
             if str(details["uid"]) != str(response["logged_user_id"]):
-                raise AuthFailed(self, "User details do not match signed user")
+                raise AuthResponseError(
+                    self,
+                    "User details do not match signed user",
+                    code="invalid_claim",
+                    stage="callback",
+                )
 
             auth_data_fields = cast(
                 "tuple[str, ...]",
@@ -147,7 +152,12 @@ class OdnoklassnikiApp(BaseAuth):
             details["extra_data_list"] = fields + auth_data_fields
             kwargs.update({"backend": self, "response": details})
         else:
-            raise AuthFailed(self, "Cannot get user details: API error")
+            raise AuthResponseError(
+                self,
+                "Cannot get user details: API error",
+                code="malformed_response",
+                stage="callback",
+            )
         return self.strategy.authenticate(*args, **kwargs)
 
     def get_auth_sig(self):
@@ -168,10 +178,31 @@ class OdnoklassnikiApp(BaseAuth):
         return {name: self.data[name] for name in fields if name in self.data}
 
     def verify_auth_sig(self) -> None:
+        for parameter in ("logged_user_id", "session_key", "auth_sig"):
+            value = self.data.get(parameter)
+            if value is None or value == "":
+                raise AuthInputError(
+                    self,
+                    parameter=parameter,
+                    code="missing_parameter",
+                    stage="callback",
+                )
+            if not isinstance(value, str):
+                raise AuthInputError(
+                    self,
+                    parameter=parameter,
+                    code="invalid_parameter",
+                    stage="callback",
+                )
         correct_key = self.get_auth_sig()
         key = self.data["auth_sig"].lower()
         if correct_key != key:
-            raise AuthFailed(self, "Wrong authorization key")
+            raise AuthResponseError(
+                self,
+                "Wrong authorization key",
+                code="invalid_signature",
+                stage="callback",
+            )
 
 
 def odnoklassniki_oauth_sig(data, client_secret):
@@ -213,5 +244,10 @@ def odnoklassniki_api(
         data["sig"] = odnoklassniki_iframe_sig(data, client_secret)
     else:
         msg = "Unknown request type {0}. How should it be signed?"
-        raise AuthFailed(backend, msg.format(request_type))
+        raise AuthResponseError(
+            backend,
+            msg.format(request_type),
+            code="malformed_response",
+            stage="callback",
+        )
     return backend.get_json(f"{api_url}fb.do", params=data)

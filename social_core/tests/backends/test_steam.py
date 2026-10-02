@@ -4,7 +4,8 @@ from urllib.parse import parse_qsl, urlencode, urlsplit
 
 import responses
 
-from social_core.exceptions import AuthFailed
+from social_core.exceptions import AuthResponseError
+from social_core.tests.exception_helpers import assert_auth_error
 
 from .open_id import OpenIdTest
 
@@ -146,12 +147,12 @@ class SteamOpenIdMissingSteamIdTest(SteamOpenIdTest):
 
     def test_login(self) -> None:
         self._login_setup(user_url="https://steamcommunity.com/openid/BROKEN")
-        with self.assertRaisesRegex(AuthFailed, "Missing Steam Id"):
+        with assert_auth_error(self, AuthResponseError, "missing_claim"):
             self.do_login()
 
     def test_partial_pipeline(self) -> None:
         self._login_setup(user_url="https://steamcommunity.com/openid/BROKEN")
-        with self.assertRaisesRegex(AuthFailed, "Missing Steam Id"):
+        with assert_auth_error(self, AuthResponseError, "missing_claim"):
             self.do_partial_pipeline()
 
 
@@ -177,10 +178,10 @@ class SteamOpenIdFakeSteamIdTest(SteamOpenIdTest):
 
     def test_login(self) -> None:
         self._login_setup(user_url="https://fakesteamcommunity.com/openid/123")
-        with self.assertRaisesRegex(AuthFailed, "Openid identifier mismatch"):
+        with assert_auth_error(self, AuthResponseError, "invalid_claim"):
             self.do_login()
 
     def test_partial_pipeline(self) -> None:
         self._login_setup(user_url="https://fakesteamcommunity.com/openid/123")
-        with self.assertRaisesRegex(AuthFailed, "Openid identifier mismatch"):
+        with assert_auth_error(self, AuthResponseError, "invalid_claim"):
             self.do_partial_pipeline()

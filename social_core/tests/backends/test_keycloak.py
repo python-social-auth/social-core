@@ -5,7 +5,7 @@ import time
 
 import jwt
 
-from social_core.exceptions import AuthTokenError
+from social_core.exceptions import AuthResponseError
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
@@ -133,7 +133,7 @@ class KeycloakOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     def test_invalid_signature_raises_auth_token_error(self) -> None:
         header, payload, _signature = _encode(_PAYLOAD).split(".")
 
-        with self.assertRaises(AuthTokenError) as context:
+        with self.assertRaises(AuthResponseError) as context:
             self.backend.user_data(f"{header}.{payload}.AAAA")
 
         self.assertIsInstance(context.exception.__cause__, jwt.InvalidSignatureError)

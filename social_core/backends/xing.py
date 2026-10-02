@@ -8,7 +8,7 @@ from typing import Any
 from oauthlib.oauth1 import SIGNATURE_TYPE_AUTH_HEADER
 from requests_oauthlib import OAuth1
 
-from social_core.exceptions import AuthTokenError
+from social_core.exceptions import AuthResponseError
 
 from .oauth import BaseOAuth1
 
@@ -45,9 +45,16 @@ class XingOAuth(BaseOAuth1):
         resource_owner_key = access_token.get("oauth_token")
         resource_owner_secret = access_token.get("oauth_token_secret")
         if not resource_owner_key:
-            raise AuthTokenError(self, "Missing oauth_token")
+            raise AuthResponseError(
+                self, claim="oauth_token", code="missing_claim", stage="user_info"
+            )
         if not resource_owner_secret:
-            raise AuthTokenError(self, "Missing oauth_token_secret")
+            raise AuthResponseError(
+                self,
+                claim="oauth_token_secret",
+                code="missing_claim",
+                stage="user_info",
+            )
         return OAuth1(
             key,
             secret,

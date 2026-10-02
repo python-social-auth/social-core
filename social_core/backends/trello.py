@@ -5,6 +5,8 @@ Trello OAuth1 backend, docs at:
 
 from typing import Any, cast
 
+from social_core.exceptions import SocialAuthBaseException
+
 from .oauth import BaseOAuth1
 
 
@@ -41,7 +43,11 @@ class TrelloOAuth(BaseOAuth1):
         """Return user data provided"""
         url = "https://trello.com/1/members/me"
         try:
-            return self.get_json(url, auth=self.oauth_auth(access_token))
+            return self.get_json(
+                url, auth=self.oauth_auth(access_token, stage="user_info")
+            )
+        except SocialAuthBaseException:
+            raise
         except ValueError:
             return None
 

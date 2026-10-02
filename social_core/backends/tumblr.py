@@ -43,5 +43,6 @@ class TumblrOAuth(BaseOAuth1):
 
     def user_data(self, access_token: dict, *args, **kwargs) -> dict[str, Any] | None:
         return self.get_json(
-            "https://api.tumblr.com/v2/user/info", auth=self.oauth_auth(access_token)
+            "https://api.tumblr.com/v2/user/info",
+            auth=self.oauth_auth(access_token, stage="user_info"),
         )

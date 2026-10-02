@@ -11,8 +11,9 @@ from openid.message import OPENID2_NS, Message
 
 from social_core.backends.livejournal import LiveJournalOpenId
 from social_core.backends.open_id import OpenIdAuth
-from social_core.exceptions import AuthCanceled, AuthFailed
+from social_core.exceptions import AuthCanceled, AuthResponseError, AuthSessionError
 from social_core.pipeline.social_auth import social_names
+from social_core.tests.exception_helpers import assert_auth_error
 from social_core.utils import PARTIAL_TOKEN_SESSION_NAME
 
 from .base import BaseBackendTest
@@ -228,16 +229,18 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
         for snapshot in snapshots:
             with self.subTest(snapshot=snapshot):
                 stored.kwargs[VERIFIED_RESPONSE_KEY] = snapshot
-                with self.assertRaisesRegex(AuthFailed, "restart login"):
+                with assert_auth_error(
+                    self, AuthSessionError, "session_context_missing"
+                ):
                     self.resume_partial_with_new_request(token)
         stored.kwargs.pop(VERIFIED_RESPONSE_KEY)
-        with self.assertRaisesRegex(AuthFailed, "restart login"):
+        with assert_auth_error(self, AuthSessionError, "session_context_missing"):
             self.resume_partial_with_new_request(token)
 
     def test_initial_failed_callbacks_are_rejected(self) -> None:
         endpoint = self.verified_response().endpoint
         for response, exception in (
-            (FailureResponse(endpoint, "Invalid signature"), AuthFailed),
+            (FailureResponse(endpoint, "Invalid signature"), AuthResponseError),
             (CancelResponse(endpoint), AuthCanceled),
         ):
             with (

@@ -5,12 +5,10 @@ LinkedIn OAuth1 and OAuth2 backend, docs at:
 
 from __future__ import annotations
 
-import datetime
-from calendar import timegm
 from typing import TYPE_CHECKING, Any, Literal, cast
 
 from social_core.backends.open_id_connect import OpenIdConnectAuth
-from social_core.exceptions import AuthCanceled, AuthTokenError
+from social_core.exceptions import AuthProviderError, ErrorStage
 
 from .oauth import BaseOAuth2
 
@@ -37,18 +35,8 @@ class LinkedinOpenIdConnect(OpenIdConnectAuth):
     TOKEN_ENDPOINT_AUTH_METHOD = "client_secret_post"
 
     def validate_claims(self, id_token) -> None:
-        """Copy of the regular validate_claims method without the nonce validation."""
-
-        utc_timestamp = timegm(datetime.datetime.now(datetime.timezone.utc).timetuple())
-
-        if "nbf" in id_token and utc_timestamp < id_token["nbf"]:
-            raise AuthTokenError(self, "Incorrect id_token: nbf")
-
-        # Verify the token was issued in the last 10 minutes
-        iat_leeway = self.setting("ID_TOKEN_MAX_AGE", self.ID_TOKEN_MAX_AGE)
-        if utc_timestamp > id_token["iat"] + iat_leeway:
-            raise AuthTokenError(self, "Incorrect id_token: iat")
-
+        """Validate temporal claims without requiring LinkedIn to supply a nonce."""
+        self.validate_temporal_claims(id_token)
         # Skip the nonce validation for linkedin as it does not provide any nonce.
         # https://stackoverflow.com/questions/76889585/issues-with-sign-in-with-linkedin-using-openid-connect
 
@@ -158,7 +146,7 @@ class LinkedinOAuth2(BaseOAuth2):
         headers["Authorization"] = f"Bearer {access_token}"
         return headers
 
-    def request_access_token(
+    def request_access_token(  # noqa: PLR0913
         self,
         url: str,
         method: Literal["GET", "POST", "DELETE"] = "GET",
@@ -167,12 +155,15 @@ class LinkedinOAuth2(BaseOAuth2):
         json: dict | None = None,
         auth: tuple[str, str] | AuthBase | None = None,
         params: dict | None = None,
+        *,
+        stage: ErrorStage = "token_exchange",
     ) -> dict[Any, Any]:
         # LinkedIn expects a POST request with querystring parameters, despite
         # the spec http://tools.ietf.org/html/rfc6749#section-4.1.3
         return super().request_access_token(
             url,
             method=method,
+            stage=stage,
             headers=headers,
             data=data,
             json=json,
@@ -180,10 +171,23 @@ class LinkedinOAuth2(BaseOAuth2):
             params=data,
         )
 
-    def process_error(self, data) -> None:
-        super().process_error(data)
+    def process_error(self, data, *, stage: ErrorStage = "callback") -> None:
+        super().process_error(data, stage=stage)
         if data.get("serviceErrorCode"):
-            raise AuthCanceled(self, data.get("message") or data.get("status"))
+            status = data.get("status")
+            code = "http_error"
+            if status == 429:
+                code = "rate_limited"
+            elif isinstance(status, int) and 500 <= status < 600:
+                code = "unavailable"
+            raise AuthProviderError(
+                self,
+                data.get("message"),
+                provider_code=data["serviceErrorCode"],
+                status_code=status,
+                code=code,
+                stage=stage,
+            )
 
 
 class LinkedinMobileOAuth2(LinkedinOAuth2):

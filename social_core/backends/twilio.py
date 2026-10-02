@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from urllib.parse import urlencode
 
-from social_core.exceptions import AuthFailed
+from social_core.exceptions import AuthResponseError
 from social_core.utils import url_add_parameters
 
 from .base import BaseAuth
@@ -57,7 +57,9 @@ class TwilioAuth(BaseAuth):
         self.validate_association_state(self.get_request_state(), kwargs.get("user"))
         account_sid = self.data.get("AccountSid")
         if not account_sid:
-            raise AuthFailed(self, "Missing AccountSid")
+            raise AuthResponseError(
+                self, "Missing AccountSid", code="missing_claim", stage="callback"
+            )
         kwargs.update(
             {
                 "response": self.data,

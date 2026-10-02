@@ -3,7 +3,11 @@ from google.oauth2 import id_token
 
 from social_core.backends.base import BaseAuth
 from social_core.backends.google import BaseGoogleAuth
-from social_core.exceptions import AuthException, AuthTokenError
+from social_core.exceptions import (
+    AuthConfigurationError,
+    AuthResponseError,
+    AuthSessionError,
+)
 
 
 class GoogleOneTap(BaseGoogleAuth, BaseAuth):
@@ -14,22 +18,37 @@ class GoogleOneTap(BaseGoogleAuth, BaseAuth):
     CREDENTIAL_KEY = "credential"
 
     def auth_url(self):
-        raise AuthException(self, "Cannot start login flow for Google One Tap")
+        raise AuthConfigurationError(
+            self,
+            "Cannot start login flow for Google One Tap",
+            code="invalid_setting",
+            stage="begin",
+        )
 
     def verify_csrf(self, request) -> None:
         csrf_token_body = self.data.get(self.CSRF_KEY)
         csrf_token_cookie = request.COOKIES.get(self.CSRF_KEY)
 
         if not csrf_token_body:
-            raise AuthTokenError(self, "Missing csrf token from response")
+            raise AuthResponseError(
+                self,
+                "Missing csrf token from response",
+                code="nonce_mismatch",
+                stage="callback",
+            )
 
         # csrf_token_cookie can be missing due to https://issuetracker.google.com/issues/226157137
         if not csrf_token_cookie and self.setting("IGNORE_MISSING_CSRF_COOKIE", False):
             return
 
         if csrf_token_body != csrf_token_cookie:
-            raise AuthTokenError(
-                self, "csrf token from cookie and response does not match"
+            raise AuthSessionError(
+                self,
+                "csrf token from cookie and response does not match",
+                code="state_mismatch"
+                if csrf_token_cookie
+                else "session_context_missing",
+                stage="callback",
             )
 
     def get_decoded_info(self):
@@ -40,7 +59,12 @@ class GoogleOneTap(BaseGoogleAuth, BaseAuth):
                 self.setting("KEY"),
             )
         except ValueError as error:
-            raise AuthException(self, "Invalid response from Google") from error
+            raise AuthResponseError(
+                self,
+                "Invalid response from Google",
+                code="invalid_claim",
+                stage="token_validation",
+            ) from error
 
         return idinfo
 

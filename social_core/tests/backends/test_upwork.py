@@ -8,7 +8,9 @@ class UpworkOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
     backend_path = "social_core.backends.upwork.UpworkOAuth"
     user_data_url = "https://www.upwork.com/api/auth/v1/info.json"
     expected_username = "10101010"
-    access_token_body = json.dumps({"access_token": "foobar", "token_type": "bearer"})
+    access_token_body = urlencode(
+        {"oauth_token": "foobar", "oauth_token_secret": "foobar-secret"}
+    )
     request_token_body = urlencode(
         {
             "oauth_token_secret": "foobar-secret",

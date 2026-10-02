@@ -32,7 +32,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Literal, cast
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
-from social_core.exceptions import AuthException, AuthMissingParameter, AuthTokenError
+from social_core.exceptions import (
+    AuthConfigurationError,
+    AuthResponseError,
+    ErrorStage,
+)
 
 from .azuread import AzureADOAuth2
 
@@ -83,13 +87,22 @@ class AzureADB2COAuth2(AzureADOAuth2):
     @property
     def policy(self):
         policy = self.setting("POLICY")
-        if not policy or not policy.lower().startswith("b2c_"):
-            raise AuthException(
+        if not isinstance(policy, str) or not policy.lower().startswith("b2c_"):
+            raise AuthConfigurationError(
                 self,
                 "SOCIAL_AUTH_AZUREAD_B2C_OAUTH2_POLICY is "
                 "required and should start with `b2c_`",
+                code="invalid_setting",
+                parameter="POLICY",
             )
         return policy
+
+    def _get_policy(self, *, stage: ErrorStage) -> str:
+        try:
+            return self.policy
+        except AuthConfigurationError as error:
+            error.stage = stage
+            raise
 
     @property
     def base_url(self):
@@ -100,7 +113,16 @@ class AzureADB2COAuth2(AzureADOAuth2):
         )
 
     def get_openid_configuration_url_format(self) -> dict[str, str]:
-        return {**super().get_openid_configuration_url_format(), "policy": self.policy}
+        return {
+            **super().get_openid_configuration_url_format(),
+            "policy": self._get_policy(stage="token_validation"),
+        }
+
+    def get_authorization_url_format(self) -> dict[str, str]:
+        return {
+            **super().get_authorization_url_format(),
+            "policy": self._get_policy(stage="begin"),
+        }
 
     def logout_url(
         self,
@@ -112,7 +134,12 @@ class AzureADB2COAuth2(AzureADOAuth2):
         """Build a provider logout URL for the configured sign-in policy."""
         endpoint = self.openid_configuration().get("end_session_endpoint")
         if not isinstance(endpoint, str):
-            raise AuthMissingParameter(self, "end_session_endpoint")
+            raise AuthResponseError(
+                self,
+                claim="end_session_endpoint",
+                code="missing_claim",
+                stage="begin",
+            )
         try:
             parsed = urlsplit(endpoint)
             valid = (
@@ -127,7 +154,12 @@ class AzureADB2COAuth2(AzureADOAuth2):
         except ValueError:
             valid = False
         if not valid:
-            raise AuthMissingParameter(self, "end_session_endpoint")
+            raise AuthResponseError(
+                self,
+                claim="end_session_endpoint",
+                code="invalid_claim",
+                stage="begin",
+            )
         params = {
             "client_id": self.setting("KEY"),
             "post_logout_redirect_uri": post_logout_redirect_uri,
@@ -145,13 +177,16 @@ class AzureADB2COAuth2(AzureADOAuth2):
 
     def get_access_token_url_format(self) -> dict[str, str]:
         params = super().get_access_token_url_format()
-        params["policy"] = self.policy
+        params["policy"] = self._get_policy(stage="token_exchange")
         return params
 
     def jwks_url(self):
-        return self.JWKS_URL.format(base_url=self.base_url, policy=self.policy)
+        return self.JWKS_URL.format(
+            base_url=self._get_base_url(stage="token_validation"),
+            policy=self._get_policy(stage="token_validation"),
+        )
 
-    def request_access_token(
+    def request_access_token(  # noqa: PLR0913
         self,
         url: str,
         method: Literal["GET", "POST", "DELETE"] = "GET",
@@ -160,6 +195,8 @@ class AzureADB2COAuth2(AzureADOAuth2):
         json: dict | None = None,
         auth: tuple[str, str] | AuthBase | None = None,
         params: dict | None = None,
+        *,
+        stage: ErrorStage = "token_exchange",
     ) -> dict[Any, Any]:
         """
         This is probably a hack, but otherwise AzureADOAuth2 expects
@@ -170,6 +207,7 @@ class AzureADB2COAuth2(AzureADOAuth2):
         response = super().request_access_token(
             url,
             method=method,
+            stage=stage,
             headers=headers,
             data=data,
             json=json,
@@ -177,13 +215,18 @@ class AzureADB2COAuth2(AzureADOAuth2):
             params=params,
         )
         if "access_token" not in response:
-            response["access_token"] = response["id_token"]
+            id_token = response.get("id_token")
+            if not isinstance(id_token, str) or not id_token:
+                raise AuthResponseError(
+                    self, claim="id_token", code="missing_claim", stage=stage
+                )
+            response["access_token"] = id_token
         return response
 
     def auth_extra_arguments(self):
         """Return extra arguments needed on auth process."""
         extra_arguments = super().auth_extra_arguments()
-        extra_arguments["p"] = self.policy
+        extra_arguments["p"] = self._get_policy(stage="begin")
         return extra_arguments
 
     def get_user_details(self, response):
@@ -203,12 +246,22 @@ class AzureADB2COAuth2(AzureADOAuth2):
         if policy is None:
             policy = claims.get("acr")
         if not isinstance(policy, str) or not policy:
-            raise AuthMissingParameter(self, "tfp")
+            raise AuthResponseError(
+                self, claim="tfp", code="missing_claim", stage="token_validation"
+            )
         return policy
 
     def validate_id_token_policy(self, claims: dict[str, Any]) -> None:
-        if self.get_id_token_policy(claims).lower() != self.policy.lower():
-            raise AuthTokenError(self, "Token policy does not match configured policy")
+        if (
+            self.get_id_token_policy(claims).lower()
+            != self._get_policy(stage="token_validation").lower()
+        ):
+            raise AuthResponseError(
+                self,
+                "Token policy does not match configured policy",
+                code="invalid_claim",
+                stage="token_validation",
+            )
 
     def validate_and_return_id_token(self, id_token: str) -> dict[str, Any]:
         claims = super().validate_and_return_id_token(id_token)

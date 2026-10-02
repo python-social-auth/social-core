@@ -1,6 +1,7 @@
 import json
 
-from social_core.exceptions import AuthMissingParameter
+from social_core.exceptions import AuthResponseError
+from social_core.tests.exception_helpers import assert_auth_error
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
@@ -57,7 +58,7 @@ class NaverOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     def test_missing_configured_provider_field_id(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_NAVER_ID_KEY": "mobile"})
 
-        with self.assertRaisesRegex(AuthMissingParameter, "mobile"):
+        with assert_auth_error(self, AuthResponseError, "missing_claim"):
             self.do_login()
 
     def test_partial_pipeline(self) -> None:

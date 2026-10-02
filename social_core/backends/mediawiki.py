@@ -5,13 +5,16 @@ MediaWiki OAuth1 backend, docs at:
 
 import re
 import time
+from math import isfinite
 from typing import cast
 from urllib.parse import parse_qs, urlencode, urlparse
 
 import jwt
 from requests_oauthlib import OAuth1
 
-from social_core.exceptions import AuthException, AuthMissingParameter
+from social_core.backends.utils import jwt_error
+from social_core.exceptions import AuthResponseError
+from social_core.utils import parse_qs as parse_oauth_response
 
 from .oauth import BaseOAuth1
 
@@ -53,12 +56,22 @@ class MediaWiki(BaseOAuth1):
             params=params,
             auth=OAuth1(key, secret, callback_uri=self.setting("CALLBACK")),
             method=self.REQUEST_TOKEN_METHOD,
+            stage="begin",
         )
 
         if response.content.decode().startswith("Error"):
-            raise AuthException(self, response.content.decode())
+            raise AuthResponseError(
+                self,
+                response.content.decode(),
+                code="malformed_response",
+                stage="begin",
+            )
 
-        return response.content.decode()
+        content = response.content.decode()
+        token = parse_oauth_response(content)
+        self._process_error(token, stage="begin")
+        self._validate_token_credentials(token, stage="begin")
+        return content
 
     def oauth_authorization_request(self, token) -> str:
         """
@@ -68,7 +81,12 @@ class MediaWiki(BaseOAuth1):
             token = parse_qs(token)
         oauth_tokens = token.get(self.OAUTH_TOKEN_PARAMETER_NAME)
         if not oauth_tokens:
-            raise AuthMissingParameter(self, self.OAUTH_TOKEN_PARAMETER_NAME)
+            raise AuthResponseError(
+                self,
+                claim=self.OAUTH_TOKEN_PARAMETER_NAME,
+                code="missing_claim",
+                stage="begin",
+            )
         oauth_token = oauth_tokens[0]
         state = self.get_or_create_state()
         base_url = self.setting("MEDIAWIKI_URL")
@@ -86,23 +104,39 @@ class MediaWiki(BaseOAuth1):
         """
         Fetches the Mediawiki access token.
         """
-        auth_token = self.oauth_auth(token)
+        auth_token = self.oauth_auth(token, stage="token_exchange")
 
         response = self.request(
             cast("str", self.setting("MEDIAWIKI_URL")),
             method="POST",
             params={"title": "Special:Oauth/token"},
             auth=auth_token,
+            stage="token_exchange",
         )
         if response.content.decode().startswith("Error"):
-            raise AuthException(self, response.content.decode())
+            raise AuthResponseError(
+                self,
+                response.content.decode(),
+                code="malformed_response",
+                stage="token_exchange",
+            )
+        self._process_error(
+            parse_oauth_response(response.content.decode()), stage="token_exchange"
+        )
         credentials = parse_qs(response.content)
         oauth_token_keys = credentials.get(b"oauth_token")
         oauth_token_secrets = credentials.get(b"oauth_token_secret")
         if not oauth_token_keys:
-            raise AuthMissingParameter(self, "oauth_token")
+            raise AuthResponseError(
+                self, claim="oauth_token", code="missing_claim", stage="token_exchange"
+            )
         if not oauth_token_secrets:
-            raise AuthMissingParameter(self, "oauth_token_secret")
+            raise AuthResponseError(
+                self,
+                claim="oauth_token_secret",
+                code="missing_claim",
+                stage="token_exchange",
+            )
         oauth_token_key = oauth_token_keys[0]
         oauth_token_secret = oauth_token_secrets[0]
         oauth_token_key = oauth_token_key.decode()
@@ -141,39 +175,52 @@ class MediaWiki(BaseOAuth1):
                 audience=key,
                 algorithms=["HS256"],
                 leeway=self.LEEWAY,
+                options={"verify_iat": False},
             )
         except jwt.PyJWTError as exception:
-            raise AuthException(
-                self,
-                f"An error occurred while trying to read json content: {exception}",
-            ) from exception
+            raise jwt_error(self, exception, stage="user_info") from exception
 
-        issuer = urlparse(identity["iss"]).netloc
+        issued_at = self._validate_identity_claims(identity)
+
+        try:
+            issuer = urlparse(identity["iss"]).netloc
+        except ValueError as error:
+            raise AuthResponseError(
+                self, claim="iss", code="invalid_claim", stage="user_info"
+            ) from error
         expected_domain = urlparse(self.setting("MEDIAWIKI_URL")).netloc
 
         if not issuer == expected_domain:
-            raise AuthException(
+            raise AuthResponseError(
                 self,
                 f"Unexpected issuer {issuer}, expected {expected_domain}",
+                code="invalid_claim",
+                stage="user_info",
             )
 
         now = time.time()
-        issued_at = float(identity["iat"])
         if not now >= (issued_at - self.LEEWAY):
-            raise AuthException(
-                self, f"Identity issued {issued_at - now} seconds in the future"
+            raise AuthResponseError(
+                self,
+                f"Identity issued {issued_at - now} seconds in the future",
+                code="invalid_claim",
+                stage="user_info",
             )
 
         authorization_header = force_unicode(req_resp.request.headers["Authorization"])
         match = re.search(r'oauth_nonce="(.*?)"', authorization_header)
         if match is None:
-            raise AuthMissingParameter(self, "oauth_nonce")
+            raise AuthResponseError(
+                self, claim="oauth_nonce", code="missing_claim", stage="user_info"
+            )
         request_nonce = match.group(1)
 
         if identity["nonce"] != request_nonce:
-            raise AuthException(
+            raise AuthResponseError(
                 self,
                 f"Replay attack detected: {identity['nonce']} != {request_nonce}",
+                code="nonce_mismatch",
+                stage="user_info",
             )
 
         details = {
@@ -191,7 +238,9 @@ class MediaWiki(BaseOAuth1):
         if id_key not in details:
             user_id = identity.get(id_key)
             if user_id is None:
-                raise AuthMissingParameter(self, id_key)
+                raise AuthResponseError(
+                    self, claim=id_key, code="missing_claim", stage="user_info"
+                )
             details[id_key] = user_id
         return details
 
@@ -200,3 +249,29 @@ class MediaWiki(BaseOAuth1):
         Get the unique Mediawiki user ID.
         """
         return self.get_user_id_from_sources(details)
+
+    def _validate_identity_claims(self, identity) -> float:
+        """Require identity claims before comparing or returning their values."""
+        for claim in ("iss", "iat", "nonce", "username", "sub"):
+            if claim not in identity:
+                raise AuthResponseError(
+                    self, claim=claim, code="missing_claim", stage="user_info"
+                )
+            if claim != "iat" and (
+                not isinstance(identity[claim], str) or not identity[claim]
+            ):
+                raise AuthResponseError(
+                    self, claim=claim, code="invalid_claim", stage="user_info"
+                )
+        try:
+            issued_at = float(identity["iat"])
+        except (ValueError, TypeError, OverflowError) as error:
+            raise AuthResponseError(
+                self, claim="iat", code="invalid_claim", stage="user_info"
+            ) from error
+
+        if isinstance(identity["iat"], bool) or not isfinite(issued_at):
+            raise AuthResponseError(
+                self, claim="iat", code="invalid_claim", stage="user_info"
+            )
+        return issued_at

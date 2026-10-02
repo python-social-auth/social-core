@@ -37,7 +37,7 @@ import jwt
 import responses
 from jwt.algorithms import RSAAlgorithm
 
-from social_core.exceptions import AuthMissingParameter, AuthTokenError
+from social_core.exceptions import AuthConfigurationError, AuthResponseError
 from social_core.utils import get_querystring
 
 from .azuread import AzureOAuth2TestMixin
@@ -293,7 +293,7 @@ class AzureADB2COAuth2Test(OAuth2Test, BaseAuthUrlTestMixin, AzureOAuth2TestMixi
                     "openid_configuration",
                     return_value={"end_session_endpoint": endpoint},
                 ),
-                self.assertRaises(AuthMissingParameter),
+                self.assertRaises(AuthResponseError),
             ):
                 self.backend.logout_url()
 
@@ -304,6 +304,33 @@ class AzureADB2COAuth2Test(OAuth2Test, BaseAuthUrlTestMixin, AzureOAuth2TestMixi
         user = self.do_login()
 
         self.assertEqual(user.social[0].extra_data["access_token"], id_token)
+
+    def test_invalid_policy_reports_the_active_operation(self) -> None:
+        invalid_policies: tuple[object, ...] = (None, "", "other", True, 42, [], {})
+        for policy in invalid_policies:
+            self.strategy.set_settings({f"SOCIAL_AUTH_{self.name}_POLICY": policy})
+            for operation, stage in (
+                (self.backend.authorization_url, "begin"),
+                (self.backend.auth_extra_arguments, "begin"),
+                (self.backend.access_token_url, "token_exchange"),
+                (self.backend.refresh_token_url, "refresh"),
+                (self.backend.get_openid_configuration_url_format, "token_validation"),
+                (self.backend.jwks_url, "token_validation"),
+                (
+                    lambda: self.backend.validate_id_token_policy(
+                        {"tfp": "b2c_signin"}
+                    ),
+                    "token_validation",
+                ),
+            ):
+                with (
+                    self.subTest(policy=policy, stage=stage),
+                    self.assertRaises(AuthConfigurationError) as caught,
+                ):
+                    operation()
+                self.assertEqual(caught.exception.stage, stage)
+                self.assertEqual(caught.exception.code, "invalid_setting")
+                self.assertEqual(caught.exception.parameter, "POLICY")
 
     def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
@@ -324,13 +351,13 @@ class AzureADB2COAuth2Test(OAuth2Test, BaseAuthUrlTestMixin, AzureOAuth2TestMixi
             self.tamper_id_token(self.build_id_token(), name="Attacker")
         )
 
-        with self.assertRaises(AuthTokenError):
+        with self.assertRaises(AuthResponseError):
             self.do_start()
 
     def test_login_rejects_wrong_id_token_audience(self) -> None:
         self.access_token_body = self.build_access_token_body(aud="other-app")
 
-        with self.assertRaises(AuthTokenError):
+        with self.assertRaises(AuthResponseError):
             self.do_start()
 
     def test_login_rejects_wrong_id_token_issuer(self) -> None:
@@ -338,19 +365,19 @@ class AzureADB2COAuth2Test(OAuth2Test, BaseAuthUrlTestMixin, AzureOAuth2TestMixi
             iss="https://footenant.b2clogin.com/00000000-0000-0000-0000-000000000000/v2.0/"
         )
 
-        with self.assertRaises(AuthTokenError):
+        with self.assertRaises(AuthResponseError):
             self.do_start()
 
     def test_login_rejects_wrong_id_token_policy(self) -> None:
         self.access_token_body = self.build_access_token_body(tfp="B2C_1_PasswordReset")
 
-        with self.assertRaises(AuthTokenError):
+        with self.assertRaises(AuthResponseError):
             self.do_start()
 
     def test_login_rejects_missing_id_token_policy(self) -> None:
         self.access_token_body = self.build_access_token_body(tfp=None)
 
-        with self.assertRaises(AuthMissingParameter):
+        with self.assertRaises(AuthResponseError):
             self.do_start()
 
     def test_login_accepts_legacy_acr_policy_claim(self) -> None:

@@ -6,9 +6,12 @@ Github OAuth2 backend, docs at:
 from typing import Any
 from urllib.parse import urljoin
 
-from requests import HTTPError
-
-from social_core.exceptions import AuthFailed
+from social_core.exceptions import (
+    AuthPolicyError,
+    AuthProviderError,
+    AuthResponseError,
+    SocialAuthBaseException,
+)
 
 from .oauth import BaseOAuth2
 
@@ -54,7 +57,11 @@ class GithubOAuth2(BaseOAuth2):
         if not data.get("email") or "user:email" in self.get_scope():
             try:
                 emails = self._user_data(access_token, "/emails")
-            except (HTTPError, ValueError, TypeError):
+            except (AuthProviderError, AuthResponseError):
+                emails = []
+            except SocialAuthBaseException:
+                raise
+            except (ValueError, TypeError):
                 emails = []
             else:
                 data["emails"] = emails
@@ -83,13 +90,17 @@ class GithubMemberOAuth2(GithubOAuth2):
         headers = {"Authorization": f"token {access_token}"}
         try:
             self.request(self.member_url(user_data), headers=headers)
-        except HTTPError as err:
+        except AuthProviderError as err:
             # if the user is a member of the organization, response code
             # will be 204, see http://bit.ly/ZS6vFl
-            if err.response.status_code != 204:
-                raise AuthFailed(
-                    self, "User doesn't belong to the organization"
+            if err.status_code == 404:
+                raise AuthPolicyError(
+                    self,
+                    "User doesn't belong to the organization",
+                    code="membership_required",
+                    stage="user_info",
                 ) from err
+            raise
         return user_data
 
     def member_url(self, user_data):

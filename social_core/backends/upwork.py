@@ -38,5 +38,5 @@ class UpworkOAuth(BaseOAuth1):
         """Loads user data from service"""
         return self.get_json(
             "https://www.upwork.com/api/auth/v1/info.json",
-            auth=self.oauth_auth(access_token),
+            auth=self.oauth_auth(access_token, stage="user_info"),
         )

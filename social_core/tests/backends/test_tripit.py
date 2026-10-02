@@ -1,4 +1,3 @@
-import json
 from urllib.parse import urlencode
 
 from .oauth import OAuth1AuthUrlTestMixin, OAuth1Test
@@ -8,7 +7,9 @@ class TripitOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
     backend_path = "social_core.backends.tripit.TripItOAuth"
     user_data_url = "https://api.tripit.com/v1/get/profile"
     expected_username = "foobar"
-    access_token_body = json.dumps({"access_token": "foobar", "token_type": "bearer"})
+    access_token_body = urlencode(
+        {"oauth_token": "foobar", "oauth_token_secret": "foobar-secret"}
+    )
     request_token_body = urlencode(
         {
             "oauth_token_secret": "foobar-secret",

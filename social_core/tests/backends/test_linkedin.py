@@ -1,6 +1,8 @@
 import json
 from typing import Protocol, cast
 
+from social_core.exceptions import AuthResponseError
+
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 from .open_id_connect import OpenIdConnectTest
 
@@ -45,6 +47,14 @@ class LinkedinOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
 
     def test_invalid_nonce(self) -> None:
         """Skip the invalid nonce test as LinkedIn does not provide any nonce."""
+
+    def test_signed_id_token_without_iat_is_a_missing_claim(self) -> None:
+        self.access_token_kwargs = {"exclude_claims": ("iat",)}
+        with self.assertRaises(AuthResponseError) as caught:
+            self.do_login()
+        self.assertEqual(caught.exception.code, "missing_claim")
+        self.assertEqual(caught.exception.claim, "iat")
+        self.assertEqual(caught.exception.stage, "token_validation")
 
 
 class BaseLinkedinTest:

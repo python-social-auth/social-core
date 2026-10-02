@@ -27,7 +27,7 @@ class FitbitOAuth1(BaseOAuth1):
         """Loads user data from service"""
         return self.get_json(
             "https://api.fitbit.com/1/user/-/profile.json",
-            auth=self.oauth_auth(access_token),
+            auth=self.oauth_auth(access_token, stage="user_info"),
         )["user"]
 
 

@@ -89,6 +89,7 @@ class SoundcloudOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
                 json=None,
                 auth=None,
                 timeout=None,
+                stage="user_info",
             )
 
             # Verify the response data

@@ -58,7 +58,6 @@ class JustGivingOAuth2(BaseOAuth2):
             auth=HTTPBasicAuth(key, secret),
             method=self.ACCESS_TOKEN_METHOD,
         )
-        self.process_error(response)
         return self.do_auth(
-            response["access_token"], *args, response=response, **kwargs
+            self.get_access_token(response), *args, response=response, **kwargs
         )

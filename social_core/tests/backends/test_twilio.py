@@ -6,13 +6,12 @@ from uuid import uuid4
 
 from social_core.actions import do_auth, do_complete, do_disconnect
 from social_core.exceptions import (
-    AuthAlreadyAssociated,
-    AuthFailed,
-    AuthForbidden,
-    AuthMissingParameter,
-    AuthStateForbidden,
-    AuthStateMissing,
+    AuthAssociationError,
+    AuthInputError,
+    AuthResponseError,
+    AuthSessionError,
 )
+from social_core.tests.exception_helpers import assert_auth_error
 from social_core.tests.models import TestPartial, TestUserSocialAuth, User
 from social_core.utils import PARTIAL_TOKEN_SESSION_NAME, get_querystring
 
@@ -110,11 +109,11 @@ class TwilioAuthTest(BaseBackendTest):
         )
 
     def test_start_requires_authenticated_user(self) -> None:
-        with self.assertRaises(AuthForbidden):
+        with self.assertRaises(AuthSessionError):
             do_auth(self.backend)
 
     def test_direct_start_without_prepared_context_fails(self) -> None:
-        with self.assertRaises(AuthStateMissing):
+        with self.assertRaises(AuthSessionError):
             self.backend.start()
 
     def test_missing_account_sid_fails_and_consumes_state(self) -> None:
@@ -122,7 +121,7 @@ class TwilioAuthTest(BaseBackendTest):
         state = self.start_for_user(user)
         self.strategy.set_request_data({"redirect_state": state}, self.backend)
 
-        with self.assertRaisesRegex(AuthFailed, "Missing AccountSid"):
+        with assert_auth_error(self, AuthResponseError, "missing_claim"):
             self.backend.complete(user=user)
 
         self.assertIsNone(self.strategy.session_get("twilio_state"))
@@ -132,7 +131,7 @@ class TwilioAuthTest(BaseBackendTest):
         self.start_for_user(user)
         self.strategy.set_request_data({"AccountSid": ACCOUNT_SID}, self.backend)
 
-        with self.assertRaises(AuthMissingParameter):
+        with self.assertRaises(AuthInputError):
             self.backend.complete(user=user)
 
     def test_complete_rejects_mismatched_redirect_state(self) -> None:
@@ -143,7 +142,7 @@ class TwilioAuthTest(BaseBackendTest):
             self.backend,
         )
 
-        with self.assertRaises(AuthStateForbidden):
+        with self.assertRaises(AuthSessionError):
             self.backend.complete(user=user)
 
     def test_complete_rejects_orphan_redirect_state(self) -> None:
@@ -153,7 +152,7 @@ class TwilioAuthTest(BaseBackendTest):
             self.backend,
         )
 
-        with self.assertRaises(AuthStateMissing):
+        with self.assertRaises(AuthSessionError):
             self.backend.complete(user=user)
 
     def test_complete_rejects_legacy_string_state(self) -> None:
@@ -164,7 +163,7 @@ class TwilioAuthTest(BaseBackendTest):
             self.backend,
         )
 
-        with self.assertRaises(AuthStateMissing):
+        with self.assertRaises(AuthSessionError):
             self.backend.complete(user=user)
 
     def test_complete_requires_authenticated_user(self) -> None:
@@ -174,7 +173,7 @@ class TwilioAuthTest(BaseBackendTest):
             {"AccountSid": ACCOUNT_SID, "redirect_state": state}, self.backend
         )
 
-        with self.assertRaises(AuthForbidden):
+        with self.assertRaises(AuthSessionError):
             self.backend.complete()
 
     def test_complete_rejects_different_user(self) -> None:
@@ -185,7 +184,7 @@ class TwilioAuthTest(BaseBackendTest):
             {"AccountSid": ACCOUNT_SID, "redirect_state": state}, self.backend
         )
 
-        with self.assertRaises(AuthForbidden):
+        with self.assertRaises(AuthSessionError):
             self.backend.complete(user=other_user)
 
     def test_complete_associates_twilio_with_current_user(self) -> None:
@@ -277,7 +276,7 @@ class TwilioAuthTest(BaseBackendTest):
         )
         do_disconnect(self.backend, initiating_user)
 
-        with self.assertRaises(AuthForbidden):
+        with self.assertRaises(AuthSessionError):
             do_disconnect(self.backend, other_user)
 
         self.assertIsNotNone(TestUserSocialAuth.get_social_auth("twilio", ACCOUNT_SID))
@@ -286,7 +285,7 @@ class TwilioAuthTest(BaseBackendTest):
         user = User("existing")
         self.pause_for_user(user)
 
-        with self.assertRaises(AuthForbidden):
+        with self.assertRaises(AuthSessionError):
             do_complete(self.backend, login=Mock())
 
     def test_partial_pipeline_rejects_different_user(self) -> None:
@@ -294,7 +293,7 @@ class TwilioAuthTest(BaseBackendTest):
         other_user = User("other")
         self.pause_for_user(initiating_user)
 
-        with self.assertRaises(AuthForbidden):
+        with self.assertRaises(AuthSessionError):
             do_complete(self.backend, login=Mock(), user=other_user)
 
     def test_partial_pipeline_rejects_legacy_unbound_partial(self) -> None:
@@ -303,7 +302,7 @@ class TwilioAuthTest(BaseBackendTest):
         partial.kwargs.pop(self.backend.association_user_id_key())
         partial.save()
 
-        with self.assertRaises(AuthForbidden):
+        with self.assertRaises(AuthSessionError):
             do_complete(self.backend, login=Mock(), user=user)
 
     def test_complete_does_not_log_current_user_in_again(self) -> None:
@@ -337,7 +336,7 @@ class TwilioAuthTest(BaseBackendTest):
         self.strategy.set_request_data(data, self.backend)
         self.backend.complete(user=user)
 
-        with self.assertRaises(AuthStateMissing):
+        with self.assertRaises(AuthSessionError):
             self.backend.complete(user=user)
 
     def test_associated_sid_cannot_authenticate_another_user(self) -> None:
@@ -349,7 +348,7 @@ class TwilioAuthTest(BaseBackendTest):
             {"AccountSid": ACCOUNT_SID, "redirect_state": state}, self.backend
         )
 
-        with self.assertRaises(AuthAlreadyAssociated):
+        with self.assertRaises(AuthAssociationError):
             self.backend.complete(user=attacker)
 
         social = TestUserSocialAuth.get_social_auth("twilio", ACCOUNT_SID)
@@ -366,5 +365,5 @@ class TwilioAuthTest(BaseBackendTest):
             {"AccountSid": OTHER_ACCOUNT_SID, "redirect_state": first_state},
             self.backend,
         )
-        with self.assertRaises(AuthStateForbidden):
+        with self.assertRaises(AuthSessionError):
             self.backend.complete(user=user)

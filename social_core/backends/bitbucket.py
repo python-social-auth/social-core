@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from social_core.exceptions import AuthForbidden
+from social_core.exceptions import AuthResponseError
 
 from .oauth import BaseOAuth2
 
@@ -61,7 +61,12 @@ class BitbucketOAuth2(BaseOAuth2):
                 break
 
         if self.setting("VERIFIED_EMAILS_ONLY", False) and not is_confirmed:
-            raise AuthForbidden(self, "Bitbucket account has no verified email")
+            raise AuthResponseError(
+                self,
+                "Bitbucket account has no verified email",
+                code="profile_email_missing",
+                stage="user_info",
+            )
 
         user = self._get_user(access_token)
         if email:

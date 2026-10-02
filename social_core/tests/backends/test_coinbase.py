@@ -1,8 +1,10 @@
 import json
 
+import requests
 import responses
 
 from social_core.backends.coinbase import API_VERSION
+from social_core.exceptions import AuthProviderError
 from social_core.utils import get_querystring, parse_qs
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
@@ -135,3 +137,25 @@ class CoinbaseOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
 
         self.assertIsNone(self.backend.revoke_token("foobar", "uid"))
         self.assertEqual(len(responses.calls), 0)
+
+    def test_revoke_token_failures_report_disconnect_stage(self) -> None:
+        for cause, code in (
+            (requests.ReadTimeout(), "timeout"),
+            (requests.ConnectionError(), "connection_failed"),
+        ):
+            responses.add(responses.POST, self.backend.REVOKE_TOKEN_URL, body=cause)
+            with (
+                self.subTest(code=code),
+                self.assertRaises(AuthProviderError) as caught,
+            ):
+                self.backend.revoke_token("foobar", "uid")
+            self.assertEqual(caught.exception.code, code)
+            self.assertEqual(caught.exception.stage, "disconnect")
+            self.assertIs(caught.exception.__cause__, cause)
+            responses.reset()
+
+        responses.add(responses.POST, self.backend.REVOKE_TOKEN_URL, status=503)
+        with self.assertRaises(AuthProviderError) as caught:
+            self.backend.revoke_token("foobar", "uid")
+        self.assertEqual(caught.exception.code, "unavailable")
+        self.assertEqual(caught.exception.stage, "disconnect")

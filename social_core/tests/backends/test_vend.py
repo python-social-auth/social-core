@@ -3,7 +3,7 @@ from typing import cast
 
 import responses
 
-from social_core.exceptions import AuthInvalidParameter
+from social_core.exceptions import AuthInputError, AuthResponseError
 from social_core.tests.models import TestUserSocialAuth, User
 
 from .oauth import OAuth2Test
@@ -118,5 +118,36 @@ class VendOAuth2Test(OAuth2Test):
             {"domain_prefix": "shop-a.example"}, self.backend
         )
 
-        with self.assertRaises(AuthInvalidParameter):
+        with self.assertRaises(AuthInputError):
             self.backend.access_token_url()
+
+    def test_callback_domain_prefix_has_input_metadata(self) -> None:
+        for prefix, code in (
+            (None, "missing_parameter"),
+            ("shop.example", "invalid_parameter"),
+        ):
+            with self.subTest(prefix=prefix):
+                self.strategy.set_request_data({"domain_prefix": prefix}, self.backend)
+                with self.assertRaises(AuthInputError) as caught:
+                    self.backend.domain_prefix()
+                self.assertEqual(caught.exception.code, code)
+                self.assertEqual(caught.exception.source, "request")
+                self.assertEqual(caught.exception.stage, "callback")
+                self.assertEqual(caught.exception.parameter, "domain_prefix")
+                self.assertEqual(caught.exception.recovery, "correct_input")
+
+    def test_provider_domain_prefix_has_response_metadata(self) -> None:
+        self.strategy.set_request_data({"domain_prefix": "valid-shop"}, self.backend)
+        for prefix, code in (
+            (None, "missing_claim"),
+            ("shop.example", "invalid_claim"),
+        ):
+            with (
+                self.subTest(prefix=prefix),
+                self.assertRaises(AuthResponseError) as caught,
+            ):
+                self.backend.domain_prefix({"domain_prefix": prefix})
+            self.assertEqual(caught.exception.code, code)
+            self.assertEqual(caught.exception.source, "provider_response")
+            self.assertEqual(caught.exception.stage, "user_info")
+            self.assertEqual(caught.exception.claim, "domain_prefix")

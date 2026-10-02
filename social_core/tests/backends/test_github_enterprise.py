@@ -2,7 +2,7 @@ import json
 
 import responses
 
-from social_core.exceptions import AuthFailed
+from social_core.exceptions import AuthPolicyError
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
@@ -218,7 +218,7 @@ class GithubEnterpriseOrganizationOAuth2FailTest(GithubEnterpriseOAuth2Test):
             }
         )
         self.strategy.set_settings({"SOCIAL_AUTH_GITHUB_ENTERPRISE_ORG_NAME": "foobar"})
-        with self.assertRaises(AuthFailed):
+        with self.assertRaises(AuthPolicyError):
             self.do_login()
 
     def test_partial_pipeline(self) -> None:
@@ -231,7 +231,7 @@ class GithubEnterpriseOrganizationOAuth2FailTest(GithubEnterpriseOAuth2Test):
             }
         )
         self.strategy.set_settings({"SOCIAL_AUTH_GITHUB_ENTERPRISE_ORG_NAME": "foobar"})
-        with self.assertRaises(AuthFailed):
+        with self.assertRaises(AuthPolicyError):
             self.do_partial_pipeline()
 
 
@@ -292,7 +292,7 @@ class GithubEnterpriseTeamOAuth2FailTest(GithubEnterpriseOAuth2Test):
             }
         )
         self.strategy.set_settings({"SOCIAL_AUTH_GITHUB_ENTERPRISE_TEAM_ID": "123"})
-        with self.assertRaises(AuthFailed):
+        with self.assertRaises(AuthPolicyError):
             self.do_login()
 
     def test_partial_pipeline(self) -> None:
@@ -305,5 +305,5 @@ class GithubEnterpriseTeamOAuth2FailTest(GithubEnterpriseOAuth2Test):
             }
         )
         self.strategy.set_settings({"SOCIAL_AUTH_GITHUB_ENTERPRISE_TEAM_ID": "123"})
-        with self.assertRaises(AuthFailed):
+        with self.assertRaises(AuthPolicyError):
             self.do_partial_pipeline()

@@ -3,10 +3,6 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any, cast
 
-from social_core.exceptions import (
-    StrategyMissingBackendError,
-)
-
 if TYPE_CHECKING:
     from social_core.backends.base import BaseAuth
     from social_core.storage import PartialMixin, UserProtocol
@@ -42,8 +38,7 @@ def partial_prepare(
     *args,
     **kwargs,
 ) -> PartialMixin:
-    if strategy.storage is None:
-        raise StrategyMissingBackendError
+    storage = strategy.get_storage(stage="pipeline")
     kwargs.update(
         {
             "response": kwargs.get("response") or {},
@@ -70,7 +65,7 @@ def partial_prepare(
             clean_kwargs[name] = strategy.to_session_value(value)
 
     request_data = strategy.request_data()
-    return strategy.storage.partial.prepare(
+    return storage.partial.prepare(
         backend.name,
         next_step,
         {
@@ -85,16 +80,14 @@ def partial_prepare(
 def partial_store(
     strategy: BaseStrategy, backend: BaseAuth, next_step, *args, **kwargs
 ) -> PartialMixin:
-    if strategy.storage is None:
-        raise StrategyMissingBackendError
+    storage = strategy.get_storage(stage="pipeline")
     partial = partial_prepare(strategy, backend, next_step, *args, **kwargs)
-    return strategy.storage.partial.store(partial)
+    return storage.partial.store(partial)
 
 
 def partial_load(strategy: BaseStrategy, token: str) -> PartialMixin | None:
-    if strategy.storage is None:
-        raise StrategyMissingBackendError
-    partial = strategy.storage.partial.load(token)
+    storage = strategy.get_storage(stage="pipeline")
+    partial = storage.partial.load(token)
 
     if partial:
         args = partial.args
@@ -109,10 +102,10 @@ def partial_load(strategy: BaseStrategy, token: str) -> PartialMixin | None:
         social = kwargs.get("social")
 
         if isinstance(social, dict):
-            kwargs["social"] = strategy.storage.user.get_social_auth(**social)
+            kwargs["social"] = storage.user.get_social_auth(**social)
 
         if user:
-            kwargs["user"] = strategy.storage.user.get_user(user)
+            kwargs["user"] = storage.user.get_user(user)
 
         partial.args = [strategy.from_session_value(val) for val in args]
         partial.kwargs = {

@@ -66,6 +66,7 @@ class CoinbaseOAuth2(BaseOAuth2):
                 headers=self.revoke_token_headers(token, uid),
                 data=self.revoke_token_params(token, uid),
                 method=self.REVOKE_TOKEN_METHOD,
+                stage="disconnect",
             )
             return self.process_revoke_token_response(response)
         return None

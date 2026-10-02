@@ -9,6 +9,7 @@ from urllib.parse import urljoin, urlparse, urlunparse
 from social_core.utils import append_slash
 
 from .oauth import BaseOAuth2
+from .utils import load_oidc_config
 
 
 class OktaMixin(BaseOAuth2):
@@ -40,7 +41,7 @@ class OktaMixin(BaseOAuth2):
         )
 
     def oidc_config(self):
-        return self.get_json(self.oidc_config_url())
+        return load_oidc_config(self, self.oidc_config_url())
 
 
 class OktaOAuth2(OktaMixin, BaseOAuth2):

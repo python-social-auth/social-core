@@ -1,7 +1,7 @@
 import json
 from abc import ABC
 
-from social_core.exceptions import AuthException
+from social_core.exceptions import AuthConfigurationError
 
 from .oauth import (
     BaseAuthUrlTestMixin,
@@ -179,5 +179,5 @@ class TwitterOAuth2TestInvalidCodeChallengeMethod(
             }
         )
 
-        with self.assertRaises(AuthException):
+        with self.assertRaises(AuthConfigurationError):
             self.do_login()

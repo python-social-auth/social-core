@@ -1,6 +1,9 @@
 import unittest
 from typing import cast
+from unittest.mock import Mock, patch
 
+from social_core.backends.oauth import BaseOAuth2
+from social_core.exceptions import AuthConfigurationError, AuthResponseError
 from social_core.storage import (
     AssociationMixin,
     BaseStorage,
@@ -10,7 +13,8 @@ from social_core.storage import (
 )
 from social_core.strategy import BaseStrategy
 
-from .models import User
+from .models import TestStorage, User
+from .strategy import TestStrategy
 
 NOT_IMPLEMENTED_MSG = "Implement in subclass"
 
@@ -47,6 +51,56 @@ class BrokenStorage(BaseStorage):
 
 class BrokenUserTests(unittest.TestCase):
     user = BrokenUser
+
+    def test_unusable_refresh_tokens_preserve_stored_credentials(self):
+        strategy = TestStrategy(TestStorage)
+        strategy.set_settings(
+            {"SOCIAL_AUTH_KEY": "key", "SOCIAL_AUTH_SECRET": "secret"}
+        )
+        backend = BaseOAuth2(strategy)
+        social = BrokenUser()
+        social.extra_data = {
+            "refresh_token": "refresh",
+            "access_token": "previous-token",
+        }
+        original_data = social.extra_data.copy()
+        tokens: tuple[object, ...] = (None, "", False, 0, [], {})
+        for payload in ({}, *({"access_token": token} for token in tokens)):
+            response = Mock()
+            response.json.return_value = payload
+            with (
+                self.subTest(payload=payload),
+                patch.object(social, "get_backend_instance", return_value=backend),
+                patch("requests.request", return_value=response),
+                patch.object(
+                    social, "set_extra_data", wraps=social.set_extra_data
+                ) as set_extra_data,
+                patch.object(social, "save") as save,
+                self.assertRaises(AuthResponseError) as caught,
+            ):
+                social.refresh_token(strategy)
+            self.assertEqual(caught.exception.code, "missing_claim")
+            self.assertEqual(caught.exception.claim, "access_token")
+            self.assertEqual(caught.exception.stage, "refresh")
+            self.assertEqual(social.extra_data, original_data)
+            set_extra_data.assert_not_called()
+            save.assert_not_called()
+
+    def test_missing_backend_is_the_only_ignored_configuration_failure(self):
+        user = BrokenUser()
+        user.extra_data = {"refresh_token": "token", "access_token": "expired"}
+        for code in ("backend_missing", "invalid_setting", "missing_setting"):
+            error = AuthConfigurationError(code=code)
+            strategy = Mock(spec=BaseStrategy)
+            strategy.get_backend.side_effect = error
+            with self.subTest(code=code):
+                if code == "backend_missing":
+                    self.assertIsNone(user.get_backend_instance(strategy))
+                    user.refresh_token(strategy)
+                else:
+                    with self.assertRaises(AuthConfigurationError) as caught:
+                        user.refresh_token(strategy)
+                    self.assertIs(caught.exception, error)
 
     def test_get_username(self) -> None:
         with self.assertRaisesRegex(NotImplementedError, NOT_IMPLEMENTED_MSG):
