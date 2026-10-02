@@ -58,7 +58,9 @@ class TwitterOAuth2(BaseOAuth2PKCE):
         pinned_tweet_id = user.get("pinned_tweet_id")
         public_metrics = user.get("public_metrics")
 
-        fullname, first_name, last_name = self.get_user_names(name)
+        fullname = name
+        first_name = ""
+        last_name = ""
 
         return {
             "id": user_id,

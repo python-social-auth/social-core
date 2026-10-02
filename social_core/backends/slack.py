@@ -35,7 +35,9 @@ class SlackOAuth2(BaseOAuth2):
         name = user["name"]
         email = user.get("email")
         username = (email and email.split("@", 1)[0]) or name
-        fullname, first_name, last_name = self.get_user_names(name)
+        fullname = name
+        first_name = ""
+        last_name = ""
 
         if self.setting("USERNAME_WITH_TEAM", True) and team and "name" in team:
             username = f"{username}@{response['team']['name']}"

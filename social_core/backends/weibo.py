@@ -33,9 +33,9 @@ class WeiboOAuth2(BaseOAuth2):
             username = response.get("domain", "")
         else:
             username = response.get("name", "")
-        fullname, first_name, last_name = self.get_user_names(
-            first_name=response.get("screen_name", "")
-        )
+        fullname = ""
+        first_name = response.get("screen_name", "")
+        last_name = ""
         return {
             "username": username,
             "fullname": fullname,

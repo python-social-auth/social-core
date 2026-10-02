@@ -19,11 +19,10 @@ class GoClioOAuth2(BaseOAuth2):
             user.get("first_name", None),
             user.get("last_name", None),
         )
-        fullname = f"{first_name} {last_name}"
 
         return {
             "username": username,
-            "fullname": fullname,
+            "fullname": "",
             "first_name": first_name,
             "last_name": last_name,
             "email": email,

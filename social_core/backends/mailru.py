@@ -21,10 +21,9 @@ class MailruOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Mail.ru request"""
-        fullname, first_name, last_name = self.get_user_names(
-            first_name=unquote(response["first_name"]),
-            last_name=unquote(response["last_name"]),
-        )
+        fullname = ""
+        first_name = unquote(response["first_name"])
+        last_name = unquote(response["last_name"])
         return {
             "username": unquote(response["nick"]),
             "email": unquote(response["email"]),

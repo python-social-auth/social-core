@@ -12,6 +12,7 @@ from openid.message import OPENID2_NS, Message
 from social_core.backends.livejournal import LiveJournalOpenId
 from social_core.backends.open_id import OpenIdAuth
 from social_core.exceptions import AuthCanceled, AuthFailed
+from social_core.pipeline.social_auth import social_names
 from social_core.utils import PARTIAL_TOKEN_SESSION_NAME
 
 from .base import BaseBackendTest
@@ -36,7 +37,9 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
             "SOCIAL_AUTH_OPENID_AX_EXTRA_DATA": [(DEPARTMENT, "department")],
         }
 
-    def verified_response(self, *, profile=True, signed_ax=True):
+    def verified_response(
+        self, *, profile=True, signed_ax=True, component_names=("Foo", "Bar")
+    ):
         endpoint = OpenIDServiceEndpoint()
         endpoint.claimed_id = IDENTITY
         endpoint.server_url = "https://example.com/openid"
@@ -47,8 +50,13 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
                 {"nickname": "user", "email": "user@example.com", "fullname": "Foo Bar"}
             ).toMessage(message)
             attributes = ax.FetchResponse()
-            attributes.addValue("http://axschema.org/namePerson/first", "Foo")
-            attributes.addValue("http://axschema.org/namePerson/last", "Bar")
+            if component_names is not None:
+                attributes.addValue(
+                    "http://axschema.org/namePerson/first", component_names[0]
+                )
+                attributes.addValue(
+                    "http://axschema.org/namePerson/last", component_names[1]
+                )
             attributes.addValue(DEPARTMENT, "Engineering")
             attributes.toMessage(message)
         signed_fields = [
@@ -57,6 +65,41 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
             if signed_ax or not key.startswith("openid.ax.")
         ]
         return SuccessResponse(endpoint, message, signed_fields)
+
+    def test_full_name_only_details(self) -> None:
+        details = self.backend.get_user_details(
+            self.verified_response(component_names=None)
+        )
+        self.assertEqual(details["fullname"], "Foo Bar")
+        self.assertEqual(details["first_name"], "")
+        self.assertEqual(details["last_name"], "")
+        normalized = social_names(self.backend, details)["details"]
+        self.assertEqual(normalized["first_name"], "Foo")
+        self.assertEqual(normalized["last_name"], "Bar")
+
+    def test_explicit_component_names_are_preserved(self) -> None:
+        details = self.backend.get_user_details(
+            self.verified_response(component_names=("Given", "Surname"))
+        )
+        normalized = social_names(self.backend, details)["details"]
+        self.assertEqual(normalized["fullname"], "Foo Bar")
+        self.assertEqual(normalized["first_name"], "Given")
+        self.assertEqual(normalized["last_name"], "Surname")
+
+    def test_single_name_preserves_username_fallback(self) -> None:
+        with patch.object(
+            self.backend, "values_from_response", return_value={"fullname": "Prince"}
+        ):
+            details = self.backend.get_user_details(
+                self.verified_response(profile=False)
+            )
+        self.assertEqual(details["username"], "Prince")
+        self.assertEqual(details["first_name"], "")
+        self.assertEqual(details["last_name"], "")
+        normalized = social_names(self.backend, details)["details"]
+        self.assertEqual(normalized["username"], "Prince")
+        self.assertEqual(normalized["first_name"], "Prince")
+        self.assertEqual(normalized["last_name"], "")
 
     def start_partial(self, response, *, early=True):
         self.pipeline_settings()

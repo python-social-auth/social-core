@@ -104,7 +104,9 @@ class LastFmAuth(BaseAuth):
         return self.strategy.authenticate(*args, **kwargs)
 
     def get_user_details(self, response):
-        fullname, first_name, last_name = self.get_user_names(response["name"])
+        fullname = response["name"]
+        first_name = ""
+        last_name = ""
         return {
             "username": response["name"],
             "email": "",

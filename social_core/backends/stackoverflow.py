@@ -29,12 +29,12 @@ class StackoverflowOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Stackoverflow account"""
-        fullname, first_name, last_name = self.get_user_names(
-            response.get("display_name")
-        )
+        fullname = response.get("display_name")
+        first_name = ""
+        last_name = ""
         return {
             "username": response.get("link").rsplit("/", 1)[-1],
-            "full_name": fullname,
+            "fullname": fullname,
             "first_name": first_name,
             "last_name": last_name,
         }

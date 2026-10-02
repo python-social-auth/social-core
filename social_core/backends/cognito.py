@@ -25,10 +25,7 @@ class CognitoOAuth2(BaseOAuth2):
         """Return user details from their cognito pool account"""
         first_name = response.get("given_name") or ""
         last_name = response.get("family_name") or ""
-        fullname, first_name, last_name = self.get_user_names(
-            first_name=first_name,
-            last_name=last_name,
-        )
+        fullname = ""
         return {
             "username": response.get("username") or response.get("email"),
             "email": response.get("email"),

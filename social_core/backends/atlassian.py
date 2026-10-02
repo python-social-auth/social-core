@@ -21,7 +21,9 @@ class AtlassianOAuth2(BaseOAuth2):
         return params
 
     def get_user_details(self, response):
-        fullname, first_name, last_name = self.get_user_names(response["displayName"])
+        fullname = response["displayName"]
+        first_name = ""
+        last_name = ""
         return {
             "username": response["accountId"],
             "email": response["emailAddress"],

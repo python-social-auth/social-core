@@ -40,7 +40,9 @@ class GitLabOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from GitLab account"""
-        fullname, first_name, last_name = self.get_user_names(response.get("name"))
+        fullname = response.get("name")
+        first_name = ""
+        last_name = ""
         return {
             "username": response.get("username"),
             "email": response.get("email") or "",

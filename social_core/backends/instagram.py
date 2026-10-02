@@ -21,7 +21,9 @@ class InstagramOAuth2(BaseOAuth2):
         user = response.get("user") or {}
         username = user["username"]
         email = user.get("email", "")
-        fullname, first_name, last_name = self.get_user_names(user.get("full_name", ""))
+        fullname = user.get("full_name", "")
+        first_name = ""
+        last_name = ""
         return {
             "username": username,
             "fullname": fullname,

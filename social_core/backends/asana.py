@@ -21,7 +21,9 @@ class AsanaOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         data = response["data"]
-        fullname, first_name, last_name = self.get_user_names(data["name"])
+        fullname = data["name"]
+        first_name = ""
+        last_name = ""
         return {
             "email": data["email"],
             "username": data["email"],

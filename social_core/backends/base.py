@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import time
+import warnings
 from contextlib import contextmanager
 from contextvars import ContextVar
 from typing import TYPE_CHECKING, Any, Literal, cast
@@ -20,6 +21,7 @@ from social_core.registry import REGISTRY
 from social_core.utils import (
     constant_time_compare,
     module_member,
+    normalize_user_names,
     parse_qs,
     social_logger,
     user_agent,
@@ -395,7 +397,9 @@ class BaseAuth:
         raise AuthMissingParameter(self, id_key)
 
     def get_user_details(self, response) -> dict[str, Any]:
-        """Return user details in a known internal structure.
+        """Return provider-supplied user details in a known internal structure.
+
+        Leave name conversion to the social_names pipeline step.
 
         The returned dictionary can contain:
 
@@ -413,18 +417,14 @@ class BaseAuth:
         raise NotImplementedError("Implement in subclass")
 
     def get_user_names(self, fullname="", first_name="", last_name=""):
-        # Avoid None values
-        fullname = fullname or ""
-        first_name = first_name or ""
-        last_name = last_name or ""
-        if fullname and not (first_name or last_name):
-            try:
-                first_name, last_name = fullname.split(" ", 1)
-            except ValueError:
-                first_name = first_name or fullname or ""
-                last_name = last_name or ""
-        fullname = fullname or f"{first_name} {last_name}"
-        return fullname.strip(), first_name.strip(), last_name.strip()
+        warnings.warn(
+            "BaseAuth.get_user_names() is deprecated. Return provider-supplied "
+            "names from get_user_details() and use the "
+            "social_core.pipeline.social_auth.social_names pipeline step.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return normalize_user_names(fullname, first_name, last_name)
 
     def get_user(self, user_id):
         """

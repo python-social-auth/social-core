@@ -65,9 +65,9 @@ class DeezerOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Deezer account"""
-        fullname, first_name, last_name = self.get_user_names(
-            first_name=response.get("firstname"), last_name=response.get("lastname")
-        )
+        fullname = ""
+        first_name = response.get("firstname")
+        last_name = response.get("lastname")
         return {
             "username": response.get("name"),
             "email": response.get("email"),

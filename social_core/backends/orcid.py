@@ -72,7 +72,7 @@ class ORCIDOAuth2(BaseOAuth2):
         # }
         orcid_identifier = response.get("orcid-identifier")
 
-        fullname = first_name = last_name = email = username = ""
+        first_name = last_name = email = username = ""
 
         person = response.get("person")
 
@@ -87,15 +87,13 @@ class ORCIDOAuth2(BaseOAuth2):
                 first_name = name.get("given-names", {}).get("value", "")
                 if (family_name := name.get("family-name", None)) is not None:
                     last_name = family_name.get("value", "")
-                fullname = f"{first_name} {last_name}"
-                fullname = fullname.strip()
 
             email = self.get_user_email(person.get("emails"))
 
         return {
             "username": username,
             "email": email,
-            "fullname": fullname,
+            "fullname": "",
             "first_name": first_name,
             "last_name": last_name,
         }

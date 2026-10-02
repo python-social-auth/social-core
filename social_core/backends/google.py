@@ -33,9 +33,9 @@ class BaseGoogleAuth(BaseAuth):
             response.get("family_name", ""),
         )
 
-        fullname, first_name, last_name = self.get_user_names(
-            name, given_name, family_name
-        )
+        fullname = name
+        first_name = given_name
+        last_name = family_name
         return {
             "username": email.split("@", 1)[0],
             "email": email,

@@ -19,11 +19,9 @@ class YammerOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         username = response["user"]["name"]
-        fullname, first_name, last_name = self.get_user_names(
-            fullname=response["user"]["full_name"],
-            first_name=response["user"]["first_name"],
-            last_name=response["user"]["last_name"],
-        )
+        fullname = response["user"]["full_name"]
+        first_name = response["user"]["first_name"]
+        last_name = response["user"]["last_name"]
         email = response["user"]["contact"]["email_addresses"][0]["address"]
         mugshot_url = response["user"]["mugshot_url"]
         return {
