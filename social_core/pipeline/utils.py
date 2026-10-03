@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, cast
 
 from social_core.exceptions import (
     StrategyMissingBackendError,
@@ -24,11 +25,11 @@ def is_dict_type(value):
     )
 
 
-def to_plain_dict(value):
+def to_plain_dict(value) -> dict[str, Any]:
     if any(cls.__name__ == "MultiValueDict" for cls in value.__class__.mro()):
         dict_method = getattr(value, "dict", None)
         if callable(dict_method):
-            return dict_method()
+            return cast("dict[str, Any]", dict_method())
     return dict(value)
 
 
@@ -62,12 +63,22 @@ def partial_prepare(
     # Clean any MergeDict data type from the values
     clean_kwargs = {}
     for name, value in kwargs.items():
+        if name == "request":
+            continue
         value = to_plain_dict(value) if is_dict_type(value) else value
         if isinstance(value, SERIALIZABLE_TYPES):
             clean_kwargs[name] = strategy.to_session_value(value)
 
+    request_data = strategy.request_data()
     return strategy.storage.partial.prepare(
-        backend.name, next_step, {"args": clean_args, "kwargs": clean_kwargs}
+        backend.name,
+        next_step,
+        {
+            "args": clean_args,
+            "kwargs": clean_kwargs,
+            "request_data": strategy.to_session_value(to_plain_dict(request_data)),
+            "pipeline_type": backend.pipeline_type,
+        },
     )
 
 
@@ -88,6 +99,12 @@ def partial_load(strategy: BaseStrategy, token: str) -> PartialMixin | None:
     if partial:
         args = partial.args
         kwargs = partial.kwargs.copy()
+        request_data = partial.data.pop("request_data", kwargs.get("request"))
+        if request_data is not None:
+            request_data = strategy.from_session_value(request_data)
+            if isinstance(request_data, Mapping):
+                partial.request_data = to_plain_dict(request_data)
+        kwargs.pop("request", None)
         user = kwargs.get("user")
         social = kwargs.get("social")
 

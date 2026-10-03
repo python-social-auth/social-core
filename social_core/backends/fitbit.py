@@ -12,6 +12,7 @@ class FitbitOAuth1(BaseOAuth1):
     """Fitbit OAuth1 authentication backend"""
 
     name = "fitbit"
+    title = "Fitbit"
     AUTHORIZATION_URL = "https://www.fitbit.com/oauth/authorize"
     REQUEST_TOKEN_URL = "https://api.fitbit.com/oauth/request_token"
     ACCESS_TOKEN_URL = "https://api.fitbit.com/oauth/access_token"
@@ -34,6 +35,7 @@ class FitbitOAuth2(BaseOAuth2):
     """Fitbit OAuth2 authentication backend"""
 
     name = "fitbit"
+    title = "Fitbit"
     AUTHORIZATION_URL = "https://www.fitbit.com/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://api.fitbit.com/oauth2/token"
     REFRESH_TOKEN_URL = "https://api.fitbit.com/oauth2/token"

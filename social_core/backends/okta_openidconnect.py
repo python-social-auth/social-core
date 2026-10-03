@@ -13,6 +13,7 @@ class OktaOpenIdConnect(OktaOAuth2, OpenIdConnectAuth):
     """Okta OpenID-Connect authentication backend"""
 
     name = "okta-openidconnect"
+    title = "Okta"
     REDIRECT_STATE = False
     RESPONSE_TYPE = "code"
 

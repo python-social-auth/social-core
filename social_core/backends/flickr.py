@@ -12,6 +12,7 @@ class FlickrOAuth(BaseOAuth1):
     """Flickr OAuth authentication backend"""
 
     name = "flickr"
+    title = "Flickr"
     AUTHORIZATION_URL = "https://www.flickr.com/services/oauth/authorize"
     REQUEST_TOKEN_URL = "https://www.flickr.com/services/oauth/request_token"
     ACCESS_TOKEN_URL = "https://www.flickr.com/services/oauth/access_token"
@@ -19,7 +20,9 @@ class FlickrOAuth(BaseOAuth1):
 
     def get_user_details(self, response):
         """Return user details from Flickr account"""
-        fullname, first_name, last_name = self.get_user_names(response.get("fullname"))
+        fullname = response.get("fullname")
+        first_name = ""
+        last_name = ""
         return {
             "username": response.get("username") or response.get("id"),
             "email": "",

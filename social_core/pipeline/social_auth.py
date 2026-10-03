@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from social_core.exceptions import AuthAlreadyAssociated, AuthException, AuthForbidden
+from social_core.utils import normalize_user_names
 
 if TYPE_CHECKING:
     from social_core.backends.base import BaseAuth
@@ -13,8 +14,36 @@ def social_details(backend: BaseAuth, details, response, *args, **kwargs):
     return {"details": dict(backend.get_user_details(response), **details)}
 
 
+def social_names(backend: BaseAuth, details, *args, **kwargs):
+    """Populate missing full or component names using provider details."""
+    names = normalize_user_names(
+        details.get("fullname"),
+        details.get("first_name"),
+        details.get("last_name"),
+        firstlast_from_full=bool(backend.setting("FIRSTLAST_FROM_FULL", True)),
+        full_from_firstlast=bool(backend.setting("FULL_FROM_FIRSTLAST", True)),
+    )
+    normalized = details.copy()
+    # Preserve missing/None values when the provider supplied no name, so a
+    # subsequent login (notably Apple) does not clear an existing user name.
+    if any(names):
+        normalized.update(
+            zip(("fullname", "first_name", "last_name"), names, strict=True)
+        )
+    else:
+        for name in ("fullname", "first_name", "last_name"):
+            value = normalized.get(name)
+            if isinstance(value, str):
+                normalized[name] = value.strip()
+    return {"details": normalized}
+
+
 def social_uid(backend: BaseAuth, details, response, *args, **kwargs):
-    return {"uid": str(backend.get_user_id(details, response))}
+    return {
+        "uid": str(backend.get_user_id(details, response)),
+        "id_key": backend.id_key(),
+        "legacy_uids": backend.get_legacy_user_ids(details, response),
+    }
 
 
 def auth_allowed(backend: BaseAuth, details, response, *args, **kwargs) -> None:
@@ -22,11 +51,63 @@ def auth_allowed(backend: BaseAuth, details, response, *args, **kwargs) -> None:
         raise AuthForbidden(backend)
 
 
+def _current_social_auth(backend, storage, provider, uid, id_key):
+    social = storage.get_social_auth(provider, uid, id_key=id_key)
+    if social is not None:
+        return social, False
+    try:
+        social = storage.get_social_auth_by_extra_data(provider, id_key, uid, id_key="")
+    except ValueError as err:
+        raise AuthException(backend, str(err)) from err
+    return social, social is not None
+
+
+def _legacy_social_auth(backend, storage, provider, uid, legacy_uids):
+    if not backend.setting("ALLOW_UNVERIFIED_LEGACY_UID_MIGRATION", True):
+        return None
+    matches = []
+    for legacy_uid in (uid, *legacy_uids):
+        candidate = storage.get_social_auth(provider, legacy_uid, id_key="")
+        if candidate is not None and candidate not in matches:
+            matches.append(candidate)
+    if len(matches) > 1:
+        raise AuthException(backend, "Multiple legacy social-auth associations matched")
+    if matches:
+        backend.log_warning("migrating association from a legacy identifier")
+        return matches[0]
+    return None
+
+
+def _migrate_social_auth(backend, storage, social, uid, id_key):
+    try:
+        migrated = storage.migrate_social_auth(social, uid, id_key)
+    except Exception as err:
+        is_integrity_error = backend.strategy.storage.is_integrity_error(err)
+        if not isinstance(err, ValueError) and not is_integrity_error:
+            raise
+        raise AuthException(
+            backend, "Social-auth identifier migration conflict"
+        ) from err
+    return migrated
+
+
 def social_user(
-    backend: BaseAuth, uid, user: UserProtocol | None = None, *args, **kwargs
+    backend: BaseAuth,
+    uid,
+    user: UserProtocol | None = None,
+    *args,
+    id_key="",
+    legacy_uids=(),
+    **kwargs,
 ):
     provider = backend.name
-    social = backend.strategy.storage.user.get_social_auth(provider, uid)
+    storage = backend.strategy.storage.user
+    social, migrated = _current_social_auth(backend, storage, provider, uid, id_key)
+    if social is None:
+        social = _legacy_social_auth(backend, storage, provider, uid, legacy_uids)
+        migrated = social is not None
+    if social is not None and migrated:
+        social = _migrate_social_auth(backend, storage, social, uid, id_key)
     if social:
         if user and social.user != user:
             raise AuthAlreadyAssociated(backend)
@@ -46,13 +127,14 @@ def associate_user(
     user: UserProtocol | None = None,
     social=None,
     *args,
+    id_key="",
+    legacy_uids=(),
     **kwargs,
 ):
     if user and not social:
         try:
-            social = backend.strategy.storage.user.create_social_auth(
-                user, uid, backend.name
-            )
+            storage = backend.strategy.storage.user
+            social = storage.create_social_auth(user, uid, backend.name, id_key=id_key)
         # pylint: disable-next=broad-exception-caught
         except Exception as err:
             if not backend.strategy.storage.is_integrity_error(err):
@@ -60,7 +142,15 @@ def associate_user(
             # Protect for possible race condition, those bastard with FTL
             # clicking capabilities, check issue #131:
             #   https://github.com/omab/django-social-auth/issues/131
-            result = social_user(backend, uid, user, *args, **kwargs)
+            result = social_user(
+                backend,
+                uid,
+                user,
+                *args,
+                id_key=id_key,
+                legacy_uids=legacy_uids,
+                **kwargs,
+            )
             # Check if matching social auth really exists. In case it does
             # not, the integrity error probably had different cause than
             # existing entry and should not be hidden.

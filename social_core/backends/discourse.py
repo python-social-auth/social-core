@@ -5,7 +5,7 @@ from hashlib import sha256
 from typing import cast
 from urllib.parse import urlencode
 
-from social_core.exceptions import AuthException, AuthTokenError
+from social_core.exceptions import AuthException, AuthMissingParameter, AuthTokenError
 from social_core.utils import parse_qs
 
 from .base import BaseAuth
@@ -13,9 +13,12 @@ from .base import BaseAuth
 
 class DiscourseAuth(BaseAuth):
     name = "discourse"
-    ID_KEY = "email"
+    title = "Discourse"
+    ID_KEY = "external_id"
+    LEGACY_ID_KEYS = ("email",)
+    MUTABLE_ID_KEYS = ("email",)
     REQUIRES_USER_ID = True
-    EXTRA_DATA = ["username", "name", "avatar_url"]
+    EXTRA_DATA = ["external_id", "username", "name", "avatar_url"]
 
     def auth_url(self) -> str:
         """
@@ -71,6 +74,8 @@ class DiscourseAuth(BaseAuth):
         request_data = self.strategy.request_data()
 
         sso_params = request_data.get("sso")
+        if not sso_params:
+            raise AuthMissingParameter(self, "sso")
         sso_signature = request_data.get("sig")
 
         param_signature = hmac.new(

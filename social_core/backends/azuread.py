@@ -30,21 +30,25 @@ Azure AD OAuth2 backend, docs at:
 from __future__ import annotations
 
 import os
-import time
 from pathlib import Path
 from typing import Any, cast
+from urllib.parse import urlsplit
 
 import jwt
 
-from social_core.exceptions import AuthMissingParameter, AuthTokenError
+from social_core.exceptions import AuthException, AuthMissingParameter, AuthTokenError
 from social_core.utils import cache
 
-from .oauth import BaseOAuth2
+from .oauth import BaseOAuth2PKCE
 
 
-class AzureADOAuth2(BaseOAuth2):
+class AzureADOAuth2(BaseOAuth2PKCE):
     name = "azuread-oauth2"
-    ID_KEY = "upn"
+    title = "Microsoft"
+    icon = "microsoft.svg"
+    ID_KEY = "sub"
+    LEGACY_ID_KEYS: tuple[str, ...] = ("upn",)
+    MUTABLE_ID_KEYS = ("upn", "preferred_username")
     SCOPE_SEPARATOR = " "
     BASE_URL = "https://{authority_host}/{tenant_id}"
     AUTHORIZATION_URL = "{base_url}/oauth2/authorize"
@@ -53,6 +57,7 @@ class AzureADOAuth2(BaseOAuth2):
     REDIRECT_STATE = False
     DEFAULT_SCOPE = ["openid", "profile", "user_impersonation", "email"]
     JWT_ALGORITHMS = ["RS256"]
+    DEFAULT_USE_PKCE = False
     EXTRA_DATA = [
         ("access_token", "access_token"),
         ("id_token", "id_token"),
@@ -62,12 +67,15 @@ class AzureADOAuth2(BaseOAuth2):
         ("not_before", "not_before"),
         ("given_name", "first_name"),
         ("family_name", "last_name"),
+        ("sub", "sub"),
+        ("oid", "oid"),
+        ("tid", "tid"),
         ("token_type", "token_type"),
     ]
 
     @property
-    def authority_host(self):
-        return self.setting("AUTHORITY_HOST", "login.microsoftonline.com")
+    def authority_host(self) -> str:
+        return cast("str", self.setting("AUTHORITY_HOST", "login.microsoftonline.com"))
 
     @property
     def tenant_id(self) -> str:
@@ -75,9 +83,43 @@ class AzureADOAuth2(BaseOAuth2):
 
     @property
     def base_url(self) -> str:
+        if authority_url := self.configured_authority_url():
+            return authority_url
         return self.BASE_URL.format(
             authority_host=self.authority_host, tenant_id=self.tenant_id
         )
+
+    def configured_authority_url(self) -> str | None:
+        authority_url = self.setting("AUTHORITY_URL")
+        if authority_url is None:
+            return None
+        if isinstance(authority_url, str):
+            try:
+                parsed = urlsplit(authority_url)
+                valid_origin = (
+                    parsed.scheme == "https"
+                    and parsed.hostname
+                    and parsed.port != 0
+                    and parsed.username is None
+                    and parsed.password is None
+                )
+                valid_path = bool(parsed.path.strip("/"))
+                valid_characters = not any(
+                    character.isspace() or character in "?#"
+                    for character in authority_url
+                )
+                if valid_origin and valid_path and valid_characters:
+                    return authority_url.rstrip("/")
+            except ValueError:
+                pass
+        raise AuthException(self, "AUTHORITY_URL must be an HTTPS base authority URL")
+
+    def get_openid_configuration_url_format(self) -> dict[str, str]:
+        return {
+            "authority_host": self.authority_host,
+            "base_url": self.base_url,
+            "tenant_id": self.tenant_id,
+        }
 
     def get_authorization_url_format(self) -> dict[str, str]:
         return {"base_url": self.base_url}
@@ -90,11 +132,7 @@ class AzureADOAuth2(BaseOAuth2):
             "str",
             self.setting("OPENID_CONFIGURATION_URL", self.OPENID_CONFIGURATION_URL),
         )
-        return url.format(
-            authority_host=self.authority_host,
-            base_url=self.base_url,
-            tenant_id=self.tenant_id,
-        )
+        return url.format(**self.get_openid_configuration_url_format())
 
     @cache(ttl=86400)
     def get_openid_configuration(self, url: str) -> dict[str, Any]:
@@ -122,7 +160,7 @@ class AzureADOAuth2(BaseOAuth2):
         return self.get_jwks_keys_for_uri(self.jwks_uri())
 
     def get_user_id(self, details, response):
-        """Use upn as unique id"""
+        """Return the configured stable user identifier."""
         return self.get_user_id_from_sources(details, response)
 
     def get_user_details(self, response):
@@ -253,6 +291,14 @@ class AzureADOAuth2(BaseOAuth2):
         """Return access_token and extra defined names to store in
         extra_data field"""
         data = super().extra_data(user, uid, response, details, pipeline_kwargs)
+        # Refresh responses can provide only a relative lifetime. Do not let
+        # the expired timestamp from the previous token override that lifetime.
+        if (
+            response.get("expires_in") is not None
+            and response.get("expires_on") is None
+            and response.get("exp") is None
+        ):
+            data["expires_on"] = None
         data["resource"] = self.setting("RESOURCE")
         return data
 
@@ -280,15 +326,13 @@ class AzureADOAuth2(BaseOAuth2):
         return params
 
     def get_auth_token(self, user_id):
-        """Return the access token for the given user, after ensuring that it
-        has not expired, or refreshing it if so."""
+        """Return the stored access token, refreshing it when possible."""
         user = self.get_user(user_id=user_id)
-        access_token = user.social_user.access_token
-        expires_on = user.social_user.extra_data["expires_on"]
-        if expires_on <= int(time.time()):
-            new_token_response = self.refresh_token(token=access_token)
-            access_token = new_token_response["access_token"]
-        return access_token
+        # Older storage implementations can fall back to the access token when
+        # no refresh token was issued. Never send that token to Azure as a grant.
+        if not user.social_user.extra_data.get("refresh_token"):
+            return user.social_user.access_token
+        return user.social_user.get_access_token(self.strategy)
 
     def auth_complete_params(self, state=None):
         params = super().auth_complete_params(state)
@@ -354,6 +398,8 @@ class AzureADOAuth2V2(AzureADOAuth2):
     allow them."""
 
     name = "azuread-oauth2-v2"
+    title = "Microsoft"
+    icon = "microsoft.svg"
     AUTHORIZATION_URL = "{base_url}/oauth2/v2.0/authorize"
     ACCESS_TOKEN_URL = "{base_url}/oauth2/v2.0/token"
     OPENID_CONFIGURATION_URL = "{base_url}/v2.0/.well-known/openid-configuration"

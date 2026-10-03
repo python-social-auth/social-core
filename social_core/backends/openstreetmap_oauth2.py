@@ -18,6 +18,7 @@ class OpenStreetMapOAuth2(BaseOAuth2PKCE):
     """OpenStreetMap OAuth2 authentication backend"""
 
     name = "openstreetmap-oauth2"
+    title = "OpenStreetMap"
     AUTHORIZATION_URL = "https://www.openstreetmap.org/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://www.openstreetmap.org/oauth2/token"
     SCOPE_SEPARATOR = " "

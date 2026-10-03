@@ -11,6 +11,7 @@ class JustGivingOAuth2(BaseOAuth2):
     """Just Giving OAuth authentication backend"""
 
     name = "justgiving"
+    title = "JustGiving"
     ID_KEY = "userId"
     AUTHORIZATION_URL = "https://identity.justgiving.com/connect/authorize"
     ACCESS_TOKEN_URL = "https://identity.justgiving.com/connect/token"
@@ -19,9 +20,9 @@ class JustGivingOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Just Giving account"""
-        fullname, first_name, last_name = self.get_user_names(
-            "", response.get("firstName"), response.get("lastName")
-        )
+        fullname = ""
+        first_name = response.get("firstName")
+        last_name = response.get("lastName")
         return {
             "username": response.get("email"),
             "email": response.get("email"),

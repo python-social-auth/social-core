@@ -5,6 +5,107 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+
+### Security
+
+- Email validation codes expire after seven days by default. Configure
+  `SOCIAL_AUTH_EMAIL_VALIDATION_EXPIRED_THRESHOLD` to change their lifetime.
+  Storage integrations must persist each code's creation `timestamp`; undated
+  codes are rejected when expiry is enabled.
+- Tumblr, Deezer, Discourse, SciStarter, and affected Microsoft Entra ID
+  backends now bind accounts to stable provider identifiers. Existing
+  associations record their identifier key and migrate on authentication;
+  strict deployments can disable unverified legacy-identifier migration.
+- Drip is now association-only: connecting requires the same authenticated local
+  user at initiation, callback, and partial resumption. Drip email addresses can
+  no longer create or authenticate local users, and connecting preserves local
+  profile fields.
+
+### Breaking
+
+- Strategies must implement `get_request_data()` instead of overriding
+  `request_data()`. The latter now returns effective data for the active partial
+  pipeline, including confirmed external-link data.
+- Pipeline steps no longer receive an automatic `request` argument. Use
+  `strategy.request_data()` for parameters and the framework strategy's
+  `request` attribute for its native request object.
+- Legacy disconnect partials without a pipeline type must restart the disconnect
+  flow. Legacy authentication partials remain resumable.
+
+### Added
+
+- Human-readable `title` and optional `icon` metadata for authentication
+  backends, with packaged icons shared with Django applications. Backend
+  identifiers remain unchanged; display labels follow current service branding.
+- VK ID OAuth2 backend (`vk-id`) with mandatory S256 PKCE, payload callbacks,
+  server-side profiles, and device-bound refresh tokens with automatic renewal.
+- Azure AD backends support an explicit `AUTHORITY_URL` and opt-in PKCE through
+  `USE_PKCE`. Azure AD B2C exposes a `logout_url()` helper using policy discovery.
+- Reusable `BaseAuth.ASSOCIATION_ONLY` capability for user-bound connections,
+  shared by Drip and Twilio Connect.
+- Scoped pipeline request data, stored separately from pipeline arguments.
+  Existing partials with request data in their arguments remain readable.
+
+### Fixed
+
+- Auth0 caches signing keys by JWKS URL for 24 hours and refreshes them when
+  a token references an unknown key ID or a token without a key ID fails
+  signature verification. Refreshes preserve other domains' cached keys and
+  retain existing keys if fetching or parsing replacements fails.
+- Exclude tests and their key fixtures from wheels while retaining them in
+  source distributions for downstream testing.
+- VK OAuth2 accepts aliased and conditional `EXTRA_DATA` entries when requesting
+  profile fields, and requests the supported `photo_50` field while preserving
+  the legacy `photo` and `user_photo` response keys.
+- Azure tenant and B2C backends honor `OPENID_CONFIGURATION_URL` overrides.
+- Azure's `get_auth_token()` uses stored refresh tokens and persists refreshed
+  credentials instead of sending an access token as a refresh token.
+- Resumed authentication and disconnect pipelines consistently expose their
+  effective request data without replacing the native framework request.
+- Saved request data is deserialized before use, including strategies that
+  encode mappings as strings or bytes.
+- Partial pipelines are bound to authentication or disconnect so an unrelated
+  saved step cannot skip disconnect permission checks.
+- OpenID Connect partial pipelines now preserve validated ID token claims when
+  resuming with a new backend instance, fixing login failures since 5.1.0.
+- Shopify partial pipelines now use the saved shop instead of resume request
+  parameters, and Apple preserves callback names across early pipeline pauses.
+- Legacy OpenID partial pipelines now preserve verified responses and signed
+  extension data instead of repeating callback verification on resume.
+
+## [5.2.0](https://github.com/python-social-auth/social-core/releases/tag/5.2.0) - 2026-09-30
+
+### Added
+
+- Added a CESID AAI OpenID Connect backend.
+- Added an optional `user` argument to `do_auth()` and a `BaseAuth.prepare_auth()`
+  hook for backend-specific authentication initiation.
+
+### Security
+
+- Twilio Connect is now association-only: starting and completing a connection
+  requires the same authenticated local user. Twilio callback data can no
+  longer create or authenticate users.
+- Facebook App authentication now binds access-token and signed-request
+  callbacks to the browser session, preventing login CSRF and unauthorized
+  account linking. Custom Facebook App templates must preserve the query string
+  in `FACEBOOK_COMPLETE_URI` when submitting the callback.
+- Weixin app authentication now validates OAuth state before exchanging codes,
+  preventing login CSRF and unauthorized account linking.
+- Last.fm authentication now binds callbacks to the browser session that
+  initiated the login, preventing login CSRF and unauthorized account linking.
+- GitHub App authentication now validates OAuth state before exchanging codes.
+  Stateless installation callbacks restart a state-protected OAuth flow,
+  preventing forged installation parameters from enabling login CSRF.
+- VK OpenAPI authentication now uses the signed session's user ID instead of
+  trusting the ID supplied in callback data.
+
+### Changed
+
+- Updated development dependencies and CI actions.
+- Allowed newer Google Auth versions for the Google One Tap backend.
+
 ## [5.1.1](https://github.com/python-social-auth/social-core/releases/tag/5.1.1) - 2026-09-18
 
 ### Security

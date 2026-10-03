@@ -13,6 +13,7 @@ class DribbbleOAuth2(BaseOAuth2):
     """Dribbble OAuth authentication backend"""
 
     name = "dribbble"
+    title = "Dribbble"
     AUTHORIZATION_URL = "https://dribbble.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://dribbble.com/oauth/token"
     SCOPE_SEPARATOR = ","
@@ -46,7 +47,9 @@ class DribbbleOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Dribbble account"""
-        fullname, first_name, last_name = self.get_user_names(response.get("name"))
+        fullname = response.get("name")
+        first_name = ""
+        last_name = ""
         return {
             "username": response.get("username"),
             "email": response.get("email", ""),

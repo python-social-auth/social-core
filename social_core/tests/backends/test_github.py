@@ -1,12 +1,18 @@
 import json
-from typing import Any
+from typing import Any, cast
 from unittest import TestCase
 
 import responses
 
-from social_core.exceptions import AuthFailed
+from social_core.exceptions import (
+    AuthCanceled,
+    AuthFailed,
+    AuthMissingParameter,
+    AuthStateForbidden,
+)
+from social_core.utils import get_querystring, parse_qs
 
-from .oauth import BaseAuthUrlTestMixin, OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2StateTestMixin, OAuth2Test
 
 CAPTURE_GITHUB_EMAILS_PIPELINE = (
     "social_core.tests.backends.test_github.capture_github_emails"
@@ -116,6 +122,115 @@ class GithubOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     def test_refresh_token(self) -> None:
         _user, social = self.do_refresh_token()
         self.assertEqual(social.extra_data["access_token"], "foobar-new-token")
+
+
+class GithubAppAuthTest(GithubOAuth2Test, OAuth2StateTestMixin):
+    backend_path = "social_core.backends.github.GithubAppAuth"
+
+    @staticmethod
+    def installation_callback_data(
+        state: str | None = None, code: str = "installation-code"
+    ) -> dict[str, str]:
+        data = {
+            "code": code,
+            "installation_id": "12345",
+            "setup_action": "install",
+        }
+        if state is not None:
+            data["state"] = state
+        return data
+
+    def test_installation_callback_without_state_restarts_oauth(self) -> None:
+        self.strategy.set_request_data(self.installation_callback_data(), self.backend)
+
+        redirect = self.backend.complete()
+
+        self.assertTrue(redirect.url.startswith(self.backend.authorization_url()))
+        state = get_querystring(redirect.url).get("state")
+        self.assertIsNotNone(state)
+        self.assertEqual(state, self.backend.get_session_state())
+        self.assertEqual(len(responses.calls), 0)
+
+    def test_restarted_oauth_exchanges_only_fresh_code(self) -> None:
+        self.strategy.set_request_data(
+            self.installation_callback_data(code="untrusted-installation-code"),
+            self.backend,
+        )
+        redirect = self.backend.complete()
+        state = get_querystring(redirect.url)["state"]
+
+        self.strategy.set_request_data(
+            {"code": "state-bound-code", "state": state}, self.backend
+        )
+        self.pre_complete_callback(redirect.url)
+        responses.add(
+            responses.GET,
+            self.user_data_url,
+            body=self.user_data_body,
+            content_type="application/json",
+        )
+
+        user = self.backend.complete()
+
+        token_request = next(
+            call.request
+            for call in responses.calls
+            if cast("str", call.request.url).startswith(self.backend.access_token_url())
+        )
+        self.assertEqual(parse_qs(token_request.body)["code"], "state-bound-code")
+        self.assertEqual(user.username, self.expected_username)
+
+    def test_incomplete_installation_callback_rejects_missing_state(self) -> None:
+        for missing_name in ("code", "installation_id", "setup_action"):
+            with self.subTest(missing_name=missing_name):
+                data = self.installation_callback_data()
+                data.pop(missing_name)
+                self.strategy.request_data().clear()
+                self.strategy.set_request_data(data, self.backend)
+
+                with self.assertRaises(AuthMissingParameter):
+                    self.backend.complete()
+
+        self.assertEqual(len(responses.calls), 0)
+
+    def test_installation_callback_preserves_provider_errors(self) -> None:
+        data = self.installation_callback_data()
+        data["error"] = "access_denied"
+        self.strategy.set_request_data(data, self.backend)
+
+        with self.assertRaises(AuthCanceled):
+            self.backend.complete()
+
+        self.assertEqual(len(responses.calls), 0)
+
+    def test_installation_callback_rejects_mismatched_state(self) -> None:
+        self.backend.start()
+        self.strategy.set_request_data(
+            self.installation_callback_data("attacker-state"), self.backend
+        )
+
+        with self.assertRaises(AuthStateForbidden):
+            self.backend.complete()
+
+        self.assertEqual(len(responses.calls), 0)
+
+    def test_installation_callback_accepts_matching_state(self) -> None:
+        start_url = self.backend.start().url
+        state = self.backend.get_session_state()
+        self.strategy.set_request_data(
+            self.installation_callback_data(state), self.backend
+        )
+        self.pre_complete_callback(start_url)
+        responses.add(
+            responses.GET,
+            self.user_data_url,
+            body=self.user_data_body,
+            content_type="application/json",
+        )
+
+        user = self.backend.complete()
+
+        self.assertEqual(user.username, self.expected_username)
 
 
 class GithubOAuth2NoEmailTest(GithubOAuth2Test):

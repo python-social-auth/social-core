@@ -10,6 +10,7 @@ class QuizletOAuth2(BaseOAuth2):
     """Quizlet OAuth2"""
 
     name = "quizlet"
+    title = "Quizlet"
     ID_KEY = "user_id"
     API_URL = "https://api.quizlet.com/2.0/"
     AUTHORIZATION_URL = "https://quizlet.com/authorize"

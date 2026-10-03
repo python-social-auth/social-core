@@ -8,6 +8,7 @@ from .oauth import BaseOAuth2
 
 class AsanaOAuth2(BaseOAuth2):
     name = "asana"
+    title = "Asana"
     AUTHORIZATION_URL = "https://app.asana.com/-/oauth_authorize"
     ACCESS_TOKEN_URL = "https://app.asana.com/-/oauth_token"
     REFRESH_TOKEN_URL = "https://app.asana.com/-/oauth_token"
@@ -21,7 +22,9 @@ class AsanaOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         data = response["data"]
-        fullname, first_name, last_name = self.get_user_names(data["name"])
+        fullname = data["name"]
+        first_name = ""
+        last_name = ""
         return {
             "email": data["email"],
             "username": data["email"],

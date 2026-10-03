@@ -62,6 +62,31 @@ class PartialPipelineSelection:
     pending_resume: bool = False
 
 
+def normalize_user_names(
+    fullname: str | None = "",
+    first_name: str | None = "",
+    last_name: str | None = "",
+    *,
+    firstlast_from_full: bool = True,
+    full_from_firstlast: bool = True,
+) -> tuple[str, str, str]:
+    """Fill missing name representations without replacing supplied names."""
+    fullname = (fullname or "").strip()
+    first_name = (first_name or "").strip()
+    last_name = (last_name or "").strip()
+    if firstlast_from_full and fullname and not (first_name or last_name):
+        first_name, _, last_name = fullname.partition(" ")
+        first_name, last_name = first_name.strip(), last_name.strip()
+    if full_from_firstlast and not fullname:
+        if first_name and re.search(
+            rf"(?<!\S){re.escape(first_name)}(?!\S)", last_name
+        ):
+            fullname = last_name
+        else:
+            fullname = f"{first_name} {last_name}".strip()
+    return fullname, first_name, last_name
+
+
 def module_member(name):
     mod, member = name.rsplit(".", 1)
     module = import_module(mod)
@@ -221,9 +246,16 @@ def drop_lists(value):
 
 
 def _partial_pipeline_matches_request(
-    backend: BaseAuth, partial: PartialMixin | None, request_data: dict[str, Any]
+    backend: BaseAuth,
+    partial: PartialMixin | None,
+    request_data: dict[str, Any],
+    pipeline_type: str,
 ) -> bool:
-    if not partial or partial.backend != backend.name:
+    if (
+        not partial
+        or partial.backend != backend.name
+        or partial.pipeline_type != pipeline_type
+    ):
         return False
 
     # Normally when resuming a pipeline, request_data will be empty. We only
@@ -247,7 +279,8 @@ def _extend_partial_pipeline(
 ) -> PartialMixin:
     if user:  # don't update user if it's None
         kwargs.setdefault("user", user)
-    kwargs["request"] = request_data
+    partial.request_data = request_data
+    kwargs.pop("request", None)
     partial.extend_kwargs(kwargs)
     return partial
 
@@ -332,12 +365,13 @@ def partial_pipeline_result(
     user: UserProtocol | None = None,
     partial_token: str | None = None,
     *args,
+    pipeline_type: str = "authentication",
     **kwargs,
 ) -> PartialPipelineResult:
-    request_data = backend.strategy.request_data()
+    request_data = backend.strategy.get_request_data()
 
-    partial_argument_name = backend.setting(
-        "PARTIAL_PIPELINE_TOKEN_NAME", "partial_token"
+    partial_argument_name = cast(
+        "str", backend.setting("PARTIAL_PIPELINE_TOKEN_NAME", "partial_token")
     )
     request_token = cast(
         "str | None", partial_token or request_data.get(partial_argument_name)
@@ -376,9 +410,10 @@ def partial_pipeline_result(
 
     partial: PartialMixin | None = backend.strategy.partial_load(selection.token)
     partial_matches = _partial_pipeline_matches_request(
-        backend, partial, effective_request_data
+        backend, partial, effective_request_data, pipeline_type
     )
     if partial and partial_matches:
+        backend.validate_partial_pipeline(partial, user)
         if _partial_pipeline_requires_confirmation(
             partial,
             request_token,
@@ -550,6 +585,12 @@ class cache:
 
     It maintains a cache per class and method arguments, so subclasses have a
     different cache entry for the same cached method.
+
+    Call ``method.invalidate()`` to clear all entries, or
+    ``method.invalidate(instance, *args, **kwargs)`` to clear one entry.
+    Call ``method.refresh(instance, *args, **kwargs)`` to replace one entry
+    only after the underlying method succeeds. Failed refreshes propagate
+    their exception and preserve the existing value and expiry time.
     """
 
     def __init__(self, ttl: int) -> None:
@@ -559,6 +600,12 @@ class cache:
         ] = {}
 
     def __call__(self, fn):
+        def refresh(this, *args, **kwargs):
+            cached_value = fn(this, *args, **kwargs)
+            cache_key = (this.__class__, args, tuple(sorted(kwargs.items())))
+            self.cache[cache_key] = (time.time(), cached_value)
+            return cached_value
+
         def wrapped(this, *args, **kwargs):
             now = time.time()
             last_updated = None
@@ -581,7 +628,14 @@ class cache:
             return cached_value
 
         cast("Any", wrapped).invalidate = self._invalidate
+        cast("Any", wrapped).refresh = refresh
         return wrapped
 
-    def _invalidate(self) -> None:
-        self.cache.clear()
+    def _invalidate(
+        self, this: object | None = None, *args: Any, **kwargs: Any
+    ) -> None:
+        if this is None:
+            self.cache.clear()
+        else:
+            cache_key = (this.__class__, args, tuple(sorted(kwargs.items())))
+            self.cache.pop(cache_key, None)

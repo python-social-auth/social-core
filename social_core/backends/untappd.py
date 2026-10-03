@@ -12,6 +12,7 @@ class UntappdOAuth2(BaseOAuth2):
     """Untappd OAuth2 authentication backend"""
 
     name = "untappd"
+    title = "Untappd"
     AUTHORIZATION_URL = "https://untappd.com/oauth/authenticate/"
     ACCESS_TOKEN_URL = "https://untappd.com/oauth/authorize/"
     BASE_API_URL = "https://api.untappd.com"
@@ -96,7 +97,7 @@ class UntappdOAuth2(BaseOAuth2):
                 "email": user_data.get("settings", {}).get("email_address", ""),
                 "first_name": user_data.get("first_name"),
                 "last_name": user_data.get("last_name"),
-                "fullname": f"{user_data.get('first_name')} {user_data.get('last_name')}",
+                "fullname": user_data.get("fullname", ""),
             }
         )
         return user_data

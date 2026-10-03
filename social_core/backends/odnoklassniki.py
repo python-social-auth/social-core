@@ -29,6 +29,7 @@ class OdnoklassnikiOAuth2(BaseOAuth2):
     """Odnoklassniki authentication backend"""
 
     name = "odnoklassniki-oauth2"
+    title = "Odnoklassniki"
     ID_KEY = "uid"
     SCOPE_SEPARATOR = ";"
     AUTHORIZATION_URL = "https://connect.ok.ru/oauth/authorize"
@@ -37,11 +38,9 @@ class OdnoklassnikiOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Odnoklassniki request"""
-        fullname, first_name, last_name = self.get_user_names(
-            fullname=unquote(response["name"]),
-            first_name=unquote(response["first_name"]),
-            last_name=unquote(response["last_name"]),
-        )
+        fullname = unquote(response["name"])
+        first_name = unquote(response["first_name"])
+        last_name = unquote(response["last_name"])
         return {
             "username": response["uid"],
             "email": response.get("email", ""),
@@ -64,6 +63,7 @@ class OdnoklassnikiApp(BaseAuth):
     """Odnoklassniki iframe app authentication backend"""
 
     name = "odnoklassniki-app"
+    title = "Odnoklassniki"
     ID_KEY = "uid"
     API_URL = "https://api.ok.ru/"
 
@@ -82,11 +82,9 @@ class OdnoklassnikiApp(BaseAuth):
         }
 
     def get_user_details(self, response):
-        fullname, first_name, last_name = self.get_user_names(
-            fullname=unquote(response["name"]),
-            first_name=unquote(response["first_name"]),
-            last_name=unquote(response["last_name"]),
-        )
+        fullname = unquote(response["name"])
+        first_name = unquote(response["first_name"])
+        last_name = unquote(response["last_name"])
         return {
             "username": response["uid"],
             "email": "",

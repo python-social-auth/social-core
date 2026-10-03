@@ -12,6 +12,7 @@ class SimpleLoginOAuth2(BaseOAuth2):
     """SimpleLogin OAuth authentication backend"""
 
     name = "simplelogin"
+    title = "SimpleLogin"
     AUTHORIZATION_URL = "https://app.simplelogin.io/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://app.simplelogin.io/oauth2/token"
     REDIRECT_STATE = False
@@ -27,7 +28,9 @@ class SimpleLoginOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from SimpleLogin account"""
-        fullname, first_name, last_name = self.get_user_names(response.get("name"))
+        fullname = response.get("name")
+        first_name = ""
+        last_name = ""
         return {
             "username": response.get("email"),
             "email": response.get("email"),

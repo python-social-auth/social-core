@@ -17,6 +17,8 @@ class GithubOAuth2(BaseOAuth2):
     """Github OAuth authentication backend"""
 
     name = "github"
+    title = "GitHub"
+    icon = "github.svg"
     API_URL = "https://api.github.com/"
     AUTHORIZATION_URL = "https://github.com/login/oauth/authorize"
     ACCESS_TOKEN_URL = "https://github.com/login/oauth/access_token"
@@ -35,7 +37,9 @@ class GithubOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Github account"""
-        fullname, first_name, last_name = self.get_user_names(response.get("name"))
+        fullname = response.get("name")
+        first_name = ""
+        last_name = ""
         return {
             "username": response.get("login"),
             "email": response.get("email") or "",
@@ -96,6 +100,8 @@ class GithubOrganizationOAuth2(GithubMemberOAuth2):
     """Github OAuth2 authentication backend for organizations"""
 
     name = "github-org"
+    title = "GitHub Organization"
+    icon = "github.svg"
     no_member_string = "User doesn't belong to the organization"
 
     def member_url(self, user_data):
@@ -109,6 +115,8 @@ class GithubTeamOAuth2(GithubMemberOAuth2):
     """Github OAuth2 authentication backend for teams"""
 
     name = "github-team"
+    title = "GitHub Team"
+    icon = "github.svg"
     no_member_string = "User doesn't belong to the team"
 
     def member_url(self, user_data):
@@ -119,29 +127,22 @@ class GithubTeamOAuth2(GithubMemberOAuth2):
 
 
 class GithubAppAuth(GithubOAuth2):
-    """GitHub App OAuth authentication backend"""
+    """GitHub App OAuth authentication backend.
+
+    App installation callback parameters are untrusted. Stateless installation
+    callbacks restart OAuth so an authorization code is only exchanged after
+    validating session-bound state.
+    """
 
     name = "github-app"
+    title = "GitHub App"
+    icon = "github.svg"
 
-    def validate_state(self):
-        """
-        Scenario 1: user clicks an icon/button on your website and initiates
-                    social login. This works exacltly like standard OAuth and we
-                    have `state` and `redirect_uri`.
+    def auth_complete(self, *args, **kwargs):
+        if not self.get_request_state() and all(
+            self.data.get(name) for name in ("code", "installation_id", "setup_action")
+        ):
+            self.process_error(self.data)
+            return self.start()
 
-        Scenario 2: user starts from http://github.com/apps/your-app and clicks
-                    'Install & Authorize' button! They still get a temporary
-                    `code` (used to fetch `access_token`) but there's no `state`
-                    or `redirect_uri` here.
-
-        Note: Scenario 2 only happens when your GitHub App is configured
-              with `Request user authorization (OAuth) during installation`
-              turned on! This causes GitHub to redirect the person back to
-              `/complete/github/`. If the above setting is turned off then
-              GitHub will redirect to another URL called Setup URL and the
-              person may need to login first before they can continue!
-        """
-        if self.data.get("installation_id") and self.data.get("setup_action"):
-            return None
-
-        return super().validate_state()
+        return super().auth_complete(*args, **kwargs)

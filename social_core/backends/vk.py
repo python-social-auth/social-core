@@ -5,15 +5,23 @@ VK.com OpenAPI, OAuth2 and Iframe application OAuth2 backends, docs at:
 
 from __future__ import annotations
 
+import json
 from hashlib import md5
 from time import time
 from typing import Any, cast
 
-from social_core.exceptions import AuthException, AuthFailed, AuthTokenRevoked
-from social_core.utils import parse_qs
+from social_core.exceptions import (
+    AuthException,
+    AuthFailed,
+    AuthMissingParameter,
+    AuthStateForbidden,
+    AuthTokenRevoked,
+    AuthUnknownError,
+)
+from social_core.utils import constant_time_compare, handle_http_errors, parse_qs
 
 from .base import BaseAuth
-from .oauth import BaseOAuth2
+from .oauth import BaseOAuth2, BaseOAuth2PKCE
 
 
 def vk_sig(payload: str) -> str:
@@ -29,15 +37,15 @@ class VKontakteOpenAPI(BaseAuth):
     """VK.COM OpenAPI authentication backend"""
 
     name = "vk-openapi"
+    title = "VK"
     ID_KEY = "id"
 
     def get_user_details(self, response):
         """Return user details from VK.com request"""
         nickname = response.get("nickname") or ""
-        fullname, first_name, last_name = self.get_user_names(
-            first_name=response.get("first_name", [""])[0],
-            last_name=response.get("last_name", [""])[0],
-        )
+        fullname = ""
+        first_name = response.get("first_name", [""])[0]
+        last_name = response.get("last_name", [""])[0]
         return {
             "username": response["id"] if len(nickname) == 0 else nickname,
             "email": "",
@@ -47,7 +55,12 @@ class VKontakteOpenAPI(BaseAuth):
         }
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
-        return self.data
+        response = self.data.copy()
+        # The access_token argument is the mid from the signed session. Request
+        # data passes through the user's browser and must not define identity.
+        response[self.ID_KEY] = access_token
+        response[self.id_key()] = access_token
+        return response
 
     def auth_html(self) -> str:
         """Returns local VK authentication page, not necessary for
@@ -93,6 +106,7 @@ class VKOAuth2(BaseOAuth2):
     """VKOAuth2 authentication backend"""
 
     name = "vk-oauth2"
+    title = "VK"
     ID_KEY = "id"
     AUTHORIZATION_URL = "https://oauth.vk.ru/authorize"
     ACCESS_TOKEN_URL = "https://oauth.vk.ru/access_token"
@@ -100,9 +114,9 @@ class VKOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from VK.com account"""
-        fullname, first_name, last_name = self.get_user_names(
-            first_name=response.get("first_name"), last_name=response.get("last_name")
-        )
+        fullname = ""
+        first_name = response.get("first_name")
+        last_name = response.get("last_name")
         return {
             "username": response.get("screen_name"),
             "email": response.get("email", ""),
@@ -113,16 +127,21 @@ class VKOAuth2(BaseOAuth2):
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
-        request_data = [
-            "first_name",
-            "last_name",
-            "screen_name",
-            "nickname",
-            "photo",
-            *cast("list[str]", self.setting("EXTRA_DATA", [])),
-        ]
+        request_data = ["screen_name", "nickname", "photo_50"]
+        for entry in cast("list[Any]", self.setting("EXTRA_DATA", [])):
+            if isinstance(entry, str):
+                field = entry
+            elif isinstance(entry, (tuple, list)) and 1 <= len(entry) <= 3:
+                field = entry[0]
+            else:
+                raise AuthUnknownError(self, f"Invalid EXTRA_DATA item: {entry!r}")
+            if not isinstance(field, str):
+                raise AuthUnknownError(self, f"Invalid EXTRA_DATA item: {entry!r}")
+            request_data.append(
+                "photo_50" if field in {"photo", "user_photo"} else field
+            )
 
-        fields = ",".join(set(request_data))
+        fields = ",".join(dict.fromkeys(request_data))
         response = self.vk_api(
             "users.get",
             {
@@ -140,7 +159,9 @@ class VKOAuth2(BaseOAuth2):
 
         if response:
             data = cast("list[dict[str, str | None]]", response.get("response"))[0]
-            data["user_photo"] = data.get("photo")  # Backward compatibility
+            # Keep legacy response names while requesting the supported API field.
+            data["photo"] = data.get("photo_50") or data.get("photo")
+            data["user_photo"] = data["photo"]
             return data
         return {}
 
@@ -171,10 +192,188 @@ class VKOAuth2(BaseOAuth2):
             return None
 
 
+class VKIDOAuth2(BaseOAuth2PKCE):
+    """VK ID authentication using mandatory PKCE and device-bound tokens."""
+
+    name = "vk-id"
+    title = "VK ID"
+    ID_KEY = "id"
+    REQUIRES_USER_ID = True
+    AUTHORIZATION_URL = "https://id.vk.ru/authorize"
+    ACCESS_TOKEN_URL = "https://id.vk.ru/oauth2/auth"
+    USER_INFO_URL = "https://id.vk.ru/oauth2/user_info"
+    REDIRECT_STATE = False
+    EXTRA_DATA = [
+        ("id", "id"),
+        ("user_id", "user_id"),
+        ("expires_in", "expires_in"),
+        ("refresh_token", "refresh_token"),
+        ("id_token", "id_token"),
+        ("scope", "scope"),
+        ("device_id", "device_id"),
+        ("redirect_uri", "redirect_uri"),
+    ]
+
+    def auth_params(self, state=None):
+        if (
+            not self.setting("USE_PKCE", True)
+            or str(self.setting("PKCE_CODE_CHALLENGE_METHOD", "S256")).lower() != "s256"
+        ):
+            raise AuthException(self, "VK ID requires PKCE with S256")
+        length = self.setting("PKCE_CODE_VERIFIER_LENGTH", 43)
+        if not isinstance(length, int) or not 43 <= length <= 128:
+            raise AuthException(self, "Invalid PKCE code verifier length")
+        params = super().auth_params(state)
+        params["code_challenge_method"] = "S256"
+        return params
+
+    def callback_data(self) -> dict[str, Any]:
+        data = dict(self.data.items())
+        if "payload" in data:
+            try:
+                payload = json.loads(data["payload"])
+            except (TypeError, ValueError) as exc:
+                raise AuthFailed(self, "Invalid VK ID payload") from exc
+            if not isinstance(payload, dict):
+                raise AuthFailed(self, "Invalid VK ID payload")
+            for field in ("code", "device_id", "state", "error", "error_description"):
+                if field in payload:
+                    if field in data and data[field] != payload[field]:
+                        raise AuthFailed(self, f"Conflicting VK ID {field}")
+                    data[field] = payload[field]
+        for field in ("code", "device_id", "state", "error", "error_description"):
+            if field in data and not isinstance(data[field], str):
+                raise AuthFailed(self, f"Invalid VK ID {field}")
+        return data
+
+    def auth_complete(self, *args, **kwargs):
+        original_data = self.data
+        self.data = self.callback_data()
+        try:
+            return super().auth_complete(*args, **kwargs)
+        finally:
+            self.data = original_data
+
+    def auth_complete_params(self, state=None):
+        for field in ("code", "device_id"):
+            if not self.data.get(field):
+                raise AuthMissingParameter(self, field)
+        params = super().auth_complete_params(state)
+        params.pop("client_secret", None)
+        verifier = self.strategy.session_pop(f"{self.name}_code_verifier")
+        if not verifier:
+            raise AuthMissingParameter(self, "code_verifier")
+        params.update(
+            code_verifier=verifier, device_id=self.data["device_id"], state=state
+        )
+        return params
+
+    def _validate_token_response(self, response, state) -> None:
+        if not isinstance(response, dict):
+            raise AuthFailed(self, "Invalid VK ID token response")
+        self.process_error(response)
+        response_state = response.get("state")
+        if not isinstance(response_state, str) or not constant_time_compare(
+            response_state, state
+        ):
+            raise AuthStateForbidden(self)
+        if (
+            not isinstance(response.get("access_token"), str)
+            or not response["access_token"]
+        ):
+            raise AuthMissingParameter(self, "access_token")
+
+    def request_access_token(self, *args, **kwargs):
+        response = super().request_access_token(*args, **kwargs)
+        self._validate_token_response(response, self.data["state"])
+        response.setdefault("device_id", self.data["device_id"])
+        response["redirect_uri"] = self.get_redirect_uri()
+        return response
+
+    @staticmethod
+    def _profile_id(data):
+        value = data.get("user_id", data.get("id"))
+        if isinstance(value, bool) or not isinstance(value, (str, int)):
+            return None
+        return str(value) if str(value).strip() else None
+
+    def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any]:
+        client_id, _secret = self.get_key_and_secret()
+        data = self.get_json(
+            self.USER_INFO_URL,
+            method="POST",
+            headers=self.auth_headers(),
+            data={"access_token": access_token, "client_id": client_id},
+        )
+        if not isinstance(data, dict):
+            raise AuthFailed(self, "Invalid VK ID user profile")
+        self.process_error(data)
+        user = data.get("user")
+        if not isinstance(user, dict):
+            raise AuthFailed(self, "Invalid VK ID user profile")
+        token_id = self._profile_id(kwargs.get("response") or {})
+        profile_id = self._profile_id(user)
+        if token_id and profile_id and token_id != profile_id:
+            raise AuthFailed(self, "VK ID user profile does not match token user ID")
+        user_id = profile_id or token_id
+        if not user_id:
+            raise AuthFailed(self, "Missing VK ID user ID")
+        return {
+            **user,
+            "id": user_id,
+            "user_id": user_id,
+            "photo": user.get("avatar"),
+            "user_photo": user.get("avatar"),
+        }
+
+    def get_user_details(self, response):
+        return {
+            "username": "",
+            "email": response.get("email", ""),
+            "first_name": response.get("first_name", ""),
+            "last_name": response.get("last_name", ""),
+        }
+
+    def get_refresh_token_kwargs(self, extra_data: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "device_id": extra_data.get("device_id"),
+            "redirect_uri": extra_data.get("redirect_uri"),
+        }
+
+    def refresh_token_params(self, token: str, *args, **kwargs) -> dict[str, str]:
+        device_id = kwargs.get("device_id")
+        if not isinstance(device_id, str) or not device_id:
+            raise AuthMissingParameter(self, "device_id")
+        client_id, _secret = self.get_key_and_secret()
+        return {
+            "grant_type": "refresh_token",
+            "refresh_token": token,
+            "client_id": client_id,
+            "redirect_uri": kwargs.get("redirect_uri") or self.get_redirect_uri(),
+            "device_id": device_id,
+            "state": self.state_token(),
+        }
+
+    @handle_http_errors
+    def refresh_token(self, token: str, *args, **kwargs) -> dict:
+        params = self.refresh_token_params(token, *args, **kwargs)
+        response = super().request_access_token(
+            self.refresh_token_url(),
+            method=self.REFRESH_TOKEN_METHOD,
+            headers=self.auth_headers(),
+            data=params,
+        )
+        self._validate_token_response(response, params["state"])
+        response.setdefault("device_id", params["device_id"])
+        response["redirect_uri"] = params["redirect_uri"]
+        return response
+
+
 class VKAppOAuth2(VKOAuth2):
     """VK.com Application Authentication support"""
 
     name = "vk-app"
+    title = "VK"
 
     def _user_profile(self, access_token: str, viewer_id) -> dict[str, Any]:
         # api_result passes through the user's browser and is not covered by
@@ -211,7 +410,7 @@ class VKAppOAuth2(VKOAuth2):
             raise AuthFailed(self, "Invalid auth key")
 
         user_check = self.setting("USERMODE")
-        user_id = self.data.get("viewer_id")
+        user_id = self.data["viewer_id"]
         if user_check is not None:
             user_check = int(user_check)
             is_user = 0

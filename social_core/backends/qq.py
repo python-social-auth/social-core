@@ -21,6 +21,7 @@ if TYPE_CHECKING:
 
 class QQOAuth2(BaseOAuth2):
     name = "qq"
+    title = "QQ"
     ID_KEY = "openid"
     AUTHORIZE_URL = "https://graph.qq.com/oauth2.0/authorize"
     ACCESS_TOKEN_URL = "https://graph.qq.com/oauth2.0/token"
@@ -44,9 +45,9 @@ class QQOAuth2(BaseOAuth2):
         else:
             username = response.get("nickname", "")
 
-        fullname, first_name, last_name = self.get_user_names(
-            first_name=response.get("nickname", "")
-        )
+        fullname = ""
+        first_name = response.get("nickname", "")
+        last_name = ""
 
         return {
             "username": username,

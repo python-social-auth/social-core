@@ -19,6 +19,7 @@ USER_INFO = "https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?"
 
 class SteamOpenId(OpenIdAuth):
     name = "steam"
+    title = "Steam"
     URL = "https://steamcommunity.com/openid"
 
     def get_user_id(self, details, response):

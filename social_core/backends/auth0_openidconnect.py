@@ -18,6 +18,8 @@ class Auth0OpenIdConnectAuth(OpenIdConnectAuth):
     """
 
     name = "auth0_openidconnect"
+    title = "Auth0"
+    icon = "auth0.svg"
     USERNAME_KEY = "nickname"
     EXTRA_DATA = ["id_token", "refresh_token", ("sub", "id"), "picture"]
 

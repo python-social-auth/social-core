@@ -11,6 +11,7 @@ class ClasslinkOAuth(BaseOAuth2):
     """
 
     name = "classlink"
+    title = "ClassLink"
     ID_KEY = "UserId"
     REQUIRES_USER_ID = True
     AUTHORIZATION_URL = "https://launchpad.classlink.com/oauth2/v2/auth"
@@ -21,9 +22,9 @@ class ClasslinkOAuth(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Classlink account"""
-        fullname, first_name, last_name = self.get_user_names(
-            first_name=response.get("FirstName"), last_name=response.get("LastName")
-        )
+        fullname = ""
+        first_name = response.get("FirstName")
+        last_name = response.get("LastName")
 
         return {
             "username": response.get("Email") or response.get("LoginId"),

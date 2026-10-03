@@ -12,6 +12,7 @@ class BoxOAuth2(BaseOAuth2):
     """Box.net OAuth authentication backend"""
 
     name = "box"
+    title = "Box"
     AUTHORIZATION_URL = "https://www.box.com/api/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://www.box.com/api/oauth2/token"
     REVOKE_TOKEN_URL = "https://www.box.com/api/oauth2/revoke"
@@ -35,7 +36,9 @@ class BoxOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details Box.net account"""
-        fullname, first_name, last_name = self.get_user_names(response.get("name"))
+        fullname = response.get("name")
+        first_name = ""
+        last_name = ""
         return {
             "username": response.get("login"),
             "email": response.get("login") or "",

@@ -6,7 +6,7 @@ from urllib.parse import parse_qs, urlencode, urlparse
 import requests
 import responses
 
-from social_core.exceptions import AuthException
+from social_core.exceptions import AuthException, AuthMissingParameter
 
 from .base import BaseBackendTest
 
@@ -17,6 +17,10 @@ class DiscourseTest(BaseBackendTest):
     backend_path = "social_core.backends.discourse.DiscourseAuth"
     expected_username = "beepboop"
     raw_complete_url = "/complete/{0}/"
+
+    def test_missing_sso_parameter(self) -> None:
+        with self.assertRaises(AuthMissingParameter):
+            self.backend.complete()
 
     def post_start(self) -> None:
         pass
@@ -29,6 +33,7 @@ class DiscourseTest(BaseBackendTest):
         sso = b64encode(
             urlencode(
                 {
+                    "external_id": "42",
                     "email": "user@example.com",
                     "username": "beepboop",
                     "nonce": "6YRje7xlXhpyeJ6qtvBeTUjHkXo1UCTQmCrzN8GXfja3AoAFk2CieDRYgSqMYi4W",

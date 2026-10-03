@@ -14,6 +14,7 @@ class SoundcloudOAuth2(BaseOAuth2):
     """Soundcloud OAuth authentication backend"""
 
     name = "soundcloud"
+    title = "SoundCloud"
     AUTHORIZATION_URL = "https://soundcloud.com/connect"
     ACCESS_TOKEN_URL = "https://api.soundcloud.com/oauth2/token"
     SCOPE_SEPARATOR = ","
@@ -26,7 +27,9 @@ class SoundcloudOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Soundcloud account"""
-        fullname, first_name, last_name = self.get_user_names(response.get("full_name"))
+        fullname = response.get("full_name")
+        first_name = ""
+        last_name = ""
         return {
             "username": response.get("username"),
             "email": response.get("email") or "",

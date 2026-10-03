@@ -11,6 +11,7 @@ from .open_id import OpenIdAuth
 
 class OpenStackOpenId(OpenIdAuth):
     name = "openstack"
+    title = "OpenStack"
     URL = "openstackid.org"
 
     def get_user_details(self, response):

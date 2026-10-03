@@ -40,6 +40,7 @@ from jwt.algorithms import RSAAlgorithm
 
 from social_core.exceptions import AuthMissingParameter, AuthTokenError
 
+from .azuread import AzureOAuth2TestMixin
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 from .test_azuread_b2c import RSA_PRIVATE_JWT_KEY, RSA_PUBLIC_JWT_KEY
 
@@ -49,7 +50,7 @@ if TYPE_CHECKING:
     from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
 
 
-class AzureADOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
+class AzureADOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin, AzureOAuth2TestMixin):
     AUTH_KEY = "a-key"
     AUTH_TIME = int(time())
     EXPIRES_IN = 3600
@@ -131,6 +132,7 @@ class AzureADOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         return json.dumps(
             {
                 "access_token": "foobar",
+                "refresh_token": "foobar-refresh-token",
                 "token_type": "bearer",
                 "id_token": self.build_id_token(**id_token_overrides),
                 "expires_in": self.EXPIRES_IN,
@@ -152,6 +154,18 @@ class AzureADOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
 
     def test_login(self) -> None:
         self.do_login()
+        auth_query = parse_qs(
+            cast("str", responses.calls[0].request.url).split("?", 1)[1]
+        )
+        self.assertNotIn("code_challenge", auth_query)
+        token_call = next(
+            call
+            for call in responses.calls
+            if call.request.url == self.backend.access_token_url()
+        )
+        self.assertNotIn(
+            "code_verifier", parse_qs(cast("str", token_call.request.body))
+        )
 
     def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
@@ -252,6 +266,18 @@ class AzureADTenantOAuth2Test(AzureADOAuth2Test):
         with self.assertRaises(AuthTokenError):
             self.do_start()
 
+    def test_authority_override_preserves_configured_tenant_restriction(self) -> None:
+        configuration = self.backend.openid_configuration()
+        self.strategy.set_settings(
+            {
+                f"SOCIAL_AUTH_{self.name}_AUTHORITY_URL": "https://login.microsoftonline.com/organizations"
+            }
+        )
+        responses.add(
+            responses.GET, self.backend.openid_configuration_url(), json=configuration
+        )
+        self.test_login_rejects_wrong_configured_tenant_id()
+
 
 class AzureADV2TenantOAuth2Test(AzureADTenantOAuth2Test):
     backend_path = "social_core.backends.azuread_tenant.AzureADV2TenantOAuth2"
@@ -273,13 +299,13 @@ class AzureADV2TenantOAuth2Test(AzureADTenantOAuth2Test):
         }
         self.assertEqual(
             self.backend.get_user_id({}, response),
-            "mutable@example.com",
+            "stable-subject",
         )
 
         self.strategy.set_settings(
-            {"SOCIAL_AUTH_AZUREAD_V2_TENANT_OAUTH2_ID_KEY": "sub"}
+            {"SOCIAL_AUTH_AZUREAD_V2_TENANT_OAUTH2_ID_KEY": "preferred_username"}
         )
-        self.assertEqual(self.backend.get_user_id({}, response), "stable-subject")
+        self.assertEqual(self.backend.get_user_id({}, response), "mutable@example.com")
 
 
 class AzureADOAuth2TokenRequestBodyMixin(TestCase):
@@ -432,6 +458,30 @@ class AzureADOAuth2FederatedIdentityCredentialFromFileTest(
 
 
 class AzureADOAuth2MissingCredentialsTest(AzureADOAuth2Test):
+    def test_login_with_pkce(self) -> None:
+        with self.assertRaises(AuthMissingParameter):
+            super().test_login_with_pkce()
+
+    def test_partial_pipeline_with_pkce(self) -> None:
+        with self.assertRaises(AuthMissingParameter):
+            super().test_partial_pipeline_with_pkce()
+
+    def test_login_with_authority_override(self) -> None:
+        with self.assertRaises(AuthMissingParameter):
+            super().test_login_with_authority_override()
+
+    def test_get_auth_token_uses_real_refresh_token(self) -> None:
+        with self.assertRaises(AuthMissingParameter):
+            super().test_get_auth_token_uses_real_refresh_token()
+
+    def test_get_auth_token_without_refresh_token(self) -> None:
+        with self.assertRaises(AuthMissingParameter):
+            super().test_get_auth_token_without_refresh_token()
+
+    def test_get_auth_token_keeps_valid_token(self) -> None:
+        with self.assertRaises(AuthMissingParameter):
+            super().test_get_auth_token_keeps_valid_token()
+
     def extra_settings(self):
         settings = super().extra_settings()
         settings.pop("SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET", None)

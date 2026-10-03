@@ -13,6 +13,8 @@ class TwitterOAuth2(BaseOAuth2PKCE):
     """Twitter OAuth2 authentication backend"""
 
     name = "twitter-oauth2"
+    title = "X"
+    icon = "x.svg"
     AUTHORIZATION_URL = "https://twitter.com/i/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://api.twitter.com/2/oauth2/token"
     DEFAULT_SCOPE = ["users.read", "tweet.read"]
@@ -58,7 +60,9 @@ class TwitterOAuth2(BaseOAuth2PKCE):
         pinned_tweet_id = user.get("pinned_tweet_id")
         public_metrics = user.get("public_metrics")
 
-        fullname, first_name, last_name = self.get_user_names(name)
+        fullname = name
+        first_name = ""
+        last_name = ""
 
         return {
             "id": user_id,

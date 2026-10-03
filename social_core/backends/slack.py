@@ -13,6 +13,7 @@ class SlackOAuth2(BaseOAuth2):
     """Slack OAuth authentication backend"""
 
     name = "slack"
+    title = "Slack"
     AUTHORIZATION_URL = "https://slack.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://slack.com/api/oauth.access"
     DEFAULT_SCOPE = ["identity.basic", "identity.email"]
@@ -35,7 +36,9 @@ class SlackOAuth2(BaseOAuth2):
         name = user["name"]
         email = user.get("email")
         username = (email and email.split("@", 1)[0]) or name
-        fullname, first_name, last_name = self.get_user_names(name)
+        fullname = name
+        first_name = ""
+        last_name = ""
 
         if self.setting("USERNAME_WITH_TEAM", True) and team and "name" in team:
             username = f"{username}@{response['team']['name']}"

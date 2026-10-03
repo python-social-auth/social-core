@@ -12,6 +12,7 @@ class TrelloOAuth(BaseOAuth1):
     """Trello OAuth authentication backend"""
 
     name = "trello"
+    title = "Trello"
     ID_KEY = "username"
     AUTHORIZATION_URL = "https://trello.com/1/OAuthAuthorizeToken"
     REQUEST_TOKEN_URL = "https://trello.com/1/OAuthGetRequestToken"
@@ -25,7 +26,9 @@ class TrelloOAuth(BaseOAuth1):
 
     def get_user_details(self, response):
         """Return user details from Trello account"""
-        fullname, first_name, last_name = self.get_user_names(response.get("fullName"))
+        fullname = response.get("fullName")
+        first_name = ""
+        last_name = ""
         return {
             "username": response.get("username"),
             "email": response.get("email"),

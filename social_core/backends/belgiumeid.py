@@ -10,4 +10,5 @@ class BelgiumEIDOpenId(OpenIdAuth):
     """Belgium e-ID OpenID authentication backend"""
 
     name = "belgiumeid"
+    title = "Belgium eID"
     URL = "https://www.e-contract.be/eid-idp/endpoints/openid/auth"

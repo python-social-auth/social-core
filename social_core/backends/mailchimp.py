@@ -7,6 +7,7 @@ class MailChimpOAuth2(BaseOAuth2):
     """MailChimp OAuth2 authentication backend"""
 
     name = "mailchimp"
+    title = "Mailchimp"
     AUTHORIZATION_URL = "https://login.mailchimp.com/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://login.mailchimp.com/oauth2/token"
     METADATA_URL = "https://login.mailchimp.com/oauth2/metadata"

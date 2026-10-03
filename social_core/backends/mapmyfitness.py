@@ -12,6 +12,7 @@ class MapMyFitnessOAuth2(BaseOAuth2):
     """MapMyFitness OAuth authentication backend"""
 
     name = "mapmyfitness"
+    title = "MapMyFitness"
     REQUIRES_USER_ID = True
     AUTHORIZATION_URL = "https://www.mapmyfitness.com/v7.0/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://oauth2-api.mapmyapi.com/v7.0/oauth2/access_token"
@@ -28,11 +29,10 @@ class MapMyFitnessOAuth2(BaseOAuth2):
     def get_user_details(self, response):
         first = response.get("first_name", "")
         last = response.get("last_name", "")
-        full = (first + last).strip()
         return {
             "username": response["username"],
             "email": response["email"],
-            "fullname": full,
+            "fullname": "",
             "first_name": first,
             "last_name": last,
         }

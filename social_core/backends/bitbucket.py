@@ -14,6 +14,8 @@ from .oauth import BaseOAuth2
 
 class BitbucketOAuth2(BaseOAuth2):
     name = "bitbucket-oauth2"
+    title = "Bitbucket"
+    icon = "bitbucket.svg"
     SCOPE_SEPARATOR = " "
     AUTHORIZATION_URL = "https://bitbucket.org/site/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://bitbucket.org/site/oauth2/access_token"
@@ -34,7 +36,9 @@ class BitbucketOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Bitbucket account"""
-        fullname, first_name, last_name = self.get_user_names(response["display_name"])
+        fullname = response["display_name"]
+        first_name = ""
+        last_name = ""
 
         return {
             "username": response.get("username", ""),

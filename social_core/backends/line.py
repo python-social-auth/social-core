@@ -16,6 +16,7 @@ from .oauth import BaseOAuth2
 
 class LineOAuth2(BaseOAuth2):
     name = "line"
+    title = "LINE"
     AUTHORIZATION_URL = "https://access.line.me/oauth2/v2.1/authorize"
     ACCESS_TOKEN_URL = "https://api.line.me/oauth2/v2.1/token"
     BASE_API_URL = "https://api.line.me"
@@ -73,9 +74,9 @@ class LineOAuth2(BaseOAuth2):
         )
 
     def get_user_details(self, response):
-        fullname, first_name, last_name = self.get_user_names(
-            response.get("displayName")
-        )
+        fullname = response.get("displayName")
+        first_name = ""
+        last_name = ""
         username = response.get("userId")
         picture_url = response.get("pictureUrl")
         status_message = response.get("statusMessage")

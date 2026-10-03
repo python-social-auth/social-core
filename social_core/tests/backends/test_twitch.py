@@ -7,6 +7,7 @@ from .open_id_connect import OpenIdConnectTest
 class TwitchOpenIdConnectTest(OpenIdConnectTest):
     backend_path = "social_core.backends.twitch.TwitchOpenIdConnect"
     user_data_url = "https://id.twitch.tv/oauth2/userinfo"
+    user_data_body = json.dumps({"sub": "1234"})
     issuer = "https://id.twitch.tv/oauth2"
     expected_username = "test_user1"
     openid_config_body = json.dumps(
@@ -51,6 +52,16 @@ class TwitchOpenIdConnectTest(OpenIdConnectTest):
             "userinfo_endpoint": "https://id.twitch.tv/oauth2/userinfo",
         }
     )
+
+    def get_id_token(self, *args, **kwargs):
+        return {
+            **super().get_id_token(*args, **kwargs),
+            "preferred_username": self.expected_username,
+            "email": "example@reply.com",
+        }
+
+    def test_partial_pipeline(self) -> None:
+        self.do_partial_pipeline()
 
 
 class TwitchOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):

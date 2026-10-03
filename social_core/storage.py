@@ -6,6 +6,7 @@ import base64
 import re
 import uuid
 from abc import abstractmethod
+from collections.abc import Mapping
 from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING, Any, Protocol, cast
 
@@ -43,8 +44,8 @@ class PipelineUserProtocol(UserProtocol, Protocol):
 class UserMixin:
     # Consider tokens that expire in 5 seconds as already expired
     ACCESS_TOKEN_EXPIRED_THRESHOLD = 5
-
     provider = ""
+    id_key = ""
     uid: str
     user: UserProtocol
     extra_data: dict[str, Any]
@@ -74,7 +75,11 @@ class UserMixin:
         refresh_token = getattr(backend, "refresh_token", None) if backend else None
         if token and callable(refresh_token):
             assert backend is not None
-            response = cast("dict[str, Any]", refresh_token(token, *args, **kwargs))
+            refresh_kwargs = backend.get_refresh_token_kwargs(self.extra_data)
+            refresh_kwargs.update(kwargs)
+            response = cast(
+                "dict[str, Any]", refresh_token(token, *args, **refresh_kwargs)
+            )
             extra_data = backend.extra_data(
                 self.user, self.uid, response, self.extra_data or {}, {}
             )
@@ -265,8 +270,15 @@ class UserMixin:
         raise NotImplementedError("Implement in subclass")
 
     @classmethod
-    def get_social_auth(cls, provider: str, uid: str):
+    def get_social_auth(cls, provider: str, uid: str, id_key: str | None = None):
         """Return UserSocialAuth for given provider and uid"""
+        raise NotImplementedError("Implement in subclass")
+
+    @classmethod
+    def get_social_auth_by_extra_data(
+        cls, provider: str, key: str, value: str, id_key: str = ""
+    ):
+        """Return an unambiguous association matching stored provider data."""
         raise NotImplementedError("Implement in subclass")
 
     @classmethod
@@ -281,8 +293,15 @@ class UserMixin:
         raise NotImplementedError("Implement in subclass")
 
     @classmethod
-    def create_social_auth(cls, user: UserProtocol, uid: str, provider: str):
+    def create_social_auth(
+        cls, user: UserProtocol, uid: str, provider: str, id_key: str = ""
+    ):
         """Create a UserSocialAuth instance for given user"""
+        raise NotImplementedError("Implement in subclass")
+
+    @classmethod
+    def migrate_social_auth(cls, social, uid: str, id_key: str):
+        """Atomically replace an association's identifier and identifier key."""
         raise NotImplementedError("Implement in subclass")
 
 
@@ -363,6 +382,7 @@ class CodeMixin:
     email = ""
     code = ""
     verified = False
+    timestamp: datetime | None = None
 
     @abstractmethod
     def save(self): ...
@@ -370,6 +390,16 @@ class CodeMixin:
     def verify(self) -> None:
         self.verified = True
         self.save()
+
+    def is_expired(self, seconds: int) -> bool:
+        """Return whether the code has reached its lifetime, or has no timestamp."""
+        if self.timestamp is None:
+            return True
+        timestamp = self.timestamp
+        if timestamp.tzinfo is None:
+            timestamp = timestamp.replace(tzinfo=timezone.utc)
+        timestamp = timestamp.astimezone(timezone.utc)
+        return datetime.now(timezone.utc) >= timestamp + timedelta(seconds=seconds)
 
     @classmethod
     def generate_code(cls):
@@ -381,6 +411,7 @@ class CodeMixin:
         code.email = email
         code.code = cls.generate_code()
         code.verified = False
+        code.timestamp = datetime.now(timezone.utc)
         code.save()
         return code
 
@@ -416,6 +447,21 @@ class PartialMixin:
 
     def extend_kwargs(self, values) -> None:
         self.data["kwargs"].update(values)
+
+    @property
+    def pipeline_type(self) -> str:
+        """Legacy partials may resume authentication, but never disconnect."""
+        return self.data.get("pipeline_type", "authentication")
+
+    @property
+    def request_data(self) -> Mapping[str, Any] | None:
+        """Effective data for a resume, including legacy partial snapshots."""
+        data = self.data.get("request_data", self.kwargs.get("request"))
+        return data if isinstance(data, Mapping) else None
+
+    @request_data.setter
+    def request_data(self, value: Mapping[str, Any]) -> None:
+        self.data["request_data"] = value
 
     @classmethod
     def generate_token(cls) -> str:

@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 
 class TelegramAuth(BaseAuth):
     name = "telegram"
+    title = "Telegram"
     ID_KEY = "id"
 
     def verify_data(self, response) -> None:
@@ -56,12 +57,11 @@ class TelegramAuth(BaseAuth):
     def get_user_details(self, response):
         first_name = response.get("first_name", "")
         last_name = response.get("last_name", "")
-        fullname = f"{first_name} {last_name}".strip()
         return {
             "username": response.get("username") or str(response[self.id_key()]),
             "first_name": first_name,
             "last_name": last_name,
-            "fullname": fullname,
+            "fullname": "",
         }
 
     @handle_http_errors

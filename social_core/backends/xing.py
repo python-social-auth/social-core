@@ -17,6 +17,7 @@ class XingOAuth(BaseOAuth1):
     """Xing OAuth authentication backend"""
 
     name = "xing"
+    title = "XING"
     AUTHORIZATION_URL = "https://api.xing.com/v1/authorize"
     REQUEST_TOKEN_URL = "https://api.xing.com/v1/request_token"
     ACCESS_TOKEN_URL = "https://api.xing.com/v1/access_token"
@@ -26,11 +27,11 @@ class XingOAuth(BaseOAuth1):
     def get_user_details(self, response):
         """Return user details from Xing account"""
         email = response.get("email", "")
-        fullname, first_name, last_name = self.get_user_names(
-            first_name=response["first_name"], last_name=response["last_name"]
-        )
+        fullname = ""
+        first_name = response["first_name"]
+        last_name = response["last_name"]
         return {
-            "username": first_name + last_name,
+            "username": (first_name or "").strip() + (last_name or "").strip(),
             "fullname": fullname,
             "first_name": first_name,
             "last_name": last_name,

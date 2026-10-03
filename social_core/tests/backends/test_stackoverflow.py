@@ -1,6 +1,8 @@
 import json
 from urllib.parse import urlencode
 
+from social_core.pipeline.social_auth import social_names
+
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
@@ -43,7 +45,20 @@ class StackoverflowOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     )
 
     def test_login(self) -> None:
-        self.do_login()
+        user = self.do_login()
+        self.assertEqual(user.first_name, "foobar")
+
+    def test_full_name_details(self) -> None:
+        details = self.backend.get_user_details(
+            {
+                "display_name": "Mary Jane Watson",
+                "link": "https://stackoverflow.com/users/101010/foobar",
+            }
+        )
+        self.assertEqual(details["fullname"], "Mary Jane Watson")
+        normalized = social_names(self.backend, details)["details"]
+        self.assertEqual(normalized["first_name"], "Mary")
+        self.assertEqual(normalized["last_name"], "Jane Watson")
 
     def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()

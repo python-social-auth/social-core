@@ -117,7 +117,7 @@ def user_details(
     """Update user details using data from provider."""
     if strategy.storage is None:
         raise StrategyMissingBackendError
-    if not user:
+    if not user or (backend is not None and backend.ASSOCIATION_ONLY):
         return
 
     changed = False  # flag to track changes

@@ -19,6 +19,7 @@ class TripItOAuth(BaseOAuth1):
     """TripIt OAuth authentication backend"""
 
     name = "tripit"
+    title = "TripIt"
     AUTHORIZATION_URL = "https://www.tripit.com/oauth/authorize"
     REQUEST_TOKEN_URL = "https://api.tripit.com/oauth/request_token"
     ACCESS_TOKEN_URL = "https://api.tripit.com/oauth/access_token"
@@ -26,7 +27,9 @@ class TripItOAuth(BaseOAuth1):
 
     def get_user_details(self, response):
         """Return user details from TripIt account"""
-        fullname, first_name, last_name = self.get_user_names(response["name"])
+        fullname = response["name"]
+        first_name = ""
+        last_name = ""
         return {
             "username": response["screen_name"],
             "email": response["email"],

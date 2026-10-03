@@ -12,6 +12,7 @@ class CourseraOAuth2(BaseOAuth2):
     """Coursera OAuth2 authentication backend"""
 
     name = "coursera"
+    title = "Coursera"
     ID_KEY = "username"
     AUTHORIZATION_URL = "https://accounts.coursera.org/oauth2/v1/auth"
     ACCESS_TOKEN_URL = "https://accounts.coursera.org/oauth2/v1/token"

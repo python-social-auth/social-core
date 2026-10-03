@@ -12,6 +12,7 @@ API_VERSION = "2022-01-06"
 
 class CoinbaseOAuth2(BaseOAuth2):
     name = "coinbase"
+    title = "Coinbase"
     SCOPE_SEPARATOR = ","
     DEFAULT_SCOPE = ["wallet:user:read", "wallet:user:email"]
     AUTHORIZATION_URL = "https://login.coinbase.com/oauth2/auth"
@@ -29,7 +30,9 @@ class CoinbaseOAuth2(BaseOAuth2):
         email = user_data.get("email", "")
         name = user_data["name"]
         username = user_data.get("username")
-        fullname, first_name, last_name = self.get_user_names(name)
+        fullname = name
+        first_name = ""
+        last_name = ""
         return {
             "username": username,
             "fullname": fullname,

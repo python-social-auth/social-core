@@ -7,6 +7,7 @@ class EventbriteOAuth2(BaseOAuth2):
     """Eventbrite OAuth2 authentication backend"""
 
     name = "eventbrite"
+    title = "Eventbrite"
     AUTHORIZATION_URL = "https://www.eventbrite.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://www.eventbrite.com/oauth/token"
     METADATA_URL = "https://www.eventbriteapi.com/v3/users/me"

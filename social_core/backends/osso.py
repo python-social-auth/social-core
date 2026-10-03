@@ -8,6 +8,7 @@ class OssoOAuth2(BaseOAuth2):
     """Osso OAuth authentication backend"""
 
     name = "osso"
+    title = "Osso"
     REDIRECT_STATE = False
     STATE_PARAMETER = True
     AUTHORIZATION_URL = "{osso_base_url}/oauth/authorize"
@@ -27,9 +28,9 @@ class OssoOAuth2(BaseOAuth2):
         client_id, _client_secret = self.get_key_and_secret()
         params = {"client_id": client_id, "redirect_uri": self.get_redirect_uri(state)}
         if self.data.get("email"):
-            params["email"] = self.data.get("email")
+            params["email"] = self.data["email"]
         if self.data.get("domain") and not self.data.get("email"):
-            params["domain"] = self.data.get("domain")
+            params["domain"] = self.data["domain"]
         if self.STATE_PARAMETER and state:
             params["state"] = state
         if self.RESPONSE_TYPE:

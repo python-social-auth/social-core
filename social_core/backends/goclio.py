@@ -5,6 +5,7 @@ from .oauth import BaseOAuth2
 
 class GoClioOAuth2(BaseOAuth2):
     name = "goclio"
+    title = "Clio"
     AUTHORIZATION_URL = "https://app.goclio.com/oauth/authorize/"
     ACCESS_TOKEN_URL = "https://app.goclio.com/oauth/token/"
     REDIRECT_STATE = False
@@ -19,11 +20,10 @@ class GoClioOAuth2(BaseOAuth2):
             user.get("first_name", None),
             user.get("last_name", None),
         )
-        fullname = f"{first_name} {last_name}"
 
         return {
             "username": username,
-            "fullname": fullname,
+            "fullname": "",
             "first_name": first_name,
             "last_name": last_name,
             "email": email,

@@ -18,6 +18,7 @@ class YandexOpenId(OpenIdAuth):
     """Yandex OpenID authentication backend"""
 
     name = "yandex-openid"
+    title = "Yandex"
     ID_KEY = "email"
     URL = "https://openid.yandex.ru"
 
@@ -38,14 +39,15 @@ class YandexOAuth2(BaseOAuth2):
     """Legacy Yandex OAuth2 authentication backend"""
 
     name = "yandex-oauth2"
+    title = "Yandex"
     AUTHORIZATION_URL = "https://oauth.yandex.com/authorize"
     ACCESS_TOKEN_URL = "https://oauth.yandex.com/token"
     REDIRECT_STATE = False
 
     def get_user_details(self, response):
-        fullname, first_name, last_name = self.get_user_names(
-            response.get("real_name") or response.get("display_name") or ""
-        )
+        fullname = response.get("real_name") or response.get("display_name") or ""
+        first_name = ""
+        last_name = ""
         email = response.get("default_email")
         if not email:
             emails = response.get("emails")
@@ -67,14 +69,15 @@ class YandexOAuth2(BaseOAuth2):
 
 class YaruOAuth2(BaseOAuth2):
     name = "yaru"
+    title = "Я.ру"  # noqa: RUF001 - original service branding
     AUTHORIZATION_URL = "https://oauth.yandex.com/authorize"
     ACCESS_TOKEN_URL = "https://oauth.yandex.com/token"
     REDIRECT_STATE = False
 
     def get_user_details(self, response):
-        fullname, first_name, last_name = self.get_user_names(
-            response.get("real_name") or response.get("display_name") or ""
-        )
+        fullname = response.get("real_name") or response.get("display_name") or ""
+        first_name = ""
+        last_name = ""
         email = response.get("default_email")
         if not email:
             emails = response.get("emails")

@@ -13,6 +13,7 @@ class WeiboOAuth2(BaseOAuth2):
     """Weibo (of sina) OAuth authentication backend"""
 
     name = "weibo"
+    title = "Weibo"
     ID_KEY = "uid"
     AUTHORIZATION_URL = "https://api.weibo.com/oauth2/authorize"
     REQUEST_TOKEN_URL = "https://api.weibo.com/oauth2/request_token"
@@ -33,9 +34,9 @@ class WeiboOAuth2(BaseOAuth2):
             username = response.get("domain", "")
         else:
             username = response.get("name", "")
-        fullname, first_name, last_name = self.get_user_names(
-            first_name=response.get("screen_name", "")
-        )
+        fullname = ""
+        first_name = response.get("screen_name", "")
+        last_name = ""
         return {
             "username": username,
             "fullname": fullname,

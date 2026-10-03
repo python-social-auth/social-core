@@ -9,6 +9,7 @@ class VimeoOAuth1(BaseOAuth1):
     """Vimeo OAuth authentication backend"""
 
     name = "vimeo"
+    title = "Vimeo"
     AUTHORIZATION_URL = "https://vimeo.com/oauth/authorize"
     REQUEST_TOKEN_URL = "https://vimeo.com/oauth/request_token"
     ACCESS_TOKEN_URL = "https://vimeo.com/oauth/access_token"
@@ -19,9 +20,9 @@ class VimeoOAuth1(BaseOAuth1):
     def get_user_details(self, response):
         """Return user details from Twitter account"""
         person = response.get("person", {})
-        fullname, first_name, last_name = self.get_user_names(
-            person.get("display_name", "")
-        )
+        fullname = person.get("display_name", "")
+        first_name = ""
+        last_name = ""
         return {
             "username": person.get("username", ""),
             "email": "",
@@ -43,6 +44,7 @@ class VimeoOAuth2(BaseOAuth2):
     """Vimeo OAuth2 authentication backend"""
 
     name = "vimeo-oauth2"
+    title = "Vimeo"
     ID_KEY = "uri"
     AUTHORIZATION_URL = "https://api.vimeo.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://api.vimeo.com/oauth/access_token"
@@ -72,9 +74,11 @@ class VimeoOAuth2(BaseOAuth2):
     def get_user_details(self, response):
         """Return user details from account"""
         user = response.get("user", {})
-        fullname, first_name, last_name = self.get_user_names(user.get("name", ""))
+        fullname = user.get("name", "")
+        first_name = ""
+        last_name = ""
         return {
-            "username": fullname,
+            "username": (fullname or "").strip(),
             "fullname": fullname,
             "first_name": first_name,
             "last_name": last_name,

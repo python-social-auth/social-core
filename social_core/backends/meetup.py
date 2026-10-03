@@ -12,6 +12,7 @@ class MeetupOAuth2(BaseOAuth2):
     """Meetup OAuth2 authentication backend"""
 
     name = "meetup"
+    title = "Meetup"
     AUTHORIZATION_URL = "https://secure.meetup.com/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://secure.meetup.com/oauth2/access"
     DEFAULT_SCOPE = ["basic"]
@@ -21,7 +22,9 @@ class MeetupOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Meetup account"""
-        fullname, first_name, last_name = self.get_user_names(response.get("name"))
+        fullname = response.get("name")
+        first_name = ""
+        last_name = ""
 
         return {
             "username": response.get("username"),

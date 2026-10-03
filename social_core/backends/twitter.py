@@ -14,6 +14,8 @@ class TwitterOAuth(BaseOAuth1):
     """Twitter OAuth authentication backend"""
 
     name = "twitter"
+    title = "X"
+    icon = "x.svg"
     EXTRA_DATA = [("id", "id")]
     REQUEST_TOKEN_METHOD = "POST"
     AUTHORIZATION_URL = "https://api.twitter.com/oauth/authenticate"
@@ -28,7 +30,9 @@ class TwitterOAuth(BaseOAuth1):
 
     def get_user_details(self, response):
         """Return user details from Twitter account"""
-        fullname, first_name, last_name = self.get_user_names(response["name"])
+        fullname = response["name"]
+        first_name = ""
+        last_name = ""
         return {
             "username": response["screen_name"],
             "email": response.get("email", ""),

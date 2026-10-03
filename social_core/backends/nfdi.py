@@ -52,6 +52,7 @@ NFDI_ENDPOINTS = {
 
 class NFDIOpenIdConnect(OpenIdConnectAuth):
     name = "helmholtz"
+    title = "NFDI"
     OIDC_ENDPOINT = "https://login.helmholtz.de/oauth2"
     # In order to get any scopes, you have to register your service with
     # the OP
@@ -81,11 +82,9 @@ class NFDIOpenIdConnect(OpenIdConnectAuth):
 
     def get_user_details(self, response):
         username_key = self.setting("USERNAME_KEY", default=self.USERNAME_KEY)
-        fullname, first_name, last_name = self.get_user_names(
-            response.get("name") or "",
-            response.get("given_name") or "",
-            response.get("family_name") or "",
-        )
+        fullname = response.get("name") or ""
+        first_name = response.get("given_name") or ""
+        last_name = response.get("family_name") or ""
         return {
             "username": response.get(username_key),
             "email": response.get("email"),
@@ -114,27 +113,32 @@ class NFDIOpenIdConnect(OpenIdConnectAuth):
 # AcademicID
 class XcsOpenIdConnect(NFDIOpenIdConnect):
     name = "xcs"
+    title = "NFDI cross-domain services"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
 class TextplusOpenIdConnect(NFDIOpenIdConnect):
     name = "textplus"
+    title = "Text+"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
 # didmos
 class MardiOpenIdConnect(NFDIOpenIdConnect):
     name = "mardi"
+    title = "MaRDI"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
 class ObjectsOpenIdConnect(NFDIOpenIdConnect):
     name = "objects"
+    title = "NFDI4Objects"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
 class CultureOpenIdConnect(NFDIOpenIdConnect):
     name = "culture"
+    title = "NFDI4Culture"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
     # regapp
@@ -142,77 +146,92 @@ class CultureOpenIdConnect(NFDIOpenIdConnect):
 
 class CatOpenIdConnect(NFDIOpenIdConnect):
     name = "cat"
+    title = "NFDI4Cat"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
 class ChemOpenIdConnect(NFDIOpenIdConnect):
     name = "chem"
+    title = "NFDI4Chem"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
 class DatascienceOpenIdConnect(NFDIOpenIdConnect):
     name = "datascience"
+    title = "NFDI4DataScience"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
 class EnergyOpenIdConnect(NFDIOpenIdConnect):
     name = "energy"
+    title = "NFDI4Energy"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
 class IngOpenIdConnect(NFDIOpenIdConnect):
     name = "ing"
+    title = "NFDI4Ing"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
 class MatWerkOpenIdConnect(NFDIOpenIdConnect):
     name = "matWerk"
+    title = "NFDI-MatWerk"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
 # unity
 class DaphneOpenIdConnect(NFDIOpenIdConnect):
     name = "daphne"
+    title = "DAPHNE4NFDI"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
 class FairmatOpenIdConnect(NFDIOpenIdConnect):
     name = "fairmat"
+    title = "FAIRmat"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
 class ImmunoOpenIdConnect(NFDIOpenIdConnect):
     name = "immuno"
+    title = "NFDI4Immuno"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
 class PunchOpenIdConnect(NFDIOpenIdConnect):
     name = "punch"
+    title = "PUNCH4NFDI"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
 class HelmholtzOpenIdConnect(NFDIOpenIdConnect):
     name = "helmholtz"
+    title = "Helmholtz AAI"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
 # infraproxy
 class InfraproxyStagingOpenIdConnect(NFDIOpenIdConnect):
     name = "infraproxy-staging"
+    title = "NFDI Infrastructure Proxy (Staging)"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
 class InfraproxyOpenIdConnect(NFDIOpenIdConnect):
     name = "infraproxy"
+    title = "NFDI Infrastructure Proxy"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
 # eduid
 class EduidOpenIdConnect(NFDIOpenIdConnect):
     name = "eduid"
+    title = "edu-ID"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
 class EduidStagingOpenIdConnect(NFDIOpenIdConnect):
     name = "eduid-staging"
+    title = "edu-ID (Staging)"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]

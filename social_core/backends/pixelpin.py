@@ -7,6 +7,7 @@ class PixelPinOpenIDConnect(OpenIdConnectAuth):
     """PixelPin OpenID Connect authentication backend"""
 
     name = "pixelpin-openidconnect"
+    title = "PixelPin"
     ID_KEY = "sub"
     AUTHORIZATION_URL = "https://login.pixelpin.io/connect/authorize"
     ACCESS_TOKEN_URL = "https://login.pixelpin.io/connect/token"
@@ -27,7 +28,7 @@ class PixelPinOpenIDConnect(OpenIdConnectAuth):
         return {
             "username": username,
             "email": response.get("email"),
-            "fullname": f"{first_name} {last_name}",
+            "fullname": "",
             "first_name": first_name,
             "last_name": last_name,
         }

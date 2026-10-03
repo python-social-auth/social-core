@@ -13,6 +13,7 @@ class SpotifyOAuth2(BaseOAuth2):
     """Spotify OAuth2 authentication backend"""
 
     name = "spotify"
+    title = "Spotify"
     ID_KEY = "id"
     AUTHORIZATION_URL = "https://accounts.spotify.com/authorize"
     ACCESS_TOKEN_URL = "https://accounts.spotify.com/api/token"
@@ -27,9 +28,9 @@ class SpotifyOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Spotify account"""
-        fullname, first_name, last_name = self.get_user_names(
-            response.get("display_name")
-        )
+        fullname = response.get("display_name")
+        first_name = ""
+        last_name = ""
         return {
             "username": response.get("id"),
             "email": response.get("email"),

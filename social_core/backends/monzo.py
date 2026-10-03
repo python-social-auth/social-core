@@ -9,15 +9,16 @@ class MonzoOAuth2(BaseOAuth2):
     """
 
     name = "monzo"
+    title = "Monzo"
 
     AUTHORIZATION_URL = "https://auth.getmondo.co.uk/"
     ACCESS_TOKEN_URL = "https://api.monzo.com/oauth2/token"
     REDIRECT_STATE = False
 
     def get_user_details(self, response):
-        fullname, first_name, last_name = self.get_user_names(
-            response["accounts"][0]["description"],
-        )
+        fullname = response["accounts"][0]["description"]
+        first_name = ""
+        last_name = ""
 
         return {
             "username": str(response.get("user_id")),

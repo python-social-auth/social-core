@@ -12,6 +12,7 @@ class PhabricatorOAuth2(BaseOAuth2):
     """Phabricator OAuth authentication backend"""
 
     name = "phabricator"
+    title = "Phabricator"
     API_URL = "https://secure.phabricator.com"
     AUTHORIZATION_URL = "https://secure.phabricator.com/oauthserver/auth/"
     ACCESS_TOKEN_URL = "https://secure.phabricator.com/oauthserver/token/"
@@ -29,7 +30,9 @@ class PhabricatorOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Phabricator"""
-        fullname, first_name, last_name = self.get_user_names(response.get("realName"))
+        fullname = response.get("realName")
+        first_name = ""
+        last_name = ""
 
         return {
             "id": response.get("phid"),

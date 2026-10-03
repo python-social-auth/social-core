@@ -16,10 +16,10 @@ dev = [
   { include-group = "types" }
 ]
 pylint = [
-  "pylint==4.0.9"
+  "pylint==4.1.2"
 ]
 types = [
-  "mypy==2.3.1",
+  "mypy==2.4.0",
   "pyright==1.1.414",
   "ty==0.0.84",
   "types-defusedxml==0.7.0.20260504",
@@ -63,7 +63,7 @@ license-files = ["LICENSE"]
 name = "social-auth-core"
 readme = "README.md"
 requires-python = ">=3.10"
-version = "5.1.1"
+version = "5.2.0"
 
 [project.optional-dependencies]
 all = [
@@ -84,7 +84,7 @@ cas = [
 dev = [
   "coverage==7.16.2",
   "flake8==7.4.1",
-  "mypy==2.3.1",
+  "mypy==2.4.0",
   "pyright==1.1.414",
   "pytest-cov==7.1.0",
   "pytest-github-actions-annotate-failures==0.4.2",
@@ -100,7 +100,7 @@ dev = [
   "types-requests==2.33.0.20260906"
 ]
 google-onetap = [
-  "google-auth>=2.40.0,<2.59"
+  "google-auth>=2.40.0,<2.60"
 ]
 saml = [
   "python3-saml>=1.16.0"
@@ -163,6 +163,7 @@ disable = [
   "too-many-public-methods",
   "unused-argument"
 ]
+extension-pkg-allow-list = ["lxml.etree"]
 
 [tool.pyright]
 pythonVersion = "3.10"
@@ -238,7 +239,20 @@ disable = [
 ]
 
 [tool.setuptools]
-packages = ["social_core"]
+include-package-data = false
+
+[tool.setuptools.package-data]
+social_core = [
+  "py.typed",
+  "static/social_auth/icons/*.svg",
+  "static/social_auth/LICENSE.amplify-ui",
+  "static/social_auth/NOTICE"
+]
+
+[tool.setuptools.packages.find]
+exclude = ["social_core.tests", "social_core.tests.*"]
+include = ["social_core", "social_core.*"]
+namespaces = false
 
 [tool.tomlsort]
 ignore_case = true

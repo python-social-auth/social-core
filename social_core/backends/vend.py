@@ -12,6 +12,7 @@ from .oauth import BaseOAuth2
 
 class VendOAuth2(BaseOAuth2):
     name = "vend"
+    title = "Lightspeed Retail (X-Series)"
     ID_KEY = "id"
     AUTHORIZATION_URL = "https://secure.vendhq.com/connect"
     ACCESS_TOKEN_URL = "https://{0}.vendhq.com/api/1.0/token"

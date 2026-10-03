@@ -9,7 +9,7 @@ from typing import Any
 
 import shopify
 
-from social_core.exceptions import AuthCanceled, AuthFailed
+from social_core.exceptions import AuthCanceled, AuthFailed, AuthMissingParameter
 from social_core.utils import handle_http_errors
 
 from .oauth import BaseOAuth2
@@ -19,6 +19,7 @@ class ShopifyOAuth2(BaseOAuth2):
     """Shopify OAuth2 authentication backend"""
 
     name = "shopify"
+    title = "Shopify"
     ID_KEY = "shop"
     EXTRA_DATA = [("shop", "shop"), ("website", "website"), ("expires", "expires")]
     REDIRECT_STATE = False
@@ -42,9 +43,10 @@ class ShopifyOAuth2(BaseOAuth2):
         """Return access_token and extra defined names to store in
         extra_data field"""
         data = super().extra_data(user, uid, response, details, pipeline_kwargs)
-        session = shopify.Session(
-            self.data.get("shop").strip(), version=self.shopify_api_version
-        )
+        shop = response.get("shop")
+        if not shop:
+            raise AuthMissingParameter(self, "shop")
+        session = shopify.Session(shop.strip(), version=self.shopify_api_version)
         # Get, and store the permanent token
         token = session.request_token(data["access_token"])
         data["access_token"] = token
@@ -56,9 +58,10 @@ class ShopifyOAuth2(BaseOAuth2):
         scope = self.get_scope()
         state = self.get_or_create_state()
         redirect_uri = self.get_redirect_uri(state)
-        session = shopify.Session(
-            self.data.get("shop").strip(), version=self.shopify_api_version
-        )
+        shop = self.data.get("shop")
+        if not shop:
+            raise AuthMissingParameter(self, "shop")
+        session = shopify.Session(shop.strip(), version=self.shopify_api_version)
         return session.create_permission_url(
             scope=scope, redirect_uri=redirect_uri, state=state
         )

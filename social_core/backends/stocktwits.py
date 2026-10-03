@@ -12,6 +12,7 @@ class StocktwitsOAuth2(BaseOAuth2):
     """Stockwiths OAuth2 backend"""
 
     name = "stocktwits"
+    title = "Stocktwits"
     AUTHORIZATION_URL = "https://api.stocktwits.com/api/2/oauth/authorize"
     ACCESS_TOKEN_URL = "https://api.stocktwits.com/api/2/oauth/token"
     SCOPE_SEPARATOR = ","
@@ -28,7 +29,9 @@ class StocktwitsOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Stocktwits account"""
-        fullname, first_name, last_name = self.get_user_names(response["user"]["name"])
+        fullname = response["user"]["name"]
+        first_name = ""
+        last_name = ""
         return {
             "username": response["user"]["username"],
             "email": "",  # not supplied

@@ -4,6 +4,8 @@ DEFAULT_AUTH_PIPELINE = (
     # already part of the auth response from the provider, but sometimes this
     # could hit a provider API.
     "social_core.pipeline.social_auth.social_details",
+    # Populate missing full or component names from provider details.
+    "social_core.pipeline.social_auth.social_names",
     # Get the social uid from whichever service we're authing thru. The uid is
     # the unique identifier of the given user in the provider.
     "social_core.pipeline.social_auth.social_uid",

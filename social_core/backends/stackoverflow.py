@@ -21,6 +21,8 @@ class StackoverflowOAuth2(BaseOAuth2):
     """Stackoverflow OAuth2 authentication backend"""
 
     name = "stackoverflow"
+    title = "Stack Overflow"
+    icon = "stackoverflow.svg"
     ID_KEY = "user_id"
     AUTHORIZATION_URL = "https://stackexchange.com/oauth"
     ACCESS_TOKEN_URL = "https://stackexchange.com/oauth/access_token"
@@ -29,12 +31,12 @@ class StackoverflowOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Stackoverflow account"""
-        fullname, first_name, last_name = self.get_user_names(
-            response.get("display_name")
-        )
+        fullname = response.get("display_name")
+        first_name = ""
+        last_name = ""
         return {
             "username": response.get("link").rsplit("/", 1)[-1],
-            "full_name": fullname,
+            "fullname": fullname,
             "first_name": first_name,
             "last_name": last_name,
         }

@@ -7,13 +7,29 @@ import responses
 
 from social_core.actions import do_disconnect
 from social_core.exceptions import NotAllowedToDisconnect
-from social_core.tests.models import TestUserSocialAuth, User
-from social_core.utils import parse_qs
+from social_core.pipeline.utils import partial_prepare
+from social_core.tests.models import TestPartial, TestUserSocialAuth, User
+from social_core.utils import PARTIAL_TOKEN_SESSION_NAME, parse_qs
 
 from .actions import BaseActionTest
 
 
 class DisconnectActionTest(BaseActionTest):
+    def test_authentication_partial_cannot_skip_disconnect_guard(self) -> None:
+        self.do_login()
+        user = cast("User", User.get(self.expected_username))
+        for legacy in (False, True):
+            with self.subTest(legacy=legacy):
+                partial = partial_prepare(self.strategy, self.backend, 1, user=user)
+                if legacy:
+                    partial.data.pop("pipeline_type")
+                partial.save()
+                self.strategy.session_set(PARTIAL_TOKEN_SESSION_NAME, partial.token)
+                with self.assertRaises(NotAllowedToDisconnect):
+                    do_disconnect(self.backend, user)
+                self.assertEqual(len(user.social), 1)
+                self.assertIsNone(TestPartial.load(partial.token))
+
     def test_not_allowed_to_disconnect(self) -> None:
         self.do_login()
         user = cast("User", User.get(self.expected_username))
@@ -116,6 +132,11 @@ class DisconnectActionTest(BaseActionTest):
 
         url = self.strategy.build_absolute_uri("/password")
         self.assertEqual(redirect.url, url)
+        token = self.strategy.session_get(PARTIAL_TOKEN_SESSION_NAME)
+        assert isinstance(token, str)
+        partial = TestPartial.load(token)
+        assert partial is not None
+        self.assertEqual(partial.pipeline_type, "disconnect")
         responses.add(responses.GET, redirect.url, status=200, body="foobar")
         responses.add(responses.POST, redirect.url, status=200)
 

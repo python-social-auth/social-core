@@ -12,6 +12,7 @@ class SeznamOAuth2(BaseOAuth2):
     """Seznam OAuth authentication backend"""
 
     name = "seznam-oauth2"
+    title = "Seznam"
     API_URL = "https://login.szn.cz/api/v1/user"
     AUTHORIZATION_URL = "https://login.szn.cz/api/v1/oauth/auth"
     ACCESS_TOKEN_URL = "https://login.szn.cz/api/v1/oauth/token"
@@ -24,11 +25,9 @@ class SeznamOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Seznam account"""
-        fullname, first_name, last_name = self.get_user_names(
-            response.get("name"),
-            first_name=response.get("firstname"),
-            last_name=response.get("lastname"),
-        )
+        fullname = response.get("name")
+        first_name = response.get("firstname")
+        last_name = response.get("lastname")
         return {
             "username": response.get("username"),
             "email": response.get("email") or "",

@@ -17,6 +17,8 @@ class GitLabOAuth2(BaseOAuth2):
     """GitLab OAuth authentication backend"""
 
     name = "gitlab"
+    title = "GitLab"
+    icon = "gitlab.svg"
     API_URL = "https://gitlab.com"
     AUTHORIZATION_URL = "https://gitlab.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://gitlab.com/oauth/token"
@@ -40,7 +42,9 @@ class GitLabOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from GitLab account"""
-        fullname, first_name, last_name = self.get_user_names(response.get("name"))
+        fullname = response.get("name")
+        first_name = ""
+        last_name = ""
         return {
             "username": response.get("username"),
             "email": response.get("email") or "",

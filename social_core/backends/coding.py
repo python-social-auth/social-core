@@ -12,6 +12,7 @@ class CodingOAuth2(BaseOAuth2):
     """Coding OAuth authentication backend"""
 
     name = "coding"
+    title = "CODING"
     API_URL = "https://coding.net/api/"
     AUTHORIZATION_URL = "https://coding.net/oauth_authorize.html"
     ACCESS_TOKEN_URL = "https://coding.net/api/oauth/access_token"
@@ -24,7 +25,9 @@ class CodingOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Github account"""
-        fullname, first_name, last_name = self.get_user_names(response.get("name"))
+        fullname = response.get("name")
+        first_name = ""
+        last_name = ""
         return {
             "username": response.get("name"),
             "email": response.get("email") or "",

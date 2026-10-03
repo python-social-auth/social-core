@@ -10,6 +10,7 @@ from .oauth import BaseOAuth2
 
 class FoursquareOAuth2(BaseOAuth2):
     name = "foursquare"
+    title = "Foursquare"
     AUTHORIZATION_URL = "https://foursquare.com/oauth2/authenticate"
     ACCESS_TOKEN_URL = "https://foursquare.com/oauth2/access_token"
     API_VERSION = "20140128"
@@ -22,11 +23,11 @@ class FoursquareOAuth2(BaseOAuth2):
         """Return user details from Foursquare account"""
         info = response["response"]["user"]
         email = info["contact"]["email"]
-        fullname, first_name, last_name = self.get_user_names(
-            first_name=info.get("firstName", ""), last_name=info.get("lastName", "")
-        )
+        fullname = ""
+        first_name = info.get("firstName", "")
+        last_name = info.get("lastName", "")
         return {
-            "username": f"{first_name} {last_name}",
+            "username": f"{(first_name or '').strip()} {(last_name or '').strip()}",
             "fullname": fullname,
             "first_name": first_name,
             "last_name": last_name,

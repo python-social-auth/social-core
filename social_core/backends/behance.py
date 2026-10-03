@@ -14,6 +14,7 @@ class BehanceOAuth2(BaseOAuth2):
     """Behance OAuth authentication backend"""
 
     name = "behance"
+    title = "Behance"
     AUTHORIZATION_URL = "https://www.behance.net/v2/oauth/authenticate"
     ACCESS_TOKEN_URL = "https://www.behance.net/v2/oauth/token"
     SCOPE_SEPARATOR = "|"
@@ -26,9 +27,9 @@ class BehanceOAuth2(BaseOAuth2):
     def get_user_details(self, response):
         """Return user details from Behance account"""
         user = response["user"]
-        fullname, first_name, last_name = self.get_user_names(
-            user["display_name"], user["first_name"], user["last_name"]
-        )
+        fullname = user["display_name"]
+        first_name = user["first_name"]
+        last_name = user["last_name"]
         return {
             "username": user["username"],
             "fullname": fullname,

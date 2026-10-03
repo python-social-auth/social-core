@@ -66,6 +66,9 @@ class Auth0OpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
         id_token["custom_id"] = "token-only-identifier"
         return id_token
 
+    def test_partial_pipeline(self) -> None:
+        self.do_partial_pipeline()
+
     def test_domain_configuration(self) -> None:
         """Test that domain-based URLs are constructed correctly"""
         self.assertEqual(

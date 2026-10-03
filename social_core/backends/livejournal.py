@@ -14,6 +14,7 @@ class LiveJournalOpenId(OpenIdAuth):
     """LiveJournal OpenID authentication backend"""
 
     name = "livejournal"
+    title = "LiveJournal"
 
     def get_user_details(self, response):
         """Generate username from identity url"""

@@ -14,6 +14,7 @@ class UffdOAuth2(BaseOAuth2):
     """
 
     name = "uffd"
+    title = "uffd"
     REFRESH_TOKEN_METHOD = "POST"
     SCOPE_SEPARATOR = " "
     STATE_PARAMETER = True
@@ -24,9 +25,9 @@ class UffdOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from a Uffd account"""
-        fullname, first_name, last_name = self.get_user_names(
-            fullname=response.get("name")
-        )
+        fullname = response.get("name")
+        first_name = ""
+        last_name = ""
         return {
             "username": response.get("nickname"),
             "email": response.get("email") or "",

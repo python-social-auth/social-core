@@ -27,6 +27,7 @@ class LinkedinOpenIdConnect(OpenIdConnectAuth):
     """
 
     name = "linkedin-openidconnect"
+    title = "LinkedIn"
     # Settings from https://www.linkedin.com/oauth/.well-known/openid-configuration
     OIDC_ENDPOINT = "https://www.linkedin.com/oauth"
 
@@ -54,6 +55,7 @@ class LinkedinOpenIdConnect(OpenIdConnectAuth):
 
 class LinkedinOAuth2(BaseOAuth2):
     name = "linkedin-oauth2"
+    title = "LinkedIn"
     AUTHORIZATION_URL = "https://www.linkedin.com/oauth/v2/authorization"
     ACCESS_TOKEN_URL = "https://www.linkedin.com/oauth/v2/accessToken"
     USER_DETAILS_URL = "https://api.linkedin.com/v2/me?projection=({projection})"
@@ -134,13 +136,12 @@ class LinkedinOAuth2(BaseOAuth2):
             locale = f"{name['preferredLocale']['language']}_{name['preferredLocale']['country']}"
             return name["localized"].get(locale, "")
 
-        fullname, first_name, last_name = self.get_user_names(
-            first_name=get_localized_name(response["firstName"]),
-            last_name=get_localized_name(response["lastName"]),
-        )
+        fullname = ""
+        first_name = get_localized_name(response["firstName"])
+        last_name = get_localized_name(response["lastName"])
         email = response.get("emailAddress", "")
         return {
-            "username": first_name + last_name,
+            "username": (first_name or "").strip() + (last_name or "").strip(),
             "fullname": fullname,
             "first_name": first_name,
             "last_name": last_name,
@@ -187,6 +188,7 @@ class LinkedinOAuth2(BaseOAuth2):
 
 class LinkedinMobileOAuth2(LinkedinOAuth2):
     name = "linkedin-mobile-oauth2"
+    title = "LinkedIn"
 
     def user_data_headers(self, access_token):
         headers = super().user_data_headers(access_token)

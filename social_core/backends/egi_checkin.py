@@ -18,6 +18,7 @@ CHECKIN_ENV_ENDPOINTS: dict[str, str] = {
 
 class EGICheckinOpenIdConnect(OpenIdConnectAuth):
     name = "egi-checkin"
+    title = "EGI Check-in"
     # Check-in provides 3 environments: production, demo and development
     # Set the one to use as "prod", "demo" or "dev"
     CHECKIN_ENV: Literal["prod", "demo", "dev"] = "prod"
@@ -53,11 +54,9 @@ class EGICheckinOpenIdConnect(OpenIdConnectAuth):
 
     def get_user_details(self, response):
         username_key = self.setting("USERNAME_KEY", default=self.USERNAME_KEY)
-        fullname, first_name, last_name = self.get_user_names(
-            response.get("name") or "",
-            response.get("given_name") or "",
-            response.get("family_name") or "",
-        )
+        fullname = response.get("name") or ""
+        first_name = response.get("given_name") or ""
+        last_name = response.get("family_name") or ""
         return {
             "username": response.get(username_key),
             "email": response.get("email"),

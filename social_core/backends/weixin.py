@@ -17,6 +17,7 @@ class WeixinOAuth2(BaseOAuth2):
     """Weixin OAuth authentication backend"""
 
     name = "weixin"
+    title = "WeChat"
     ID_KEY = "openid"
     AUTHORIZATION_URL = "https://open.weixin.qq.com/connect/qrconnect"
     ACCESS_TOKEN_URL = "https://api.weixin.qq.com/sns/oauth2/access_token"
@@ -114,6 +115,7 @@ class WeixinOAuth2APP(WeixinOAuth2):
     """
 
     name = "weixinapp"
+    title = "WeChat"
     ID_KEY = "openid"
     AUTHORIZATION_URL = "https://open.weixin.qq.com/connect/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://api.weixin.qq.com/sns/oauth2/access_token"
@@ -148,9 +150,6 @@ class WeixinOAuth2APP(WeixinOAuth2):
             "appid": appid,
             "secret": secret,
         }
-
-    def validate_state(self) -> str | None:
-        return None
 
     def auth_complete(self, *args, **kwargs):
         """Completes login process, must return user instance"""

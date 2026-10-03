@@ -19,6 +19,7 @@ from social_core.exceptions import AuthTokenError
 
 class PingOpenIdConnect(OpenIdConnectAuth):
     name = "ping"
+    title = "Ping Identity"
     # OIDC_ENDPOINT has the form 'https://auth.pingone.com/<APP ID>/as'
     OIDC_ENDPOINT = ""
     REDIRECT_STATE = False
@@ -82,9 +83,9 @@ class PingOpenIdConnect(OpenIdConnectAuth):
 
     def get_user_details(self, response):
         username_key = self.setting("USERNAME_KEY", default=self.USERNAME_KEY)
-        fullname, first_name, last_name = self.get_user_names(
-            first_name=response.get("given_name"), last_name=response.get("family_name")
-        )
+        fullname = ""
+        first_name = response.get("given_name")
+        last_name = response.get("family_name")
         return {
             "username": response.get(username_key),
             "email": response.get("email"),

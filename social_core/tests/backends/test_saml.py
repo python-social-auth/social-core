@@ -17,6 +17,7 @@ except ImportError:
     SAML_MODULE_ENABLED = False
 
 from social_core.exceptions import AuthFailed, AuthMissingParameter
+from social_core.pipeline.social_auth import social_names
 from social_core.tests.models import User
 
 from .base import BaseBackendTest
@@ -35,6 +36,27 @@ class SAMLTest(BaseBackendTest):
 
     def authn_request_id_session_key(self, idp_name: str) -> str:
         return f"{self.backend.name}_{idp_name}_authn_request_id"
+
+    def test_full_name_only_details(self) -> None:
+        self.strategy.set_settings(
+            {
+                "SOCIAL_AUTH_SAML_ENABLED_IDPS": {
+                    "names": {
+                        "attr_full_name": "fullname",
+                        "attr_first_name": None,
+                        "attr_last_name": None,
+                    }
+                }
+            }
+        )
+        details = self.backend.get_user_details(
+            {"idp_name": "names", "attributes": {"fullname": ["Mary Jane Watson"]}}
+        )
+        self.assertIsNone(details["first_name"])
+        self.assertIsNone(details["last_name"])
+        normalized = social_names(self.backend, details)["details"]
+        self.assertEqual(normalized["first_name"], "Mary")
+        self.assertEqual(normalized["last_name"], "Jane Watson")
 
     def extra_settings(self):
         file = DATA_DIR / "saml_config.json"

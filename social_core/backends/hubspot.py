@@ -12,6 +12,8 @@ class HubSpotOAuth2(BaseOAuth2):
     """HubSpot OAuth2 authentication backend"""
 
     name = "hubspot"
+    title = "HubSpot"
+    icon = "hubspot.svg"
     AUTHORIZATION_URL = "https://app.hubspot.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://api.hubapi.com/oauth/v1/token"
     USER_DATA_URL = "https://api.hubapi.com/oauth/v1/access-tokens/"

@@ -60,9 +60,12 @@ def _handle_partial(
     halt_url_names: tuple[str, ...],
     halt_error: str,
     *args,
+    pipeline_type: str = "authentication",
     **kwargs,
 ) -> tuple[bool, Any]:
-    partial = partial_pipeline_result(backend, user, *args, **kwargs)
+    partial = partial_pipeline_result(
+        backend, user, *args, pipeline_type=pipeline_type, **kwargs
+    )
     if partial.response is not None:
         return True, partial.response
     if partial.partial:
@@ -78,7 +81,12 @@ def _handle_partial(
     return False, None
 
 
-def do_auth(backend: BaseAuth, redirect_name: str = "next") -> HttpResponseProtocol:
+def do_auth(
+    backend: BaseAuth,
+    redirect_name: str = "next",
+    *,
+    user: UserProtocol | None = None,
+) -> HttpResponseProtocol:
     # Save any defined next value into session
     data = backend.strategy.request_data(merge=False)
 
@@ -105,6 +113,7 @@ def do_auth(backend: BaseAuth, redirect_name: str = "next") -> HttpResponseProto
         backend.strategy.session_set(
             redirect_name, redirect_uri or backend.setting("LOGIN_REDIRECT_URL")
         )
+    backend.prepare_auth(user=user)
     return backend.start()
 
 
@@ -215,7 +224,7 @@ def do_disconnect(
     def resume_disconnect(partial: PartialMixin):
         if association_id and not partial.kwargs.get("association_id"):
             partial.extend_kwargs({"association_id": association_id})
-        return backend.disconnect(*partial.args, **partial.kwargs)
+        return backend.continue_disconnect_pipeline(partial)
 
     partial_handled, partial_response = _handle_partial(
         backend,
@@ -224,6 +233,7 @@ def do_disconnect(
         ("DISCONNECT_REDIRECT_URL", "LOGIN_REDIRECT_URL"),
         "Disallowed URL",
         *args,
+        pipeline_type="disconnect",
         **kwargs,
     )
     if partial_handled:

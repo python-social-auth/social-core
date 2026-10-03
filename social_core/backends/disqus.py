@@ -12,6 +12,7 @@ from .oauth import BaseOAuth2
 
 class DisqusOAuth2(BaseOAuth2):
     name = "disqus"
+    title = "Disqus"
     AUTHORIZATION_URL = "https://disqus.com/api/oauth/2.0/authorize/"
     ACCESS_TOKEN_URL = "https://disqus.com/api/oauth/2.0/access_token/"
     REDIRECT_STATE = False

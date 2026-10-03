@@ -12,6 +12,7 @@ class FlatOAuth2(BaseOAuth2):
     """Flat OAuth2"""
 
     name = "flat"
+    title = "Flat"
     REQUIRES_USER_ID = True
     DEFAULT_SCOPE = ["account.public_profile"]
     AUTHORIZATION_URL = "https://flat.io/auth/oauth"

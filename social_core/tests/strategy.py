@@ -58,7 +58,7 @@ class TestStrategy(BaseStrategy):
         """Render given template or raw html with given context"""
         return tpl or html or ""
 
-    def request_data(self, merge=True):
+    def get_request_data(self, merge=True):
         """Return current request data (POST or GET)"""
         return self._request_data
 
@@ -128,6 +128,7 @@ class TestStrategy(BaseStrategy):
                 "PIPELINE",
                 (
                     "social_core.pipeline.social_auth.social_details",
+                    "social_core.pipeline.social_auth.social_names",
                     "social_core.pipeline.social_auth.social_uid",
                     "social_core.pipeline.social_auth.auth_allowed",
                     "social_core.pipeline.social_auth.social_user",

@@ -7,6 +7,7 @@ class UniverseOAuth2(BaseOAuth2):
     """Universe Ticketing OAuth2 authentication backend"""
 
     name = "universe"
+    title = "Universe"
     AUTHORIZATION_URL = "https://www.universe.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://www.universe.com/oauth/token"
     BASE_API_URL = "https://www.universe.com/api"

@@ -33,9 +33,9 @@ class BaseGoogleAuth(BaseAuth):
             response.get("family_name", ""),
         )
 
-        fullname, first_name, last_name = self.get_user_names(
-            name, given_name, family_name
-        )
+        fullname = name
+        first_name = given_name
+        last_name = family_name
         return {
             "username": email.split("@", 1)[0],
             "email": email,
@@ -66,6 +66,8 @@ class GoogleOAuth2(BaseGoogleOAuth2API, BaseOAuth2):
     """Google OAuth2 authentication backend"""
 
     name = "google-oauth2"
+    title = "Google"
+    icon = "google.svg"
     REDIRECT_STATE = False
     AUTHORIZATION_URL = "https://accounts.google.com/o/oauth2/auth"
     ACCESS_TOKEN_URL = "https://accounts.google.com/o/oauth2/token"
@@ -84,6 +86,8 @@ class GoogleOAuth(BaseGoogleAuth, BaseOAuth1):
     """Google OAuth authorization mechanism"""
 
     name = "google-oauth"
+    title = "Google"
+    icon = "google.svg"
     AUTHORIZATION_URL = "https://www.google.com/accounts/OAuthAuthorizeToken"
     REQUEST_TOKEN_URL = "https://www.google.com/accounts/OAuthGetRequestToken"
     ACCESS_TOKEN_URL = "https://www.google.com/accounts/OAuthGetAccessToken"

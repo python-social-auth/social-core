@@ -10,6 +10,7 @@ from .oauth import BaseOAuth2
 
 class PinterestOAuth2(BaseOAuth2):
     name = "pinterest"
+    title = "Pinterest"
     ID_KEY = "user_id"
     AUTHORIZATION_URL = "https://api.pinterest.com/oauth/"
     ACCESS_TOKEN_URL = "https://api.pinterest.com/v1/oauth/token"
@@ -31,9 +32,9 @@ class PinterestOAuth2(BaseOAuth2):
         return response
 
     def get_user_details(self, response):
-        fullname, first_name, last_name = self.get_user_names(
-            first_name=response["first_name"], last_name=response["last_name"]
-        )
+        fullname = ""
+        first_name = response["first_name"]
+        last_name = response["last_name"]
 
         return {
             "username": response.get("username"),
