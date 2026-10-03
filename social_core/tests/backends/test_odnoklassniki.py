@@ -3,7 +3,7 @@ import json
 import responses
 
 from social_core.backends.odnoklassniki import odnoklassniki_sig
-from social_core.exceptions import AuthFailed
+from social_core.exceptions import AuthResponseError
 from social_core.utils import get_querystring
 
 from .base import BaseBackendTest
@@ -76,14 +76,14 @@ class OdnoklassnikiAppTest(BaseBackendTest):
         self.strategy.set_request_data(self.request_data(), self.backend)
         self.add_user_response(uid="67890")
 
-        with self.assertRaises(AuthFailed):
+        with self.assertRaises(AuthResponseError):
             self.backend.complete()
 
     def test_rejects_malformed_user_details_response(self) -> None:
         self.strategy.set_request_data(self.request_data(), self.backend)
         self.add_user_response(body={"uid": "12345"})
 
-        with self.assertRaises(AuthFailed):
+        with self.assertRaises(AuthResponseError):
             self.backend.complete()
 
     def test_rejects_invalid_auth_sig_before_api_request(self) -> None:
@@ -91,7 +91,7 @@ class OdnoklassnikiAppTest(BaseBackendTest):
             self.request_data(auth_sig=self.auth_sig("67890")), self.backend
         )
 
-        with self.assertRaises(AuthFailed):
+        with self.assertRaises(AuthResponseError):
             self.backend.complete()
 
         self.assertEqual(len(responses.calls), 0)

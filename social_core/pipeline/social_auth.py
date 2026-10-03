@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from social_core.exceptions import AuthAlreadyAssociated, AuthException, AuthForbidden
+from social_core.exceptions import AuthAssociationError, AuthPolicyError
 from social_core.utils import normalize_user_names
 
 if TYPE_CHECKING:
@@ -48,7 +48,9 @@ def social_uid(backend: BaseAuth, details, response, *args, **kwargs):
 
 def auth_allowed(backend: BaseAuth, details, response, *args, **kwargs) -> None:
     if not backend.auth_allowed(response, details):
-        raise AuthForbidden(backend)
+        raise AuthPolicyError(
+            backend, code="authentication_disallowed", stage="pipeline"
+        )
 
 
 def _current_social_auth(backend, storage, provider, uid, id_key):
@@ -58,7 +60,9 @@ def _current_social_auth(backend, storage, provider, uid, id_key):
     try:
         social = storage.get_social_auth_by_extra_data(provider, id_key, uid, id_key="")
     except ValueError as err:
-        raise AuthException(backend, str(err)) from err
+        raise AuthAssociationError(
+            backend, str(err), code="identifier_migration_conflict", stage="pipeline"
+        ) from err
     return social, social is not None
 
 
@@ -71,7 +75,12 @@ def _legacy_social_auth(backend, storage, provider, uid, legacy_uids):
         if candidate is not None and candidate not in matches:
             matches.append(candidate)
     if len(matches) > 1:
-        raise AuthException(backend, "Multiple legacy social-auth associations matched")
+        raise AuthAssociationError(
+            backend,
+            "Multiple legacy social-auth associations matched",
+            code="identifier_migration_conflict",
+            stage="pipeline",
+        )
     if matches:
         backend.log_warning("migrating association from a legacy identifier")
         return matches[0]
@@ -85,8 +94,11 @@ def _migrate_social_auth(backend, storage, social, uid, id_key):
         is_integrity_error = backend.strategy.storage.is_integrity_error(err)
         if not isinstance(err, ValueError) and not is_integrity_error:
             raise
-        raise AuthException(
-            backend, "Social-auth identifier migration conflict"
+        raise AuthAssociationError(
+            backend,
+            "Social-auth identifier migration conflict",
+            code="identifier_migration_conflict",
+            stage="pipeline",
         ) from err
     return migrated
 
@@ -110,7 +122,16 @@ def social_user(
         social = _migrate_social_auth(backend, storage, social, uid, id_key)
     if social:
         if user and social.user != user:
-            raise AuthAlreadyAssociated(backend)
+            raise AuthAssociationError(
+                backend,
+                code="identity_in_use",
+                stage="pipeline",
+                context={
+                    "user_id": user.id,
+                    "existing_user_id": social.user.id,
+                    "uid": uid,
+                },
+            )
         if not user:
             user = social.user
     return {
@@ -185,8 +206,11 @@ def associate_by_email(
         if len(users) == 0:
             return None
         if len(users) > 1:
-            raise AuthException(
-                backend, "The given email address is associated with another account"
+            raise AuthAssociationError(
+                backend,
+                "The given email address is associated with another account",
+                code="email_in_use",
+                stage="pipeline",
             )
         return {"user": users[0], "is_new": False}
     return None

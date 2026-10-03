@@ -13,10 +13,10 @@ from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
 from social_core.exceptions import (
-    AuthFailed,
-    AuthForbidden,
-    AuthInvalidParameter,
-    AuthMissingParameter,
+    AuthInputError,
+    AuthPolicyError,
+    AuthResponseError,
+    AuthSessionError,
 )
 from social_core.tests.models import TestUserSocialAuth, User
 
@@ -111,7 +111,7 @@ class SAMLProtocolTest(BaseBackendTest):
     def rejected(
         self,
         node,
-        exception: type[Exception] = AuthFailed,
+        exception: type[Exception] = AuthResponseError,
         relay_state: str | None = '{"idp":"idp"}',
         **kwargs,
     ):
@@ -258,9 +258,11 @@ class SAMLProtocolTest(BaseBackendTest):
         self.strategy.set_request_data({"RelayState": "idp"}, self.backend)
         with (
             patch.object(self.strategy, "authenticate") as authenticate,
-            self.assertRaises(AuthFailed),
+            self.assertRaises(AuthInputError) as caught,
         ):
             self.backend.complete()
+        self.assertEqual(caught.exception.code, "missing_parameter")
+        self.assertEqual(caught.exception.parameter, "SAMLResponse")
         authenticate.assert_not_called()
 
     def test_optional_nameid_and_attribute_statement(self):
@@ -336,28 +338,39 @@ class SAMLProtocolTest(BaseBackendTest):
                 self.rejected(node)
 
     def test_request_correlation_and_replay(self):
-        self.rejected(saml.signed_response(saml.response("wrong-request")))
+        self.rejected(
+            saml.signed_response(saml.response("wrong-request")),
+            exception=AuthResponseError,
+        )
         node = saml.signed_response()
         self.complete(node)
-        self.rejected(node)
+        self.rejected(node, exception=AuthSessionError)
 
     def test_unsolicited_login_and_account_linking(self):
         node = saml.signed_response(saml.response(None))
-        self.rejected(node, user=User("existing"))
+        self.rejected(node, user=User("existing"), exception=AuthSessionError)
         self.complete(node)
         self.assertEqual(self.strategy.session_get(self.key), "request-id")
         self.strategy.session_pop(self.key)
-        self.rejected(node, user=User("existing"))
+        self.rejected(node, user=User("existing"), exception=AuthSessionError)
         self.complete(node)
 
     def test_matching_request_allows_account_linking(self):
         self.complete(saml.signed_response(), user=User("existing"))
 
     def test_other_idp_cannot_use_request(self):
-        self.rejected(saml.signed_response(), relay_state='{"idp":"other"}')
+        self.rejected(
+            saml.signed_response(),
+            relay_state='{"idp":"other"}',
+            exception=AuthSessionError,
+        )
         self.strategy.session_set("saml_other_authn_request_id", "request-id")
         self.idps["other"]["entity_id"] = "https://other.example.com/metadata"
-        self.rejected(saml.signed_response(), relay_state='{"idp":"other"}')
+        self.rejected(
+            saml.signed_response(),
+            relay_state='{"idp":"other"}',
+            exception=AuthResponseError,
+        )
 
     def test_restored_session_is_checked_after_signature(self):
         relay = json.dumps(
@@ -391,7 +404,7 @@ class SAMLProtocolTest(BaseBackendTest):
                 with (
                     patch.object(self.strategy, "restore_session", restore),
                     patch.object(self.strategy, "authenticate") as authenticate,
-                    self.assertRaises(AuthFailed),
+                    self.assertRaises(AuthSessionError),
                 ):
                     self.backend.complete()
                 authenticate.assert_not_called()
@@ -403,7 +416,7 @@ class SAMLProtocolTest(BaseBackendTest):
                 self.complete(saml.signed_response(saml.response(None)), relay)
         self.assertEqual(self.strategy.session_get("next"), "/after")
         self.rejected(
-            saml.signed_response(), exception=AuthMissingParameter, relay_state=None
+            saml.signed_response(), exception=AuthInputError, relay_state=None
         )
         del self.idps["other"]
         result = self.complete(saml.signed_response(), relay_state=None)
@@ -425,7 +438,7 @@ class SAMLProtocolTest(BaseBackendTest):
             with self.subTest(relay=relay):
                 self.rejected(
                     saml.signed_response(),
-                    exception=AuthInvalidParameter,
+                    exception=AuthInputError,
                     relay_state=relay,
                 )
 
@@ -469,15 +482,15 @@ class SAMLProtocolTest(BaseBackendTest):
         self.assertEqual(provider.get_user_permanent_id(attrs), "custom-uid")
         self.assertIsNone(provider.get_user_details(attrs)["email"])
         del attrs["custom:id"]
-        with self.assertRaises(AuthMissingParameter):
+        with self.assertRaises(AuthResponseError):
             provider.get_user_permanent_id(attrs)
         for value in ([], [""], None):
             with self.subTest(value=value):
                 attrs["custom:id"] = value
-                with self.assertRaises(AuthInvalidParameter):
+                with self.assertRaises(AuthResponseError):
                     provider.get_user_permanent_id(attrs)
         provider.conf["attr_username"] = "missing"
-        with self.assertRaises(AuthMissingParameter):
+        with self.assertRaises(AuthResponseError):
             provider.get_user_details(attrs)
         del provider.conf["attr_username"]
         self.assertIsNone(provider.get_user_details({})["username"])
@@ -495,12 +508,14 @@ class SAMLProtocolTest(BaseBackendTest):
         def check(idp, attributes):
             self.assertEqual(idp.name, "idp")
             self.assertEqual(attributes["custom:roles"], ["member", "admin"])
-            raise AuthForbidden(self.backend)
+            raise AuthPolicyError(
+                self.backend, code="authentication_disallowed", stage="callback"
+            )
 
         with (
             patch.object(self.backend, "_check_entitlements", check),
             patch.object(self.strategy, "authenticate") as authenticate,
-            self.assertRaises(AuthForbidden),
+            self.assertRaises(AuthPolicyError),
         ):
             self.backend.complete()
         authenticate.assert_not_called()

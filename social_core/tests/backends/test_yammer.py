@@ -1,4 +1,7 @@
 import json
+from unittest.mock import patch
+
+from social_core.exceptions import AuthResponseError
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
@@ -103,3 +106,39 @@ class YammerOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
 
     def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
+
+    def test_login_extracts_token_and_retains_provider_metadata(self) -> None:
+        with patch.object(
+            self.backend, "user_data", wraps=self.backend.user_data
+        ) as user_data:
+            user = self.do_login()
+        user_data.assert_called_once()
+        self.assertEqual(user_data.call_args.args[0], "foobar")
+        self.assertEqual(user.social[0].extra_data["access_token"]["token"], "foobar")
+
+    def test_unusable_nested_tokens_never_enter_pipeline(self) -> None:
+        tokens: tuple[object, ...] = (None, "", False, 0, [], {})
+        for token in tokens:
+            with (
+                self.subTest(token=token),
+                patch.object(self.backend, "validate_state", return_value="state"),
+                patch.object(
+                    self.backend,
+                    "request_access_token",
+                    return_value={"access_token": {"token": token}},
+                ),
+                patch.object(self.backend, "do_auth") as do_auth,
+                self.assertRaises(AuthResponseError) as caught,
+            ):
+                self.backend.auth_complete()
+            self.assertEqual(caught.exception.code, "missing_claim")
+            self.assertEqual(caught.exception.claim, "access_token")
+            self.assertEqual(caught.exception.stage, "token_exchange")
+            do_auth.assert_not_called()
+
+    def test_plain_access_tokens_use_generic_validation(self) -> None:
+        self.assertEqual(
+            self.backend.get_access_token({"access_token": "token"}), "token"
+        )
+        with self.assertRaises(AuthResponseError):
+            self.backend.get_access_token({"access_token": None})

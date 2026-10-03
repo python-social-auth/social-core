@@ -16,6 +16,8 @@ if TYPE_CHECKING:
 
     from requests.auth import AuthBase
 
+    from social_core.exceptions import ErrorStage
+
 
 class QiitaOAuth2(BaseOAuth2):
     """Qiita OAuth authentication backend"""
@@ -58,7 +60,7 @@ class QiitaOAuth2(BaseOAuth2):
             del data["redirect_uri"]
         return data
 
-    def request_access_token(
+    def request_access_token(  # noqa: PLR0913
         self,
         url: str,
         method: Literal["GET", "POST", "DELETE"] = "GET",
@@ -67,10 +69,13 @@ class QiitaOAuth2(BaseOAuth2):
         json: dict | None = None,
         auth: tuple[str, str] | AuthBase | None = None,
         params: dict | None = None,
+        *,
+        stage: ErrorStage = "token_exchange",
     ) -> dict[Any, Any]:
         data = super().request_access_token(
             url=url,
             method=method,
+            stage=stage,
             headers=headers,
             data=data,
             json=json,

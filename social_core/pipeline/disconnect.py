@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from social_core.exceptions import NotAllowedToDisconnect
+from social_core.exceptions import AuthPolicyError
 
 if TYPE_CHECKING:
     from social_core.storage import UserProtocol
@@ -19,7 +19,7 @@ def allowed_to_disconnect(
     **kwargs,
 ) -> None:
     if not user_storage.allowed_to_disconnect(user, name, association_id):
-        raise NotAllowedToDisconnect
+        raise AuthPolicyError(code="disconnect_disallowed", stage="disconnect")
 
 
 def get_entries(

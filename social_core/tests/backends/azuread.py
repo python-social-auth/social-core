@@ -9,7 +9,7 @@ from urllib.parse import parse_qs, urlsplit
 
 import responses
 
-from social_core.exceptions import AuthException
+from social_core.exceptions import AuthConfigurationError
 
 if TYPE_CHECKING:
     from social_core.backends.azuread import AzureADOAuth2
@@ -38,7 +38,7 @@ class AzureOAuth2TestMixin:
                 case.strategy.set_settings(
                     {f"SOCIAL_AUTH_{case.name}_AUTHORITY_URL": authority}
                 )
-                with case.assertRaises(AuthException):
+                with case.assertRaises(AuthConfigurationError):
                     case.backend.authorization_url()
 
     def test_authority_host_fallback(self) -> None:

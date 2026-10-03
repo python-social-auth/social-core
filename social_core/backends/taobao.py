@@ -1,5 +1,7 @@
 from typing import Any
 
+from social_core.exceptions import SocialAuthBaseException
+
 from .oauth import BaseOAuth2
 
 
@@ -24,6 +26,8 @@ class TAOBAOAuth(BaseOAuth2):
                     "access_token": access_token,
                 },
             )
+        except SocialAuthBaseException:
+            raise
         except ValueError:
             return None
 

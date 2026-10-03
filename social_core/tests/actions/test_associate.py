@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import json
 
-from social_core.exceptions import AuthAlreadyAssociated
+from social_core.exceptions import AuthAssociationError
+from social_core.tests.exception_helpers import assert_auth_error
 from social_core.tests.models import User
 
 from .actions import BaseActionTest
@@ -93,7 +94,5 @@ class AlreadyAssociatedErrorTest(BaseActionTest):
         self.user = self.user1
         self.do_login()
         self.user = User(username="foobar2", email="foo2@bar2.com")
-        with self.assertRaisesRegex(
-            AuthAlreadyAssociated, "This account is already in use."
-        ):
+        with assert_auth_error(self, AuthAssociationError, "identity_in_use"):
             self.do_login()

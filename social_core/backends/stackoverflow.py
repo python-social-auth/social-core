@@ -16,6 +16,8 @@ if TYPE_CHECKING:
 
     from requests.auth import AuthBase
 
+    from social_core.exceptions import ErrorStage
+
 
 class StackoverflowOAuth2(BaseOAuth2):
     """Stackoverflow OAuth2 authentication backend"""
@@ -52,7 +54,7 @@ class StackoverflowOAuth2(BaseOAuth2):
             },
         )["items"][0]
 
-    def request_access_token(
+    def request_access_token(  # noqa: PLR0913
         self,
         url: str,
         method: Literal["GET", "POST", "DELETE"] = "GET",
@@ -61,11 +63,14 @@ class StackoverflowOAuth2(BaseOAuth2):
         json: dict | None = None,
         auth: tuple[str, str] | AuthBase | None = None,
         params: dict | None = None,
+        *,
+        stage: ErrorStage = "token_exchange",
     ) -> dict[Any, Any]:
-        with wrap_access_token_error(self):
+        with wrap_access_token_error(self, stage=stage):
             response = self.request(
                 url,
                 method=method,
+                stage=stage,
                 headers=headers,
                 data=data,
                 json=json,

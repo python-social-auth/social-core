@@ -3,7 +3,8 @@ from typing import Any
 from unittest import TestCase
 from unittest.mock import Mock
 
-from social_core.exceptions import AuthMissingParameter
+from social_core.exceptions import AuthResponseError
+from social_core.tests.exception_helpers import assert_auth_error
 from social_core.tests.models import TestStorage, TestUserSocialAuth, User
 from social_core.tests.strategy import TestStrategy
 from social_core.utils import module_member, setting_name
@@ -332,8 +333,10 @@ class ConfigurableIdKeyTest(TestCase):
         for path in self.required_default_id_backends:
             with self.subTest(path=path):
                 backend = self.backend(path)
-                with self.assertRaisesRegex(AuthMissingParameter, backend.ID_KEY):
+                with self.assertRaises(AuthResponseError) as caught:
                     backend.get_user_id({}, {})
+                self.assertEqual(caught.exception.code, "missing_claim")
+                self.assertEqual(caught.exception.claim, backend.ID_KEY)
 
     def test_inherited_lookup_uses_normalized_details(self) -> None:
         backend = self.backend(
@@ -551,7 +554,7 @@ class ConfigurableIdKeyTest(TestCase):
         for path, response in cases:
             with self.subTest(path=path):
                 backend = self.backend(path, ID_KEY="custom_id")
-                with self.assertRaises(AuthMissingParameter):
+                with self.assertRaises(AuthResponseError):
                     backend.get_user_id({}, response)
 
     def test_mapping_overrides_reject_missing_configured_key(self) -> None:
@@ -564,7 +567,7 @@ class ConfigurableIdKeyTest(TestCase):
         for path in (*direct_backends, *details_backends):
             with self.subTest(path=path):
                 backend = self.backend(path, ID_KEY="missing_id")
-                with self.assertRaisesRegex(AuthMissingParameter, "missing_id"):
+                with assert_auth_error(self, AuthResponseError, "missing_claim"):
                     backend.get_user_id({}, {})
 
         for path, container_path in self.nested_response_backends:
@@ -573,7 +576,7 @@ class ConfigurableIdKeyTest(TestCase):
                 for container in reversed(container_path):
                     response = {container: response}
                 backend = self.backend(path, ID_KEY="missing_id")
-                with self.assertRaisesRegex(AuthMissingParameter, "missing_id"):
+                with assert_auth_error(self, AuthResponseError, "missing_claim"):
                     backend.get_user_id({}, response)
 
     def test_special_overrides_reject_missing_configured_key(self) -> None:
@@ -602,7 +605,7 @@ class ConfigurableIdKeyTest(TestCase):
         for path, details, response in cases:
             with self.subTest(path=path):
                 backend = self.backend(path, ID_KEY="missing_id")
-                with self.assertRaisesRegex(AuthMissingParameter, "missing_id"):
+                with assert_auth_error(self, AuthResponseError, "missing_claim"):
                     backend.get_user_id(details, response)
 
         backend = self.backend(
@@ -610,7 +613,7 @@ class ConfigurableIdKeyTest(TestCase):
             ID_KEY="missing_id",
         )
         backend.get_json = Mock(return_value={})
-        with self.assertRaisesRegex(AuthMissingParameter, "missing_id"):
+        with assert_auth_error(self, AuthResponseError, "missing_claim"):
             backend.get_user_id({"username": b"access-token"}, {})
 
     def test_yandex_preserves_identity_url_fallback_for_missing_key(self) -> None:

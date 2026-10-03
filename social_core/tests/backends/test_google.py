@@ -10,7 +10,10 @@ import jwt
 import responses
 
 from social_core.actions import do_disconnect
-from social_core.exceptions import AuthException, AuthTokenError
+from social_core.exceptions import (
+    AuthConfigurationError,
+    AuthResponseError,
+)
 from social_core.tests.models import User
 from social_core.utils import get_querystring, parse_qs
 
@@ -314,16 +317,16 @@ oQIDAQAB
         }
 
     def test_auth_url(self) -> None:
-        with self.assertRaises(AuthException):
+        with self.assertRaises(AuthConfigurationError):
             self.backend.start()
 
     def test_verify_csrf_no_csrf_token_body(self) -> None:
-        with self.assertRaises(AuthTokenError):
+        with self.assertRaises(AuthResponseError):
             self.backend.verify_csrf(request=mock.Mock())
 
     def test_verify_csrf_no_csrf_token_cookie_not_ignored(self) -> None:
         self.backend.data = {"g_csrf_token": "csrf"}
-        with self.assertRaises(AuthTokenError):
+        with self.assertRaises(AuthResponseError):
             self.backend.verify_csrf(request=mock.Mock(COOKIES={}))
 
     def test_verify_csrf_no_csrf_token_cookie_ignored(self) -> None:
@@ -338,21 +341,35 @@ oQIDAQAB
         self.backend.verify_csrf(request=mock.Mock(COOKIES={"g_csrf_token": "csrf"}))
 
     def test_get_decoded_info_error(self) -> None:
-        payload = self._get_jwt_payload()
-        payload["exp"] -= 31
-        self.backend.data = {
-            "credential": jwt.encode(
+        self.strategy.set_settings({"SOCIAL_AUTH_GOOGLE_ONETAP_KEY": self.client_id})
+        valid_payload = self._get_jwt_payload()
+        for name, payload in (
+            ("expired", {**valid_payload, "exp": valid_payload["exp"] - 31}),
+            ("wrong_audience", {**valid_payload, "aud": "other-client"}),
+            ("invalid_signature", valid_payload),
+        ):
+            credential = jwt.encode(
                 payload,
                 self.private_key,
                 algorithm="RS256",
                 headers={"kid": "test_key"},
-            ),
-            "g_csrf_token": "csrf",
-        }
-        request = mock.Mock(COOKIES={"g_csrf_token": "csrf"})
-
-        with self.assertRaises(AuthException):
-            self.backend.auth_complete(request=request)
+            )
+            if name == "invalid_signature":
+                header, body, signature = credential.split(".")
+                replacement = "A" if signature[0] != "A" else "B"
+                credential = f"{header}.{body}.{replacement}{signature[1:]}"
+            self.backend.data = {"credential": credential, "g_csrf_token": "csrf"}
+            request = mock.Mock(COOKIES={"g_csrf_token": "csrf"})
+            with (
+                self.subTest(name=name),
+                mock.patch.object(self.strategy, "authenticate") as authenticate,
+                self.assertRaises(AuthResponseError) as caught,
+            ):
+                self.backend.auth_complete(request=request)
+            self.assertEqual(caught.exception.code, "invalid_claim")
+            self.assertEqual(caught.exception.stage, "token_validation")
+            self.assertIsInstance(caught.exception.__cause__, ValueError)
+            authenticate.assert_not_called()
 
     def test_get_decoded_info_success(self) -> None:
         self.backend.data = {

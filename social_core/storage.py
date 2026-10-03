@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any, Protocol, cast
 
 from openid.association import Association as OpenIdAssociation
 
-from .exceptions import InvalidExpiryValue, MissingBackend
+from .exceptions import AuthConfigurationError, AuthResponseError
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -59,8 +59,10 @@ class UserMixin:
     def get_backend_instance(self, strategy: BaseStrategy) -> BaseAuth | None:
         try:
             return strategy.get_backend(self.provider)
-        except MissingBackend:
-            return None
+        except AuthConfigurationError as error:
+            if error.code == "backend_missing":
+                return None
+            raise
 
     @property
     def access_token(self) -> str | None:
@@ -93,14 +95,26 @@ class UserMixin:
         try:
             timestamp = int(value)
         except (ValueError, TypeError) as e:
-            raise InvalidExpiryValue(field_name, value) from e
+            raise AuthResponseError(
+                None,
+                value,
+                parameter=field_name,
+                code="invalid_expiry",
+                stage="unknown",
+            ) from e
 
         try:
             now = datetime.now(timezone.utc)
             expiry_time = datetime.fromtimestamp(timestamp, tz=timezone.utc)
             return expiry_time - now
         except (OSError, ValueError) as e:
-            raise InvalidExpiryValue(field_name, value) from e
+            raise AuthResponseError(
+                None,
+                value,
+                parameter=field_name,
+                code="invalid_expiry",
+                stage="unknown",
+            ) from e
 
     def _compute_expiration_from_relative(
         self, value: int | str, field_name: str = "expires"
@@ -109,7 +123,13 @@ class UserMixin:
         try:
             seconds = int(value)
         except (ValueError, TypeError) as e:
-            raise InvalidExpiryValue(field_name, value) from e
+            raise AuthResponseError(
+                None,
+                value,
+                parameter=field_name,
+                code="invalid_expiry",
+                stage="unknown",
+            ) from e
 
         auth_time = self.extra_data.get("auth_time")
         if auth_time:
@@ -166,7 +186,13 @@ class UserMixin:
         try:
             expires_int = int(expires)
         except (ValueError, TypeError) as e:
-            raise InvalidExpiryValue("expires", expires) from e
+            raise AuthResponseError(
+                None,
+                expires,
+                parameter="expires",
+                code="invalid_expiry",
+                stage="unknown",
+            ) from e
 
         # Use 2 years (63072000 seconds) as threshold to distinguish
         # absolute timestamps from relative seconds

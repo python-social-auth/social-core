@@ -1,4 +1,6 @@
-from social_core.exceptions import MissingBackend
+import jwt
+
+from social_core.exceptions import AuthConfigurationError, AuthResponseError, ErrorStage
 from social_core.utils import module_member, user_is_authenticated
 
 from .base import BaseAuth
@@ -53,7 +55,9 @@ def get_backend(backends, name):
         try:
             return BACKENDSCACHE[name]
         except KeyError as error:
-            raise MissingBackend(name) from error
+            raise AuthConfigurationError(
+                None, name, code="backend_missing", parameter="backend"
+            ) from error
 
 
 def user_backends_data(user, backends, storage):
@@ -76,3 +80,26 @@ def user_backends_data(user, backends, storage):
         values["associated"] = associated
         values["not_associated"] = not_associated
     return values
+
+
+def jwt_error(
+    backend: BaseAuth, error: jwt.PyJWTError, *, stage: ErrorStage = "token_validation"
+) -> AuthResponseError:
+    """Translate JWT exception types, preserving claims without parsing messages."""
+
+    claim = None
+    if isinstance(error, jwt.ExpiredSignatureError):
+        code, claim = "response_expired", "exp"
+    elif isinstance(error, jwt.ImmatureSignatureError):
+        code = "response_not_yet_valid"
+    elif isinstance(error, (jwt.InvalidSignatureError, jwt.InvalidAlgorithmError)):
+        code = "invalid_signature"
+    elif isinstance(error, jwt.MissingRequiredClaimError):
+        code, claim = "missing_claim", error.claim
+    elif isinstance(error, jwt.InvalidAudienceError):
+        code, claim = "invalid_claim", "aud"
+    elif isinstance(error, jwt.InvalidIssuerError):
+        code, claim = "invalid_claim", "iss"
+    else:
+        code = "invalid_claim"
+    return AuthResponseError(backend, error, code=code, claim=claim, stage=stage)

@@ -7,7 +7,7 @@ import jwt
 import responses
 from jwt.algorithms import RSAAlgorithm
 
-from social_core.exceptions import AuthFailed
+from social_core.exceptions import AuthResponseError
 from social_core.utils import PARTIAL_TOKEN_SESSION_NAME
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
@@ -183,5 +183,5 @@ class AppleIdTest(OAuth2Test, BaseAuthUrlTestMixin):
     def test_decode_id_token_rejects_wrong_issuer(self) -> None:
         self.add_apple_jwk_response()
 
-        with self.assertRaises(AuthFailed):
+        with self.assertRaises(AuthResponseError):
             self.backend.decode_id_token(self.build_id_token(iss="https://example.com"))

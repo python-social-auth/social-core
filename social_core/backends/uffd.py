@@ -1,6 +1,8 @@
 from typing import Any, cast
 from urllib.parse import urlencode
 
+from social_core.exceptions import SocialAuthBaseException
+
 from .oauth import BaseOAuth2
 
 
@@ -41,6 +43,8 @@ class UffdOAuth2(BaseOAuth2):
         url = f"{self.userinfo_url()}?{urlencode({'access_token': access_token})}"
         try:
             user_data: dict[str, Any] = self.get_json(url)
+        except SocialAuthBaseException:
+            raise
         except ValueError:
             return None
         return user_data

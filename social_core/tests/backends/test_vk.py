@@ -10,13 +10,13 @@ from social_core.actions import do_auth
 from social_core.backends.vk import vk_sig
 from social_core.exceptions import (
     AuthCanceled,
-    AuthException,
-    AuthFailed,
-    AuthMissingParameter,
-    AuthStateForbidden,
-    AuthStateMissing,
-    AuthUnknownError,
+    AuthConfigurationError,
+    AuthCredentialError,
+    AuthInputError,
+    AuthResponseError,
+    AuthSessionError,
 )
+from social_core.tests.exception_helpers import assert_auth_error
 from social_core.tests.models import TestUserSocialAuth, User
 from social_core.utils import get_querystring, parse_qs
 
@@ -233,7 +233,7 @@ class VKOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
                 self.strategy.set_settings(
                     {f"SOCIAL_AUTH_{self.name}_EXTRA_DATA": [entry]}
                 )
-                with self.assertRaises(AuthUnknownError):
+                with self.assertRaises(AuthConfigurationError):
                     self.backend.user_data("foobar")
                 self.assertEqual(len(responses.calls), 0)
 
@@ -347,7 +347,7 @@ class VKAppOAuth2Test(BaseBackendTest):
         self.strategy.set_request_data(self.signed_request_data(), self.backend)
         self.add_user_response(user_id="999999999")
 
-        with self.assertRaisesRegex(AuthFailed, "does not match viewer ID"):
+        with assert_auth_error(self, AuthResponseError, "invalid_claim"):
             self.backend.complete()
 
         self.assertEqual(User.cache, {})
@@ -357,27 +357,27 @@ class VKAppOAuth2Test(BaseBackendTest):
         self.strategy.set_request_data(self.signed_request_data(), self.backend)
         self.add_user_response(body={})
 
-        with self.assertRaisesRegex(AuthFailed, "Invalid user profile"):
+        with assert_auth_error(self, AuthResponseError, "malformed_response"):
             self.backend.complete()
 
     def test_rejects_empty_user_profile(self) -> None:
         self.strategy.set_request_data(self.signed_request_data(), self.backend)
         self.add_user_response(body={"response": []})
 
-        with self.assertRaisesRegex(AuthFailed, "Invalid user profile"):
+        with assert_auth_error(self, AuthResponseError, "malformed_response"):
             self.backend.complete()
 
     def test_rejects_malformed_user_profile(self) -> None:
         self.strategy.set_request_data(self.signed_request_data(), self.backend)
         self.add_user_response(body={"response": {}})
 
-        with self.assertRaisesRegex(AuthFailed, "Invalid user profile"):
+        with assert_auth_error(self, AuthResponseError, "malformed_response"):
             self.backend.complete()
 
     def test_rejects_missing_auth_key_before_authentication(self) -> None:
         self.strategy.set_request_data(self.request_data(), self.backend)
 
-        with self.assertRaisesRegex(AuthFailed, "Missing auth key"):
+        with assert_auth_error(self, AuthResponseError, "missing_claim"):
             self.backend.complete()
 
         self.assertEqual(len(responses.calls), 0)
@@ -390,7 +390,7 @@ class VKAppOAuth2Test(BaseBackendTest):
         data["auth_key"] = "0" * 32
         self.strategy.set_request_data(data, self.backend)
 
-        with self.assertRaisesRegex(AuthFailed, "Invalid auth key"):
+        with assert_auth_error(self, AuthResponseError, "invalid_signature"):
             self.backend.complete()
 
         self.assertEqual(len(responses.calls), 0)
@@ -437,7 +437,8 @@ class VKAppOAuth2Test(BaseBackendTest):
         self.strategy.set_settings({f"SOCIAL_AUTH_{self.name}_USERMODE": 2})
         self.strategy.set_request_data(self.signed_request_data(), self.backend)
         responses.add(responses.GET, "https://api.vk.ru/api.php", body="invalid json")
-        self.assertIsNone(self.backend.complete())
+        with assert_auth_error(self, AuthResponseError, "malformed_response"):
+            self.backend.complete()
         self.assertEqual(User.cache, {})
 
 
@@ -548,17 +549,17 @@ class VKIDOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         state = get_querystring(start_url)["state"]
         good = {"code": "foobar", "device_id": "device-id", "state": state}
         cases = [
-            ({**good, "payload": "invalid json"}, AuthFailed),
-            ({**good, "payload": "[]"}, AuthFailed),
-            ({**good, "payload": "null"}, AuthFailed),
-            ({**good, "payload": json.dumps({"state": "other"})}, AuthFailed),
-            ({**good, "code": ["foobar"]}, AuthFailed),
-            ({**good, "device_id": 12}, AuthFailed),
-            ({**good, "state": {}}, AuthFailed),
-            ({**good, "code": ""}, AuthMissingParameter),
-            ({**good, "device_id": ""}, AuthMissingParameter),
-            ({"code": "foobar", "device_id": "device-id"}, AuthMissingParameter),
-            ({**good, "state": "other"}, AuthStateForbidden),
+            ({**good, "payload": "invalid json"}, AuthResponseError),
+            ({**good, "payload": "[]"}, AuthResponseError),
+            ({**good, "payload": "null"}, AuthResponseError),
+            ({**good, "payload": json.dumps({"state": "other"})}, AuthResponseError),
+            ({**good, "code": ["foobar"]}, AuthResponseError),
+            ({**good, "device_id": 12}, AuthResponseError),
+            ({**good, "state": {}}, AuthResponseError),
+            ({**good, "code": ""}, AuthInputError),
+            ({**good, "device_id": ""}, AuthInputError),
+            ({"code": "foobar", "device_id": "device-id"}, AuthInputError),
+            ({**good, "state": "other"}, AuthSessionError),
         ]
         for data, exception in cases:
             with self.subTest(data=data):
@@ -581,7 +582,7 @@ class VKIDOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     def test_missing_session_state(self) -> None:
         data = self.prepare_callback()
         self.strategy.session_pop("vk-id_state")
-        with self.assertRaises(AuthStateMissing):
+        with self.assertRaises(AuthSessionError):
             self.backend.complete()
         self.assertEqual(len(responses.calls), 0)
         self.assertTrue(data["state"])
@@ -589,7 +590,7 @@ class VKIDOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     def test_missing_verifier(self) -> None:
         self.prepare_callback()
         self.strategy.session_pop("vk-id_code_verifier")
-        with self.assertRaises(AuthMissingParameter):
+        with assert_auth_error(self, AuthSessionError, "session_context_missing"):
             self.backend.complete()
         self.assertEqual(len(responses.calls), 0)
 
@@ -597,7 +598,7 @@ class VKIDOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         self.prepare_callback()
         self.backend.complete()
         calls = len(responses.calls)
-        with self.assertRaises(AuthMissingParameter):
+        with assert_auth_error(self, AuthSessionError, "session_context_missing"):
             self.backend.complete()
         self.assertEqual(len(responses.calls), calls)
 
@@ -617,7 +618,7 @@ class VKIDOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
                         settings.get(name, default)
                     ),
                 ),
-                self.assertRaises(AuthException),
+                self.assertRaises(AuthConfigurationError),
             ):
                 self.backend.start()
 
@@ -639,11 +640,11 @@ class VKIDOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     def test_invalid_token_responses(self) -> None:
         data = self.prepare_callback()
         for response, exception in (
-            ([], AuthFailed),
-            ({"error": "invalid_grant"}, AuthFailed),
-            ({**self.token_data, "state": "wrong"}, AuthStateForbidden),
-            (self.token_data, AuthStateForbidden),
-            ({"state": data["state"]}, AuthMissingParameter),
+            ([], AuthResponseError),
+            ({"error": "invalid_grant"}, AuthCredentialError),
+            ({**self.token_data, "state": "wrong"}, AuthSessionError),
+            (self.token_data, AuthSessionError),
+            ({"state": data["state"]}, AuthResponseError),
         ):
             with (
                 self.subTest(response=response),
@@ -659,20 +660,30 @@ class VKIDOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
             {"user": []},
             {"user": {}},
             {"user": {"user_id": True}},
-            {"error": "invalid_token"},
         )
         for profile in profiles:
             with (
                 self.subTest(profile=profile),
                 patch.object(self.backend, "get_json", return_value=profile),
-                self.assertRaises(AuthFailed),
+                self.assertRaises(AuthResponseError),
             ):
                 self.backend.user_data("foobar")
+
+    def test_profile_credential_failure_retains_provider_code(self) -> None:
+        with (
+            patch.object(
+                self.backend, "get_json", return_value={"error": "invalid_token"}
+            ),
+            self.assertRaises(AuthCredentialError) as caught,
+        ):
+            self.backend.user_data("foobar")
+        self.assertEqual(caught.exception.code, "credential_rejected")
+        self.assertEqual(caught.exception.provider_code, "invalid_token")
 
     def test_profile_token_id_mismatch(self) -> None:
         self.token_data = {**self.token_data, "user_id": 2}
         self.prepare_callback()
-        with self.assertRaisesRegex(AuthFailed, "does not match"):
+        with assert_auth_error(self, AuthResponseError, "invalid_claim"):
             self.backend.complete()
         self.assertEqual(User.cache, {})
 
@@ -790,20 +801,20 @@ class VKIDOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         social.extra_data.pop("device_id")
         social.extra_data["expires_in"] = 0
         calls = len(responses.calls)
-        with self.assertRaises(AuthMissingParameter):
+        with assert_auth_error(self, AuthCredentialError, "reauthentication_required"):
             social.get_access_token(self.strategy)
         self.assertEqual(len(responses.calls), calls)
         self.assertEqual(social.extra_data["access_token"], "foobar")
 
     def test_refresh_missing_device(self) -> None:
-        with self.assertRaises(AuthMissingParameter):
+        with assert_auth_error(self, AuthCredentialError, "reauthentication_required"):
             self.backend.refresh_token("refresh")
         self.assertEqual(len(responses.calls), 0)
 
     def test_refresh_errors(self) -> None:
         for response, exception in (
-            ({"error": "invalid_grant"}, AuthFailed),
-            ({"access_token": "new", "state": "wrong"}, AuthStateForbidden),
+            ({"error": "invalid_grant"}, AuthCredentialError),
+            ({"access_token": "new", "state": "wrong"}, AuthSessionError),
         ):
             with (
                 self.subTest(response=response),

@@ -10,11 +10,12 @@ from openid.message import Message
 
 from social_core.exceptions import (
     AuthCanceled,
-    AuthException,
-    AuthFailed,
-    AuthMissingParameter,
+    AuthInputError,
+    AuthProviderError,
+    AuthResponseError,
+    AuthSessionError,
     AuthUnknownError,
-    AuthUnreachableProvider,
+    ErrorStage,
 )
 from social_core.utils import url_add_parameters
 
@@ -225,8 +226,11 @@ class OpenIdAuth(BaseAuth):
                 partial.kwargs.get(_VERIFIED_RESPONSE_KEY)
             )
         except (KeyError, TypeError, ValueError) as error:
-            raise AuthFailed(
-                self, "OpenID authentication context is unavailable; restart login"
+            raise AuthSessionError(
+                self,
+                "OpenID authentication context is unavailable; restart login",
+                code="session_context_missing",
+                stage="callback",
             ) from error
         kwargs = partial.kwargs.copy()
         kwargs["response"] = response
@@ -245,7 +249,9 @@ class OpenIdAuth(BaseAuth):
                 dict(self.data.items()), self.get_return_to()
             )
         except HTTPFetchingError as error:
-            raise AuthUnreachableProvider(self) from error
+            raise AuthProviderError(
+                self, code="connection_failed", stage="callback"
+            ) from error
 
         self.process_error(response)
         response = cast("SuccessResponse", response)
@@ -260,15 +266,22 @@ class OpenIdAuth(BaseAuth):
         }
         return self.strategy.authenticate(self, *args, response=response, **kwargs)
 
-    def process_error(self, data) -> None:
+    def process_error(self, data, *, stage: ErrorStage = "callback") -> None:
         if not data:
-            raise AuthException(self, "OpenID relying party endpoint")
+            raise AuthResponseError(
+                self,
+                "OpenID relying party endpoint",
+                code="malformed_response",
+                stage=stage,
+            )
         if data.status == FAILURE:
-            raise AuthFailed(self, data.message)
+            raise AuthResponseError(
+                self, data.message, code="malformed_response", stage=stage
+            )
         if data.status == CANCEL:
-            raise AuthCanceled(self)
+            raise AuthCanceled(self, code="authorization_declined", stage=stage)
         if data.status != SUCCESS:
-            raise AuthUnknownError(self, data.status)
+            raise AuthUnknownError(self, data.status, code="unknown_error", stage=stage)
 
     def setup_request(self, params=None):
         """Setup request"""
@@ -328,7 +341,12 @@ class OpenIdAuth(BaseAuth):
         try:
             return self.consumer().begin(url_add_parameters(self.openid_url(), params))
         except DiscoveryFailure as err:
-            raise AuthException(self, f"OpenID discovery error: {err}") from err
+            raise AuthProviderError(
+                self,
+                f"OpenID discovery error: {err}",
+                code="http_error",
+                stage="begin",
+            ) from err
 
     def openid_url(self):
         """Return service provider URL.
@@ -338,4 +356,6 @@ class OpenIdAuth(BaseAuth):
             return self.URL
         if OPENID_ID_FIELD in self.data:
             return self.data[OPENID_ID_FIELD]
-        raise AuthMissingParameter(self, OPENID_ID_FIELD)
+        raise AuthInputError(
+            self, parameter=OPENID_ID_FIELD, code="missing_parameter", stage="begin"
+        )

@@ -2,11 +2,7 @@ import json
 
 import responses
 
-from social_core.exceptions import (
-    AuthMissingParameter,
-    AuthStateForbidden,
-    AuthStateMissing,
-)
+from social_core.exceptions import AuthInputError, AuthSessionError
 from social_core.utils import get_querystring, parse_qs
 
 from .base import BaseBackendTest
@@ -67,7 +63,7 @@ class LastFmAuthTest(BaseBackendTest):
         self.backend.start()
         self.strategy.set_request_data({"token": "foobar"}, self.backend)
 
-        with self.assertRaises(AuthMissingParameter):
+        with self.assertRaises(AuthInputError):
             self.backend.complete()
 
         self.assertEqual(len(responses.calls), 0)
@@ -79,7 +75,7 @@ class LastFmAuthTest(BaseBackendTest):
             self.backend,
         )
 
-        with self.assertRaises(AuthStateForbidden):
+        with self.assertRaises(AuthSessionError):
             self.backend.complete()
 
         self.assertEqual(len(responses.calls), 0)
@@ -90,7 +86,7 @@ class LastFmAuthTest(BaseBackendTest):
             self.backend,
         )
 
-        with self.assertRaises(AuthStateMissing):
+        with self.assertRaises(AuthSessionError):
             self.backend.complete()
 
         self.assertEqual(len(responses.calls), 0)
@@ -99,7 +95,7 @@ class LastFmAuthTest(BaseBackendTest):
         state = self.backend.get_or_create_state()
         self.strategy.set_request_data({"redirect_state": state}, self.backend)
 
-        with self.assertRaises(AuthMissingParameter):
+        with self.assertRaises(AuthInputError):
             self.backend.complete()
 
         self.assertEqual(len(responses.calls), 0)

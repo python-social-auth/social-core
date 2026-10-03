@@ -37,7 +37,7 @@ import jwt
 import responses
 from jwt.algorithms import RSAAlgorithm
 
-from social_core.exceptions import AuthMissingParameter, AuthTokenError
+from social_core.exceptions import AuthResponseError
 from social_core.utils import get_querystring
 
 from .azuread import AzureOAuth2TestMixin
@@ -293,7 +293,7 @@ class AzureADB2COAuth2Test(OAuth2Test, BaseAuthUrlTestMixin, AzureOAuth2TestMixi
                     "openid_configuration",
                     return_value={"end_session_endpoint": endpoint},
                 ),
-                self.assertRaises(AuthMissingParameter),
+                self.assertRaises(AuthResponseError),
             ):
                 self.backend.logout_url()
 
@@ -324,13 +324,13 @@ class AzureADB2COAuth2Test(OAuth2Test, BaseAuthUrlTestMixin, AzureOAuth2TestMixi
             self.tamper_id_token(self.build_id_token(), name="Attacker")
         )
 
-        with self.assertRaises(AuthTokenError):
+        with self.assertRaises(AuthResponseError):
             self.do_start()
 
     def test_login_rejects_wrong_id_token_audience(self) -> None:
         self.access_token_body = self.build_access_token_body(aud="other-app")
 
-        with self.assertRaises(AuthTokenError):
+        with self.assertRaises(AuthResponseError):
             self.do_start()
 
     def test_login_rejects_wrong_id_token_issuer(self) -> None:
@@ -338,19 +338,19 @@ class AzureADB2COAuth2Test(OAuth2Test, BaseAuthUrlTestMixin, AzureOAuth2TestMixi
             iss="https://footenant.b2clogin.com/00000000-0000-0000-0000-000000000000/v2.0/"
         )
 
-        with self.assertRaises(AuthTokenError):
+        with self.assertRaises(AuthResponseError):
             self.do_start()
 
     def test_login_rejects_wrong_id_token_policy(self) -> None:
         self.access_token_body = self.build_access_token_body(tfp="B2C_1_PasswordReset")
 
-        with self.assertRaises(AuthTokenError):
+        with self.assertRaises(AuthResponseError):
             self.do_start()
 
     def test_login_rejects_missing_id_token_policy(self) -> None:
         self.access_token_body = self.build_access_token_body(tfp=None)
 
-        with self.assertRaises(AuthMissingParameter):
+        with self.assertRaises(AuthResponseError):
             self.do_start()
 
     def test_login_accepts_legacy_acr_policy_claim(self) -> None:

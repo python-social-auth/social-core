@@ -6,9 +6,9 @@ import responses
 
 from social_core.exceptions import (
     AuthCanceled,
-    AuthFailed,
-    AuthMissingParameter,
-    AuthStateForbidden,
+    AuthInputError,
+    AuthPolicyError,
+    AuthSessionError,
 )
 from social_core.utils import get_querystring, parse_qs
 
@@ -188,7 +188,7 @@ class GithubAppAuthTest(GithubOAuth2Test, OAuth2StateTestMixin):
                 self.strategy.request_data().clear()
                 self.strategy.set_request_data(data, self.backend)
 
-                with self.assertRaises(AuthMissingParameter):
+                with self.assertRaises(AuthInputError):
                     self.backend.complete()
 
         self.assertEqual(len(responses.calls), 0)
@@ -209,7 +209,7 @@ class GithubAppAuthTest(GithubOAuth2Test, OAuth2StateTestMixin):
             self.installation_callback_data("attacker-state"), self.backend
         )
 
-        with self.assertRaises(AuthStateForbidden):
+        with self.assertRaises(AuthSessionError):
             self.backend.complete()
 
         self.assertEqual(len(responses.calls), 0)
@@ -367,17 +367,17 @@ class GithubOrganizationOAuth2FailTest(GithubOAuth2Test):
 
     def test_login(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_GITHUB_ORG_NAME": "foobar"})
-        with self.assertRaises(AuthFailed):
+        with self.assertRaises(AuthPolicyError):
             self.do_login()
 
     def test_partial_pipeline(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_GITHUB_ORG_NAME": "foobar"})
-        with self.assertRaises(AuthFailed):
+        with self.assertRaises(AuthPolicyError):
             self.do_partial_pipeline()
 
     def test_refresh_token(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_GITHUB_ORG_NAME": "foobar"})
-        with self.assertRaises(AuthFailed):
+        with self.assertRaises(AuthPolicyError):
             self.do_refresh_token()
 
 
@@ -418,15 +418,15 @@ class GithubTeamOAuth2FailTest(GithubOAuth2Test):
 
     def test_login(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_GITHUB_TEAM_ID": "123"})
-        with self.assertRaises(AuthFailed):
+        with self.assertRaises(AuthPolicyError):
             self.do_login()
 
     def test_partial_pipeline(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_GITHUB_TEAM_ID": "123"})
-        with self.assertRaises(AuthFailed):
+        with self.assertRaises(AuthPolicyError):
             self.do_partial_pipeline()
 
     def test_refresh_token(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_GITHUB_TEAM_ID": "123"})
-        with self.assertRaises(AuthFailed):
+        with self.assertRaises(AuthPolicyError):
             self.do_refresh_token()

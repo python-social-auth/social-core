@@ -1,5 +1,7 @@
 from typing import Any
 
+from social_core.exceptions import SocialAuthBaseException
+
 from .oauth import BaseOAuth2
 
 
@@ -56,5 +58,7 @@ class CleverOAuth2(BaseOAuth2):
             user_id = response.get("data", {}).get("id")
             user_details_url = f"https://api.clever.com/v3.0/users/{user_id}"
             return self.get_json(user_details_url, headers=auth_header)
+        except SocialAuthBaseException:
+            raise
         except ValueError:
             return None

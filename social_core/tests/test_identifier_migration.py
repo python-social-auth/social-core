@@ -1,8 +1,9 @@
 from unittest import TestCase
 
 from social_core.backends.base import BaseAuth
-from social_core.exceptions import AuthException
+from social_core.exceptions import AuthAssociationError
 from social_core.pipeline.social_auth import associate_user, social_user
+from social_core.tests.exception_helpers import assert_auth_error
 
 from .models import TestStorage, TestUserSocialAuth, User
 from .strategy import TestStrategy
@@ -135,7 +136,9 @@ class IdentifierMigrationTest(TestCase):
             extra_data={"stable_id": "stable-victim"},
         )
 
-        with self.assertRaisesRegex(AuthException, "Multiple social-auth"):
+        with assert_auth_error(
+            self, AuthAssociationError, "identifier_migration_conflict"
+        ):
             social_user(
                 self.backend,
                 "stable-victim",

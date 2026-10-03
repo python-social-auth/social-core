@@ -6,7 +6,7 @@ import requests
 import responses
 import shopify
 
-from social_core.exceptions import AuthMissingParameter, AuthStateForbidden
+from social_core.exceptions import AuthInputError, AuthSessionError
 from social_core.utils import (
     PARTIAL_TOKEN_SESSION_NAME,
     get_querystring,
@@ -89,7 +89,7 @@ class ShopifyOAuth2Test(BaseBackendTest):
 
     def test_auth_url_requires_shop(self) -> None:
         self.strategy.remove_from_request_data("shop")
-        with self.assertRaises(AuthMissingParameter):
+        with self.assertRaises(AuthInputError):
             self.backend.start()
 
     def test_auth_url_reuses_state_for_concurrent_starts(self) -> None:
@@ -112,7 +112,7 @@ class ShopifyOAuth2Test(BaseBackendTest):
         self.backend.start()
         self.strategy.set_request_data(self.signed_callback_data(None), self.backend)
 
-        with self.assertRaises(AuthMissingParameter):
+        with self.assertRaises(AuthInputError):
             self.backend.complete()
 
     def test_complete_rejects_mismatched_state_parameter(self) -> None:
@@ -121,7 +121,7 @@ class ShopifyOAuth2Test(BaseBackendTest):
             self.signed_callback_data("invalid-state"), self.backend
         )
 
-        with self.assertRaises(AuthStateForbidden):
+        with self.assertRaises(AuthSessionError):
             self.backend.complete()
 
     def test_login_exchanges_token_with_shopify_api(self) -> None:
@@ -174,5 +174,5 @@ class ShopifyOAuth2Test(BaseBackendTest):
         self.assertEqual(request_token.call_args_list[0].args[0].url, SHOP)
 
     def test_extra_data_requires_saved_shop(self) -> None:
-        with self.assertRaises(AuthMissingParameter):
+        with self.assertRaises(AuthInputError):
             self.backend.extra_data(None, SHOP, {"access_token": ACCESS_TOKEN}, {}, {})

@@ -3,17 +3,20 @@ import json
 from typing import TYPE_CHECKING, cast
 from unittest.mock import patch
 
+from requests import HTTPError
+
 from social_core.backends.facebook import API_VERSION
 from social_core.backends.facebook_limited import FacebookLimitedLogin
 from social_core.exceptions import (
     AuthCanceled,
     AuthException,
-    AuthMissingParameter,
-    AuthStateForbidden,
-    AuthStateMissing,
-    AuthTokenError,
+    AuthInputError,
+    AuthProviderError,
+    AuthResponseError,
+    AuthSessionError,
     AuthUnknownError,
 )
+from social_core.tests.exception_helpers import assert_auth_error
 from social_core.utils import PARTIAL_TOKEN_SESSION_NAME, get_querystring
 
 from .base import BaseBackendTest
@@ -78,14 +81,20 @@ class FacebookOAuth2AuthCancelTest(FacebookOAuth2Test):
     )
 
     def test_login(self) -> None:
-        with self.assertRaises(AuthCanceled) as cm:
+        with self.assertRaises(AuthProviderError) as cm:
             self.do_login()
-        self.assertIn("error", cm.exception.response.json())
+        assert isinstance(cm.exception.__cause__, HTTPError)
+        assert cm.exception.__cause__.response is not None
+        self.assertEqual(cm.exception.provider_code, 191)
+        self.assertIn("error", cm.exception.__cause__.response.json())
 
     def test_partial_pipeline(self) -> None:
-        with self.assertRaises(AuthCanceled) as cm:
+        with self.assertRaises(AuthProviderError) as cm:
             self.do_partial_pipeline()
-        self.assertIn("error", cm.exception.response.json())
+        assert isinstance(cm.exception.__cause__, HTTPError)
+        assert cm.exception.__cause__.response is not None
+        self.assertEqual(cm.exception.provider_code, 191)
+        self.assertIn("error", cm.exception.__cause__.response.json())
 
 
 class FacebookAppOAuth2Test(BaseBackendTest):
@@ -166,7 +175,7 @@ class FacebookAppOAuth2Test(BaseBackendTest):
 
         with (
             patch.object(self.backend, "do_auth") as do_auth,
-            self.assertRaises(AuthMissingParameter),
+            self.assertRaises(AuthInputError),
         ):
             self.backend.complete()
 
@@ -184,7 +193,7 @@ class FacebookAppOAuth2Test(BaseBackendTest):
                 self.backend, "load_signed_request", return_value=signed_response
             ),
             patch.object(self.backend, "do_auth") as do_auth,
-            self.assertRaises(AuthMissingParameter),
+            self.assertRaises(AuthInputError),
         ):
             self.backend.complete()
 
@@ -199,7 +208,7 @@ class FacebookAppOAuth2Test(BaseBackendTest):
 
         with (
             patch.object(self.backend, "do_auth") as do_auth,
-            self.assertRaises(AuthStateForbidden),
+            self.assertRaises(AuthSessionError),
         ):
             self.backend.complete()
 
@@ -213,7 +222,7 @@ class FacebookAppOAuth2Test(BaseBackendTest):
 
         with (
             patch.object(self.backend, "do_auth") as do_auth,
-            self.assertRaises(AuthStateMissing),
+            self.assertRaises(AuthSessionError),
         ):
             self.backend.complete()
 
@@ -339,7 +348,7 @@ class FacebookLimitedLoginTest(OpenIdConnectTest[FacebookLimitedLogin]):
         self.assertEqual(user.password, "foobar")
         self.assertEqual(user.slug, "foo-bar")
 
-        with self.assertRaisesRegex(AuthTokenError, "Missing access_token"):
+        with assert_auth_error(self, AuthResponseError, "missing_claim"):
             self.strategy.authenticate(self.backend, pipeline_index=0, response={})
 
     def test_invalid_token_login(self) -> None:
@@ -349,12 +358,12 @@ class FacebookLimitedLoginTest(OpenIdConnectTest[FacebookLimitedLogin]):
             datetime.timezone.utc
         ) - datetime.timedelta(seconds=30)
         for kwargs, message in (
-            ({"expiration_datetime": expired_time}, "Signature has expired"),
-            ({"tamper_message": True}, "Signature verification failed"),
+            ({"expiration_datetime": expired_time}, "response_expired"),
+            ({"tamper_message": True}, "invalid_signature"),
         ):
             with (
                 self.subTest(kwargs=kwargs),
-                self.assertRaisesRegex(AuthTokenError, message),
+                assert_auth_error(self, AuthResponseError, message),
             ):
                 self.backend.do_auth(self.limited_login_token(**kwargs))
 
@@ -364,7 +373,7 @@ class FacebookLimitedLoginTest(OpenIdConnectTest[FacebookLimitedLogin]):
                 self.backend.do_auth(self.limited_login_token())
             with (
                 self.subTest(reused=reused),
-                self.assertRaisesRegex(AuthTokenError, "Signature verification failed"),
+                assert_auth_error(self, AuthResponseError, "invalid_signature"),
             ):
                 self.strategy.authenticate(
                     self.backend,
@@ -382,7 +391,7 @@ class FacebookLimitedLoginTest(OpenIdConnectTest[FacebookLimitedLogin]):
         for response in ({}, claims):
             with (
                 self.subTest(response=response),
-                self.assertRaisesRegex(AuthTokenError, "Missing access_token"),
+                assert_auth_error(self, AuthResponseError, "missing_claim"),
             ):
                 self.strategy.authenticate(
                     self.backend,
@@ -406,7 +415,7 @@ class FacebookLimitedLoginTest(OpenIdConnectTest[FacebookLimitedLogin]):
         ):
             self.backend.continue_pipeline(partial)
 
-        with self.assertRaisesRegex(AuthTokenError, "Missing access_token"):
+        with assert_auth_error(self, AuthResponseError, "missing_claim"):
             self.strategy.authenticate(self.backend, pipeline_index=0, response={})
 
     def test_invalid_nonce(self) -> None:

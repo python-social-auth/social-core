@@ -6,9 +6,7 @@ Weixin OAuth2 backend
 from typing import Any
 from urllib.parse import urlencode
 
-from requests import HTTPError
-
-from social_core.exceptions import AuthCanceled, AuthUnknownError
+from social_core.exceptions import AuthProviderError, AuthUnknownError
 
 from .oauth import BaseOAuth2
 
@@ -93,15 +91,18 @@ class WeixinOAuth2(BaseOAuth2):
                 headers=self.auth_headers(),
                 method=self.ACCESS_TOKEN_METHOD,
             )
-        except HTTPError as err:
-            if err.response.status_code == 400:
-                raise AuthCanceled(self, response=err.response) from err
-            raise
         except KeyError as err:
-            raise AuthUnknownError(self) from err
-        if "errcode" in response:
-            raise AuthCanceled(self)
-        self.process_error(response)
+            raise AuthUnknownError(
+                self, code="unknown_error", stage="callback"
+            ) from err
+        if response.get("errcode"):
+            raise AuthProviderError(
+                self,
+                response.get("errmsg"),
+                provider_code=response["errcode"],
+                stage="token_exchange",
+            )
+        self.process_error(response, stage="token_exchange")
         return self.do_auth(
             response["access_token"], *args, response=response, **kwargs
         )
@@ -161,16 +162,19 @@ class WeixinOAuth2APP(WeixinOAuth2):
                 headers=self.auth_headers(),
                 method=self.ACCESS_TOKEN_METHOD,
             )
-        except HTTPError as err:
-            if err.response.status_code == 400:
-                raise AuthCanceled(self) from err
-            raise
         except KeyError as err:
-            raise AuthUnknownError(self) from err
+            raise AuthUnknownError(
+                self, code="unknown_error", stage="callback"
+            ) from err
 
-        if "errcode" in response:
-            raise AuthCanceled(self)
-        self.process_error(response)
+        if response.get("errcode"):
+            raise AuthProviderError(
+                self,
+                response.get("errmsg"),
+                provider_code=response["errcode"],
+                stage="token_exchange",
+            )
+        self.process_error(response, stage="token_exchange")
         return self.do_auth(
             response["access_token"], *args, response=response, **kwargs
         )
