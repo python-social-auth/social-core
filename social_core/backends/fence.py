@@ -15,7 +15,7 @@ class Fence(OpenIdConnectAuth):
     ID_KEY = "sub"
     LEGACY_ID_KEYS = ("username",)
     MUTABLE_ID_KEYS = ("username", "preferred_username", "email")
-    EXTRA_DATA = [*OpenIdConnectAuth.EXTRA_DATA, ("sub", "sub")]
+    EXTRA_DATA = [*(OpenIdConnectAuth.EXTRA_DATA or []), ("sub", "sub")]
     DEFAULT_SCOPE = ["openid", "user"]
     VALIDATE_AT_HASH: bool = False
 
