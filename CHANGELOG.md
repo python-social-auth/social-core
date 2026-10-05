@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Security
 
+- Google OAuth2 and Google OpenID Connect now reject UserInfo responses that do
+  not explicitly confirm email verification. Google One Tap requires the same
+  confirmation in its ID token.
 - Email validation codes expire after seven days by default. Configure
   `SOCIAL_AUTH_EMAIL_VALIDATION_EXPIRED_THRESHOLD` to change their lifetime.
   Storage integrations must persist each code's creation `timestamp`; undated
