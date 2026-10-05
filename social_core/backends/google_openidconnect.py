@@ -27,9 +27,11 @@ class GoogleOpenIdConnect(GoogleOAuth2, OpenIdConnectAuth):
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Return user data from Google API"""
-        return self.validate_userinfo_sub(
+        response = self.validate_userinfo_sub(
             self.get_json(
                 "https://openidconnect.googleapis.com/v1/userinfo",
                 params={"access_token": access_token, "alt": "json"},
             )
         )
+        self.validate_email_verified(response)
+        return response

@@ -3,16 +3,41 @@ Google OpenId, OAuth2, and OAuth1 backends, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/google.html
 """
 
-from typing import Any, Literal
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, Literal
 
 from social_core.backends.base import BaseAuth
+from social_core.exceptions import AuthResponseError
 
 from .oauth import BaseOAuth1, BaseOAuth2
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 
 class BaseGoogleAuth(BaseAuth):
     LEGACY_ID_KEYS = ("email",)
     MUTABLE_ID_KEYS = ("email",)
+
+    def validate_email_verified(
+        self,
+        response: Mapping[str, Any] | None,
+        *,
+        stage: Literal["user_info", "token_validation"] = "user_info",
+    ) -> None:
+        """Require Google to explicitly confirm email verification."""
+        email_verified = (
+            response.get("email_verified") if response is not None else None
+        )
+        if email_verified is not True:
+            raise AuthResponseError(
+                self,
+                "Google did not provide a verified email.",
+                code="missing_claim" if email_verified is None else "invalid_claim",
+                claim="email_verified",
+                stage=stage,
+            )
 
     def get_user_id(self, details, response):
         """Use the configured stable Google account identifier."""
@@ -49,12 +74,14 @@ class BaseGoogleAuth(BaseAuth):
 class BaseGoogleOAuth2API(BaseGoogleAuth):
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Return user data from Google API"""
-        return self.get_json(
+        response = self.get_json(
             "https://www.googleapis.com/oauth2/v3/userinfo",
             headers={
                 "Authorization": f"Bearer {access_token}",
             },
         )
+        self.validate_email_verified(response)
+        return response
 
     def revoke_token_params(self, token, uid):
         return {"token": token}

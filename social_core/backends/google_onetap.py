@@ -68,6 +68,7 @@ class GoogleOneTap(BaseGoogleAuth, BaseAuth):
                 stage="token_validation",
             ) from error
 
+        self.validate_email_verified(idinfo, stage="token_validation")
         return idinfo
 
     def auth_complete(self, *args, **kwargs):
