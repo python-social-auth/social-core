@@ -26,7 +26,9 @@ class QiitaOAuth2(BaseOAuth2):
 
     name = "qiita"
     title = "Qiita"
-    ID_KEY = "id"
+    ID_KEY = "permanent_id"
+    LEGACY_ID_KEYS = ("id",)
+    MUTABLE_ID_KEYS = ("id",)
 
     AUTHORIZATION_URL = "https://qiita.com/api/v2/oauth/authorize"
     ACCESS_TOKEN_URL = "https://qiita.com/api/v2/access_tokens"

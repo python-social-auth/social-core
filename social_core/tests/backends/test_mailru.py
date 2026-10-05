@@ -10,6 +10,7 @@ class MRGOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     access_token_body = json.dumps({"access_token": "foobar", "token_type": "bearer"})
     user_data_body = json.dumps(
         {
+            "id": "mailru-user-id",
             "first_name": "Foo",
             "last_name": "Bar",
             "name": "Foo Bar",

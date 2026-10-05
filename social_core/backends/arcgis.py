@@ -10,10 +10,16 @@ from .oauth import BaseOAuth2
 class ArcGISOAuth2(BaseOAuth2):
     name = "arcgis"
     title = "ArcGIS"
-    ID_KEY = "username"
+    ID_KEY = "id"
+    LEGACY_ID_KEYS = ("username",)
+    MUTABLE_ID_KEYS = ("username",)
     AUTHORIZATION_URL = "https://www.arcgis.com/sharing/rest/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://www.arcgis.com/sharing/rest/oauth2/token"
-    EXTRA_DATA = [("expires_in", "expires_in"), ("refresh_token", "refresh_token")]
+    EXTRA_DATA = [
+        ("id", "id"),
+        ("expires_in", "expires_in"),
+        ("refresh_token", "refresh_token"),
+    ]
 
     def get_user_details(self, response):
         """Return user details from ArcGIS account"""

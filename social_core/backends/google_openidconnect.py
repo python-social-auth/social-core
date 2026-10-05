@@ -23,7 +23,7 @@ class GoogleOpenIdConnect(GoogleOAuth2, OpenIdConnectAuth):
             return OpenIdConnectAuth.get_user_id(self, details, response)
         if self.setting("USE_UNIQUE_USER_ID", False) and self.id_token is not None:
             return self.id_token.get("sub")
-        return super().get_user_id(details, response)
+        return OpenIdConnectAuth.get_user_id(self, details, response)
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Return user data from Google API"""

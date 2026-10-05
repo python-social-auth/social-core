@@ -4,10 +4,8 @@ from social_core.exceptions import (
     AuthInputError,
     AuthProviderError,
     AuthResponseError,
-    AuthSessionError,
 )
 from social_core.utils import (
-    constant_time_compare,
     handle_http_errors,
     url_add_parameters,
 )
@@ -27,7 +25,9 @@ class LastFmAuth(BaseAuth):
 
     name = "lastfm"
     title = "Last.fm"
+    ASSOCIATION_ONLY = True
     ID_KEY = "name"
+    MUTABLE_ID_KEYS = ("name",)
     REQUIRES_USER_ID = True
     AUTH_URL = "https://www.last.fm/api/auth/?api_key={api_key}"
     EXTRA_DATA = [("key", "session_key")]
@@ -43,15 +43,10 @@ class LastFmAuth(BaseAuth):
         return self.strategy.random_string(32)
 
     def get_or_create_state(self) -> str:
-        name = f"{self.name}_state"
-        state = self.strategy.session_get(name)
-        if state is None:
-            state = self.state_token()
-            self.strategy.session_set(name, state)
-        return state
+        return self.get_association_state()
 
     def get_session_state(self):
-        return self.strategy.session_get(f"{self.name}_state")
+        return self.get_association_state()
 
     def get_request_state(self):
         request_state = self.data.get("redirect_state")
@@ -59,20 +54,10 @@ class LastFmAuth(BaseAuth):
             request_state = request_state[0]
         return request_state
 
-    def validate_state(self):
+    def validate_state(self, user=None):
         """Validate that the callback belongs to the initiating session."""
-        state = self.get_session_state()
         request_state = self.get_request_state()
-        if not request_state:
-            raise AuthInputError(
-                self, parameter="state", code="missing_parameter", stage="callback"
-            )
-        if not state:
-            raise AuthSessionError(
-                self, "state", code="session_context_missing", stage="callback"
-            )
-        if not constant_time_compare(request_state, state):
-            raise AuthSessionError(self, code="state_mismatch", stage="callback")
+        self.validate_association_state(request_state, user)
 
     def get_redirect_uri(self, state: str | None = None) -> str:
         uri = self.strategy.absolute_uri(self.redirect_uri)
@@ -83,7 +68,7 @@ class LastFmAuth(BaseAuth):
     @handle_http_errors
     def auth_complete(self, *args, **kwargs):
         """Completes login process, must return user instance"""
-        self.validate_state()
+        self.validate_state(kwargs.get("user"))
         key, secret = self.get_key_and_secret()
         token = self.data.get("token")
         if not token:
@@ -136,6 +121,7 @@ class LastFmAuth(BaseAuth):
                 stage="token_exchange",
             )
         kwargs.update({"response": session, "backend": self})
+        self._bind_association_user(kwargs)
         return self.strategy.authenticate(*args, **kwargs)
 
     def get_user_details(self, response):

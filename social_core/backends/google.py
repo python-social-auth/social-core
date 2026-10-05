@@ -11,17 +11,18 @@ from .oauth import BaseOAuth1, BaseOAuth2
 
 
 class BaseGoogleAuth(BaseAuth):
-    ID_KEY = "email"
+    LEGACY_ID_KEYS = ("email",)
+    MUTABLE_ID_KEYS = ("email",)
 
     def get_user_id(self, details, response):
-        """Use google email as unique id"""
+        """Use the configured stable Google account identifier."""
         if self.setting("ID_KEY"):
             return super().get_user_id(details, response)
         if self.setting("USE_UNIQUE_USER_ID", False):
             if "sub" in response:
                 return response["sub"]
             return response["id"]
-        return details["email"]
+        return super().get_user_id(details, response)
 
     def get_user_details(self, response):
         """Return user details from Google API account"""
@@ -69,6 +70,7 @@ class GoogleOAuth2(BaseGoogleOAuth2API, BaseOAuth2):
     title = "Google"
     icon = "google.svg"
     REDIRECT_STATE = False
+    ID_KEY = "sub"
     AUTHORIZATION_URL = "https://accounts.google.com/o/oauth2/auth"
     ACCESS_TOKEN_URL = "https://accounts.google.com/o/oauth2/token"
     REVOKE_TOKEN_URL = "https://accounts.google.com/o/oauth2/revoke"
@@ -76,6 +78,7 @@ class GoogleOAuth2(BaseGoogleOAuth2API, BaseOAuth2):
     # The order of the default scope is important
     DEFAULT_SCOPE = ["openid", "email", "profile"]
     EXTRA_DATA = [
+        ("sub", "sub"),
         ("refresh_token", "refresh_token", True),
         ("expires_in", "expires_in"),
         ("token_type", "token_type", True),
@@ -88,10 +91,12 @@ class GoogleOAuth(BaseGoogleAuth, BaseOAuth1):
     name = "google-oauth"
     title = "Google"
     icon = "google.svg"
+    ID_KEY = "id"
     AUTHORIZATION_URL = "https://www.google.com/accounts/OAuthAuthorizeToken"
     REQUEST_TOKEN_URL = "https://www.google.com/accounts/OAuthGetRequestToken"
     ACCESS_TOKEN_URL = "https://www.google.com/accounts/OAuthGetAccessToken"
     DEFAULT_SCOPE = ["https://www.googleapis.com/auth/userinfo#email"]
+    EXTRA_DATA = [("id", "id")]
 
     def user_data(self, access_token: dict, *args, **kwargs) -> dict[str, Any] | None:
         """Return user data from Google API"""

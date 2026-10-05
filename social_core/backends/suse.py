@@ -10,12 +10,13 @@ class OpenSUSEOpenId(OpenIdAuth):
     name = "opensuse"
     title = "openSUSE"
     icon = "opensuse.svg"
-    ID_KEY = "nickname"
+    ID_KEY = "identity_url"
+    LEGACY_ID_KEYS = ("nickname",)
+    MUTABLE_ID_KEYS = ("nickname",)
     URL = "https://www.opensuse.org/openid/user/"
 
     def get_user_id(self, details, response):
         """
-        Return user unique id provided by service. For openSUSE
-        the nickname is original.
+        Return the verified OpenID identity URL.
         """
-        return self.get_user_id_from_sources(details)
+        return self.get_user_id_for_key(details, response, self.id_key())

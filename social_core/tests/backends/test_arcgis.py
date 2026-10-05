@@ -10,6 +10,7 @@ class ArcGISOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
 
     user_data_body = json.dumps(
         {
+            "id": "arcgis-user-id",
             "first_name": "Gis",
             "last_name": "Rocks",
             "email": "gis@rocks.com",

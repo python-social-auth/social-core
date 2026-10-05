@@ -27,6 +27,7 @@ class BitbucketOAuth2(BaseOAuth2):
         ("refresh_token", "refresh_token"),
     ]
     ID_KEY = "uuid"
+    MUTABLE_ID_KEYS = ("username",)
 
     def get_user_id(self, details, response):
         id_key = self.id_key()

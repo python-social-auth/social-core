@@ -14,6 +14,8 @@ class GoogleOneTap(BaseGoogleAuth, BaseAuth):
     name = "google-onetap"
     title = "Google"
     icon = "google.svg"
+    ID_KEY = "sub"
+    EXTRA_DATA = [("sub", "sub")]
     CSRF_KEY = "g_csrf_token"
     CREDENTIAL_KEY = "credential"
 

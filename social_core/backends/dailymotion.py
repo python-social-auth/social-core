@@ -14,7 +14,9 @@ class DailymotionOAuth2(BaseOAuth2):
     name = "dailymotion"
     title = "Dailymotion"
     EXTRA_DATA = [("id", "id")]
-    ID_KEY = "username"
+    ID_KEY = "id"
+    LEGACY_ID_KEYS = ("username",)
+    MUTABLE_ID_KEYS = ("username", "screenname")
     AUTHORIZATION_URL = "https://api.dailymotion.com/oauth/authorize"
     REQUEST_TOKEN_URL = "https://api.dailymotion.com/oauth/token"
     ACCESS_TOKEN_URL = "https://api.dailymotion.com/oauth/token"

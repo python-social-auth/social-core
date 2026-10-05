@@ -68,27 +68,37 @@ class ConfigurableIdKeyTest(TestCase):
             "social_core.backends.azuread_tenant.AzureADV2TenantOAuth2",
             "sub",
         ),
-        ("social_core.backends.cas.CASOpenIdConnectAuth", "username"),
+        ("social_core.backends.arcgis.ArcGISOAuth2", "id"),
+        ("social_core.backends.cas.CASOpenIdConnectAuth", "sub"),
         ("social_core.backends.cilogon.CILogonOAuth2", "sub"),
         ("social_core.backends.classlink.ClasslinkOAuth", "UserId"),
         ("social_core.backends.digitalocean.DigitalOceanOAuth", "uuid"),
         ("social_core.backends.deezer.DeezerOAuth2", "id"),
         ("social_core.backends.discourse.DiscourseAuth", "external_id"),
         ("social_core.backends.drip.DripOAuth", "email"),
-        ("social_core.backends.google.GoogleOAuth2", "email"),
+        ("social_core.backends.cognito.CognitoOAuth2", "sub"),
+        ("social_core.backends.dailymotion.DailymotionOAuth2", "id"),
+        ("social_core.backends.fence.Fence", "sub"),
+        ("social_core.backends.google.GoogleOAuth", "id"),
+        ("social_core.backends.google.GoogleOAuth2", "sub"),
+        ("social_core.backends.google_onetap.GoogleOneTap", "sub"),
+        ("social_core.backends.keycloak.KeycloakOAuth2", "sub"),
         ("social_core.backends.kick.KickOAuth2", "user_id"),
         ("social_core.backends.lastfm.LastFmAuth", "name"),
         ("social_core.backends.mediawiki.MediaWiki", "userID"),
+        ("social_core.backends.mailru.MRGOAuth2", "id"),
+        ("social_core.backends.okta.OktaOAuth2", "sub"),
         ("social_core.backends.openshift.OpenshiftOAuth2", "uid"),
         ("social_core.backends.pushbullet.PushbulletOAuth2", "iden"),
-        ("social_core.backends.qiita.QiitaOAuth2", "id"),
+        ("social_core.backends.qiita.QiitaOAuth2", "permanent_id"),
         ("social_core.backends.scistarter.SciStarterOAuth2", "profile_id"),
-        ("social_core.backends.suse.OpenSUSEOpenId", "nickname"),
+        ("social_core.backends.suse.OpenSUSEOpenId", "identity_url"),
         ("social_core.backends.twitch.TwitchOAuth2", "id"),
         ("social_core.backends.tumblr.TumblrOAuth", "uuid"),
-        ("social_core.backends.ubuntu.UbuntuOpenId", "nickname"),
+        ("social_core.backends.trello.TrelloOAuth", "id"),
+        ("social_core.backends.ubuntu.UbuntuOpenId", "identity_url"),
         ("social_core.backends.vimeo.VimeoOAuth2", "uri"),
-        ("social_core.backends.yandex.YandexOpenId", "email"),
+        ("social_core.backends.yandex.YandexOpenId", "identity_url"),
         ("social_core.backends.zotero.ZoteroOAuth", "userID"),
     )
     required_default_id_backends = (
@@ -616,17 +626,15 @@ class ConfigurableIdKeyTest(TestCase):
         with assert_auth_error(self, AuthResponseError, "missing_claim"):
             backend.get_user_id({"username": b"access-token"}, {})
 
-    def test_yandex_preserves_identity_url_fallback_for_missing_key(self) -> None:
+    def test_yandex_rejects_missing_configured_key(self) -> None:
         identity_url = "https://provider.example/users/123"
         backend = self.backend(
             "social_core.backends.yandex.YandexOpenId",
             ID_KEY="missing_id",
         )
 
-        self.assertEqual(
-            backend.get_user_id({}, SimpleNamespace(identity_url=identity_url)),
-            identity_url,
-        )
+        with assert_auth_error(self, AuthResponseError, "missing_claim"):
+            backend.get_user_id({}, SimpleNamespace(identity_url=identity_url))
 
     def test_protocol_derived_identifiers_ignore_configured_key(self) -> None:
         identity_url = "https://provider.example/users/123"
