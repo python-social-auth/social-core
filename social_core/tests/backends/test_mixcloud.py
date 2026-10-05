@@ -1,4 +1,12 @@
 import json
+from typing import Any, cast
+
+import responses
+
+from social_core.actions import do_auth
+from social_core.exceptions import AuthAssociationError, AuthSessionError
+from social_core.tests.models import TestUserSocialAuth, User
+from social_core.utils import get_querystring
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
@@ -50,8 +58,62 @@ class MixcloudOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         }
     )
 
+    def start_for_user(self, user: User) -> str:
+        start_url = do_auth(self.backend, user=user).url
+        state = get_querystring(start_url)["state"]
+        context = self.strategy.session_get("mixcloud_state")
+        self.assertEqual(context["state"], state)
+        self.assertEqual(context["user_id"], str(user.id))
+        return start_url
+
+    def prepare_callback(self, user: User) -> None:
+        start_url = self.start_for_user(user)
+        target_url = self.auth_handlers(start_url)
+        self.strategy.set_request_data(get_querystring(target_url), self.backend)
+        self.pre_complete_callback(start_url)
+
+    def complete_for_user(self, user: User) -> User:
+        self.prepare_callback(user)
+        result = self.backend.complete(user=user)
+        self.assertIs(result, user)
+        return cast("User", result)
+
     def test_login(self) -> None:
-        self.do_login()
+        user = self.complete_for_user(User("existing"))
+        social = TestUserSocialAuth.get_social_auth("mixcloud", "foobar")
+        self.assertIs(social.user, user)
+        self.assertEqual(len(User.cache), 1)
 
     def test_partial_pipeline(self) -> None:
-        self.do_partial_pipeline()
+        victim = User("victim")
+        attacker = User("attacker")
+        social = TestUserSocialAuth.create_social_auth(victim, "foobar", "mixcloud")
+        self.prepare_callback(attacker)
+        with self.assertRaises(AuthAssociationError):
+            self.backend.complete(user=attacker)
+        self.assertIs(social.user, victim)
+        self.assertEqual(attacker.social, [])
+
+    def test_start_requires_authenticated_user(self) -> None:
+        with self.assertRaises(AuthSessionError):
+            do_auth(self.backend)
+        anonymous = User("anonymous")
+        cast(Any, anonymous).is_authenticated = False  # noqa: TC006
+        with self.assertRaises(AuthSessionError):
+            do_auth(self.backend, user=anonymous)
+
+    def test_direct_start_requires_prepared_context(self) -> None:
+        with self.assertRaises(AuthSessionError):
+            self.backend.start()
+
+    def test_auth_url_parameters(self) -> None:
+        self.start_for_user(User("existing"))
+        self.check_parameters_in_authorization_url()
+
+    def test_state_cannot_be_replayed(self) -> None:
+        user = User("existing")
+        self.complete_for_user(user)
+        calls = len(responses.calls)
+        with self.assertRaises(AuthSessionError):
+            self.backend.complete(user=user)
+        self.assertEqual(len(responses.calls), calls)

@@ -311,6 +311,7 @@ oQIDAQAB
     def _get_jwt_payload(self):
         claimed_at = int(time.time())
         return {
+            "sub": "google-user-id",
             "given_name": "test name",
             "email": "test@test.com",
             "aud": self.client_id,

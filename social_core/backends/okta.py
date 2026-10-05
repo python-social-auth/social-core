@@ -51,10 +51,13 @@ class OktaOAuth2(OktaMixin, BaseOAuth2):
     title = "Okta"
     REDIRECT_STATE = False
     SCOPE_SEPARATOR = " "
-    ID_KEY = "preferred_username"
+    ID_KEY = "sub"
+    LEGACY_ID_KEYS = ("preferred_username",)
+    MUTABLE_ID_KEYS = ("preferred_username",)
 
     DEFAULT_SCOPE = ["openid", "profile", "email"]
     EXTRA_DATA = [
+        ("sub", "sub"),
         ("refresh_token", "refresh_token", True),
         ("expires_in", "expires_in"),
         ("token_type", "token_type", True),

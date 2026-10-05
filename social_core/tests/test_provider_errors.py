@@ -31,7 +31,7 @@ from social_core.exceptions import (
     AuthSessionError,
     ErrorStage,
 )
-from social_core.tests.models import TestStorage
+from social_core.tests.models import TestStorage, User
 from social_core.tests.strategy import TestStrategy
 from social_core.utils import http_error, module_member, provider_error
 
@@ -310,8 +310,8 @@ class ProviderErrorTest(unittest.TestCase):
         )
         azure = AzureADOAuth2(strategy)
         lastfm = LastFmAuth(strategy)
+        lastfm_user = User("lastfm-user")
         lastfm.data = {"token": "token", "redirect_state": "state"}
-        strategy.session_set("lastfm_state", "state")
         configuration_url = "https://example.com/stage-regression/discovery"
         keys_url = "https://example.com/stage-regression/keys"
         # The cache decorator attaches invalidate dynamically.
@@ -323,9 +323,14 @@ class ProviderErrorTest(unittest.TestCase):
                 "token_validation",
             ),
             (partial(azure.get_jwks_keys_for_uri, keys_url), "token_validation"),
-            (lastfm.auth_complete, "token_exchange"),
+            (partial(lastfm.auth_complete, user=lastfm_user), "token_exchange"),
         ):
             for transport_failure in (False, True):
+                if stage == "token_exchange":
+                    strategy.session_set(
+                        "lastfm_state",
+                        {"state": "state", "user_id": str(lastfm_user.id)},
+                    )
                 response = self.response(503)
                 cause = (
                     requests.ReadTimeout("private diagnostic")
@@ -362,8 +367,8 @@ class ProviderErrorTest(unittest.TestCase):
             {"SOCIAL_AUTH_KEY": "key", "SOCIAL_AUTH_SECRET": "secret"}
         )
         backend = LastFmAuth(strategy)
+        user = User("lastfm-user")
         backend.data = {"token": "token", "redirect_state": "state"}
-        strategy.session_set("lastfm_state", "state")
         for provider_code, code, recovery in (
             (4, "http_error", "contact_administrator"),
             (11, "unavailable", "retry_later"),
@@ -371,6 +376,9 @@ class ProviderErrorTest(unittest.TestCase):
             (29, "rate_limited", "retry_later"),
             (999, "http_error", "contact_administrator"),
         ):
+            strategy.session_set(
+                "lastfm_state", {"state": "state", "user_id": str(user.id)}
+            )
             payload = {"error": provider_code, "message": "private diagnostic"}
             response = self.response(200, payload)
             with (
@@ -379,7 +387,7 @@ class ProviderErrorTest(unittest.TestCase):
                 patch.object(strategy, "authenticate") as authenticate,
                 self.assertRaises(AuthProviderError) as caught,
             ):
-                backend.auth_complete()
+                backend.auth_complete(user=user)
             error = caught.exception
             self.assertEqual(error.code, code)
             self.assertEqual(error.provider_code, provider_code)
@@ -395,20 +403,23 @@ class ProviderErrorTest(unittest.TestCase):
             {"SOCIAL_AUTH_KEY": "key", "SOCIAL_AUTH_SECRET": "secret"}
         )
         backend = LastFmAuth(strategy)
+        user = User("lastfm-user")
         backend.data = {"token": "token", "redirect_state": "state"}
-        strategy.session_set("lastfm_state", "state")
         for payload, code in (
             ([], "malformed_response"),
             ({}, "missing_claim"),
             ({"session": []}, "malformed_response"),
         ):
+            strategy.session_set(
+                "lastfm_state", {"state": "state", "user_id": str(user.id)}
+            )
             with (
                 self.subTest(payload=payload),
                 patch("requests.request", return_value=self.response(200, payload)),
                 patch.object(strategy, "authenticate") as authenticate,
                 self.assertRaises(AuthResponseError) as caught,
             ):
-                backend.auth_complete()
+                backend.auth_complete(user=user)
             self.assertEqual(caught.exception.code, code)
             self.assertEqual(caught.exception.stage, "token_exchange")
             authenticate.assert_not_called()

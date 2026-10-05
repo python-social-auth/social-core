@@ -52,6 +52,7 @@ class OpenIdAuth(BaseAuth):
     title = "OpenID"
     URL: str | None = None
     USERNAME_KEY = "username"
+    PROTOCOL_ID_KEY = "identity_url"
 
     _consumer = None
 
@@ -62,6 +63,12 @@ class OpenIdAuth(BaseAuth):
         so the configurable ID_KEY does not apply to this backend.
         """
         return response.identity_url
+
+    def get_user_id_for_key(self, details, response, id_key: str):
+        """Return the asserted identity URL or an explicitly selected profile field."""
+        if id_key == self.PROTOCOL_ID_KEY:
+            return response.identity_url
+        return self.get_user_id_from_sources(details, id_key=id_key)
 
     def get_ax_attributes(self) -> list[tuple[str, str]]:
         attrs = cast("list[tuple[str, str]]", self.setting("AX_SCHEMA_ATTRS", []))

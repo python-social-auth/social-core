@@ -45,7 +45,7 @@ class QiitaOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         self.assertEqual(len(user.social), 1)
 
         social = user.social[0]
-        self.assertEqual(social.uid, "foobar")
+        self.assertEqual(social.uid, "12345")
         self.assertEqual(social.extra_data["permanent_id"], 12345)
 
     def test_partial_pipeline(self) -> None:
@@ -53,7 +53,7 @@ class QiitaOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         self.assertEqual(len(user.social), 1)
 
         social = user.social[0]
-        self.assertEqual(social.uid, "foobar")
+        self.assertEqual(social.uid, "12345")
         self.assertEqual(social.extra_data["permanent_id"], 12345)
 
 

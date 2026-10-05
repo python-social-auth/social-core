@@ -31,7 +31,10 @@ class CASOpenIdConnectAuth(OpenIdConnectAuth):
 
     name = "cas"
     title = "CAS"
-    ID_KEY = "username"
+    ID_KEY = "sub"
+    LEGACY_ID_KEYS = ("username",)
+    MUTABLE_ID_KEYS = ("username", "preferred_username", "email")
+    EXTRA_DATA = [*OpenIdConnectAuth.EXTRA_DATA, ("sub", "sub")]
     STATE_PARAMETER = True
 
     def oidc_endpoint(self):

@@ -100,7 +100,10 @@ class KeycloakOAuth2(BaseOAuth2):  # pylint: disable=abstract-method
 
     name = "keycloak"
     title = "Keycloak"
-    ID_KEY = "username"
+    ID_KEY = "sub"
+    LEGACY_ID_KEYS = ("username",)
+    MUTABLE_ID_KEYS = ("username", "preferred_username", "email")
+    EXTRA_DATA = [("sub", "sub")]
     REDIRECT_STATE = False
 
     def audience(self):

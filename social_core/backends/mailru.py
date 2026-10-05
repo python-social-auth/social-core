@@ -51,10 +51,16 @@ class MailruOAuth2(BaseOAuth2):
 class MRGOAuth2(BaseOAuth2):
     name = "mailru"
     title = "Mail.ru"
-    ID_KEY = "email"
+    ID_KEY = "id"
+    LEGACY_ID_KEYS = ("email",)
+    MUTABLE_ID_KEYS = ("email",)
     AUTHORIZATION_URL = "https://oauth.mail.ru/login"
     ACCESS_TOKEN_URL = "https://oauth.mail.ru/token"
-    EXTRA_DATA = [("refresh_token", "refresh_token"), ("expires_in", "expires_in")]
+    EXTRA_DATA = [
+        ("id", "id"),
+        ("refresh_token", "refresh_token"),
+        ("expires_in", "expires_in"),
+    ]
     REDIRECT_STATE = False
 
     def get_user_details(self, response):

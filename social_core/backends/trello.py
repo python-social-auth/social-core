@@ -15,12 +15,15 @@ class TrelloOAuth(BaseOAuth1):
 
     name = "trello"
     title = "Trello"
-    ID_KEY = "username"
+    ID_KEY = "id"
+    LEGACY_ID_KEYS = ("username",)
+    MUTABLE_ID_KEYS = ("username",)
     AUTHORIZATION_URL = "https://trello.com/1/OAuthAuthorizeToken"
     REQUEST_TOKEN_URL = "https://trello.com/1/OAuthGetRequestToken"
     ACCESS_TOKEN_URL = "https://trello.com/1/OAuthGetAccessToken"
 
     EXTRA_DATA = [
+        ("id", "id"),
         ("username", "username"),
         ("email", "email"),
         ("fullName", "fullName"),

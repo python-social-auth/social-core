@@ -13,6 +13,7 @@ class CognitoAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     access_token_body = json.dumps({"access_token": "foobar", "token_type": "bearer"})
     user_data_body = json.dumps(
         {
+            "sub": "cognito-user-id",
             "given_name": "John",
             "family_name": "Doe",
             "username": "cognito.account.ABCDE1234",
