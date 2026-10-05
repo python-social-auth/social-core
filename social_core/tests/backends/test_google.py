@@ -416,6 +416,29 @@ oQIDAQAB
         self.backend.data = {"g_csrf_token": "csrf"}
         self.backend.verify_csrf(request=mock.Mock(COOKIES={"g_csrf_token": "csrf"}))
 
+    def test_verify_csrf_rejects_malformed_tokens(self) -> None:
+        for body, cookie in (
+            ("é", "csrf"),
+            ("csrf", "é"),
+            (["csrf"], ["csrf"]),
+            ({"csrf": "token"}, {"csrf": "token"}),
+            (True, True),
+            (123, 123),
+            (b"csrf", b"csrf"),
+            ("csrf", ["csrf"]),
+            (["csrf"], "csrf"),
+        ):
+            self.backend.data = {"g_csrf_token": body}
+            with (
+                self.subTest(body=body, cookie=cookie),
+                self.assertRaises(AuthSessionError) as caught,
+            ):
+                self.backend.verify_csrf(
+                    request=mock.Mock(COOKIES={"g_csrf_token": cookie})
+                )
+            self.assertEqual(caught.exception.code, "state_mismatch")
+            self.assertEqual(caught.exception.stage, "callback")
+
     def test_get_decoded_info_error(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_GOOGLE_ONETAP_KEY": self.client_id})
         valid_payload = self._get_jwt_payload()

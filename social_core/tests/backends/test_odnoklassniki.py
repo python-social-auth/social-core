@@ -104,11 +104,37 @@ class OdnoklassnikiAppTest(BaseBackendTest):
             self.backend.complete()
 
     def test_rejects_invalid_auth_sig_before_api_request(self) -> None:
+        for signature in (self.auth_sig("67890"), "é"):
+            self.strategy.set_request_data(
+                self.request_data(auth_sig=signature), self.backend
+            )
+            with (
+                self.subTest(signature=signature),
+                self.assertRaises(AuthResponseError) as caught,
+            ):
+                self.backend.complete()
+            self.assertEqual(caught.exception.code, "invalid_signature")
+            self.assertEqual(caught.exception.stage, "callback")
+
+        self.assertEqual(len(responses.calls), 0)
+
+    def test_accepts_uppercase_auth_sig(self) -> None:
         self.strategy.set_request_data(
-            self.request_data(auth_sig=self.auth_sig("67890")), self.backend
+            self.request_data(auth_sig=self.auth_sig().upper()), self.backend
         )
+        self.backend.verify_auth_sig()
 
-        with self.assertRaises(AuthResponseError):
-            self.backend.complete()
-
+    def test_rejects_non_string_auth_sig(self) -> None:
+        for signature in (["sig"], {"sig": "value"}, True, 123, b"sig"):
+            data: dict[str, object] = dict(self.request_data())
+            data["auth_sig"] = signature
+            self.strategy.set_request_data(data, self.backend)
+            with (
+                self.subTest(signature=signature),
+                self.assertRaises(AuthInputError) as caught,
+            ):
+                self.backend.complete()
+            self.assertEqual(caught.exception.parameter, "auth_sig")
+            self.assertEqual(caught.exception.code, "invalid_parameter")
+            self.assertEqual(caught.exception.stage, "callback")
         self.assertEqual(len(responses.calls), 0)

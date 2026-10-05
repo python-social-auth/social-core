@@ -10,7 +10,7 @@ from social_core.exceptions import (
     AuthInputError,
     AuthResponseError,
 )
-from social_core.utils import handle_http_errors
+from social_core.utils import constant_time_compare, handle_http_errors
 
 from .base import BaseAuth
 
@@ -66,7 +66,9 @@ class TelegramAuth(BaseAuth):
             raise AuthResponseError(
                 self, "Auth date is outdated", code="response_expired", stage="callback"
             )
-        if built_hash != received_hash_string:
+        if not isinstance(received_hash_string, str) or not constant_time_compare(
+            built_hash, received_hash_string
+        ):
             raise AuthResponseError(
                 self,
                 "Invalid hash supplied",

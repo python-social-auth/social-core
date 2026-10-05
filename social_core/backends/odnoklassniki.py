@@ -10,6 +10,7 @@ from typing import Any, cast
 from urllib.parse import unquote
 
 from social_core.exceptions import AuthInputError, AuthResponseError
+from social_core.utils import constant_time_compare
 
 from .base import BaseAuth
 from .oauth import BaseOAuth2
@@ -196,7 +197,7 @@ class OdnoklassnikiApp(BaseAuth):
                 )
         correct_key = self.get_auth_sig()
         key = self.data["auth_sig"].lower()
-        if correct_key != key:
+        if not constant_time_compare(correct_key, key):
             raise AuthResponseError(
                 self,
                 "Wrong authorization key",
