@@ -31,6 +31,7 @@ class LastFmAuthTest(BaseBackendTest):
         state = get_querystring(query["cb"])["redirect_state"]
         self.assertEqual(query["api_key"], "a-key")
         context = self.strategy.session_get("lastfm_state")
+        assert context is not None
         self.assertEqual(context["state"], state)
         self.assertEqual(context["user_id"], str(user.id))
         return state
@@ -66,6 +67,7 @@ class LastFmAuthTest(BaseBackendTest):
         self.assertTrue(query["cb"].startswith("https://myapp.com/complete/lastfm?"))
         self.assertEqual(callback_query["next"], "/profile")
         context = self.strategy.session_get("lastfm_state")
+        assert context is not None
         self.assertEqual(callback_query["redirect_state"], context["state"])
         self.assertEqual(context["user_id"], str(user.id))
 

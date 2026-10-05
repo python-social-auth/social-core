@@ -62,6 +62,7 @@ class MixcloudOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         start_url = do_auth(self.backend, user=user).url
         state = get_querystring(start_url)["state"]
         context = self.strategy.session_get("mixcloud_state")
+        assert context is not None
         self.assertEqual(context["state"], state)
         self.assertEqual(context["user_id"], str(user.id))
         return start_url
