@@ -6,7 +6,7 @@ from typing import cast
 from urllib.parse import urlencode
 
 from social_core.exceptions import AuthInputError, AuthResponseError
-from social_core.utils import parse_qs
+from social_core.utils import constant_time_compare, parse_qs
 
 from .base import BaseAuth
 
@@ -84,7 +84,9 @@ class DiscourseAuth(BaseAuth):
             self.setting("SECRET").encode("utf8"), sso_params.encode("utf8"), sha256
         ).hexdigest()
 
-        if not hmac.compare_digest(str(sso_signature), str(param_signature)):
+        if not isinstance(sso_signature, str) or not constant_time_compare(
+            sso_signature, param_signature
+        ):
             raise AuthResponseError(
                 self,
                 "Could not verify discourse login",

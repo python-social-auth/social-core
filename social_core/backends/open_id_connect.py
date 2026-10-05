@@ -26,7 +26,7 @@ from social_core.exceptions import (
     ErrorStage,
     SocialAuthBaseException,
 )
-from social_core.utils import cache
+from social_core.utils import cache, constant_time_compare
 
 _ID_TOKEN_CONTEXT_KEY = "_oidc_id_token_context"
 _VALIDATED_ID_TOKEN_KEY = "_oidc_validated_id_token"
@@ -800,7 +800,9 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
         calculated_hash = self.calc_at_hash(
             access_token, key["alg"], self.CUSTOM_AT_HASH_ALGO
         )
-        return expected_hash == calculated_hash
+        return isinstance(expected_hash, str) and constant_time_compare(
+            expected_hash, calculated_hash
+        )
 
     @staticmethod
     def calc_at_hash(access_token, algorithm, custom_at_hash_algo: str | None = None):

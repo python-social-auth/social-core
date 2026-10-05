@@ -90,7 +90,10 @@ class VKontakteOpenAPI(BaseAuth):
 
         _key, secret = self.get_key_and_secret()
         vk_hash = vk_sig(check_str + secret)
-        if vk_hash != mapping["sig"] or int(mapping["expire"]) < time():
+        if (
+            not constant_time_compare(vk_hash, mapping["sig"])
+            or int(mapping["expire"]) < time()
+        ):
             raise ValueError("VK.com authentication failed: Invalid Hash")
 
         kwargs.update({"backend": self, "response": self.user_data(mapping["mid"])})
@@ -523,7 +526,9 @@ class VKAppOAuth2(VKOAuth2):
                 self, "Missing auth key", code="missing_claim", stage="callback"
             )
         check_key = vk_sig(f"{key}_{self.data.get('viewer_id')}_{secret}")
-        if check_key != auth_key:
+        if not isinstance(auth_key, str) or not constant_time_compare(
+            check_key, auth_key
+        ):
             raise AuthResponseError(
                 self, "Invalid auth key", code="invalid_signature", stage="callback"
             )

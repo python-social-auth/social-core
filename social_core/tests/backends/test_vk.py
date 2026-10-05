@@ -100,14 +100,17 @@ class VKontakteOpenAPITest(BaseBackendTest):
         self.assertEqual(user.social[0].uid, VIEWER_ID)
 
     def test_rejects_invalid_session_signature(self) -> None:
-        self.strategy.set_request_data(self.request_data(), self.backend)
-        self.strategy.session_set(
-            f"vk_app_{APP_ID}",
-            self.signed_session(signature="0" * 32),
-        )
-
-        with self.assertRaisesRegex(ValueError, "Invalid Hash"):
-            self.backend.complete()
+        for signature in ("0" * 32, "é"):
+            self.strategy.set_request_data(self.request_data(), self.backend)
+            self.strategy.session_set(
+                f"vk_app_{APP_ID}",
+                self.signed_session(signature=signature),
+            )
+            with (
+                self.subTest(signature=signature),
+                self.assertRaisesRegex(ValueError, "Invalid Hash"),
+            ):
+                self.backend.complete()
 
         self.assertEqual(User.cache, {})
         self.assertEqual(TestUserSocialAuth.cache_by_uid, {})
@@ -386,12 +389,18 @@ class VKAppOAuth2Test(BaseBackendTest):
         self.assertEqual(TestUserSocialAuth.cache_by_uid, {})
 
     def test_rejects_invalid_auth_key(self) -> None:
-        data = self.request_data()
-        data["auth_key"] = "0" * 32
-        self.strategy.set_request_data(data, self.backend)
-
-        with assert_auth_error(self, AuthResponseError, "invalid_signature"):
-            self.backend.complete()
+        for auth_key in ("0" * 32, "é", ["key"], {"key": "value"}, True, 123, b"key"):
+            data: dict[str, object] = dict(self.request_data())
+            data["auth_key"] = auth_key
+            self.strategy.set_request_data(data, self.backend)
+            with (
+                self.subTest(auth_key=auth_key),
+                assert_auth_error(
+                    self, AuthResponseError, "invalid_signature"
+                ) as caught,
+            ):
+                self.backend.complete()
+            self.assertEqual(caught.exception.stage, "callback")
 
         self.assertEqual(len(responses.calls), 0)
 

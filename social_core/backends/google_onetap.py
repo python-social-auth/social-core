@@ -8,6 +8,7 @@ from social_core.exceptions import (
     AuthResponseError,
     AuthSessionError,
 )
+from social_core.utils import constant_time_compare
 
 
 class GoogleOneTap(BaseGoogleAuth, BaseAuth):
@@ -43,7 +44,11 @@ class GoogleOneTap(BaseGoogleAuth, BaseAuth):
         if not csrf_token_cookie and self.setting("IGNORE_MISSING_CSRF_COOKIE", False):
             return
 
-        if csrf_token_body != csrf_token_cookie:
+        if (
+            not isinstance(csrf_token_body, str)
+            or not isinstance(csrf_token_cookie, str)
+            or not constant_time_compare(csrf_token_body, csrf_token_cookie)
+        ):
             raise AuthSessionError(
                 self,
                 "csrf token from cookie and response does not match",
