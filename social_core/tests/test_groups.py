@@ -8,6 +8,8 @@ from social_core.backends.base import BaseAuth
 from social_core.backends.cas import CASOpenIdConnectAuth
 from social_core.backends.discourse import DiscourseAuth
 from social_core.backends.keycloak import KeycloakOAuth2
+from social_core.backends.okta import OktaOAuth2
+from social_core.backends.okta_openidconnect import OktaOpenIdConnect
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 from social_core.exceptions import AuthConfigurationError, AuthResponseError
 from social_core.groups import group_sync_targets
@@ -35,6 +37,80 @@ class GroupsTest(TestCase):
             self.backend.get_user_groups({"groups": ["a", "a", "b"]}), ["a", "b"]
         )
         self.assertEqual(self.backend.get_user_groups({"groups": []}), [])
+
+    def test_okta_oauth2_extraction_and_validation(self) -> None:
+        value: object
+        backend = OktaOAuth2(self.strategy)
+        self.assertIsNone(backend.get_user_groups({"groups": ["a"]}))
+        self.strategy.set_settings({"SOCIAL_AUTH_OKTA_OAUTH2_GROUPS_KEY": "teams"})
+        self.assertEqual(
+            backend.get_user_groups({"teams": ["a", "a", "b"]}), ["a", "b"]
+        )
+        self.assertEqual(backend.get_user_groups({"teams": []}), [])
+        with self.assertRaises(AuthResponseError) as caught:
+            backend.get_user_groups({"groups": ["a"]})
+        self.assertEqual(caught.exception.code, "missing_claim")
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_OKTA_OAUTH2_GROUPS_MISSING_AS_EMPTY": True}
+        )
+        self.assertEqual(backend.get_user_groups({}), [])
+        for value in (None, "a", {}, [1], [""], ["a", None]):
+            with self.subTest(value=value), self.assertRaises(AuthResponseError):
+                backend.get_user_groups({"teams": value})
+
+    def test_okta_oauth2_groups_reach_sync_step(self) -> None:
+        backend = OktaOAuth2(self.strategy)
+        self.strategy.set_settings(
+            {
+                "SOCIAL_AUTH_OKTA_OAUTH2_GROUPS_KEY": "groups",
+                "SOCIAL_AUTH_OKTA_OAUTH2_GROUPS_MAP": {"a": ["A"], "b": ["B"]},
+            }
+        )
+        response = {"sub": "user", "groups": ["a", "unknown"]}
+        result = social_details(backend, {}, response)
+        self.assertEqual(
+            group_sync_targets(backend, result["groups"], response), ({"A"}, {"A", "B"})
+        )
+        strategy = Mock()
+        user = Mock()
+        sync_groups(strategy, backend, response, user=user, **result)
+        strategy.sync_user_groups.assert_called_once_with(
+            user,
+            ["a", "unknown"],
+            backend=backend,
+            response=response,
+            details=result["details"],
+        )
+
+    def test_okta_openidconnect_preserves_token_precedence_and_subject_check(
+        self,
+    ) -> None:
+        backend = OktaOpenIdConnect(self.strategy)
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_OKTA_OPENIDCONNECT_GROUPS_KEY": "groups"}
+        )
+        backend.id_token = {"sub": "user", "groups": []}
+        self.assertEqual(backend.get_user_groups({"sub": "user", "groups": ["a"]}), [])
+        backend.id_token = {"sub": "user"}
+        self.assertEqual(
+            backend.get_user_groups({"sub": "user", "groups": ["a"]}), ["a"]
+        )
+        for response in ({"groups": ["a"]}, {"sub": "other", "groups": ["a"]}):
+            with self.subTest(response=response), self.assertRaises(AuthResponseError):
+                backend.get_user_groups(response)
+
+    def test_okta_group_scope_preserves_defaults(self) -> None:
+        for backend_class, prefix in (
+            (OktaOAuth2, "OKTA_OAUTH2"),
+            (OktaOpenIdConnect, "OKTA_OPENIDCONNECT"),
+        ):
+            with self.subTest(backend=prefix):
+                self.strategy.set_settings({f"SOCIAL_AUTH_{prefix}_SCOPE": ["groups"]})
+                backend = backend_class(self.strategy)
+                self.assertEqual(
+                    backend.get_scope_argument(),
+                    {"scope": "groups openid profile email"},
+                )
 
     def test_missing_and_malformed_claims(self) -> None:
         value: object
