@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Security
 
+- OpenID Connect nonces expire after 30 minutes by default. Configure
+  `SOCIAL_AUTH_<BACKEND>_NONCE_LIFETIME` to change the duration. Storage
+  integrations must populate `issued` and `lifetime` for existing nonces.
+- LinkedIn OpenID Connect no longer stores unused nonces.
 - Google OAuth2 and Google OpenID Connect now reject UserInfo responses that do
   not explicitly confirm email verification. Google One Tap requires the same
   confirmation in its ID token.

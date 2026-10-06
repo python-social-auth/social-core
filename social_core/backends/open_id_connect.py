@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import datetime
+import time
 from calendar import timegm
 from json import loads
 from typing import TYPE_CHECKING, Any, Literal, cast
@@ -48,8 +49,8 @@ class OpenIdConnectAssociation:
     def __init__(self, handle, secret="", issued=0, lifetime=0, assoc_type="") -> None:
         self.handle = handle  # as nonce
         self.secret = secret.encode()  # not use
-        self.issued = issued  # not use
-        self.lifetime = lifetime  # not use
+        self.issued = issued
+        self.lifetime = lifetime
         self.assoc_type = assoc_type  # as state
 
 
@@ -72,6 +73,8 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
     # Override OIDC_ENDPOINT in your subclass to enable autoconfig of OIDC
     OIDC_ENDPOINT: str | None = None
     ID_TOKEN_MAX_AGE = 600
+    NONCE_LIFETIME = 1800
+    USE_NONCE = True
     DEFAULT_SCOPE = ["openid", "profile", "email"]
     EXTRA_DATA = ["id_token", "refresh_token", ("sub", "id")]
     REDIRECT_STATE = False
@@ -246,7 +249,8 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
     def auth_params(self, state=None):  # noqa: C901, PLR0912
         """Return extra arguments needed on auth process."""
         params = super().auth_params(state)
-        params["nonce"] = self.get_and_store_nonce(self.authorization_url(), state)
+        if self.USE_NONCE:
+            params["nonce"] = self.get_and_store_nonce(self.authorization_url(), state)
 
         display = self.setting("DISPLAY", default=self.DISPLAY)
         if display is not None:
@@ -328,20 +332,31 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
         return params
 
     def get_and_store_nonce(self, url, state):
+        lifetime = self.setting("NONCE_LIFETIME", self.NONCE_LIFETIME)
+        if isinstance(lifetime, bool) or not isinstance(lifetime, int) or lifetime <= 0:
+            raise AuthConfigurationError(
+                self, parameter="NONCE_LIFETIME", code="invalid_setting", stage="begin"
+            )
         # Create a nonce
         nonce = self.strategy.random_string(64)
         # Store the nonce
-        association = OpenIdConnectAssociation(nonce, assoc_type=state)
+        association = OpenIdConnectAssociation(
+            nonce, issued=int(time.time()), lifetime=lifetime, assoc_type=state
+        )
         self.strategy.storage.association.store(url, association)
         return nonce
 
     def get_nonce(self, nonce):
         try:
-            return self.strategy.storage.association.get(
+            association = self.strategy.storage.association.get(
                 server_url=self.authorization_url(), handle=nonce
             )[0]
         except IndexError:
             return None
+        if association.is_expired():
+            self.remove_nonce(association.id)
+            return None
+        return association
 
     def remove_nonce(self, nonce_id) -> None:
         self.strategy.storage.association.remove([nonce_id])

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import base64
 import re
+import time
 import uuid
 from abc import abstractmethod
 from collections.abc import Mapping
@@ -373,6 +374,12 @@ class AssociationMixin:
     issued = 0
     lifetime = 0
     assoc_type = ""
+
+    def is_expired(self, now: int | None = None) -> bool:
+        """Return whether the association's lifetime has elapsed."""
+        if now is None:
+            now = int(time.time())
+        return self.lifetime <= 0 or now >= self.issued + self.lifetime
 
     @classmethod
     def oids(cls, server_url, handle=None):

@@ -270,7 +270,7 @@ class OpenIdConnectTest(
             self.do_login()
 
     def pre_complete_callback(self, start_url) -> None:
-        nonce = parse_qs(urlparse(start_url).query)["nonce"]
+        nonce = parse_qs(urlparse(start_url).query).get("nonce")
 
         self.access_token_kwargs.setdefault("nonce", nonce)
         self.access_token_body = self.prepare_access_token_body(

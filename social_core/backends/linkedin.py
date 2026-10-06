@@ -33,6 +33,7 @@ class LinkedinOpenIdConnect(OpenIdConnectAuth):
     # Override this value as it is not provided by Linkedin.
     # else our request falls back to basic auth which is not supported.
     TOKEN_ENDPOINT_AUTH_METHOD = "client_secret_post"
+    USE_NONCE = False
 
     def validate_claims(self, id_token) -> None:
         """Validate temporal claims without requiring LinkedIn to supply a nonce."""
