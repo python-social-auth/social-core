@@ -255,7 +255,7 @@ class BaseAuth:
         return self.pipeline(pipeline, *args, **kwargs)
 
     def pipeline(
-        self, pipeline, pipeline_index: int = 0, *args, **kwargs
+        self, pipeline: list[str], pipeline_index: int = 0, *args, **kwargs
     ) -> UserProtocol | HttpResponseProtocol | None:
         token = self._pipeline_type.set("authentication")
         try:
@@ -263,7 +263,7 @@ class BaseAuth:
         finally:
             self._pipeline_type.reset(token)
         if not isinstance(out, dict):
-            return cast("HttpResponseProtocol", out)
+            return out
         user = cast("UserProtocol | None", out.get("user"))
         if user:
             pipeline_user = cast("PipelineUserProtocol", user)
@@ -271,7 +271,7 @@ class BaseAuth:
             pipeline_user.is_new = bool(out.get("is_new"))
         return user
 
-    def disconnect(self, *args, **kwargs) -> dict:
+    def disconnect(self, *args, **kwargs) -> dict[str, Any] | HttpResponseProtocol:
         if self.ASSOCIATION_ONLY:
             self._bind_association_user(kwargs, "disconnect")
         pipeline = self.strategy.get_disconnect_pipeline(self)
@@ -289,8 +289,13 @@ class BaseAuth:
         return self._pipeline_type.get()
 
     def run_pipeline(
-        self, pipeline: list[str], pipeline_index=0, *args, **kwargs
-    ) -> dict:
+        self, pipeline: list[str], pipeline_index: int = 0, *args, **kwargs
+    ) -> dict[str, Any] | HttpResponseProtocol:
+        """Merge step dictionaries into context and return it on completion.
+
+        Falsy step results continue execution. Truthy non-dictionary results,
+        such as HTTP responses, stop execution and are returned unchanged.
+        """
         out = kwargs.copy()
         out.setdefault("strategy", self.strategy)
         out.setdefault("backend", out.pop(self.name, None) or self)
@@ -550,7 +555,7 @@ class BaseAuth:
 
     def continue_disconnect_pipeline(
         self, partial: PartialMixin
-    ) -> dict | HttpResponseProtocol:
+    ) -> dict[str, Any] | HttpResponseProtocol:
         """Continue a halted disconnect with its effective request data."""
         with self._partial_pipeline_context(partial, pipeline_type="disconnect"):
             return self.disconnect(

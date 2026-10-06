@@ -1,18 +1,74 @@
 from __future__ import annotations
 
 import json
+import unittest
 from typing import TYPE_CHECKING, cast
+from unittest.mock import Mock, patch
 
+from social_core.backends.base import BaseAuth
 from social_core.exceptions import AuthException
 from social_core.pipeline.user import user_details
 from social_core.utils import PARTIAL_TOKEN_SESSION_NAME
 
 from .actions.actions import BaseActionTest
 from .models import TestStorage, TestUserSocialAuth, User
-from .strategy import TestStrategy
+from .strategy import Redirect, TestStrategy
 
 if TYPE_CHECKING:
     from social_core.storage import PartialMixin, UserMixin
+
+
+class PipelineResultTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.strategy = TestStrategy(TestStorage)
+        self.backend = BaseAuth(self.strategy)
+
+    def test_response_stops_pipeline(self) -> None:
+        response = Redirect("/pause")
+        step = Mock(return_value=response)
+        with patch(
+            "social_core.backends.base.module_member", return_value=step
+        ) as load:
+            result = self.backend.run_pipeline(["first", "second"])
+        self.assertIs(result, response)
+        load.assert_called_once_with("first")
+        step.assert_called_once()
+
+    def test_response_stops_disconnect_pipeline(self) -> None:
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_DISCONNECT_PIPELINE": ["first", "second"]}
+        )
+        response = Redirect("/pause")
+        step = Mock(return_value=response)
+        with patch(
+            "social_core.backends.base.module_member", return_value=step
+        ) as load:
+            result = self.backend.disconnect()
+        self.assertIs(result, response)
+        load.assert_called_once_with("first")
+        step.assert_called_once()
+
+    def test_dictionary_results_merge_and_falsy_results_continue(self) -> None:
+        empty_results: tuple[object, ...] = (None, {}, False, 0, "")
+        for empty_result in empty_results:
+            with self.subTest(empty_result=empty_result):
+                first = Mock(return_value={"value": "updated", "added": True})
+                second = Mock(return_value=empty_result)
+                third = Mock(return_value={"done": True})
+                with patch(
+                    "social_core.backends.base.module_member",
+                    side_effect=[first, second, third],
+                ):
+                    result = self.backend.run_pipeline(
+                        ["first", "second", "third"], value="initial"
+                    )
+                self.assertIsInstance(result, dict)
+                assert isinstance(result, dict)
+                self.assertEqual(result["value"], "updated")
+                self.assertTrue(result["added"])
+                self.assertTrue(result["done"])
+                self.assertEqual(second.call_args.kwargs["value"], "updated")
+                third.assert_called_once()
 
 
 class IntegrityError(Exception):
