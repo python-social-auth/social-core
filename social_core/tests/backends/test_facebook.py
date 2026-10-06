@@ -6,7 +6,9 @@ import json
 import time
 from typing import TYPE_CHECKING, cast
 from unittest.mock import patch
+from urllib.parse import parse_qs
 
+import responses
 from requests import HTTPError
 
 from social_core.backends.facebook import API_VERSION
@@ -56,6 +58,26 @@ class FacebookOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
 
     def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
+
+
+class FacebookTokenRenewalTest(FacebookOAuth2Test):
+    def test_expired_access_token_exchange(self) -> None:
+        user = self.do_login()
+        social = user.social_user
+        self.assertNotIn("refresh_token", social.extra_data)
+        social.extra_data["expires_in"] = 1
+        social.extra_data["auth_time"] = 1
+        responses.add(
+            responses.POST,
+            self.backend.refresh_token_url(),
+            json={"access_token": "renewed-access-token", "expires_in": 3600},
+        )
+        self.assertEqual(social.get_access_token(self.strategy), "renewed-access-token")
+        body = parse_qs(cast("str", responses.calls[-1].request.body))
+        self.assertEqual(body["grant_type"], ["fb_exchange_token"])
+        self.assertEqual(body["fb_exchange_token"], ["foobar"])
+        self.assertNotIn("refresh_token", body)
+        self.assertFalse(social.access_token_expired())
 
 
 class FacebookOAuth2WrongUserDataTest(FacebookOAuth2Test):

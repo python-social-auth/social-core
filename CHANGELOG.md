@@ -29,6 +29,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Breaking
 
+- Token renewal raises `AuthCredentialError` with `reauthentication_required`
+  when a stored access token is expired and no renewal credential is available.
+  Custom backends that exchange access tokens must override `get_refresh_token()`.
 - MediaWiki and Discourse groups are exposed separately from profile details.
   Enable group extraction and update custom pipeline consumers to use `groups`
   instead of `details["groups"]`. MediaWiki identity retrieval now runs in
@@ -68,6 +71,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- OAuth2 renewal no longer substitutes access tokens for missing refresh tokens.
+  Facebook retains its access-token exchange, and Zoom and PayPal now store
+  refresh tokens by default. Existing accounts without a refresh token need
+  another provider login to obtain one.
 - Auth0 caches signing keys by JWKS URL for 24 hours and refreshes them when
   a token references an unknown key ID or a token without a key ID fails
   signature verification. Refreshes preserve other domains' cached keys and

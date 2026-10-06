@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any, Protocol, cast
 
 from openid.association import Association as OpenIdAssociation
 
-from .exceptions import AuthConfigurationError, AuthResponseError
+from .exceptions import AuthConfigurationError, AuthCredentialError, AuthResponseError
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -70,13 +70,23 @@ class UserMixin:
         return self.extra_data.get("access_token")
 
     def refresh_token(self, strategy: BaseStrategy, *args, **kwargs) -> None:
-        token = self.extra_data.get("refresh_token") or self.extra_data.get(
-            "access_token"
-        )
+        """Renew stored credentials using the backend's selected token.
+
+        Missing renewal credentials require reauthentication only when the
+        stored access token is known to have expired. Otherwise no request is
+        sent. Backends without a refresh method are left unchanged.
+        """
         backend = self.get_backend_instance(strategy)
         refresh_token = getattr(backend, "refresh_token", None) if backend else None
-        if token and callable(refresh_token):
+        if callable(refresh_token):
             assert backend is not None
+            token = backend.get_refresh_token(self.extra_data)
+            if not token:
+                if self.access_token_expired():
+                    raise AuthCredentialError(
+                        backend, code="reauthentication_required", stage="refresh"
+                    )
+                return
             refresh_kwargs = backend.get_refresh_token_kwargs(self.extra_data)
             refresh_kwargs.update(kwargs)
             response = cast(

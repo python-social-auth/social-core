@@ -386,10 +386,6 @@ class AzureADOAuth2(BaseOAuth2PKCE):
     def get_auth_token(self, user_id):
         """Return the stored access token, refreshing it when possible."""
         user = self.get_user(user_id=user_id)
-        # Older storage implementations can fall back to the access token when
-        # no refresh token was issued. Never send that token to Azure as a grant.
-        if not user.social_user.extra_data.get("refresh_token"):
-            return user.social_user.access_token
         return user.social_user.get_access_token(self.strategy)
 
     def auth_complete_params(self, state=None):

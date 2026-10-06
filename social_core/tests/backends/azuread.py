@@ -9,7 +9,7 @@ from urllib.parse import parse_qs, urlsplit
 
 import responses
 
-from social_core.exceptions import AuthConfigurationError
+from social_core.exceptions import AuthConfigurationError, AuthCredentialError
 
 if TYPE_CHECKING:
     from social_core.backends.azuread import AzureADOAuth2
@@ -197,13 +197,16 @@ class AzureOAuth2TestMixin:
         social.extra_data["expires_on"] = 1
         social.extra_data["auth_time"] = 1
         calls = len(responses.calls)
-        case.assertEqual(case.backend.get_auth_token(user.id), social.access_token)
+        with case.assertRaises(AuthCredentialError) as caught:
+            case.backend.get_auth_token(user.id)
+        case.assertEqual(caught.exception.code, "reauthentication_required")
+        case.assertEqual(caught.exception.stage, "refresh")
         case.assertEqual(len(responses.calls), calls)
 
     def test_get_auth_token_keeps_valid_token(self) -> None:
         case = cast("OAuth2Test[AzureADOAuth2]", self)
         user = case.do_login()
-        user.social_user.extra_data["refresh_token"] = "real-refresh-token"
+        user.social_user.extra_data.pop("refresh_token", None)
         calls = len(responses.calls)
         case.assertEqual(
             case.backend.get_auth_token(user.id), user.social_user.access_token
