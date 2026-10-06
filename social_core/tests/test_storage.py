@@ -294,6 +294,22 @@ class UserMixinRefreshTokenTests(unittest.TestCase):
 
 
 class BrokenAssociationTests(unittest.TestCase):
+    def test_expiry(self):
+        association = BrokenAssociation()
+        association.issued = 1000
+        for lifetime, now, expired in (
+            (1800, 2799, False),
+            (1800, 2800, True),
+            (1800, 2801, True),
+            (0, 999, True),
+            (-1, 999, True),
+        ):
+            with self.subTest(lifetime=lifetime, now=now):
+                association.lifetime = lifetime
+                self.assertEqual(association.is_expired(now), expired)
+                with patch("social_core.storage.time.time", return_value=now):
+                    self.assertEqual(association.is_expired(), expired)
+
     association = BrokenAssociation
 
     def test_store(self) -> None:

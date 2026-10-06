@@ -24,6 +24,7 @@ from .open_id_connect import (
     STORED_ID_TOKEN_CONTEXT_KEY,
     OpenIdConnectTest,
 )
+from .open_id_connect_nonce import OpenIdConnectNonceAssertionsMixin
 
 
 def decode_id_token_context(id_token: str) -> dict:
@@ -97,7 +98,10 @@ class OpenIdConnectPkceAssertionsMixin:
 
 
 class BaseOpenIdConnectTest(
-    OpenIdConnectTest, BaseAuthUrlTestMixin, OpenIdConnectPkceAssertionsMixin
+    OpenIdConnectTest,
+    BaseAuthUrlTestMixin,
+    OpenIdConnectPkceAssertionsMixin,
+    OpenIdConnectNonceAssertionsMixin,
 ):
     backend_path = "social_core.backends.open_id_connect.OpenIdConnectAuth"
     issuer = "https://example.com"
@@ -132,9 +136,6 @@ class BaseOpenIdConnectTest(
             body=json.dumps({"preferred_username": self.expected_username}),
             content_type="text/json",
         )
-
-    def test_everything_works(self) -> None:
-        self.do_login()
 
     def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
