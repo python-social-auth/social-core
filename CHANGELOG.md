@@ -5,14 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [6.0.0](https://github.com/python-social-auth/social-core/releases/tag/6.0.0) - 2026-10-06
 
 ### Security
 
 - OpenID Connect nonces expire after 30 minutes by default. Configure
   `SOCIAL_AUTH_<BACKEND>_NONCE_LIFETIME` to change the duration. Storage
-  integrations must populate `issued` and `lifetime` for existing nonces.
+  integrations must persist `issued` and `lifetime`; stored nonces without
+  a valid lifetime are rejected.
 - LinkedIn OpenID Connect no longer stores unused nonces.
+- Backend signatures, hashes, and CSRF tokens use constant-time comparisons.
+  Malformed signatures, including non-ASCII Discourse signatures, raise
+  authentication errors instead of type errors.
+- Facebook Limited Login reuses validated claims only during a saved partial
+  pipeline resume, preventing forged resumes from authenticating a previous user.
 - Google OAuth2 and Google OpenID Connect now reject UserInfo responses that do
   not explicitly confirm email verification. Google One Tap requires the same
   confirmation in its ID token.
@@ -25,7 +31,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   and affected Microsoft Entra ID backends now bind accounts to stable provider
   or protocol identifiers. Existing associations record their identifier key
   and migrate on authentication; strict deployments can disable unverified
-  legacy-identifier migration.
+  legacy-identifier migration with
+  `SOCIAL_AUTH_<BACKEND>_ALLOW_UNVERIFIED_LEGACY_UID_MIGRATION`.
 - Drip, Last.fm, and Mixcloud are now association-only: connecting requires the
   same authenticated local user at initiation, callback, and partial resumption.
   Mutable provider identifiers can no longer create or authenticate local users,
@@ -33,6 +40,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Breaking
 
+- Name normalization now runs in the shared authentication pipeline. Custom
+  pipelines must add `social_core.pipeline.social_auth.social_names` immediately
+  after `social_core.pipeline.social_auth.social_details` to retain automatic
+  conversion between full names and first/last names.
+- Storage integrations must persist association `id_key` values, accept `id_key`
+  in `get_social_auth()` and `create_social_auth()`, and implement
+  `get_social_auth_by_extra_data()` and atomic `migrate_social_auth()`.
+  Existing associations use an empty identifier key until migration.
 - Token renewal raises `AuthCredentialError` with `reauthentication_required`
   when a stored access token is expired and no renewal credential is available.
   Custom backends that exchange access tokens must override `get_refresh_token()`.
@@ -58,9 +73,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - Configurable external group extraction and login allow lists for Azure, OIDC,
-  Keycloak, SAML, GitLab, MediaWiki, and Discourse, with a strategy hook and
-  optional pipeline step for local group synchronization. Existing CAS allow
-  lists continue to work without pipeline changes.
+  Keycloak, Okta OAuth2, SAML, GitLab, MediaWiki, and Discourse, with a strategy
+  hook and optional pipeline step for local group synchronization. Existing CAS
+  allow lists continue to work without pipeline changes.
 - Human-readable `title` and optional `icon` metadata for authentication
   backends, with packaged icons shared with Django applications. Backend
   identifiers remain unchanged; display labels follow current service branding.
@@ -69,12 +84,31 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Azure AD backends support an explicit `AUTHORITY_URL` and opt-in PKCE through
   `USE_PKCE`. Azure AD B2C exposes a `logout_url()` helper using policy discovery.
 - Reusable `BaseAuth.ASSOCIATION_ONLY` capability for user-bound connections,
-  shared by Drip and Twilio Connect.
+  shared by Drip, Last.fm, Mixcloud, and Twilio Connect.
 - Scoped pipeline request data, stored separately from pipeline arguments.
   Existing partials with request data in their arguments remain readable.
+- Life Science EOSC OpenID Connect backend (`life_science_eosc`) with temporary
+  configuration for the EOSC federation.
+- Name normalization controls `SOCIAL_AUTH_<BACKEND>_FIRSTLAST_FROM_FULL` and
+  `SOCIAL_AUTH_<BACKEND>_FULL_FROM_FIRSTLAST`, both enabled by default.
+
+### Changed
+
+- Updated development dependencies and CI actions.
+- Allowed newer Google Auth versions for the Google One Tap backend.
+
+### Deprecated
+
+- `BaseAuth.get_user_names()` is deprecated. Backends should return
+  provider-supplied names from `get_user_details()` and leave normalization
+  to the `social_names` pipeline step.
 
 ### Fixed
 
+- Facebook Graph API quota errors are classified as `rate_limited`, including
+  responses with HTTP 400 or 403, so callers receive retry guidance.
+- Facebook Limited Login partial pipelines preserve validated claims across
+  repeated resumes, including after the original ID token expires.
 - OAuth2 renewal no longer substitutes access tokens for missing refresh tokens.
   Facebook retains its access-token exchange, and Zoom and PayPal now store
   refresh tokens by default. Existing accounts without a refresh token need
