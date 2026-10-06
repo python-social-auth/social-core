@@ -1,4 +1,8 @@
 import json
+from typing import cast
+from urllib.parse import parse_qs
+
+import responses
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
@@ -57,7 +61,10 @@ class ZoomOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     )
 
     def test_login(self) -> None:
-        self.do_login()
+        user = self.do_login()
+        self.assertEqual(
+            user.social_user.extra_data["refresh_token"], "foobar-refresh-token"
+        )
 
     def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
@@ -66,3 +73,17 @@ class ZoomOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         user, social = self.do_refresh_token()
         self.assertEqual(user.username, self.expected_username)
         self.assertEqual(social.extra_data["access_token"], "foobar-new-token")
+        body = parse_qs(cast("str", responses.calls[-1].request.body))
+        self.assertEqual(body["grant_type"], ["refresh_token"])
+        self.assertEqual(body["refresh_token"], ["foobar-refresh-token"])
+        self.assertEqual(social.extra_data["refresh_token"], "foobar-new-refresh-token")
+        responses.replace(
+            responses.POST,
+            self.backend.refresh_token_url(),
+            json={"access_token": "second-access-token"},
+        )
+        social.refresh_token(self.strategy)
+        body = parse_qs(cast("str", responses.calls[-1].request.body))
+        self.assertEqual(body["refresh_token"], ["foobar-new-refresh-token"])
+        self.assertEqual(social.access_token, "second-access-token")
+        self.assertEqual(social.extra_data["refresh_token"], "foobar-new-refresh-token")

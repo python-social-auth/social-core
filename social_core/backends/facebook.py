@@ -140,6 +140,11 @@ class FacebookOAuth2(BaseOAuth2):
         except ValueError:
             return parse_qs(response.content)
 
+    def get_refresh_token(self, extra_data: dict[str, Any]) -> str | None:
+        """Facebook renews by exchanging the stored access token."""
+        token = extra_data.get("access_token")
+        return token if isinstance(token, str) and token else None
+
     def refresh_token_params(self, token, *args, **kwargs):
         client_id, client_secret = self.get_key_and_secret()
         return {

@@ -510,6 +510,14 @@ class BaseAuth:
         """
         raise NotImplementedError("Implement in subclass")
 
+    def get_refresh_token(self, extra_data: dict[str, Any]) -> str | None:
+        """Select a stored renewal credential, or None when renewal is unavailable.
+
+        Backends that exchange an access token should override this method.
+        """
+        token = extra_data.get("refresh_token")
+        return token if isinstance(token, str) and token else None
+
     def get_refresh_token_kwargs(self, extra_data: dict[str, Any]) -> dict[str, Any]:
         """Return default refresh arguments from stored account credentials."""
         return {}

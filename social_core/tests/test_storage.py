@@ -1,9 +1,17 @@
 import unittest
+from datetime import datetime, timedelta, timezone
 from typing import cast
 from unittest.mock import Mock, patch
 
+from social_core.backends.base import BaseAuth
+from social_core.backends.elixir import ElixirOpenIdConnect
 from social_core.backends.oauth import BaseOAuth2
-from social_core.exceptions import AuthConfigurationError, AuthResponseError
+from social_core.backends.open_id_connect import OpenIdConnectAuth
+from social_core.exceptions import (
+    AuthConfigurationError,
+    AuthCredentialError,
+    AuthResponseError,
+)
 from social_core.storage import (
     AssociationMixin,
     BaseStorage,
@@ -141,6 +149,148 @@ class BrokenUserTests(unittest.TestCase):
     def test_disconnect(self) -> None:
         with self.assertRaisesRegex(NotImplementedError, NOT_IMPLEMENTED_MSG):
             self.user.disconnect(BrokenUser())
+
+
+class UserMixinRefreshTokenTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.strategy = TestStrategy(TestStorage)
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_KEY": "key", "SOCIAL_AUTH_SECRET": "secret"}
+        )
+        self.social = BrokenUser()
+        self.social.extra_data = {"access_token": "stored-access-token"}
+        self.social.user = User("foobar")
+        self.social.uid = "1"
+
+    def test_missing_renewal_credential(self) -> None:
+        unusable_tokens: tuple[object, ...] = (None, "", False, 0, [], {}, 123)
+        now = datetime(2026, 1, 1, tzinfo=timezone.utc)
+        for backend_class in (BaseOAuth2, OpenIdConnectAuth, ElixirOpenIdConnect):
+            backend = backend_class(self.strategy)
+            for token in unusable_tokens:
+                for seconds in (None, -1, 5, 6):
+                    for automatic in (False, True):
+                        self.social.extra_data = {
+                            "access_token": "stored-access-token",
+                            "refresh_token": token,
+                        }
+                        if seconds is not None:
+                            self.social.extra_data["expires_on"] = int(
+                                (now + timedelta(seconds=seconds)).timestamp()
+                            )
+                        original = self.social.extra_data.copy()
+                        with (
+                            self.subTest(
+                                backend=backend_class,
+                                token=token,
+                                seconds=seconds,
+                                automatic=automatic,
+                            ),
+                            patch.object(
+                                self.social,
+                                "get_backend_instance",
+                                return_value=backend,
+                            ),
+                            patch(
+                                "social_core.storage.datetime", wraps=datetime
+                            ) as clock,
+                            patch("requests.request") as request,
+                            patch.object(self.social, "save") as save,
+                        ):
+                            clock.now.return_value = now
+                            if seconds is not None and seconds <= 5:
+                                with self.assertRaises(AuthCredentialError) as caught:
+                                    if automatic:
+                                        self.social.get_access_token(self.strategy)
+                                    else:
+                                        self.social.refresh_token(self.strategy)
+                                self.assertEqual(
+                                    caught.exception.code, "reauthentication_required"
+                                )
+                                self.assertEqual(caught.exception.stage, "refresh")
+                                self.assertEqual(caught.exception.source, "storage")
+                                self.assertEqual(
+                                    caught.exception.recovery, "reauthenticate"
+                                )
+                            elif automatic:
+                                self.assertEqual(
+                                    self.social.get_access_token(self.strategy),
+                                    "stored-access-token",
+                                )
+                            else:
+                                self.social.refresh_token(self.strategy)
+                            request.assert_not_called()
+                            save.assert_not_called()
+                            self.assertEqual(self.social.extra_data, original)
+
+    def test_missing_token_key_and_empty_credentials(self) -> None:
+        backend = BaseOAuth2(self.strategy)
+        for data in ({}, {"access_token": "stored-access-token"}):
+            self.social.extra_data = data.copy()
+            with (
+                self.subTest(data=data),
+                patch.object(self.social, "get_backend_instance", return_value=backend),
+                patch("requests.request") as request,
+                patch.object(self.social, "save") as save,
+            ):
+                self.social.refresh_token(self.strategy)
+            request.assert_not_called()
+            save.assert_not_called()
+            self.assertEqual(self.social.extra_data, data)
+
+    def test_missing_refresh_method(self) -> None:
+        self.social.extra_data["expires_on"] = 1
+        with (
+            patch.object(
+                self.social,
+                "get_backend_instance",
+                return_value=BaseAuth(self.strategy),
+            ),
+            patch("requests.request") as request,
+        ):
+            self.social.refresh_token(self.strategy)
+        request.assert_not_called()
+
+    def test_invalid_expiry_without_refresh_token(self) -> None:
+        self.social.extra_data["expires_on"] = "invalid"
+        with (
+            patch.object(
+                self.social,
+                "get_backend_instance",
+                return_value=BaseOAuth2(self.strategy),
+            ),
+            patch("requests.request") as request,
+            self.assertRaises(AuthResponseError) as caught,
+        ):
+            self.social.refresh_token(self.strategy)
+        self.assertEqual(caught.exception.code, "invalid_expiry")
+        request.assert_not_called()
+
+    def test_refresh_arguments_and_persistence(self) -> None:
+        backend = BaseOAuth2(self.strategy)
+        self.social.extra_data["refresh_token"] = "stored-refresh-token"
+        self.social.extra_data["device_id"] = "stored-device"
+        with (
+            patch.object(self.social, "get_backend_instance", return_value=backend),
+            patch.object(
+                backend,
+                "get_refresh_token_kwargs",
+                return_value={"device_id": "stored-device", "other": "default"},
+            ),
+            patch.object(
+                backend, "refresh_token", return_value={"access_token": "new-token"}
+            ) as refresh,
+            patch.object(self.social, "save") as save,
+        ):
+            self.social.refresh_token(self.strategy, "argument", device_id="override")
+        refresh.assert_called_once_with(
+            "stored-refresh-token", "argument", device_id="override", other="default"
+        )
+        self.assertEqual(self.social.access_token, "new-token")
+        self.assertEqual(
+            self.social.extra_data["refresh_token"], "stored-refresh-token"
+        )
+        save.assert_called_once_with()
 
 
 class BrokenAssociationTests(unittest.TestCase):

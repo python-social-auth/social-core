@@ -1,6 +1,10 @@
 import json
+from typing import cast
+from urllib.parse import parse_qs
 
-from social_core.backends.paypal import PayPalOAuth2
+import responses
+
+from social_core.backends.paypal import PayPalOAuth2, PayPalOAuth2Sandbox
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
@@ -47,7 +51,10 @@ class PayPalOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     )
 
     def test_login(self) -> None:
-        self.do_login()
+        user = self.do_login()
+        self.assertEqual(
+            user.social_user.extra_data["refresh_token"], "foobar-refresh-token"
+        )
 
     def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
@@ -56,11 +63,33 @@ class PayPalOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         user, social = self.do_refresh_token()
         self.assertEqual(user.username, self.expected_username)
         self.assertEqual(social.extra_data["access_token"], "foobar-new-token")
+        body = parse_qs(cast("str", responses.calls[-1].request.body))
+        self.assertEqual(body["grant_type"], ["refresh_token"])
+        self.assertEqual(body["refresh_token"], ["foobar-refresh-token"])
+        self.assertEqual(social.extra_data["refresh_token"], "foobar-new-refresh-token")
+        responses.replace(
+            responses.POST,
+            self.backend.refresh_token_url(),
+            json={"access_token": "second-access-token"},
+        )
+        social.refresh_token(self.strategy)
+        body = parse_qs(cast("str", responses.calls[-1].request.body))
+        self.assertEqual(body["refresh_token"], ["foobar-new-refresh-token"])
+        self.assertEqual(social.access_token, "second-access-token")
+        self.assertEqual(social.extra_data["refresh_token"], "foobar-new-refresh-token")
 
     def test_get_email_no_emails(self) -> None:
         emails: list[dict[str, str | bool]] = []
         email = PayPalOAuth2.get_email(emails)
         self.assertEqual(email, "")
+
+    def test_sandbox_stores_refresh_token(self) -> None:
+        backend = PayPalOAuth2Sandbox(self.strategy)
+        assert self.access_token_body is not None
+        extra_data = backend.extra_data(
+            None, "user-id", json.loads(self.access_token_body), {}, {}
+        )
+        self.assertEqual(extra_data["refresh_token"], "foobar-refresh-token")
 
     def test_get_email_multiple_emails(self) -> None:
         expected_email = "mail2@example.com"
