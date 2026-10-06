@@ -3,13 +3,17 @@ Facebook OAuth2, and Canvas Application  backends, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/facebook.html
 """
 
+from __future__ import annotations
+
 import base64
 import hashlib
 import hmac
 import json
 import time
 from math import isfinite
-from typing import Any, Literal, cast
+from typing import TYPE_CHECKING, Any, Literal, cast
+
+from requests import HTTPError
 
 from social_core.exceptions import (
     AuthCanceled,
@@ -21,6 +25,9 @@ from social_core.exceptions import (
 from social_core.utils import constant_time_compare, handle_http_errors, parse_qs
 
 from .oauth import BaseOAuth2
+
+if TYPE_CHECKING:
+    from requests import Response
 
 API_VERSION = 24.0
 
@@ -46,6 +53,30 @@ class FacebookOAuth2(BaseOAuth2):
         ("granted_scopes", "granted_scopes"),
         ("denied_scopes", "denied_scopes"),
     ]
+
+    def request(self, *args, **kwargs) -> Response:
+        try:
+            return super().request(*args, **kwargs)
+        except AuthProviderError as error:
+            # https://developers.facebook.com/docs/graph-api/overview/rate-limiting/
+            if isinstance(error.__cause__, HTTPError) and error.provider_code in {
+                4,
+                17,
+                32,
+                613,
+            }:
+                raise AuthProviderError(
+                    self,
+                    error.detail,
+                    code="rate_limited",
+                    source=error.source,
+                    stage=error.stage,
+                    provider_code=error.provider_code,
+                    status_code=error.status_code,
+                    retry_after=error.retry_after,
+                    context=error.context,
+                ) from error.__cause__
+            raise
 
     def auth_params(self, state=None):
         params = super().auth_params(state)

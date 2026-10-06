@@ -260,8 +260,8 @@ class SocialAuthBaseException(ValueError):
         message, default_source, default_recovery = REASONS.get(
             self.code, REASONS[self.default_code]
         )
-        self.source = source or default_source
-        self.stage = stage
+        self.source: ErrorSource = source or default_source
+        self.stage: ErrorStage = stage
         self.recovery = recovery or default_recovery
         self.parameter = parameter
         self.claim = claim
