@@ -233,6 +233,7 @@ class PipelineRequestDataTest(unittest.TestCase):
 
     def test_pipeline_does_not_inject_request(self) -> None:
         out = self.backend.run_pipeline([], request={"field": "old"})
+        assert isinstance(out, dict)
         self.assertNotIn("request", out)
 
     def test_sequential_resumes_do_not_leak_data(self) -> None:

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, Literal, TypeVar, cast
 from urllib.parse import quote
 
 from .utils import (
@@ -19,6 +19,9 @@ if TYPE_CHECKING:
     from .backends.base import BaseAuth
     from .storage import PartialMixin, PipelineUserProtocol, UserMixin, UserProtocol
     from .strategy import HttpResponseProtocol
+
+
+_PartialResult = TypeVar("_PartialResult")
 
 
 def _get_social_user(user: PipelineUserProtocol) -> UserMixin:
@@ -56,13 +59,16 @@ def _sanitize_redirect_url(backend: BaseAuth, url: str) -> str:
 def _handle_partial(
     backend: BaseAuth,
     user: UserProtocol | None,
-    resume_partial: Callable[[PartialMixin], Any],
+    resume_partial: Callable[[PartialMixin], _PartialResult],
     halt_url_names: tuple[str, ...],
     halt_error: str,
     *args,
     pipeline_type: str = "authentication",
     **kwargs,
-) -> tuple[bool, Any]:
+) -> (
+    tuple[Literal[True], _PartialResult | HttpResponseProtocol]
+    | tuple[Literal[False], None]
+):
     partial = partial_pipeline_result(
         backend, user, *args, pipeline_type=pipeline_type, **kwargs
     )
@@ -131,7 +137,7 @@ def do_complete(
     partial_user = user if is_authenticated else None
     authenticated_user: UserProtocol | HttpResponseProtocol | None = partial_user
 
-    partial_handled, partial_response = _handle_partial(
+    partial_result = _handle_partial(
         backend,
         partial_user,
         backend.continue_pipeline,
@@ -140,10 +146,8 @@ def do_complete(
         *args,
         **kwargs,
     )
-    if partial_handled:
-        authenticated_user = cast(
-            "UserProtocol | HttpResponseProtocol | None", partial_response
-        )
+    if partial_result[0] is True:
+        authenticated_user = partial_result[1]
     else:
         authenticated_user = backend.complete(
             *args, user=authenticated_user, redirect_name=redirect_name, **kwargs
@@ -218,15 +222,17 @@ def do_disconnect(
     redirect_name: str = "next",
     *args,
     **kwargs,
-):
-    response: dict | HttpResponseProtocol
+) -> HttpResponseProtocol:
+    response: dict[str, Any] | HttpResponseProtocol
 
-    def resume_disconnect(partial: PartialMixin):
+    def resume_disconnect(
+        partial: PartialMixin,
+    ) -> dict[str, Any] | HttpResponseProtocol:
         if association_id and not partial.kwargs.get("association_id"):
             partial.extend_kwargs({"association_id": association_id})
         return backend.continue_disconnect_pipeline(partial)
 
-    partial_handled, partial_response = _handle_partial(
+    partial_result = _handle_partial(
         backend,
         user,
         resume_disconnect,
@@ -236,8 +242,8 @@ def do_disconnect(
         pipeline_type="disconnect",
         **kwargs,
     )
-    if partial_handled:
-        response = cast("dict | HttpResponseProtocol", partial_response)
+    if partial_result[0] is True:
+        response = partial_result[1]
     else:
         response = backend.disconnect(
             *args, user=user, association_id=association_id, **kwargs
