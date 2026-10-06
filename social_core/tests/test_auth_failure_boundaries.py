@@ -816,13 +816,8 @@ class AuthenticationFailureBoundaryTest(unittest.TestCase):
                 patch("jwt.decode", return_value=claims),
                 self.assertRaises(AuthResponseError) as caught,
             ):
-                backend.get_user_details(
-                    {
-                        "access_token": {
-                            "oauth_token": "token",
-                            "oauth_token_secret": "secret",
-                        }
-                    }
+                backend.user_data(
+                    {"oauth_token": "token", "oauth_token_secret": "secret"}
                 )
             self.assertEqual(caught.exception.code, code)
             self.assertEqual(caught.exception.stage, "user_info")

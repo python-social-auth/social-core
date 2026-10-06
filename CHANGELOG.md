@@ -29,6 +29,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Breaking
 
+- MediaWiki and Discourse groups are exposed separately from profile details.
+  Enable group extraction and update custom pipeline consumers to use `groups`
+  instead of `details["groups"]`. MediaWiki identity retrieval now runs in
+  `user_data()` rather than `get_user_details()`.
 - Authentication exceptions now expose stable reason codes, failure sources,
   operation stages, and suggested recovery. Only `SocialAuthBaseException` and
   `AuthException` retain broad catch compatibility; migrate removed specialized
@@ -46,6 +50,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Configurable external group extraction and login allow lists for Azure, OIDC,
+  Keycloak, SAML, GitLab, MediaWiki, and Discourse, with a strategy hook and
+  optional pipeline step for local group synchronization. Existing CAS allow
+  lists continue to work without pipeline changes.
 - Human-readable `title` and optional `icon` metadata for authentication
   backends, with packaged icons shared with Django applications. Backend
   identifiers remain unchanged; display labels follow current service branding.

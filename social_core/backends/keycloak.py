@@ -4,6 +4,7 @@ import jwt
 
 from social_core.backends.oauth import BaseOAuth2
 from social_core.backends.utils import jwt_error
+from social_core.groups import configured_group_key, read_groups
 
 
 class KeycloakOAuth2(BaseOAuth2):  # pylint: disable=abstract-method
@@ -133,6 +134,17 @@ class KeycloakOAuth2(BaseOAuth2):  # pylint: disable=abstract-method
             )
         except jwt.PyJWTError as error:
             raise jwt_error(self, error) from error
+
+    def get_user_groups(self, response) -> list[str] | None:
+        key = configured_group_key(self)
+        if key is None:
+            return None
+        return read_groups(
+            self,
+            response,
+            key,
+            missing_as_empty=self.setting("GROUPS_MISSING_AS_EMPTY", False),
+        )
 
     def get_user_details(self, response):
         """Map fields in user_data into Django User fields"""

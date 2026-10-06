@@ -42,6 +42,7 @@ from social_core.exceptions import (
     AuthResponseError,
     ErrorStage,
 )
+from social_core.groups import configured_group_key, read_groups
 from social_core.utils import cache
 
 from .oauth import BaseOAuth2PKCE
@@ -192,6 +193,17 @@ class AzureADOAuth2(BaseOAuth2PKCE):
     def get_user_id(self, details, response):
         """Return the configured stable user identifier."""
         return self.get_user_id_from_sources(details, response)
+
+    def get_user_groups(self, response) -> list[str] | None:
+        key = configured_group_key(self)
+        if key is None:
+            return None
+        return read_groups(
+            self,
+            response,
+            key,
+            missing_as_empty=self.setting("GROUPS_MISSING_AS_EMPTY", False),
+        )
 
     def get_user_details(self, response):
         """Return user details from Azure AD account"""

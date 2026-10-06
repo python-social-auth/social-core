@@ -26,6 +26,7 @@ from social_core.exceptions import (
     ErrorStage,
     SocialAuthBaseException,
 )
+from social_core.groups import check_group_overage, configured_group_key, read_groups
 from social_core.utils import cache, constant_time_compare
 
 _ID_TOKEN_CONTEXT_KEY = "_oidc_id_token_context"
@@ -759,6 +760,27 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
             )
         return self.get_user_id_from_sources(
             details, response, self.id_token, id_key=id_key
+        )
+
+    def get_user_groups(self, response) -> list[str] | None:
+        key = configured_group_key(self)
+        if key is None:
+            return None
+        source = self.id_token or {}
+        check_group_overage(self, source, key)
+        if key not in source:
+            check_group_overage(self, response, key)
+            if key in response:
+                if not source.get("sub") or response.get("sub") != source["sub"]:
+                    raise AuthResponseError(
+                        self, code="invalid_claim", claim="sub", stage="user_info"
+                    )
+                source = response
+        return read_groups(
+            self,
+            source,
+            key,
+            missing_as_empty=self.setting("GROUPS_MISSING_AS_EMPTY", False),
         )
 
     def get_user_details(self, response):

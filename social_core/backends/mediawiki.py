@@ -14,6 +14,7 @@ from requests_oauthlib import OAuth1
 
 from social_core.backends.utils import jwt_error
 from social_core.exceptions import AuthResponseError
+from social_core.groups import read_groups
 from social_core.utils import parse_qs as parse_oauth_response
 
 from .oauth import BaseOAuth1
@@ -147,12 +148,9 @@ class MediaWiki(BaseOAuth1):
             "oauth_token_secret": oauth_token_secret,
         }
 
-    def get_user_details(self, response):
-        """
-        Gets the user details from Special:OAuth/identify
-        """
+    def user_data(self, access_token, *args, **kwargs):
+        """Retrieve and validate Special:OAuth/identify once per authentication."""
         key, secret = self.get_key_and_secret()
-        access_token = response["access_token"]
 
         auth = OAuth1(
             key,
@@ -223,6 +221,20 @@ class MediaWiki(BaseOAuth1):
                 stage="user_info",
             )
 
+        return identity
+
+    def get_user_groups(self, response) -> list[str] | None:
+        if not self.setting("GROUPS_ENABLED", False):
+            return None
+        return read_groups(
+            self,
+            response,
+            "groups",
+            missing_as_empty=self.setting("GROUPS_MISSING_AS_EMPTY", False),
+        )
+
+    def get_user_details(self, response):
+        identity = response
         details = {
             "username": identity["username"],
             "userID": identity["sub"],
@@ -230,7 +242,6 @@ class MediaWiki(BaseOAuth1):
             "confirmed_email": identity.get("confirmed_email"),
             "editcount": identity.get("editcount"),
             "rights": identity.get("rights"),
-            "groups": identity.get("groups"),
             "registered": identity.get("registered"),
             "blocked": identity.get("blocked"),
         }

@@ -3,10 +3,11 @@ import time
 from base64 import urlsafe_b64decode, urlsafe_b64encode
 from hashlib import sha256
 from typing import cast
-from urllib.parse import urlencode
+from urllib.parse import parse_qs, urlencode
 
 from social_core.exceptions import AuthInputError, AuthResponseError
-from social_core.utils import constant_time_compare, parse_qs
+from social_core.groups import read_groups
+from social_core.utils import constant_time_compare, drop_lists
 
 from .base import BaseAuth
 
@@ -47,11 +48,23 @@ class DiscourseAuth(BaseAuth):
             "username": response.get("username"),
             "email": response.get("email"),
             "name": response.get("name"),
-            "groups": response.get("groups", "").split(","),
             "is_staff": response.get("admin") == "true"
             or response.get("moderator") == "true",
             "is_superuser": response.get("admin") == "true",
         }
+
+    def get_user_groups(self, response) -> list[str] | None:
+        if not self.setting("GROUPS_ENABLED", False):
+            return None
+        data = dict(response)
+        if isinstance(data.get("groups"), str):
+            data["groups"] = data["groups"].split(",") if data["groups"] else []
+        return read_groups(
+            self,
+            data,
+            "groups",
+            missing_as_empty=self.setting("GROUPS_MISSING_AS_EMPTY", False),
+        )
 
     def add_nonce(self, nonce) -> None:
         self.strategy.storage.nonce.use(
@@ -97,7 +110,7 @@ class DiscourseAuth(BaseAuth):
         decoded_params = urlsafe_b64decode(sso_params.encode("utf8")).decode("ascii")
 
         # Validate the nonce to ensure the request was not modified
-        response = parse_qs(decoded_params)
+        response = drop_lists(parse_qs(decoded_params, keep_blank_values=True))
         nonce_obj = self.get_nonce(response.get("nonce"))
         if nonce_obj:
             self.delete_nonce(nonce_obj)

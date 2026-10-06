@@ -11,7 +11,10 @@ if TYPE_CHECKING:
 
 
 def social_details(backend: BaseAuth, details, response, *args, **kwargs):
-    return {"details": dict(backend.get_user_details(response), **details)}
+    return {
+        "details": dict(backend.get_user_details(response), **details),
+        "groups": backend.get_user_groups(response),
+    }
 
 
 def social_names(backend: BaseAuth, details, *args, **kwargs):

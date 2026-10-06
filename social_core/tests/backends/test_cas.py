@@ -72,6 +72,14 @@ class CASOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
     def test_everything_works(self) -> None:
         self.do_login()
 
+    def test_scalar_groups_do_not_block_login_without_group_handling(self) -> None:
+        self.strategy.set_settings({"SOCIAL_AUTH_CAS_ALLOW_GROUPS": []})
+        assert self.user_data_body is not None
+        data = json.loads(self.user_data_body)
+        data["attributes"]["groups"] = "users"
+        self.user_data_body = json.dumps(data)
+        self.do_login()
+
     def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
 
