@@ -87,13 +87,13 @@ class TelegramAuth(BaseAuth):
         return response
 
     def get_user_details(self, response):
-        first_name = response.get("first_name", "")
-        last_name = response.get("last_name", "")
+        first_name = response.get("first_name")
+        last_name = response.get("last_name")
         return {
             "username": response.get("username") or str(response[self.id_key()]),
             "first_name": first_name,
             "last_name": last_name,
-            "fullname": "",
+            "fullname": None,
         }
 
     @handle_http_errors

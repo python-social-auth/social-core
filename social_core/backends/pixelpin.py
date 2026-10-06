@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, cast
 
 from .open_id_connect import OpenIdConnectAuth
 
@@ -23,12 +23,12 @@ class PixelPinOpenIDConnect(OpenIdConnectAuth):
         if sub is None and self.id_token is not None:
             sub = self.id_token.get("sub")
 
-        username = first_name + last_name + sub
+        username = (first_name or "") + (last_name or "") + cast("str", sub)
 
         return {
             "username": username,
             "email": response.get("email"),
-            "fullname": "",
+            "fullname": None,
             "first_name": first_name,
             "last_name": last_name,
         }

@@ -31,8 +31,8 @@ class CoinbaseOAuth2(BaseOAuth2):
         name = user_data["name"]
         username = user_data.get("username")
         fullname = name
-        first_name = ""
-        last_name = ""
+        first_name = None
+        last_name = None
         return {
             "username": username,
             "fullname": fullname,

@@ -73,7 +73,7 @@ class DeezerOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Deezer account"""
-        fullname = ""
+        fullname = None
         first_name = response.get("firstname")
         last_name = response.get("lastname")
         return {

@@ -208,9 +208,9 @@ class AzureADOAuth2(BaseOAuth2PKCE):
     def get_user_details(self, response):
         """Return user details from Azure AD account"""
         fullname, first_name, last_name = (
-            response.get("name", ""),
-            response.get("given_name", ""),
-            response.get("family_name", ""),
+            response.get("name"),
+            response.get("given_name"),
+            response.get("family_name"),
         )
         return {
             "username": fullname,

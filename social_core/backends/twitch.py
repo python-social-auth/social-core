@@ -34,9 +34,9 @@ class TwitchOpenIdConnect(OpenIdConnectAuth):
             "username": self.id_token["preferred_username"],
             "email": self.id_token["email"],
             # Twitch does not provide this information
-            "fullname": "",
-            "first_name": "",
-            "last_name": "",
+            "fullname": None,
+            "first_name": None,
+            "last_name": None,
         }
 
 
@@ -56,8 +56,8 @@ class TwitchOAuth2(BaseOAuth2):
         return {
             "username": response.get("login"),
             "email": response.get("email"),
-            "first_name": "",
-            "last_name": "",
+            "first_name": None,
+            "last_name": None,
         }
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:

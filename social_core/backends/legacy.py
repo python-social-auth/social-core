@@ -31,9 +31,9 @@ class LegacyAuth(BaseAuth):
         """Return user details"""
         email = response.get("email", "")
         username = response.get("username", "")
-        fullname = response.get("fullname", "")
-        first_name = response.get("first_name", "")
-        last_name = response.get("last_name", "")
+        fullname = response.get("fullname")
+        first_name = response.get("first_name")
+        last_name = response.get("last_name")
         if email and not username:
             username = email.split("@", 1)[0]
         return {

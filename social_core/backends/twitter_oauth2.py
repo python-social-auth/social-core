@@ -61,8 +61,8 @@ class TwitterOAuth2(BaseOAuth2PKCE):
         public_metrics = user.get("public_metrics")
 
         fullname = name
-        first_name = ""
-        last_name = ""
+        first_name = None
+        last_name = None
 
         return {
             "id": user_id,

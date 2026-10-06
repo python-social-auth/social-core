@@ -28,8 +28,8 @@ class SoundcloudOAuth2(BaseOAuth2):
     def get_user_details(self, response):
         """Return user details from Soundcloud account"""
         fullname = response.get("full_name")
-        first_name = ""
-        last_name = ""
+        first_name = None
+        last_name = None
         return {
             "username": response.get("username"),
             "email": response.get("email") or "",

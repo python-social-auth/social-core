@@ -102,7 +102,7 @@ class PingOpenIdConnect(OpenIdConnectAuth):
 
     def get_user_details(self, response):
         username_key = self.setting("USERNAME_KEY", default=self.USERNAME_KEY)
-        fullname = ""
+        fullname = None
         first_name = response.get("given_name")
         last_name = response.get("family_name")
         return {

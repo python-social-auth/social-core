@@ -24,7 +24,7 @@ class ClasslinkOAuth(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Classlink account"""
-        fullname = ""
+        fullname = None
         first_name = response.get("FirstName")
         last_name = response.get("LastName")
 

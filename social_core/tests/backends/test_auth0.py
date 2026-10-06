@@ -132,7 +132,9 @@ class Auth0OAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         )
         details = self.backend.get_user_details(response)
         self.assertEqual(details["user_id"], "123456")
-        for field in ("fullname", "username", "email", "picture"):
+        for field in ("fullname", "first_name", "last_name"):
+            self.assertIsNone(details[field])
+        for field in ("username", "email", "picture"):
             self.assertEqual(details[field], "")
 
     def test_signed_token_requires_subject(self) -> None:

@@ -40,8 +40,8 @@ class StripeOAuth2(BaseOAuth2):
         return {
             "email": response.get("email"),
             "username": response.get("stripe_user_id"),
-            "first_name": response.get("first_name", ""),
-            "last_name": response.get("last_name", ""),
+            "first_name": response.get("first_name"),
+            "last_name": response.get("last_name"),
         }
 
     def auth_complete_params(self, state=None):

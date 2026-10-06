@@ -92,9 +92,9 @@ class VendOAuth2(BaseOAuth2):
         return {
             "username": username,
             "email": email,
-            "fullname": "",
-            "first_name": "",
-            "last_name": "",
+            "fullname": None,
+            "first_name": None,
+            "last_name": None,
         }
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:

@@ -27,17 +27,13 @@ def social_names(backend: BaseAuth, details, *args, **kwargs):
         full_from_firstlast=bool(backend.setting("FULL_FROM_FIRSTLAST", True)),
     )
     normalized = details.copy()
-    # Preserve missing/None values when the provider supplied no name, so a
-    # subsequent login (notably Apple) does not clear an existing user name.
-    if any(names):
-        normalized.update(
-            zip(("fullname", "first_name", "last_name"), names, strict=True)
-        )
-    else:
-        for name in ("fullname", "first_name", "last_name"):
-            value = normalized.get(name)
-            if isinstance(value, str):
-                normalized[name] = value.strip()
+    # Derive meaningful names into missing or blank fields, without turning
+    # unavailable components into empty values that would clear user fields.
+    for name, value in zip(("fullname", "first_name", "last_name"), names, strict=True):
+        if value:
+            normalized[name] = value
+        elif isinstance(normalized.get(name), str):
+            normalized[name] = normalized[name].strip()
     return {"details": normalized}
 
 

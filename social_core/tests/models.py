@@ -84,6 +84,13 @@ class User(BaseModel):
         return cast("Self | None", cls.cache.get(key))
 
 
+class UserWithNames(User):
+    """User fixture with both component names and a custom full-name field."""
+
+    fullname: str | None = None
+    last_name: str | None = None
+
+
 class TestUserSocialAuth(UserMixin, BaseModel):
     __test__ = False
 

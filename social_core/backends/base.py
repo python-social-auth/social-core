@@ -500,6 +500,10 @@ class BaseAuth:
 
         Leave name conversion to the social_names pipeline step.
 
+        Omit unavailable names or return None for them. An empty string is a
+        supplied value and can clear an existing user field. The social_names
+        step can fill missing or blank fields when another name is available.
+
         The returned dictionary can contain:
 
         ``username``

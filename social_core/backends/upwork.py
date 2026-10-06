@@ -29,7 +29,7 @@ class UpworkOAuth(BaseOAuth1):
         username = profile_url.rsplit("/")[-1].replace("~", "")
         return {
             "username": username,
-            "fullname": "",
+            "fullname": None,
             "first_name": first_name,
             "last_name": last_name,
         }

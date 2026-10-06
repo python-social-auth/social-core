@@ -36,9 +36,9 @@ class NationBuilderOAuth2(BaseOAuth2):
         return {
             "username": username,
             "email": email,
-            "fullname": response.get("full_name") or "",
-            "first_name": response.get("first_name") or "",
-            "last_name": response.get("last_name") or "",
+            "fullname": response.get("full_name"),
+            "first_name": response.get("first_name"),
+            "last_name": response.get("last_name"),
         }
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:

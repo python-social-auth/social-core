@@ -23,7 +23,7 @@ class GoClioOAuth2(BaseOAuth2):
 
         return {
             "username": username,
-            "fullname": "",
+            "fullname": None,
             "first_name": first_name,
             "last_name": last_name,
             "email": email,

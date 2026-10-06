@@ -47,9 +47,9 @@ class QQOAuth2(BaseOAuth2):
         else:
             username = response.get("nickname", "")
 
-        fullname = ""
-        first_name = response.get("nickname", "")
-        last_name = ""
+        fullname = None
+        first_name = response.get("nickname")
+        last_name = None
 
         return {
             "username": username,

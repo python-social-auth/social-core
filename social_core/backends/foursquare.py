@@ -23,9 +23,9 @@ class FoursquareOAuth2(BaseOAuth2):
         """Return user details from Foursquare account"""
         info = response["response"]["user"]
         email = info["contact"]["email"]
-        fullname = ""
-        first_name = info.get("firstName", "")
-        last_name = info.get("lastName", "")
+        fullname = None
+        first_name = info.get("firstName")
+        last_name = info.get("lastName")
         return {
             "username": f"{(first_name or '').strip()} {(last_name or '').strip()}",
             "fullname": fullname,

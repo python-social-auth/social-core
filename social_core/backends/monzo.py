@@ -17,8 +17,8 @@ class MonzoOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         fullname = response["accounts"][0]["description"]
-        first_name = ""
-        last_name = ""
+        first_name = None
+        last_name = None
 
         return {
             "username": str(response.get("user_id")),

@@ -30,9 +30,11 @@ class DockerOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Docker Hub account"""
-        fullname = response.get("full_name") or response.get("username") or ""
-        first_name = ""
-        last_name = ""
+        fullname = response.get("full_name")
+        if fullname is None:
+            fullname = response.get("username")
+        first_name = None
+        last_name = None
         return {
             "username": response.get("username"),
             "fullname": fullname,

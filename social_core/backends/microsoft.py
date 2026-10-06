@@ -60,9 +60,9 @@ class MicrosoftOAuth2(BaseOAuth2):
         return {
             "username": username,
             "email": email,
-            "fullname": response.get("displayName", ""),
-            "first_name": response.get("givenName", ""),
-            "last_name": response.get("surname", ""),
+            "fullname": response.get("displayName"),
+            "first_name": response.get("givenName"),
+            "last_name": response.get("surname"),
         }
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:

@@ -123,9 +123,9 @@ class LinkedinOAuth2(BaseOAuth2):
             :return the localizedName from the lastName object
             """
             locale = f"{name['preferredLocale']['language']}_{name['preferredLocale']['country']}"
-            return name["localized"].get(locale, "")
+            return name["localized"].get(locale)
 
-        fullname = ""
+        fullname = None
         first_name = get_localized_name(response["firstName"])
         last_name = get_localized_name(response["lastName"])
         email = response.get("emailAddress", "")

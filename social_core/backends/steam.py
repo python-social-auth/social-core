@@ -42,9 +42,9 @@ class SteamOpenId(OpenIdAuth):
             details = {
                 "username": player.get("personaname"),
                 "email": "",
-                "fullname": "",
-                "first_name": "",
-                "last_name": "",
+                "fullname": None,
+                "first_name": None,
+                "last_name": None,
                 "player": player,
             }
         else:
