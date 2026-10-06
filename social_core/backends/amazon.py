@@ -26,9 +26,9 @@ class AmazonOAuth2(BaseOAuth2):
     def get_user_details(self, response):
         """Return user details from amazon account"""
         name = response.get("name") or ""
-        fullname = name
-        first_name = ""
-        last_name = ""
+        fullname = response.get("name")
+        first_name = None
+        last_name = None
         return {
             "username": name,
             "email": response.get("email"),

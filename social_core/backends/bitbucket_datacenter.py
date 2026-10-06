@@ -70,8 +70,8 @@ class BitbucketDataCenterOAuth2(BaseOAuth2PKCE):
         # `response` here is the return value of `user_data` method
         user_data = response
         fullname = user_data["displayName"]
-        first_name = ""
-        last_name = ""
+        first_name = None
+        last_name = None
         uid = self.get_user_id(details=None, response=response)
         return {
             "uid": uid,

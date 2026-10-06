@@ -29,8 +29,8 @@ class SimpleLoginOAuth2(BaseOAuth2):
     def get_user_details(self, response):
         """Return user details from SimpleLogin account"""
         fullname = response.get("name")
-        first_name = ""
-        last_name = ""
+        first_name = None
+        last_name = None
         return {
             "username": response.get("email"),
             "email": response.get("email"),

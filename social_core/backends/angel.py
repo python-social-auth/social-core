@@ -20,8 +20,8 @@ class AngelOAuth2(BaseOAuth2):
         username = response["angellist_url"].split("/")[-1]
         email = response.get("email", "")
         fullname = response["name"]
-        first_name = ""
-        last_name = ""
+        first_name = None
+        last_name = None
         return {
             "username": username,
             "fullname": fullname,

@@ -31,8 +31,8 @@ class TwitterOAuth(BaseOAuth1):
     def get_user_details(self, response):
         """Return user details from Twitter account"""
         fullname = response["name"]
-        first_name = ""
-        last_name = ""
+        first_name = None
+        last_name = None
         return {
             "username": response["screen_name"],
             "email": response.get("email", ""),

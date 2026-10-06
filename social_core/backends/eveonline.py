@@ -28,8 +28,8 @@ class EVEOnlineOAuth2(BaseOAuth2):
         """Return user details from EVE Online account"""
         user_data = cast("dict", self.user_data(response["access_token"]))
         fullname = user_data["CharacterName"]
-        first_name = ""
-        last_name = ""
+        first_name = None
+        last_name = None
         return {
             "email": "",
             "username": (fullname or "").strip(),

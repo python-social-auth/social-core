@@ -20,9 +20,9 @@ class VimeoOAuth1(BaseOAuth1):
     def get_user_details(self, response):
         """Return user details from Twitter account"""
         person = response.get("person", {})
-        fullname = person.get("display_name", "")
-        first_name = ""
-        last_name = ""
+        fullname = person.get("display_name")
+        first_name = None
+        last_name = None
         return {
             "username": person.get("username", ""),
             "email": "",
@@ -74,9 +74,9 @@ class VimeoOAuth2(BaseOAuth2):
     def get_user_details(self, response):
         """Return user details from account"""
         user = response.get("user", {})
-        fullname = user.get("name", "")
-        first_name = ""
-        last_name = ""
+        fullname = user.get("name")
+        first_name = None
+        last_name = None
         return {
             "username": (fullname or "").strip(),
             "fullname": fullname,

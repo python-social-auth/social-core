@@ -149,9 +149,10 @@ class AppleIdTest(OAuth2Test, BaseAuthUrlTestMixin):
 
         user = cast("User", result)
         self.assertEqual(user.first_name, name.get("firstName") or None)
-        self.assertEqual(
-            user.extra_user_fields["last_name"], name.get("lastName") or None
-        )
+        if name.get("lastName"):
+            self.assertEqual(user.extra_user_fields["last_name"], name["lastName"])
+        else:
+            self.assertNotIn("last_name", user.extra_user_fields)
         self.assertEqual(user.email, "foobar@apple.com")
         self.assertEqual(user.social[0].uid, token_data["sub"])
         self.assertEqual(user.password, "foobar")

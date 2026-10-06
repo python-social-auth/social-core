@@ -23,9 +23,9 @@ class OrbiOAuth2(BaseOAuth2):
     ]
 
     def get_user_details(self, response):
-        fullname = response.get("name", "")
-        first_name = response.get("first_name", "")
-        last_name = response.get("last_name", "")
+        fullname = response.get("name")
+        first_name = response.get("first_name")
+        last_name = response.get("last_name")
         return {
             "username": response.get("username", response.get("name")),
             "email": response.get("email", ""),

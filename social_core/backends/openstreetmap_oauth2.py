@@ -37,9 +37,9 @@ class OpenStreetMapOAuth2(BaseOAuth2PKCE):
         return {
             "username": response["username"],
             "email": "",
-            "fullname": "",
-            "first_name": "",
-            "last_name": "",
+            "fullname": None,
+            "first_name": None,
+            "last_name": None,
         }
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:

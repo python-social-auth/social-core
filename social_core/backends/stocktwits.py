@@ -30,8 +30,8 @@ class StocktwitsOAuth2(BaseOAuth2):
     def get_user_details(self, response):
         """Return user details from Stocktwits account"""
         fullname = response["user"]["name"]
-        first_name = ""
-        last_name = ""
+        first_name = None
+        last_name = None
         return {
             "username": response["user"]["username"],
             "email": "",  # not supplied

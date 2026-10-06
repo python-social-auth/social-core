@@ -351,8 +351,8 @@ class CesidOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
                 "username": "cesiduser",
                 "email": "email@example.com",
                 "fullname": "Jan Novak",
-                "first_name": "",
-                "last_name": "",
+                "first_name": None,
+                "last_name": None,
             },
         )
 
@@ -367,9 +367,9 @@ class CesidOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
             {
                 "username": "cesiduser",
                 "email": "email@example.com",
-                "fullname": "",
-                "first_name": "",
-                "last_name": "",
+                "fullname": None,
+                "first_name": None,
+                "last_name": None,
             },
         )
 

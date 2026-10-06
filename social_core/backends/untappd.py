@@ -123,7 +123,7 @@ class UntappdOAuth2(BaseOAuth2):
                 "email": user_data.get("settings", {}).get("email_address", ""),
                 "first_name": user_data.get("first_name"),
                 "last_name": user_data.get("last_name"),
-                "fullname": user_data.get("fullname", ""),
+                "fullname": user_data.get("fullname"),
             }
         )
         return user_data

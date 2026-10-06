@@ -39,7 +39,13 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
         }
 
     def verified_response(
-        self, *, profile=True, signed_ax=True, component_names=("Foo", "Bar")
+        self,
+        *,
+        profile=True,
+        signed_ax=True,
+        component_names=("Foo", "Bar"),
+        fullname: str | None = "Foo Bar",
+        ax_fullnames=(),
     ):
         endpoint = OpenIDServiceEndpoint()
         endpoint.claimed_id = IDENTITY
@@ -47,10 +53,13 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
         vars(endpoint)["display_identifier"] = "Display identifier"
         message = Message(OPENID2_NS)
         if profile:
-            sreg.SRegResponse(
-                {"nickname": "user", "email": "user@example.com", "fullname": "Foo Bar"}
-            ).toMessage(message)
+            profile_fields = {"nickname": "user", "email": "user@example.com"}
+            if fullname is not None:
+                profile_fields["fullname"] = fullname
+            sreg.SRegResponse(profile_fields).toMessage(message)
             attributes = ax.FetchResponse()
+            for schema, value in ax_fullnames:
+                attributes.addValue(schema, value)
             if component_names is not None:
                 attributes.addValue(
                     "http://axschema.org/namePerson/first", component_names[0]
@@ -72,8 +81,8 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
             self.verified_response(component_names=None)
         )
         self.assertEqual(details["fullname"], "Foo Bar")
-        self.assertEqual(details["first_name"], "")
-        self.assertEqual(details["last_name"], "")
+        self.assertIsNone(details["first_name"])
+        self.assertIsNone(details["last_name"])
         normalized = social_names(self.backend, details)["details"]
         self.assertEqual(normalized["first_name"], "Foo")
         self.assertEqual(normalized["last_name"], "Bar")
@@ -87,6 +96,61 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
         self.assertEqual(normalized["first_name"], "Given")
         self.assertEqual(normalized["last_name"], "Surname")
 
+    def test_unavailable_names_from_extensions_are_preserved(self) -> None:
+        details = self.backend.get_user_details(
+            self.verified_response(fullname=None, component_names=None)
+        )
+        for key in ("fullname", "first_name", "last_name"):
+            self.assertIsNone(details[key])
+        self.assertEqual(social_names(self.backend, details)["details"], details)
+
+    def test_explicit_blank_names_from_extensions_are_preserved(self) -> None:
+        details = self.backend.get_user_details(
+            self.verified_response(fullname="", component_names=("", ""))
+        )
+        for key in ("fullname", "first_name", "last_name"):
+            self.assertEqual(details[key], "")
+        self.assertEqual(social_names(self.backend, details)["details"], details)
+
+    def test_blank_ax_alias_preserves_earlier_name(self) -> None:
+        current = "http://axschema.org/namePerson"
+        legacy = "http://schema.openid.net/namePerson"
+        for blank in ("", " "):
+            for sreg_name, ax_names in (
+                ("Foo Bar", ((legacy, blank),)),
+                (None, ((current, "Foo Bar"), (legacy, blank))),
+                ("Foo Bar", ((current, blank), (legacy, blank))),
+            ):
+                with self.subTest(blank=blank, sreg=sreg_name, ax=ax_names):
+                    details = self.backend.get_user_details(
+                        self.verified_response(
+                            fullname=sreg_name,
+                            component_names=None,
+                            ax_fullnames=ax_names,
+                        )
+                    )
+                    self.assertEqual(details["fullname"], "Foo Bar")
+                    normalized = social_names(self.backend, details)["details"]
+                    self.assertEqual(normalized["fullname"], "Foo Bar")
+
+    def test_ax_alias_preserves_only_supplied_blank(self) -> None:
+        for schema in (
+            "http://axschema.org/namePerson",
+            "http://schema.openid.net/namePerson",
+        ):
+            with self.subTest(schema=schema):
+                details = self.backend.get_user_details(
+                    self.verified_response(
+                        fullname=None,
+                        component_names=None,
+                        ax_fullnames=((schema, ""),),
+                    )
+                )
+                self.assertEqual(details["fullname"], "")
+                self.assertEqual(
+                    social_names(self.backend, details)["details"], details
+                )
+
     def test_single_name_preserves_username_fallback(self) -> None:
         with patch.object(
             self.backend, "values_from_response", return_value={"fullname": "Prince"}
@@ -95,12 +159,12 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
                 self.verified_response(profile=False)
             )
         self.assertEqual(details["username"], "Prince")
-        self.assertEqual(details["first_name"], "")
-        self.assertEqual(details["last_name"], "")
+        self.assertIsNone(details["first_name"])
+        self.assertIsNone(details["last_name"])
         normalized = social_names(self.backend, details)["details"]
         self.assertEqual(normalized["username"], "Prince")
         self.assertEqual(normalized["first_name"], "Prince")
-        self.assertEqual(normalized["last_name"], "")
+        self.assertIsNone(normalized["last_name"])
 
     def start_partial(self, response, *, early=True):
         self.pipeline_settings()

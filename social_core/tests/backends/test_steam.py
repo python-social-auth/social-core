@@ -1,11 +1,18 @@
 import datetime
 import json
+from types import SimpleNamespace
+from unittest.mock import patch
 from urllib.parse import parse_qsl, urlencode, urlsplit
 
+import pytest
 import responses
 
+from social_core.backends.steam import SteamOpenId
 from social_core.exceptions import AuthResponseError
+from social_core.pipeline import DEFAULT_AUTH_PIPELINE
+from social_core.tests.backends.test_base import get_backend
 from social_core.tests.exception_helpers import assert_auth_error
+from social_core.tests.models import TestUserSocialAuth, User, UserWithNames
 
 from .open_id import OpenIdTest
 
@@ -13,6 +20,74 @@ INFO_URL = "https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?"
 JANRAIN_NONCE = datetime.datetime.now(datetime.timezone.utc).strftime(
     "%Y-%m-%dT%H:%M:%SZ"
 )
+
+
+@pytest.mark.parametrize("flow", ["registration", "association", "login"])
+@pytest.mark.parametrize("include_name_fields", [False, True])
+def test_steam_pipeline_preserves_unavailable_names(
+    flow, include_name_fields, monkeypatch
+) -> None:
+    monkeypatch.setattr(User, "cache", {})
+    monkeypatch.setattr(TestUserSocialAuth, "cache", {})
+    monkeypatch.setattr(TestUserSocialAuth, "cache_by_uid", {})
+    backend = SteamOpenId(
+        get_backend(
+            {
+                "SOCIAL_AUTH_STEAM_USER_FIELDS": [
+                    "username",
+                    "email",
+                    "fullname",
+                    "first_name",
+                    "last_name",
+                ]
+            }
+            if include_name_fields
+            else {}
+        ).strategy
+    )
+    existing = None
+    if flow != "registration":
+        existing = UserWithNames(username="existing", email="existing@example.com")
+        existing.fullname, existing.first_name, existing.last_name = (
+            "Existing Name",
+            "Existing",
+            "Name",
+        )
+        TestUserSocialAuth(existing, "facebook", "facebook-id")
+        if flow == "login":
+            TestUserSocialAuth(existing, "steam", "123", id_key=backend.id_key())
+    response = SimpleNamespace(identity_url="https://steamcommunity.com/openid/id/123")
+    with patch.object(
+        backend,
+        "get_json",
+        return_value={"response": {"players": [{"personaname": "foobar"}]}},
+    ):
+        user = backend.pipeline(
+            list(DEFAULT_AUTH_PIPELINE),
+            response=response,
+            user=existing if flow == "association" else None,
+        )
+    assert isinstance(user, User)
+    assert any(
+        social.provider == "steam" and social.uid == "123" for social in user.social
+    )
+    if existing is not None:
+        assert user is existing
+        assert (existing.fullname, existing.first_name, existing.last_name) == (
+            "Existing Name",
+            "Existing",
+            "Name",
+        )
+        assert existing.email == "existing@example.com"
+        assert existing.username == "existing"
+    else:
+        assert user.username == "foobar"
+        assert user.email == ""
+        assert user.first_name is None
+        assert all(
+            name not in user.extra_user_fields
+            for name in ("fullname", "first_name", "last_name")
+        )
 
 
 class SteamOpenIdTest(OpenIdTest):

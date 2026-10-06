@@ -37,8 +37,8 @@ class ChatworkOAuth2(BaseOAuth2):
     def get_user_details(self, response):
         """Return user details from Chatwork account"""
         fullname = response.get("name")
-        first_name = ""
-        last_name = ""
+        first_name = None
+        last_name = None
         username = (
             response.get("chatwork_id")
             or response.get("login_mail")

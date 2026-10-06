@@ -7,7 +7,7 @@ from unittest.mock import Mock, patch
 
 from social_core.backends.base import BaseAuth
 from social_core.exceptions import AuthException
-from social_core.pipeline.user import user_details
+from social_core.pipeline.user import create_user, user_details
 from social_core.utils import PARTIAL_TOKEN_SESSION_NAME
 
 from .actions.actions import BaseActionTest
@@ -302,6 +302,94 @@ class UserPersistsInPartialPipeline(BaseActionTest):
         partial = cast("PartialMixin", self.strategy.partial_load(token))
         self.assertIsNotNone(partial)
         self.backend.continue_pipeline(partial)
+
+
+class UserCreationTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.strategy = TestStrategy(TestStorage)
+        self.backend = BaseAuth(self.strategy)
+        self.strategy.set_settings(
+            {
+                "SOCIAL_AUTH_USER_FIELDS": [
+                    "username",
+                    "email",
+                    "fullname",
+                    "first_name",
+                    "last_name",
+                ]
+            }
+        )
+
+    def test_unavailable_names_use_model_defaults(self) -> None:
+        def model_create_user(
+            username,
+            email,
+            fullname="Default Full",
+            first_name="Default",
+            last_name="Full",
+        ):
+            self.assertIsNotNone(fullname)
+            self.assertIsNotNone(first_name)
+            self.assertIsNotNone(last_name)
+            return (username, email, fullname, first_name, last_name)
+
+        for names in ({}, {"fullname": None, "first_name": None, "last_name": None}):
+            with (
+                self.subTest(names=names),
+                patch.object(
+                    self.strategy, "create_user", side_effect=model_create_user
+                ) as create,
+            ):
+                result = create_user(
+                    self.strategy,
+                    {"username": "ada", "email": None, **names},
+                    self.backend,
+                )
+                create.assert_called_once_with(username="ada", email=None)
+                self.assertEqual(
+                    result,
+                    {
+                        "is_new": True,
+                        "user": ("ada", None, "Default Full", "Default", "Full"),
+                    },
+                )
+
+    def test_supplied_names_and_overrides_are_preserved(self) -> None:
+        with patch.object(self.strategy, "create_user") as create:
+            create_user(
+                self.strategy,
+                {
+                    "username": "ada",
+                    "fullname": "Ada Lovelace",
+                    "first_name": "Ada",
+                    "last_name": "Lovelace",
+                },
+                self.backend,
+                first_name="",
+                last_name=None,
+            )
+            create.assert_called_once_with(
+                username="ada", email=None, fullname="Ada Lovelace", first_name=""
+            )
+
+    def test_name_only_registration_uses_model_defaults(self) -> None:
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_USER_FIELDS": ["fullname", "first_name", "last_name"]}
+        )
+        for details in ({}, {"fullname": None, "first_name": None, "last_name": None}):
+            with (
+                self.subTest(details=details),
+                patch.object(self.strategy, "create_user") as create,
+            ):
+                result = create_user(self.strategy, details, self.backend)
+                create.assert_called_once_with()
+                self.assertEqual(result, {"is_new": True, "user": create.return_value})
+
+    def test_no_configured_fields_skips_creation(self) -> None:
+        self.strategy.set_settings({"SOCIAL_AUTH_USER_FIELDS": []})
+        with patch.object(self.strategy, "create_user") as create:
+            self.assertIsNone(create_user(self.strategy, {}, self.backend))
+            create.assert_not_called()
 
 
 class TestUserDetails(BaseActionTest):

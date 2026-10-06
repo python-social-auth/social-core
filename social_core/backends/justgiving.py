@@ -20,7 +20,7 @@ class JustGivingOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from Just Giving account"""
-        fullname = ""
+        fullname = None
         first_name = response.get("firstName")
         last_name = response.get("lastName")
         return {

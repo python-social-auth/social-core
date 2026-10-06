@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+
+### Fixed
+
+- Backends return `None` for unavailable names instead of invented empty
+  strings, preventing logins and account associations from clearing existing
+  names. Name normalization still fills missing or blank fields from available
+  names, but preserves unavailable components when derivation produces nothing.
+  Explicit provider-supplied empty strings remain valid profile updates.
+- New-user creation omits unavailable configured name fields so user model
+  defaults apply instead of inserting null values into non-null columns,
+  including when only name fields are configured.
+- OpenID keeps usable names from earlier response schemas when a later
+  alias is blank, while preserving blanks when no usable name is supplied.
+
 ## [6.0.0](https://github.com/python-social-auth/social-core/releases/tag/6.0.0) - 2026-10-06
 
 ### Security

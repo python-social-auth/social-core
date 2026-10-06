@@ -39,9 +39,9 @@ class KickOAuth2(BaseOAuth2PKCE):
                 "name"
             ),  # API returns 'name' instead of 'username'
             "email": response.get("email") or "",
-            "fullname": response.get("name") or "",  # Using 'name' as fullname
-            "first_name": "",
-            "last_name": "",
+            "fullname": response.get("name"),  # Using 'name' as fullname
+            "first_name": None,
+            "last_name": None,
             "profile_picture": response.get("profile_picture") or "",
             "user_id": response.get("user_id"),
         }

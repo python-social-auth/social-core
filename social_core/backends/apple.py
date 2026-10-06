@@ -176,17 +176,15 @@ class AppleIdAuth(BaseOAuth2):
             name = response[_USER_NAME_KEY]
         else:
             name = json.loads(self.data.get("user", "{}")).get("name", {})
-        fullname = ""
-        first_name = name.get("firstName", "")
-        last_name = name.get("lastName", "")
+        first_name = name.get("firstName")
+        last_name = name.get("lastName")
 
         email = response.get("email", "")
         apple_id = response.get(self.id_key(), "")
-        # prevent updating User with empty strings
         user_details = {
-            "fullname": fullname or None,
-            "first_name": first_name or None,
-            "last_name": last_name or None,
+            "fullname": None,
+            "first_name": first_name,
+            "last_name": last_name,
             "email": email,
         }
         if email and self.setting("EMAIL_AS_USERNAME"):

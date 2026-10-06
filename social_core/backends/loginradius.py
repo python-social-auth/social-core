@@ -93,9 +93,9 @@ class LoginRadiusAuth(BaseOAuth2):
         return {
             "username": response["NickName"] or "",
             "email": response["Email"][0]["Value"] or "",
-            "fullname": response["FullName"] or "",
-            "first_name": response["FirstName"] or "",
-            "last_name": response["LastName"] or "",
+            "fullname": response["FullName"],
+            "first_name": response["FirstName"],
+            "last_name": response["LastName"],
         }
 
     def get_user_id(self, details, response) -> str:

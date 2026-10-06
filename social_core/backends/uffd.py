@@ -28,8 +28,8 @@ class UffdOAuth2(BaseOAuth2):
     def get_user_details(self, response):
         """Return user details from a Uffd account"""
         fullname = response.get("name")
-        first_name = ""
-        last_name = ""
+        first_name = None
+        last_name = None
         return {
             "username": response.get("nickname"),
             "email": response.get("email") or "",

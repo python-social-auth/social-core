@@ -53,15 +53,9 @@ class BaseGoogleAuth(BaseAuth):
         """Return user details from Google API account"""
         email = response.get("email", "")
 
-        name, given_name, family_name = (
-            response.get("name", ""),
-            response.get("given_name", ""),
-            response.get("family_name", ""),
-        )
-
-        fullname = name
-        first_name = given_name
-        last_name = family_name
+        fullname = response.get("name")
+        first_name = response.get("given_name")
+        last_name = response.get("family_name")
         return {
             "username": email.split("@", 1)[0],
             "email": email,

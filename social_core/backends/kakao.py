@@ -40,9 +40,9 @@ class KakaoOAuth2(BaseOAuth2):
         return {
             "username": nickname,
             "email": kaccount_email,
-            "fullname": nickname,
-            "first_name": nickname[1:] if nickname else "",
-            "last_name": nickname[0] if nickname else "",
+            "fullname": properties.get("nickname") if properties else None,
+            "first_name": (nickname[1:] or None) if nickname else None,
+            "last_name": nickname[0] if nickname else None,
         }
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:

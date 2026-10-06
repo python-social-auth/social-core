@@ -100,6 +100,12 @@ def create_user(
     if not fields:
         return None
 
+    # Let the user model supply defaults for names unavailable from the provider.
+    fields = {
+        name: value
+        for name, value in fields.items()
+        if value is not None or name not in ("fullname", "first_name", "last_name")
+    }
     # Allow overriding the email field if desired by application specification
     if backend.setting("FORCE_EMAIL_LOWERCASE", False):
         emailfield = fields.get("email")

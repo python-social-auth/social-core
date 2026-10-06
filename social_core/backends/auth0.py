@@ -108,9 +108,9 @@ class Auth0OAuth2(BaseOAuth2):
             raise AuthResponseError(
                 self, claim="sub", code="missing_claim", stage="token_validation"
             )
-        fullname = payload.get("name", "")
-        first_name = ""
-        last_name = ""
+        fullname = payload.get("name")
+        first_name = None
+        last_name = None
         details = {
             "username": payload.get("nickname", ""),
             "email": payload.get("email", ""),

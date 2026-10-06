@@ -27,14 +27,12 @@ class MapMyFitnessOAuth2(BaseOAuth2):
         return {"Api-Key": key}
 
     def get_user_details(self, response):
-        first = response.get("first_name", "")
-        last = response.get("last_name", "")
         return {
             "username": response["username"],
             "email": response["email"],
-            "fullname": "",
-            "first_name": first,
-            "last_name": last,
+            "fullname": None,
+            "first_name": response.get("first_name"),
+            "last_name": response.get("last_name"),
         }
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:

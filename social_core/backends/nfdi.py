@@ -82,9 +82,9 @@ class NFDIOpenIdConnect(OpenIdConnectAuth):
 
     def get_user_details(self, response):
         username_key = self.setting("USERNAME_KEY", default=self.USERNAME_KEY)
-        fullname = response.get("name") or ""
-        first_name = response.get("given_name") or ""
-        last_name = response.get("family_name") or ""
+        fullname = response.get("name")
+        first_name = response.get("given_name")
+        last_name = response.get("family_name")
         return {
             "username": response.get(username_key),
             "email": response.get("email"),

@@ -27,9 +27,9 @@ class DigitalOceanOAuth(BaseOAuth2):
 
     def get_user_details(self, response):
         """Return user details from DigitalOcean account"""
-        fullname = response.get("name") or ""
-        first_name = ""
-        last_name = ""
+        fullname = response.get("name")
+        first_name = None
+        last_name = None
 
         return {
             "username": response["account"].get("email"),
