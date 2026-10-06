@@ -26,7 +26,7 @@ types = [
   "types-lxml==2026.2.16",
   "types-oauthlib==3.3.0.20260724",
   "types-requests-oauthlib==2.0.0.20260907",
-  "types-requests==2.33.0.20260906"
+  "types-requests==2.33.0.20261006"
 ]
 
 [project]
@@ -93,7 +93,7 @@ dev = [
   "types-lxml==2026.2.16",
   "types-oauthlib==3.3.0.20260724",
   "types-requests-oauthlib==2.0.0.20260907",
-  "types-requests==2.33.0.20260906"
+  "types-requests==2.33.0.20261006"
 ]
 google-onetap = [
   "google-auth>=2.40.0,<2.60"
