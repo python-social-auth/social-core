@@ -39,12 +39,34 @@ class MediaWikiTest(BaseBackendTest):
             patch("social_core.backends.mediawiki.jwt.decode", side_effect=error),
             self.assertRaises(AuthException) as context,
         ):
-            self.backend.get_user_details(response)
+            self.backend.get_user_details(
+                self.backend.user_data(response["access_token"])
+            )
 
         self.assertIs(context.exception.__cause__, error)
         self.assertIsInstance(context.exception, AuthResponseError)
         self.assertEqual(context.exception.code, "invalid_claim")
         self.assertEqual(context.exception.stage, "user_info")
+
+    def test_group_extraction_is_opt_in(self) -> None:
+        response = {"groups": ["sysop", "user", "sysop"]}
+        self.assertIsNone(self.backend.get_user_groups(response))
+        self.strategy.set_settings({"SOCIAL_AUTH_MEDIAWIKI_GROUPS_ENABLED": True})
+        self.assertEqual(self.backend.get_user_groups(response), ["sysop", "user"])
+        self.assertEqual(self.backend.get_user_groups({"groups": []}), [])
+
+    def test_missing_groups_policy_does_not_accept_malformed_claims(self) -> None:
+        self.strategy.set_settings({"SOCIAL_AUTH_MEDIAWIKI_GROUPS_ENABLED": True})
+        with self.assertRaises(AuthResponseError) as caught:
+            self.backend.get_user_groups({})
+        self.assertEqual(caught.exception.code, "missing_claim")
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_MEDIAWIKI_GROUPS_MISSING_AS_EMPTY": True}
+        )
+        self.assertEqual(self.backend.get_user_groups({}), [])
+        with self.assertRaises(AuthResponseError) as caught:
+            self.backend.get_user_groups({"groups": "sysop"})
+        self.assertEqual(caught.exception.code, "invalid_claim")
 
     def test_signed_identity_requires_claims_with_valid_types(self) -> None:
         identity = {
@@ -82,7 +104,9 @@ class MediaWikiTest(BaseBackendTest):
                     ),
                     self.assertRaises(AuthResponseError) as caught,
                 ):
-                    self.backend.get_user_details(response)
+                    self.backend.get_user_details(
+                        self.backend.user_data(response["access_token"])
+                    )
                 self.assertEqual(
                     caught.exception.code,
                     "missing_claim" if value is None else "invalid_claim",
@@ -111,13 +135,8 @@ class MediaWikiTest(BaseBackendTest):
                 ),
                 self.assertRaises(AuthResponseError) as caught,
             ):
-                self.backend.get_user_details(
-                    {
-                        "access_token": {
-                            "oauth_token": "token",
-                            "oauth_token_secret": "secret",
-                        }
-                    }
+                self.backend.user_data(
+                    {"oauth_token": "token", "oauth_token_secret": "secret"}
                 )
             self.assertEqual(caught.exception.code, "invalid_claim")
             self.assertEqual(caught.exception.claim, "iat")
@@ -146,18 +165,24 @@ class MediaWikiTest(BaseBackendTest):
             patch.object(self.backend, "request", return_value=request_response),
             patch("social_core.backends.mediawiki.jwt.decode", return_value=identity),
         ):
-            details = self.backend.get_user_details(response)
+            details = self.backend.get_user_details(
+                self.backend.user_data(response["access_token"])
+            )
             self.assertEqual(
                 self.backend.get_user_id(details, response),
                 "stable-subject",
             )
             self.strategy.set_settings({"SOCIAL_AUTH_MEDIAWIKI_ID_KEY": "email"})
-            email_details = self.backend.get_user_details(response)
+            email_details = self.backend.get_user_details(
+                self.backend.user_data(response["access_token"])
+            )
             self.strategy.set_settings(
                 {"SOCIAL_AUTH_MEDIAWIKI_ID_KEY": "missing_claim"}
             )
             with assert_auth_error(self, AuthResponseError, "missing_claim"):
-                self.backend.get_user_details(response)
+                self.backend.get_user_details(
+                    self.backend.user_data(response["access_token"])
+                )
 
         self.assertEqual(details["sub"], "stable-subject")
         self.assertEqual(email_details["email"], "user@example.com")

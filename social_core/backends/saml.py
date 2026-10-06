@@ -29,6 +29,7 @@ from social_core.exceptions import (
     AuthSessionError,
     ErrorStage,
 )
+from social_core.groups import read_groups
 from social_core.utils import constant_time_compare, user_is_authenticated
 
 from .base import BaseAuth
@@ -597,6 +598,34 @@ class SAMLAuth(BaseAuth):
             self._authn_request_id_session_key(idp.name), auth.get_last_request_id()
         )
         return url
+
+    def get_group_setting(self, name: str, response, default=None):
+        idp = self.get_idp(response["idp_name"])
+        if name == "GROUPS_MAP":
+            return idp.conf.get("groups_map", default)
+        return idp.conf.get(name.lower(), self.setting(name, default))
+
+    def get_group_mappings(self):
+        return [
+            (name, conf.get("groups_map", {}))
+            for name, conf in self.setting("ENABLED_IDPS", {}).items()
+        ]
+
+    def get_group_source(self, response) -> str:
+        return response["idp_name"]
+
+    def get_user_groups(self, response) -> list[str] | None:
+        idp = self.get_idp(response["idp_name"])
+        key = idp.conf.get("attr_groups")
+        if key is None:
+            return None
+        return read_groups(
+            self,
+            response["attributes"],
+            key,
+            singleton=True,
+            missing_as_empty=idp.conf.get("groups_missing_as_empty", False),
+        )
 
     def get_user_details(self, response):
         """Get user details like full name, email, etc. from the

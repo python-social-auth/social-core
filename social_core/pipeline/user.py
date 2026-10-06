@@ -13,6 +13,14 @@ if TYPE_CHECKING:
 USER_FIELDS = ["username", "email"]
 
 
+def sync_groups(strategy, backend, response, user=None, groups=None, **kwargs) -> None:
+    """Synchronize local memberships through the application's strategy."""
+    if user is not None and not backend.ASSOCIATION_ONLY:
+        strategy.sync_user_groups(
+            user, groups, backend=backend, response=response, **kwargs
+        )
+
+
 def get_username(
     strategy: BaseStrategy,
     details,

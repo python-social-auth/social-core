@@ -383,7 +383,42 @@ class BaseAuth:
             else:
                 domain = parts[1]
                 allowed = email in emails or domain in domains
+        allow_groups = self.get_group_setting("ALLOW_GROUPS", response, [])
+        if not isinstance(allow_groups, (list, tuple, set)) or any(
+            not isinstance(group, str) or not group for group in allow_groups
+        ):
+            raise AuthConfigurationError(
+                self, code="invalid_setting", parameter="ALLOW_GROUPS", stage="pipeline"
+            )
+        if allow_groups:
+            # Backends override the default no-extraction implementation.
+            # pylint: disable-next=assignment-from-none
+            groups = self.get_user_groups(response)
+            if groups is None:
+                raise AuthConfigurationError(
+                    self,
+                    code="missing_setting",
+                    parameter="group extraction",
+                    stage="pipeline",
+                )
+            allowed = allowed and bool(set(groups).intersection(allow_groups))
         return allowed
+
+    def get_user_groups(self, response) -> list[str] | None:
+        """Return normalized external memberships, or None when disabled."""
+        return None
+
+    def get_group_setting(self, name: str, response, default=None):
+        """Resolve group configuration for this provider (or a SAML IdP)."""
+        return self.setting(name, default)
+
+    def get_group_mappings(self):
+        """Enumerate independently managed membership sources."""
+        return [("", self.setting("GROUPS_MAP", {}))]
+
+    def get_group_source(self, response) -> str:
+        """Identify the provider's active membership source."""
+        return ""
 
     def id_key(self) -> str:
         """Return the ID_KEY to use for this backend, checking settings first."""

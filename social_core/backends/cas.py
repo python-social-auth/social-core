@@ -7,12 +7,11 @@ the minor implementation differences between the Apereo CAS OIDC server
 implementation and the standard OIDC implementation in Python Social Auth.
 """
 
-from typing import TYPE_CHECKING, Any, cast
+from typing import Any, cast
+
+from social_core.groups import read_groups
 
 from .open_id_connect import OpenIdConnectAuth
-
-if TYPE_CHECKING:
-    from collections.abc import Iterable
 
 
 class CASOpenIdConnectAuth(OpenIdConnectAuth):
@@ -66,11 +65,12 @@ class CASOpenIdConnectAuth(OpenIdConnectAuth):
             "last_name": attributes.get("family_name"),
         }
 
-    def auth_allowed(self, response, details):
-        allow_groups = set(cast("Iterable", self.setting("ALLOW_GROUPS", set())))
-        groups = set(response.get("groups", set()))
-        return (
-            super().auth_allowed(response, details)
-            if groups.intersection(allow_groups) or not allow_groups
-            else False
-        )
+    def get_user_groups(self, response) -> list[str] | None:
+        # Existing CAS allow lists do not require a new extraction setting.
+        if not (
+            self.setting("GROUPS_ENABLED", False)
+            or self.setting("ALLOW_GROUPS", [])
+            or self.setting("GROUPS_MAP", {})
+        ):
+            return None
+        return read_groups(self, response, "groups", missing_as_empty=True)

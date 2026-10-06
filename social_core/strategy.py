@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any, Protocol, cast
 
 from .backends.utils import get_backend
 from .exceptions import AuthConfigurationError, ErrorStage
+from .groups import validate_group_mapping
 from .pipeline import DEFAULT_AUTH_PIPELINE, DEFAULT_DISCONNECT_PIPELINE
 from .pipeline.utils import partial_load, to_plain_dict
 from .store import OpenIdSessionWrapper, OpenIdStore
@@ -106,6 +107,20 @@ class BaseStrategy:
 
     def get_user(self, *args, **kwargs):
         return self.storage.user.get_user(*args, **kwargs)
+
+    def sync_user_groups(
+        self, user, groups: list[str] | None, *, backend: BaseAuth, response, **kwargs
+    ) -> None:
+        """Override to apply configured external memberships to local groups."""
+        if validate_group_mapping(
+            backend, backend.get_group_setting("GROUPS_MAP", response, {})
+        ):
+            raise AuthConfigurationError(
+                backend,
+                code="unsupported_feature",
+                parameter="GROUPS_MAP",
+                stage="pipeline",
+            )
 
     def session_setdefault(self, name: str, value):
         self.session_set(name, value)
