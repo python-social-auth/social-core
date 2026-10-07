@@ -33,7 +33,7 @@ from social_core.utils import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator, Mapping
+    from collections.abc import Generator, Mapping
 
     from requests import Response
     from requests.auth import AuthBase
@@ -569,7 +569,7 @@ class BaseAuth:
     @contextmanager
     def _partial_pipeline_context(
         self, partial: PartialMixin, pipeline_type: str = "authentication"
-    ) -> Iterator[None]:
+    ) -> Generator[None, None, None]:
         if partial.pipeline_type != pipeline_type:
             raise AuthPolicyError(
                 self, code="authentication_disallowed", stage="callback"
