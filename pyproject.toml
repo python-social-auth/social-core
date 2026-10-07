@@ -217,7 +217,6 @@ ignore = [
   "raise-vanilla-args",  # TODO: Avoid specifying long messages outside the exception class
   "raw-string-in-exception",  # TODO: Exception must not use a string literal, assign to variable first
   "redefined-loop-name",  # TODO: loop variable overwritten by assignment target
-  "reimplemented-operator",  # TODO!
   "runtime-cast-value",  # TODO!
   'single-line-implicit-string-concatenation',  # CONFIG: formatter
   "subclass-builtin",  # TODO
