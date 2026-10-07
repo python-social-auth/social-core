@@ -77,7 +77,7 @@ class QQOAuth2(BaseOAuth2):
         response["openid"] = openid
         return response
 
-    def request_access_token(  # noqa: PLR0913
+    def request_access_token(
         self,
         url: str,
         method: Literal["GET", "POST", "DELETE"] = "GET",

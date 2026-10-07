@@ -147,7 +147,7 @@ class LinkedinOAuth2(BaseOAuth2):
         headers["Authorization"] = f"Bearer {access_token}"
         return headers
 
-    def request_access_token(  # noqa: PLR0913
+    def request_access_token(
         self,
         url: str,
         method: Literal["GET", "POST", "DELETE"] = "GET",

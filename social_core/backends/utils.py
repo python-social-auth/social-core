@@ -28,7 +28,7 @@ def load_backends(backends, force_load=False):
     below can retry a requested backend that may not yet be discovered.
     """
     # pylint: disable-next=global-statement
-    global BACKENDSCACHE  # noqa: PLW0603
+    global BACKENDSCACHE
     if force_load:
         BACKENDSCACHE = {}
     if not BACKENDSCACHE:

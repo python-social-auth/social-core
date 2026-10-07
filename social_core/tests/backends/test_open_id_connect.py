@@ -303,7 +303,7 @@ class BaseOpenIdConnectTest(
         )
 
         second_body = self.prepare_access_token_body(
-            access_token="second-refreshed-access-token",  # noqa: S106
+            access_token="second-refreshed-access-token",  # ruff: ignore[hardcoded-password-func-arg]
             nonce=original_context["nonce"],
             auth_time=auth_time,
         )
@@ -459,7 +459,7 @@ class BaseOpenIdConnectTest(
     def test_refresh_rejects_changed_nonce(self) -> None:
         self.assert_refresh_rejected(
             self.prepare_access_token_body(
-                access_token="refreshed-access-token",  # noqa: S106
+                access_token="refreshed-access-token",  # ruff: ignore[hardcoded-password-func-arg]
                 nonce="different-nonce",
             ),
             "invalid_claim",
@@ -707,7 +707,7 @@ class ExampleOpenIdConnectCustomAtHashTest(OpenIdConnectTest):
             content_type="text/json",
         )
 
-    def prepare_access_token_body(  # NOQA: PLR0913, PLR0917
+    def prepare_access_token_body(
         self,
         client_key=None,
         tamper_message=False,
@@ -718,7 +718,7 @@ class ExampleOpenIdConnectCustomAtHashTest(OpenIdConnectTest):
         issuer=None,
         at_hash=None,
         subject=None,
-        access_token: str | None = "foobar",  # noqa: S107
+        access_token: str | None = "foobar",  # ruff: ignore[hardcoded-password-default]
         refresh_token: str | None = None,
         include_nonce: bool = True,
         auth_time: int | None = None,

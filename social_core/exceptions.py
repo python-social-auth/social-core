@@ -240,7 +240,7 @@ class SocialAuthBaseException(ValueError):
 
     default_code = "unknown_error"
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
         backend: BaseAuth | None = None,
         *details: object,

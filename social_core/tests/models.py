@@ -189,7 +189,7 @@ class TestUserSocialAuth(UserMixin, BaseModel):
         user: UserProtocol,
         provider: str | None = None,
         # pylint: disable-next=redefined-builtin
-        id: int | None = None,  # noqa: A002
+        id: int | None = None,
     ):
         return [
             usa

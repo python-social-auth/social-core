@@ -105,7 +105,7 @@ class DripOAuthTest(OAuth2Test, BaseAuthUrlTestMixin):
 
     def test_association_preserves_profile(self) -> None:
         user = User("existing", email="local@example.com")
-        untyped_user = cast(Any, user)  # noqa: TC006
+        untyped_user = cast(Any, user)
         untyped_user.fullname = "Local Name"
         self.user_data_body = json.dumps(
             {"users": [{"email": "other@example.com", "name": "Drip Name"}]}
@@ -124,7 +124,7 @@ class DripOAuthTest(OAuth2Test, BaseAuthUrlTestMixin):
         with self.assertRaises(AuthSessionError):
             do_auth(self.backend)
         user = User("anonymous")
-        cast(Any, user).is_authenticated = False  # noqa: TC006
+        cast(Any, user).is_authenticated = False
         with self.assertRaises(AuthSessionError):
             do_auth(self.backend, user=user)
         self.assertIsNone(self.strategy.session_get("drip_state"))
@@ -222,7 +222,7 @@ class DripOAuthTest(OAuth2Test, BaseAuthUrlTestMixin):
     def test_direct_token_requires_authenticated_user(self) -> None:
         for user in (None, User("anonymous")):
             if user is not None:
-                cast(Any, user).is_authenticated = False  # noqa: TC006
+                cast(Any, user).is_authenticated = False
             with self.subTest(user=user), self.assertRaises(AuthSessionError):
                 self.backend.do_auth("token", user=user)
         self.assertEqual(len(responses.calls), 0)
@@ -287,7 +287,7 @@ class DripOAuthTest(OAuth2Test, BaseAuthUrlTestMixin):
             with self.subTest(use_uuid=use_uuid):
                 user = User(f"existing-{use_uuid}")
                 if use_uuid:
-                    cast(Any, user).id = uuid4()  # noqa: TC006
+                    cast(Any, user).id = uuid4()
                 partial = self.pause_for_user(user)
                 self.assertEqual(
                     partial.kwargs["drip_association_user_id"], str(user.id)

@@ -136,7 +136,7 @@ class AzureADB2COAuth2Test(OAuth2Test, BaseAuthUrlTestMixin, AzureOAuth2TestMixi
     def build_access_token_body(
         self,
         id_token: str | None = None,
-        access_token: str | None = "foobar",  # noqa: S107
+        access_token: str | None = "foobar",  # ruff: ignore[hardcoded-password-default]
         **overrides,
     ) -> str:
         body = {

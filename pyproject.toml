@@ -174,51 +174,78 @@ addopts = "--cov=social_core --cov-report=xml --durations=10"
 extend-safe-fixes = [
   "ANN",
   "D",
-  "FA102",
   "FLY",
+  "future-required-type-annotation",
   "SIM",
   "TCH",
   "UP"
 ]
 future-annotations = true
 ignore = [
+  "ambiguous-unicode-character-string",  # TODO!
   "ANN",  # TODO: Missing type annotations
-  "ARG001",  # TODO: Unused function argument (mostly for API compatibility)
-  "ARG002",  # TODO: Unused method argument (mostly for API compatibility)
-  "ARG003",  # TODO: Unused class method argument
+  "assert",  # TODO: Use of `assert` detected
+  "builtin-argument-shadowing",  # TODO!
   "COM",  # CONFIG: No trailing commas
-  "CPY001",  # TODO: Copyright not documented
+  "commented-out-code",  # TODO: Found commented-out code
+  "compare-to-empty-string",  # TODO
+  "complex-structure",  # TODO
   "D",  # TODO: Missing documentation
-  "D203",  # CONFIG: incompatible with D211
-  "D212",  # CONFIG: incompatible with D213
-  "E501",  # WONTFIX: we accept long strings (rest is formatted by ruff)
-  "EM101",  # TODO: Exception must not use a string literal, assign to variable first
-  "EM102",  # TODO: Exception must not use an f-string literal, assign to variable first
-  "ERA001",  # TODO: Found commented-out code
+  "docstring-missing-exception",  # TODO
+  "docstring-missing-returns",  # TODO
+  "explicit-string-concatenation",  # TODO: Explicitly concatenated string should be implicitly concatenated
+  "f-string-in-exception",  # TODO: Exception must not use an f-string literal, assign to variable first
   "FBT",  # TODO: Boolean in function definition
-  "FIX002",  # CONFIG: we use TODO
-  'ISC001',  # CONFIG: formatter
-  "ISC003",  # TODO: Explicitly concatenated string should be implicitly concatenated
+  "get-attr-with-constant",  # TODO!
+  "global-statement",  # TODO
+  "hardcoded-password-string",  # TODO: Possible hardcoded password assigned
+  "incorrect-blank-line-before-class",  # CONFIG: incompatible with D211
+  "incorrectly-parenthesized-tuple-in-subscript",  # TODO!
+  "line-contains-todo",  # CONFIG: we use TODO
+  "line-too-long",  # WONTFIX: we accept long strings (rest is formatted by ruff)
+  "literal-membership",  # TODO!
+  "magic-value-comparison",  # TODO: Magic value used in comparison
+  "missing-copyright-notice",  # TODO: Copyright not documented
+  "missing-todo-author",  # CONFIG: no detailed TODO documentation is required
+  "missing-todo-link",  # CONFIG: no detailed TODO documentation is required
+  "multi-line-summary-first-line",  # CONFIG: incompatible with D213
+  "mutable-class-default",  # TODO: Type annotations
   "N",  # TODO: Naming issues
-  "PERF203",  # WONTFIX: This rule is only enforced for Python versions prior to 3.11
-  "PLR2004",  # TODO: Magic value used in comparison
-  "PLW2901",  # TODO: loop variable overwritten by assignment target
+  "no-self-use",  # TODO
+  "non-augmented-assignment",  # TODO
+  "non-empty-init-module",  # TODO
   "PT",  # CONFIG: Not using pytest
-  "RUF012",  # TODO: Type annotations
-  "S101",  # TODO: Use of `assert` detected
-  "S105",  # TODO: Possible hardcoded password assigned
-  "S301",  # TODO: `pickle` and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue
-  "TD002",  # CONFIG: no detailed TODO documentation is required
-  "TD003",  # CONFIG: no detailed TODO documentation is required
-  "TRY003"  # TODO: Avoid specifying long messages outside the exception class
+  "raise-vanilla-args",  # TODO: Avoid specifying long messages outside the exception class
+  "raw-string-in-exception",  # TODO: Exception must not use a string literal, assign to variable first
+  "redefined-loop-name",  # TODO: loop variable overwritten by assignment target
+  "reimplemented-operator",  # TODO!
+  "runtime-cast-value",  # TODO!
+  'single-line-implicit-string-concatenation',  # CONFIG: formatter
+  "subclass-builtin",  # TODO
+  "suspicious-pickle-import",  # TODO!
+  "suspicious-pickle-usage",  # TODO: `pickle` and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue
+  "too-many-arguments",  # TODO
+  "too-many-branches",  # TODO
+  "too-many-locals",  # TODO
+  "too-many-nested-blocks",  # TODO
+  "too-many-positional-arguments",  # TODO
+  "too-many-public-methods",  # TODO
+  "too-many-statements-in-try-clause",  # TODO
+  "try-except-in-loop",  # WONTFIX: This rule is only enforced for Python versions prior to 3.11
+  "unspecified-encoding",  # TODO
+  "unused-class-method-argument",  # TODO: Unused class method argument
+  "unused-function-argument",  # TODO: Unused function argument (mostly for API compatibility)
+  "unused-method-argument"  # TODO: Unused method argument (mostly for API compatibility)
 ]
+preview = true
 select = ["ALL"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 11  # TODO: should be lower
 
 [tool.ruff.lint.per-file-ignores]
-"social_core/pipeline/debug.py" = ["T201", "T203"]
+"scripts/check_distribution.py" = ["implicit-namespace-package", "print"]
+"social_core/pipeline/debug.py" = ["p-print", "print"]
 
 [tool.ruff.lint.pylint]
 # TODO: all these should be lower (or use defaults)

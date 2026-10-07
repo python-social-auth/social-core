@@ -246,7 +246,7 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
             )
         return keys
 
-    def auth_params(self, state=None):  # noqa: C901, PLR0912
+    def auth_params(self, state=None):
         """Return extra arguments needed on auth process."""
         params = super().auth_params(state)
         if self.USE_NONCE:
@@ -535,7 +535,7 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
 
         return claims
 
-    def request_access_token(  # noqa: PLR0913
+    def request_access_token(
         self,
         url: str,
         method: Literal["GET", "POST", "DELETE"] = "GET",

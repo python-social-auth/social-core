@@ -324,7 +324,7 @@ class UserMixin:
         user: UserProtocol,
         provider: str | None = None,
         # pylint: disable-next=redefined-builtin
-        id: int | None = None,  # noqa: A002
+        id: int | None = None,
     ):
         """Return all the UserSocialAuth instances for given user"""
         raise NotImplementedError("Implement in subclass")
