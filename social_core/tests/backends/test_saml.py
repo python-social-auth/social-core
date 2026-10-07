@@ -40,6 +40,17 @@ class SAMLTest(BaseBackendTest):
     expected_username = "myself"
     response_fixture = "saml_response.txt"
 
+    def test_invalid_idp_names(self) -> None:
+        for name in ("invalid:name", "invalid name"):
+            self.strategy.set_settings({"SOCIAL_AUTH_SAML_ENABLED_IDPS": {name: {}}})
+            with (
+                self.subTest(name=name),
+                self.assertRaises(AuthConfigurationError) as caught,
+            ):
+                self.backend.get_idp(name)
+            self.assertEqual(caught.exception.code, "invalid_setting")
+            self.assertIn('IdP "name" should be a slug', caught.exception.detail)
+
     def test_missing_idp_certificates_report_the_active_operation(self) -> None:
         config = self.backend.get_idp("testshib").conf.copy()
         config.pop("x509cert", None)

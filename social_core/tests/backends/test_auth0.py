@@ -95,6 +95,15 @@ class Auth0OAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         assert self.access_token_body is not None
         return json.loads(self.access_token_body)
 
+    def test_empty_signing_keys(self) -> None:
+        with (
+            patch.object(self.backend, "get_jwks_keys_for_uri", return_value=[]),
+            assert_auth_error(self, AuthResponseError, "invalid_claim") as caught,
+        ):
+            self.backend.get_user_details(self.token_response())
+        self.assertIsInstance(caught.exception.__cause__, jwt.PyJWKSetError)
+        self.assertEqual(caught.exception.stage, "token_validation")
+
     def test_non_object_jwks_rejected_before_caching(self) -> None:
         cached_keys: Any = self.backend.get_jwks_keys_for_uri
         for payload in (None, [], [JWK_PUBLIC_KEY], "keys", 1, False):

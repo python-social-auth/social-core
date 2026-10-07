@@ -1,5 +1,7 @@
 import json
 
+from social_core.exceptions import AuthResponseError
+
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 from .open_id_connect import OpenIdConnectTest
 
@@ -62,6 +64,19 @@ class TwitchOpenIdConnectTest(OpenIdConnectTest):
 
     def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
+
+    def test_missing_validated_id_token(self) -> None:
+        missing_claims: tuple[dict[str, str] | None, ...] = (None, {})
+        for claims in missing_claims:
+            self.backend.id_token = claims
+            with (
+                self.subTest(claims=claims),
+                self.assertRaises(AuthResponseError) as caught,
+            ):
+                self.backend.get_user_details({})
+            self.assertEqual(caught.exception.code, "missing_claim")
+            self.assertEqual(caught.exception.claim, "id_token")
+            self.assertEqual(caught.exception.stage, "user_info")
 
 
 class TwitchOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):

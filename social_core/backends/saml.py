@@ -112,9 +112,12 @@ class SAMLIdentityProvider:
         self.name: str = name
         # name should be a slug and must not contain a colon, which
         # could conflict with uid prefixing:
-        assert ":" not in self.name and " " not in self.name, (
-            'IdP "name" should be a slug (short, no spaces)'
-        )
+        if ":" in self.name or " " in self.name:
+            raise AuthConfigurationError(
+                self.backend,
+                'IdP "name" should be a slug (short, no spaces)',
+                code="invalid_setting",
+            )
         self.conf = kwargs
 
     def get_user_permanent_id(
