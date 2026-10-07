@@ -156,6 +156,10 @@ class OpenIdTest(BaseBackendTest):
         )
         start = self.backend.start()
         self.post_start()
+        # Model the redirect boundary: JSON storage and fresh request objects.
+        strategy = self.strategy.new_request()
+        self.strategy = strategy
+        self.backend = type(self.backend)(strategy, redirect_uri=self.complete_url)
         form, inputs = self.get_form_data(start)
         action = form.get("action")
         assert action, "The form action must be set in the test"
@@ -178,4 +182,9 @@ class OpenIdTest(BaseBackendTest):
             status=200,
             body="is_valid:true\n",
         )
-        return self.backend.complete()
+        result = self.backend.complete()
+        state = self.strategy.session_get("openid")
+        assert isinstance(state, dict)
+        self.assertNotIn("_openid_consumer_last_token", state)
+        self.assertNotIn("_yadis_services__openid_consumer_", state)
+        return result
