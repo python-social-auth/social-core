@@ -624,7 +624,7 @@ class BaseAuth:
         otherwise return false."""
         return True
 
-    def request(  # noqa: PLR0913
+    def request(
         self,
         url: str,
         *,
@@ -690,7 +690,7 @@ class BaseAuth:
             raise http_error(self, error, stage=stage) from error
         return response
 
-    def get_json(  # noqa: PLR0913, PLR0917
+    def get_json(
         self,
         url: str,
         method: Literal["GET", "POST", "DELETE"] = "GET",

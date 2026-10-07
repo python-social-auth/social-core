@@ -98,7 +98,7 @@ class TwilioAuthTest(BaseBackendTest):
 
     def test_start_serializes_user_id(self) -> None:
         user = User("existing")
-        untyped_user = cast(Any, user)  # noqa: TC006
+        untyped_user = cast(Any, user)
         untyped_user.id = uuid4()
 
         state = self.start_for_user(user)
@@ -199,7 +199,7 @@ class TwilioAuthTest(BaseBackendTest):
 
     def test_complete_preserves_local_profile_fields(self) -> None:
         user = User("existing", email="person@example.com")
-        untyped_user = cast(Any, user)  # noqa: TC006
+        untyped_user = cast(Any, user)
         untyped_user.fullname = "Existing Person"
         untyped_user.first_name = "Existing"
         untyped_user.last_name = "Person"
@@ -225,7 +225,7 @@ class TwilioAuthTest(BaseBackendTest):
 
     def test_partial_pipeline_resumes_for_uuid_user(self) -> None:
         user = User("existing")
-        untyped_user = cast(Any, user)  # noqa: TC006
+        untyped_user = cast(Any, user)
         untyped_user.id = uuid4()
         partial = self.pause_for_user(user)
         self.assertNotIn("user", partial.kwargs)

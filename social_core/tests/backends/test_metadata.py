@@ -3,7 +3,7 @@ from __future__ import annotations
 import ast
 from importlib.resources import files
 from pathlib import Path
-from xml.etree import ElementTree as ET
+from xml.etree import ElementTree as ET  # ruff: ignore[suspicious-xml-etree-import]
 
 from social_core.backends.base import BaseAuth
 from social_core.backends.email import EmailAuth
@@ -55,7 +55,7 @@ def test_shipped_backend_metadata_and_assets() -> None:
                 assert Path(filename).name == filename
                 asset = icons.joinpath(filename)
                 assert asset.is_file(), filename
-                svg = ET.fromstring(asset.read_text())  # noqa: S314
+                svg = ET.fromstring(asset.read_text())  # ruff: ignore[suspicious-xml-element-tree-usage]
                 assert svg.tag == "{http://www.w3.org/2000/svg}svg"
 
 

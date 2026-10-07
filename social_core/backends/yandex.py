@@ -73,7 +73,7 @@ class YandexOAuth2(BaseOAuth2):
 
 class YaruOAuth2(BaseOAuth2):
     name = "yaru"
-    title = "Я.ру"  # noqa: RUF001 - original service branding
+    title = "Я.ру"
     AUTHORIZATION_URL = "https://oauth.yandex.com/authorize"
     ACCESS_TOKEN_URL = "https://oauth.yandex.com/token"
     REDIRECT_STATE = False

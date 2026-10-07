@@ -77,7 +77,7 @@ class LastFmAuth(BaseAuth):
             )
 
         # Usage of md5 is mandated by the API: https://www.last.fm/api/webauth
-        signature = hashlib.md5(  # noqa: S324
+        signature = hashlib.md5(  # ruff: ignore[hashlib-insecure-hash-function]
             f"api_key{key}methodauth.getSessiontoken{token}{secret}".encode()
         ).hexdigest()
 

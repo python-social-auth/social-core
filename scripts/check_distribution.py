@@ -1,7 +1,5 @@
 """Verify that wheels contain runtime files and source archives retain tests."""
 
-# ruff: noqa: INP001
-
 from __future__ import annotations
 
 import argparse
@@ -48,7 +46,7 @@ def main() -> None:
             if missing := runtime - names:
                 message = f"{wheel}: missing runtime files: {sorted(missing)}"
                 raise ValueError(message)
-            print(f"{wheel}: runtime file policy passed")  # noqa: T201
+            print(f"{wheel}: runtime file policy passed")
         sdists.extend(directory.glob("*.tar.gz"))
     if not sdists:
         message = "No source distributions found"
@@ -61,7 +59,7 @@ def main() -> None:
         if missing := fixtures - names:
             message = f"{sdist}: missing test files: {sorted(missing)}"
             raise ValueError(message)
-        print(f"{sdist}: source file policy passed")  # noqa: T201
+        print(f"{sdist}: source file policy passed")
 
 
 if __name__ == "__main__":

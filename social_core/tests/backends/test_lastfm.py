@@ -143,7 +143,7 @@ class LastFmAuthTest(BaseBackendTest):
         with self.assertRaises(AuthSessionError):
             do_auth(self.backend)
         anonymous = User("anonymous")
-        cast(Any, anonymous).is_authenticated = False  # noqa: TC006
+        cast(Any, anonymous).is_authenticated = False
         with self.assertRaises(AuthSessionError):
             do_auth(self.backend, user=anonymous)
 

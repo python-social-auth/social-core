@@ -118,7 +118,7 @@ class AuthenticationFailureBoundaryTest(unittest.TestCase):
     def test_oidc_discovery_transport_failures_preserve_operation_stage(self):
         backend = OpenIdConnectAuth(self.strategy)
         # The cache decorator attaches invalidate dynamically.
-        getattr(backend.oidc_config, "invalidate")(backend)  # noqa: B009
+        getattr(backend.oidc_config, "invalidate")(backend)
         for operation, stage in (
             (backend.authorization_url, "begin"),
             (backend.access_token_url, "token_exchange"),
@@ -178,7 +178,7 @@ class AuthenticationFailureBoundaryTest(unittest.TestCase):
                 {"SOCIAL_AUTH_AUTH0_OPENIDCONNECT_DOMAIN": domain}
             )
             # The cache decorator attaches invalidate dynamically.
-            getattr(backend.oidc_config, "invalidate")(backend)  # noqa: B009
+            getattr(backend.oidc_config, "invalidate")(backend)
             for operation, stage in (
                 (backend.authorization_url, "begin"),
                 (backend.access_token_url, "token_exchange"),
@@ -669,7 +669,7 @@ class AuthenticationFailureBoundaryTest(unittest.TestCase):
         for index, payload in enumerate(payloads):
             uri = f"https://example.com/jwks-shape-regression/{index}"
             # The cache decorator attaches invalidate dynamically.
-            getattr(backend.get_jwks_keys_for_uri, "invalidate")(backend, uri)  # noqa: B009
+            getattr(backend.get_jwks_keys_for_uri, "invalidate")(backend, uri)
             with patch.object(
                 backend, "get_json", side_effect=[payload, {"keys": valid_keys}]
             ) as get_json:
@@ -699,7 +699,7 @@ class AuthenticationFailureBoundaryTest(unittest.TestCase):
                 self.assertEqual(caught.exception.claim, claim)
                 self.assertEqual(caught.exception.code, "missing_claim")
         # The cache decorator attaches invalidate dynamically.
-        getattr(backend.get_jwks_keys_for_uri, "invalidate")(  # noqa: B009
+        getattr(backend.get_jwks_keys_for_uri, "invalidate")(
             backend, "https://example.com/empty-keys"
         )
         with (

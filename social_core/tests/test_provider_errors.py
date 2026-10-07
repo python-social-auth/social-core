@@ -315,8 +315,8 @@ class ProviderErrorTest(unittest.TestCase):
         configuration_url = "https://example.com/stage-regression/discovery"
         keys_url = "https://example.com/stage-regression/keys"
         # The cache decorator attaches invalidate dynamically.
-        getattr(azure.get_openid_configuration, "invalidate")(azure, configuration_url)  # noqa: B009
-        getattr(azure.get_jwks_keys_for_uri, "invalidate")(azure, keys_url)  # noqa: B009
+        getattr(azure.get_openid_configuration, "invalidate")(azure, configuration_url)
+        getattr(azure.get_jwks_keys_for_uri, "invalidate")(azure, keys_url)
         for operation, stage in (
             (
                 partial(azure.get_openid_configuration, configuration_url),
@@ -453,7 +453,7 @@ class ProviderErrorTest(unittest.TestCase):
             (partial(backend.revoke_token_url, "token", "user"), "disconnect"),
         ):
             for payload in invalid_payloads:
-                getattr(backend.oidc_config, "invalidate")(backend)  # noqa: B009
+                getattr(backend.oidc_config, "invalidate")(backend)
                 with (
                     self.subTest(stage=stage, payload=payload),
                     patch.object(
@@ -468,7 +468,7 @@ class ProviderErrorTest(unittest.TestCase):
                     operation()
                     self.assertEqual(backend.oidc_config(), valid)
                     self.assertEqual(get_json.call_count, 2)
-        getattr(backend.oidc_config, "invalidate")(backend)  # noqa: B009
+        getattr(backend.oidc_config, "invalidate")(backend)
 
     def test_oidc_discovery_missing_endpoint_is_a_provider_response_failure(self):
         strategy = TestStrategy(TestStorage)
@@ -558,7 +558,7 @@ class ProviderErrorTest(unittest.TestCase):
         )
         backend = FedoraOpenIdConnect(strategy, redirect_uri="/complete/fedora-oidc/")
         # The cache decorator attaches invalidate dynamically.
-        getattr(backend.oidc_config, "invalidate")(backend)  # noqa: B009
+        getattr(backend.oidc_config, "invalidate")(backend)
         cause = requests.ReadTimeout("Read timed out. (read timeout=5.0)")
         with (
             patch("requests.request", side_effect=cause) as request,

@@ -54,7 +54,7 @@ class StackoverflowOAuth2(BaseOAuth2):
             },
         )["items"][0]
 
-    def request_access_token(  # noqa: PLR0913
+    def request_access_token(
         self,
         url: str,
         method: Literal["GET", "POST", "DELETE"] = "GET",

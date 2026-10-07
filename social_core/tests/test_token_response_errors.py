@@ -57,7 +57,7 @@ class TokenResponseErrorTest(unittest.TestCase):
                     "jwks_uri": "https://example.com/keys",
                 }
                 # The cache decorator attaches invalidate dynamically.
-                invalidate = getattr(backend.get_openid_configuration, "invalidate")  # noqa: B009
+                invalidate = getattr(backend.get_openid_configuration, "invalidate")
                 invalidate(backend, url)
                 with (
                     self.subTest(backend=backend.name, payload=payload),

@@ -23,7 +23,7 @@ def odnoklassniki_sig(payload: str) -> str:
     See
     https://apiok.ru/en/ext/invite_suggest#calculating-request-signature-stsignature
     """
-    return md5(payload.encode("utf-8")).hexdigest()  # noqa: S324
+    return md5(payload.encode("utf-8")).hexdigest()  # ruff: ignore[hashlib-insecure-hash-function]
 
 
 class OdnoklassnikiOAuth2(BaseOAuth2):

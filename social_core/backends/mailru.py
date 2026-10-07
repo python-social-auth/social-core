@@ -44,7 +44,7 @@ class MailruOAuth2(BaseOAuth2):
         }
         param_list = sorted(f"{item}={value}" for item, value in data.items())
         # Usage of md5 is mandated by the API: https://api.mail.ru/docs/guides/restapi/#client
-        data["sig"] = md5(("".join(param_list) + secret).encode("utf-8")).hexdigest()  # noqa: S324
+        data["sig"] = md5(("".join(param_list) + secret).encode("utf-8")).hexdigest()  # ruff: ignore[hashlib-insecure-hash-function]
         return self.get_json("https://www.appsmail.ru/platform/api", params=data)[0]
 
 

@@ -127,7 +127,7 @@ class OpenIdConnectTest(
             "sub": subject or "1234",
         }
 
-    def prepare_access_token_body(  # NOQA: C901, PLR0913, PLR0917
+    def prepare_access_token_body(
         self,
         client_key=None,
         tamper_message=False,
@@ -138,7 +138,7 @@ class OpenIdConnectTest(
         issuer=None,
         at_hash=None,
         subject=None,
-        access_token: str | None = "foobar",  # noqa: S107
+        access_token: str | None = "foobar",  # ruff: ignore[hardcoded-password-default]
         refresh_token: str | None = None,
         include_nonce: bool = True,
         auth_time: int | None = None,
@@ -249,7 +249,7 @@ class OpenIdConnectTest(
 
     def refresh_response(self, **id_token_kwargs) -> str:
         return self.prepare_access_token_body(
-            access_token="refreshed-access-token",  # noqa: S106
+            access_token="refreshed-access-token",  # ruff: ignore[hardcoded-password-func-arg]
             include_nonce=False,
             **id_token_kwargs,
         )
