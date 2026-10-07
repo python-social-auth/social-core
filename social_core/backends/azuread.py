@@ -158,8 +158,7 @@ class AzureADOAuth2(BaseOAuth2PKCE):
         return load_oidc_config(self, url, stage="token_validation")
 
     def openid_configuration(self) -> dict[str, Any]:
-        configuration = self.get_openid_configuration(self.openid_configuration_url())
-        return cast("dict[str, Any]", configuration)
+        return self.get_openid_configuration(self.openid_configuration_url())
 
     def jwks_uri(self) -> str:
         uri = self.setting("JWKS_URI") or self.openid_configuration().get("jwks_uri")
@@ -282,7 +281,7 @@ class AzureADOAuth2(BaseOAuth2PKCE):
             if key.get("kid") == key_id:
                 return key
 
-        cast("Any", self.get_jwks_keys_for_uri).invalidate()
+        self.get_jwks_keys_for_uri.invalidate()
         for key in self.get_jwks_keys():
             if key.get("kid") == key_id:
                 return key

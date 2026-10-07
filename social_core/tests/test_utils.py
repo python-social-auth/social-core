@@ -31,15 +31,36 @@ from .models import TestPartial, TestStorage
 from .strategy import TestStrategy
 
 if TYPE_CHECKING:
-    from typing import Any
-
     from social_core.storage import PartialMixin, UserProtocol
 
 
 class CacheTest(unittest.TestCase):
+    def test_bound_and_unbound_method_controls(self) -> None:
+        class Owner:
+            @cache(ttl=86400)
+            def fetch(self, key: str, *, variant: str = "a") -> tuple[str, str]:
+                return (key, variant)
+
+        owner = Owner()
+        first: tuple[str, str] = owner.fetch("first", variant="b")
+        self.assertIs(Owner.fetch(owner, "first", variant="b"), first)
+
+        owner.fetch.invalidate(owner, "first", variant="b")
+        second = owner.fetch("first", variant="b")
+        self.assertIsNot(second, first)
+
+        refreshed: tuple[str, str] = owner.fetch.refresh(owner, "first", variant="b")
+        self.assertIsNot(refreshed, second)
+        self.assertIs(Owner.fetch(owner, "first", variant="b"), refreshed)
+
+        refreshed = Owner.fetch.refresh(owner, "first", variant="b")
+        self.assertIs(owner.fetch("first", variant="b"), refreshed)
+        Owner.fetch.invalidate()
+        self.assertIsNot(owner.fetch("first", variant="b"), refreshed)
+
     def test_invalidate_one_entry_preserves_other_arguments_and_classes(self) -> None:
         fetch = Mock(side_effect=lambda *_args, **_kwargs: object())
-        cached: Any = cache(ttl=86400)(fetch)
+        cached = cache(ttl=86400)(fetch)
         owner = object()
         other_owner = Mock()
         first = cached(owner, "first", variant="a")
@@ -57,7 +78,7 @@ class CacheTest(unittest.TestCase):
 
     def test_invalidate_all_entries_remains_supported(self) -> None:
         fetch = Mock(side_effect=lambda *_args: object())
-        cached: Any = cache(ttl=86400)(fetch)
+        cached = cache(ttl=86400)(fetch)
         owner = object()
         first = cached(owner, "first")
         second = cached(owner, "second")
@@ -70,7 +91,7 @@ class CacheTest(unittest.TestCase):
 
     def test_invalidate_missing_entry_preserves_cached_values(self) -> None:
         fetch = Mock(return_value=object())
-        cached: Any = cache(ttl=86400)(fetch)
+        cached = cache(ttl=86400)(fetch)
         owner = object()
         value = cached(owner, "present")
 
@@ -81,7 +102,7 @@ class CacheTest(unittest.TestCase):
 
     def test_refresh_replaces_only_matching_entry(self) -> None:
         fetch = Mock(side_effect=lambda *_args, **_kwargs: object())
-        cached: Any = cache(ttl=86400)(fetch)
+        cached = cache(ttl=86400)(fetch)
         owner = object()
         other_owner = Mock()
         first = cached(owner, "first", variant="a")
@@ -100,7 +121,7 @@ class CacheTest(unittest.TestCase):
 
     def test_failed_refresh_preserves_value_and_expiry_time(self) -> None:
         fetch = Mock(return_value=object())
-        cached: Any = cache(ttl=86400)(fetch)
+        cached = cache(ttl=86400)(fetch)
         owner = object()
         with patch("social_core.utils.time.time", return_value=1000):
             value = cached(owner, "first")
@@ -122,7 +143,7 @@ class CacheTest(unittest.TestCase):
 
     def test_successful_refresh_renews_expiry_time(self) -> None:
         fetch = Mock(side_effect=lambda *_args: object())
-        cached: Any = cache(ttl=86400)(fetch)
+        cached = cache(ttl=86400)(fetch)
         owner = object()
         with patch("social_core.utils.time.time", return_value=1000):
             first = cached(owner, "first")

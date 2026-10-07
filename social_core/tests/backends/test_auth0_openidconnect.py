@@ -114,7 +114,7 @@ class Auth0OpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
             self.backend.api_path()
 
     def test_oidc_config_uses_correct_discovery_url(self) -> None:
-        self.backend.oidc_config.invalidate()
+        self.backend.get_openid_configuration.invalidate()
         self.backend.oidc_config()
 
         self.assertEqual(
@@ -128,7 +128,7 @@ class Auth0OpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
         self.strategy.set_settings(
             {"SOCIAL_AUTH_AUTH0_OPENIDCONNECT_DOMAIN": f"https://{self.domain}/"}
         )
-        self.backend.oidc_config.invalidate()
+        self.backend.get_openid_configuration.invalidate()
         self.backend.oidc_config()
 
         self.assertEqual(
