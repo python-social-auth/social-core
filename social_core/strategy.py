@@ -21,7 +21,7 @@ from .utils import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator, Mapping
+    from collections.abc import Generator, Mapping
 
     from .backends.base import BaseAuth
     from .storage import BaseStorage, CodeMixin, PartialMixin, UserProtocol
@@ -322,7 +322,9 @@ class BaseStrategy:
         return self.get_request_data(merge=merge)
 
     @contextmanager
-    def pipeline_request_data(self, data: Mapping[str, Any] | None) -> Iterator[None]:
+    def pipeline_request_data(
+        self, data: Mapping[str, Any] | None
+    ) -> Generator[None, None, None]:
         """Scope effective request data to one pipeline execution."""
         token = self._pipeline_request_data.set(
             to_plain_dict(data) if data is not None else None
