@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+### Security
+
+- OpenID session state uses explicit JSON-compatible serialization instead of
+  pickle. In-progress OpenID logins with old session state must restart; existing
+  linked accounts, provider associations, and authenticated sessions are unchanged.
+
 ### Fixed
 
 - Backends return `None` for unavailable names instead of invented empty

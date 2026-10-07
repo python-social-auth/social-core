@@ -17,6 +17,7 @@ from social_core.exceptions import (
     AuthUnknownError,
     ErrorStage,
 )
+from social_core.store import InvalidOpenIdSession
 from social_core.utils import url_add_parameters
 
 from .base import BaseAuth
@@ -270,6 +271,15 @@ class OpenIdAuth(BaseAuth):
             response = self.consumer().complete(
                 dict(self.data.items()), self.get_return_to()
             )
+        except InvalidOpenIdSession as error:
+            self.strategy.session_set(SESSION_NAME, {})
+            self._consumer = None
+            raise AuthSessionError(
+                self,
+                "OpenID authentication context is unavailable; restart login",
+                code="session_context_missing",
+                stage="callback",
+            ) from error
         except HTTPFetchingError as error:
             raise AuthProviderError(
                 self, code="connection_failed", stage="callback"
@@ -361,7 +371,13 @@ class OpenIdAuth(BaseAuth):
     def openid_request(self, params: dict[str, str] | None = None):
         """Return openid request"""
         try:
-            return self.consumer().begin(url_add_parameters(self.openid_url(), params))
+            try:
+                consumer = self.consumer()
+            except InvalidOpenIdSession:
+                self.strategy.session_set(SESSION_NAME, {})
+                self._consumer = None
+                consumer = self.consumer()
+            return consumer.begin(url_add_parameters(self.openid_url(), params))
         except DiscoveryFailure as err:
             raise AuthProviderError(
                 self,

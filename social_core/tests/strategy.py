@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from typing import TYPE_CHECKING, Any, cast
 
 from social_core.strategy import BaseStrategy, BaseTemplateStrategy
@@ -37,6 +38,14 @@ class TestStrategy(BaseStrategy):
         self._settings: dict[str, Any] = {}
         self._session: dict[str, Any] = {}
         super().__init__(storage, tpl)
+
+    def new_request(self):
+        """Create a fresh strategy after a JSON session round trip."""
+        strategy = TestStrategy(self.storage)
+        strategy.set_settings(self._settings.copy())
+        for name, value in json.loads(json.dumps(self._session)).items():
+            strategy.session_set(name, value)
+        return strategy
 
     def redirect(self, url):
         return Redirect(url)

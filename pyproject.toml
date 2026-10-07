@@ -221,8 +221,6 @@ ignore = [
   "runtime-cast-value",  # TODO!
   'single-line-implicit-string-concatenation',  # CONFIG: formatter
   "subclass-builtin",  # TODO
-  "suspicious-pickle-import",  # TODO!
-  "suspicious-pickle-usage",  # TODO: `pickle` and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue
   "too-many-arguments",  # TODO
   "too-many-branches",  # TODO
   "too-many-locals",  # TODO
