@@ -184,7 +184,6 @@ future-annotations = true
 ignore = [
   "ambiguous-unicode-character-string",  # TODO!
   "ANN",  # TODO: Missing type annotations
-  "assert",  # TODO: Use of `assert` detected
   "builtin-argument-shadowing",  # TODO!
   "COM",  # CONFIG: No trailing commas
   "commented-out-code",  # TODO: Found commented-out code
@@ -245,6 +244,7 @@ max-complexity = 11  # TODO: should be lower
 
 [tool.ruff.lint.per-file-ignores]
 "scripts/check_distribution.py" = ["implicit-namespace-package", "print"]
+"social_core/**tests**.py" = ["assert"]
 "social_core/pipeline/debug.py" = ["p-print", "print"]
 
 [tool.ruff.lint.pylint]

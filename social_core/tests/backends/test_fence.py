@@ -1,4 +1,7 @@
 import json
+from unittest.mock import patch
+
+from social_core.exceptions import AuthConfigurationError
 
 from .oauth import BaseAuthUrlTestMixin
 from .open_id_connect import OpenIdConnectTest
@@ -44,3 +47,17 @@ class FenceOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
         }
     )
     skip_invalid_at_hash = allow_invalid_at_hash = True
+
+    def test_missing_endpoint(self) -> None:
+        with patch.object(self.backend, "OIDC_ENDPOINT", None):
+            for operation in (
+                self.backend.authorization_url,
+                self.backend.access_token_url,
+            ):
+                with (
+                    self.subTest(operation=operation),
+                    self.assertRaises(AuthConfigurationError) as caught,
+                ):
+                    operation()
+                self.assertEqual(caught.exception.code, "missing_setting")
+                self.assertEqual(caught.exception.parameter, "OIDC_ENDPOINT")

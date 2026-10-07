@@ -69,7 +69,8 @@ class Auth0OAuth2(BaseOAuth2):
                 )
             except (jwt.InvalidSignatureError, jwt.InvalidAlgorithmError) as error:
                 signature_error = error
-        assert signature_error is not None
+        if signature_error is None:
+            raise jwt.PyJWKSetError("No signing keys available to validate id_token")
         raise signature_error
 
     def get_user_details(self, response):
