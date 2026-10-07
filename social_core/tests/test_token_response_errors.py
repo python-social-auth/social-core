@@ -57,7 +57,7 @@ class TokenResponseErrorTest(unittest.TestCase):
                     "jwks_uri": "https://example.com/keys",
                 }
                 # The cache decorator attaches invalidate dynamically.
-                invalidate = getattr(backend.get_openid_configuration, "invalidate")
+                invalidate = backend.get_openid_configuration.invalidate
                 invalidate(backend, url)
                 with (
                     self.subTest(backend=backend.name, payload=payload),
@@ -377,9 +377,8 @@ class TokenResponseErrorTest(unittest.TestCase):
             "okta_openidconnect.OktaOpenIdConnect",
         ):
             backend = module_member(f"social_core.backends.{path}")(self.strategy)
-            invalidate = getattr(backend.oidc_config, "invalidate", None)
-            if invalidate is not None:
-                invalidate(backend)
+            invalidate = backend.get_openid_configuration.invalidate
+            invalidate(backend, backend.oidc_config_url())
             with patch.object(
                 backend, "get_json", side_effect=[[], {"issuer": "https://example.com"}]
             ) as get_json:
@@ -394,8 +393,7 @@ class TokenResponseErrorTest(unittest.TestCase):
                     backend.oidc_config(), {"issuer": "https://example.com"}
                 )
                 self.assertEqual(get_json.call_count, 2)
-            if invalidate is not None:
-                invalidate(backend)
+            invalidate(backend, backend.oidc_config_url())
 
     def test_oauth1_token_errors_stop_before_session_or_profile_changes(self):
         for backend_class in (BaseOAuth1, EvernoteOAuth, MediaWiki):

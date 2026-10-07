@@ -1,4 +1,5 @@
 import json
+from unittest.mock import patch
 
 import responses
 
@@ -210,3 +211,43 @@ class OktaOpenIdConnectTest(OpenIdConnectTest):
             self.backend.oidc_config_url(),
             "https://dev-000000.oktapreview.com/oauth2/id-123456/.well-known/openid-configuration?client_id=a-key",
         )
+
+    def test_okta_discovery_uses_inherited_cache(self) -> None:
+        self.backend.get_openid_configuration.invalidate(
+            self.backend, self.backend.oidc_config_url()
+        )
+        self.addCleanup(
+            self.backend.get_openid_configuration.invalidate,
+            self.backend,
+            self.backend.oidc_config_url(),
+        )
+        configuration = json.loads(self.openid_config_body)
+
+        for path, discovery_path in (
+            ("/oauth2", ""),
+            ("/oauth2/id-123456", "/oauth2/id-123456"),
+        ):
+            with self.subTest(path=path):
+                self.strategy.set_settings(
+                    {
+                        "SOCIAL_AUTH_OKTA_OPENIDCONNECT_API_URL": f"https://dev-000000.oktapreview.com{path}",
+                    }
+                )
+                self.backend.get_openid_configuration.invalidate(
+                    self.backend, self.backend.oidc_config_url()
+                )
+                with patch.object(
+                    self.backend, "get_json", return_value=configuration
+                ) as get_json:
+                    self.assertIs(self.backend.oidc_config(), configuration)
+                    self.assertIs(self.backend.oidc_config(), configuration)
+                    get_json.assert_called_once_with(
+                        f"https://dev-000000.oktapreview.com{discovery_path}/.well-known/openid-configuration?client_id=a-key",
+                        stage="begin",
+                    )
+
+                    self.backend.get_openid_configuration.invalidate(
+                        self.backend, self.backend.oidc_config_url()
+                    )
+                    self.assertIs(self.backend.oidc_config(), configuration)
+                    self.assertEqual(get_json.call_count, 2)

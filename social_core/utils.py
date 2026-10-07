@@ -9,7 +9,16 @@ import time
 import unicodedata
 from dataclasses import dataclass
 from importlib import import_module
-from typing import TYPE_CHECKING, Any, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Concatenate,
+    ParamSpec,
+    Protocol,
+    TypeVar,
+    cast,
+    overload,
+)
 from urllib.parse import parse_qs as battery_parse_qs
 from urllib.parse import unquote, urlencode, urlparse, urlunparse
 
@@ -28,7 +37,7 @@ from .exceptions import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Collection
+    from collections.abc import Callable, Collection
 
     from .backends.base import BaseAuth
     from .storage import PartialMixin, UserProtocol
@@ -652,6 +661,64 @@ def get_strategy(strategy: str, storage: str, *args, **kwargs) -> BaseStrategy:
     return Strategy(Storage, *args, **kwargs)
 
 
+_CacheInstance_contra = TypeVar("_CacheInstance_contra", contravariant=True)
+_CacheOwner = TypeVar("_CacheOwner")
+_CacheParams = ParamSpec("_CacheParams")
+_CacheResult_co = TypeVar("_CacheResult_co", covariant=True)
+
+
+class _CacheControls(Protocol[_CacheInstance_contra, _CacheParams, _CacheResult_co]):
+    @overload
+    def invalidate(self) -> None: ...
+
+    @overload
+    def invalidate(
+        self, this: object, /, *args: _CacheParams.args, **kwargs: _CacheParams.kwargs
+    ) -> None: ...
+
+    def refresh(
+        self,
+        this: _CacheInstance_contra,
+        /,
+        *args: _CacheParams.args,
+        **kwargs: _CacheParams.kwargs,
+    ) -> _CacheResult_co: ...
+
+
+class _BoundCachedMethod(
+    _CacheControls[_CacheInstance_contra, _CacheParams, _CacheResult_co], Protocol
+):
+    def __call__(
+        self, *args: _CacheParams.args, **kwargs: _CacheParams.kwargs
+    ) -> _CacheResult_co: ...
+
+
+class _UnboundCachedMethod(
+    _CacheControls[_CacheInstance_contra, _CacheParams, _CacheResult_co], Protocol
+):
+    def __call__(
+        self,
+        this: _CacheInstance_contra,
+        /,
+        *args: _CacheParams.args,
+        **kwargs: _CacheParams.kwargs,
+    ) -> _CacheResult_co: ...
+
+
+class _CachedMethod(_UnboundCachedMethod[Any, _CacheParams, _CacheResult_co], Protocol):
+    # Infer the receiver at lookup so inherited and overridden methods use the
+    # accessing class, rather than fixing it to the class defining the method.
+    @overload
+    def __get__(
+        self, instance: None, owner: type[_CacheOwner], /
+    ) -> _UnboundCachedMethod[_CacheOwner, _CacheParams, _CacheResult_co]: ...
+
+    @overload
+    def __get__(
+        self, instance: _CacheOwner, owner: type | None = None, /
+    ) -> _BoundCachedMethod[_CacheOwner, _CacheParams, _CacheResult_co]: ...
+
+
 class cache:
     """
     Cache decorator that caches the return value of a method for a
@@ -673,14 +740,27 @@ class cache:
             tuple[type, tuple[Any, ...], tuple[tuple[str, Any], ...]], Any
         ] = {}
 
-    def __call__(self, fn):
-        def refresh(this, *args, **kwargs):
+    def __call__(
+        self,
+        fn: Callable[Concatenate[_CacheInstance_contra, _CacheParams], _CacheResult_co],
+    ) -> _CachedMethod[_CacheParams, _CacheResult_co]:
+        def refresh(
+            this: _CacheInstance_contra,
+            /,
+            *args: _CacheParams.args,
+            **kwargs: _CacheParams.kwargs,
+        ) -> _CacheResult_co:
             cached_value = fn(this, *args, **kwargs)
             cache_key = (this.__class__, args, tuple(sorted(kwargs.items())))
             self.cache[cache_key] = (time.time(), cached_value)
             return cached_value
 
-        def wrapped(this, *args, **kwargs):
+        def wrapped(
+            this: _CacheInstance_contra,
+            /,
+            *args: _CacheParams.args,
+            **kwargs: _CacheParams.kwargs,
+        ) -> _CacheResult_co:
             now = time.time()
             last_updated = None
             cached_value = None
@@ -703,7 +783,8 @@ class cache:
 
         cast("Any", wrapped).invalidate = self._invalidate
         cast("Any", wrapped).refresh = refresh
-        return wrapped
+        # Functions bind through __get__; their extra attributes remain unbound.
+        return cast("_CachedMethod[_CacheParams, _CacheResult_co]", wrapped)
 
     def _invalidate(
         self, this: object | None = None, *args: Any, **kwargs: Any

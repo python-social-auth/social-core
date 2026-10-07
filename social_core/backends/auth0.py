@@ -3,8 +3,6 @@ Auth0 implementation based on:
 https://auth0.com/docs/quickstart/webapp/django/01-login
 """
 
-from typing import TYPE_CHECKING
-
 import jwt
 
 from social_core.backends.utils import jwt_error
@@ -12,9 +10,6 @@ from social_core.exceptions import AuthResponseError
 from social_core.utils import cache
 
 from .oauth import BaseOAuth2
-
-if TYPE_CHECKING:
-    from typing import Any
 
 
 class Auth0OAuth2(BaseOAuth2):
@@ -85,7 +80,7 @@ class Auth0OAuth2(BaseOAuth2):
                 stage="token_validation",
             )
         jwks_uri = self.api_path(".well-known/jwks.json")
-        cached_keys: Any = self.get_jwks_keys_for_uri
+        cached_keys = self.get_jwks_keys_for_uri
         try:
             kid = jwt.get_unverified_header(id_token).get("kid")
             keys = self.get_jwks_keys_for_uri(jwks_uri)

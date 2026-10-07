@@ -19,7 +19,7 @@ from jwt import (
 from jwt.utils import base64url_decode
 
 from social_core.backends.oauth import BaseOAuth2PKCE
-from social_core.backends.utils import jwt_error, load_oidc_config
+from social_core.backends.utils import OIDCDiscoveryMixin, jwt_error
 from social_core.exceptions import (
     AuthConfigurationError,
     AuthCredentialError,
@@ -54,7 +54,7 @@ class OpenIdConnectAssociation:
         self.assoc_type = assoc_type  # as state
 
 
-class OpenIdConnectAuth(BaseOAuth2PKCE):
+class OpenIdConnectAuth(OIDCDiscoveryMixin, BaseOAuth2PKCE):
     """
     Base class for Open ID Connect backends.
     Currently only the code response type is supported.
@@ -218,22 +218,21 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
     def oidc_endpoint(self) -> str:
         return cast("str", self.setting("OIDC_ENDPOINT", self.OIDC_ENDPOINT))
 
-    @cache(ttl=86400)
-    def oidc_config(self) -> dict[Any, Any]:
-        return load_oidc_config(
-            self, f"{self.oidc_endpoint()}/.well-known/openid-configuration"
-        )
+    def oidc_config_url(self) -> str:
+        return f"{self.oidc_endpoint()}/.well-known/openid-configuration"
+
+    def get_jwks_keys(self) -> list[dict[str, Any]]:
+        return self.get_jwks_keys_for_uri(self.jwks_uri())
 
     @cache(ttl=86400)
-    def get_jwks_keys(self):
-        return self.get_remote_jwks_keys()
+    def get_jwks_keys_for_uri(self, uri: str) -> list[dict[str, Any]]:
+        """Cache signing keys separately for each JWKS URL."""
+        return self.get_remote_jwks_keys(uri)
 
-        # Add client secret as oct key so it can be used for HMAC signatures
-        # client_id, client_secret = self.get_key_and_secret()
-        # keys.append({'key': client_secret, 'kty': 'oct'})
-
-    def get_remote_jwks_keys(self):
-        response = self.request(self.jwks_uri(), stage="token_validation")
+    def get_remote_jwks_keys(self, uri: str | None = None) -> list[dict[str, Any]]:
+        if uri is None:
+            uri = self.jwks_uri()
+        response = self.request(uri, stage="token_validation")
         try:
             keys = loads(response.text)["keys"]
         except (ValueError, KeyError, TypeError) as error:
@@ -424,10 +423,8 @@ class OpenIdConnectAuth(BaseOAuth2PKCE):
                 if kid == key.get("kid"):
                     break
             else:
-                # In case the key id is not found in the cached keys, just
-                # reload the JWKS keys. Ideally this should be done by
-                # invalidating the cache.
-                self.get_jwks_keys.invalidate()  # pyright: ignore[reportAttributeAccessIssue]
+                # Reload this URL's keys when the key ID is absent from the cache.
+                self.get_jwks_keys_for_uri.invalidate(self, self.jwks_uri())
                 keys = self.get_jwks_keys()
 
         for key in keys:

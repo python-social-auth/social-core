@@ -10,10 +10,10 @@ from social_core.groups import configured_group_key, read_groups
 from social_core.utils import append_slash
 
 from .oauth import BaseOAuth2
-from .utils import load_oidc_config
+from .utils import OIDCDiscoveryMixin
 
 
-class OktaMixin(BaseOAuth2):
+class OktaMixin(OIDCDiscoveryMixin, BaseOAuth2):
     def api_url(self) -> str:
         return append_slash(cast("str", self.setting("API_URL")))
 
@@ -26,7 +26,7 @@ class OktaMixin(BaseOAuth2):
     def _url(self, path):
         return urljoin(self.api_url(), path)
 
-    def oidc_config_url(self):
+    def oidc_config_url(self) -> str:
         # https://developer.okta.com/docs/reference/api/oidc/#well-known-openid-configuration
         url = urlparse(self.api_url())
 
@@ -40,9 +40,6 @@ class OktaMixin(BaseOAuth2):
             urlunparse(url),
             f"./.well-known/openid-configuration?client_id={self.setting('KEY')}",
         )
-
-    def oidc_config(self):
-        return load_oidc_config(self, self.oidc_config_url())
 
 
 class OktaOAuth2(OktaMixin, BaseOAuth2):

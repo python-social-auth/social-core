@@ -1,7 +1,7 @@
 import jwt
 
 from social_core.exceptions import AuthConfigurationError, AuthResponseError, ErrorStage
-from social_core.utils import module_member, user_is_authenticated
+from social_core.utils import cache, module_member, user_is_authenticated
 
 from .base import BaseAuth
 
@@ -90,6 +90,21 @@ def load_oidc_config(
     if not isinstance(response, dict):
         raise AuthResponseError(backend, code="malformed_response", stage=stage)
     return response
+
+
+class OIDCDiscoveryMixin(BaseAuth):
+    """Share validated, cached discovery loading across OAuth2 and OIDC backends."""
+
+    def oidc_config_url(self) -> str:
+        raise NotImplementedError
+
+    def oidc_config(self) -> dict:
+        return self.get_openid_configuration(self.oidc_config_url())
+
+    @cache(ttl=86400)
+    def get_openid_configuration(self, url: str) -> dict:
+        """Cache validated discovery documents separately for each URL."""
+        return load_oidc_config(self, url)
 
 
 def jwt_error(

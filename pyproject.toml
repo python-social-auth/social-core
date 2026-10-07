@@ -195,7 +195,6 @@ ignore = [
   "explicit-string-concatenation",  # TODO: Explicitly concatenated string should be implicitly concatenated
   "f-string-in-exception",  # TODO: Exception must not use an f-string literal, assign to variable first
   "FBT",  # TODO: Boolean in function definition
-  "get-attr-with-constant",  # TODO!
   "global-statement",  # TODO
   "hardcoded-password-string",  # TODO: Possible hardcoded password assigned
   "incorrect-blank-line-before-class",  # CONFIG: incompatible with D211
