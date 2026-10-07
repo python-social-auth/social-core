@@ -3,6 +3,7 @@ Tumblr OAuth1 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/tumblr.html
 """
 
+from operator import itemgetter
 from typing import Any
 
 from social_core.utils import first
@@ -35,7 +36,7 @@ class TumblrOAuth(BaseOAuth1):
         # https://www.tumblr.com/docs/en/api/v2#user-methods
         user_info = response["response"]["user"]
         data = {"username": user_info["name"]}
-        blog = first(lambda blog: blog["primary"], user_info["blogs"])
+        blog = first(itemgetter("primary"), user_info["blogs"])
         if blog:
             data["fullname"] = blog["title"]
             data["uuid"] = blog.get("uuid")
