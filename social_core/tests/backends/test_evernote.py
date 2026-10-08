@@ -12,12 +12,12 @@ class EvernoteOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
     expected_username = "101010"
     access_token_body = urlencode(
         {
-            "edam_webApiUrlPrefix": "https://sandbox.evernote.com/shard/s1/",
+            "edam_webApiUrlPrefix": "https://www.evernote.com/shard/s1/",
             "edam_shard": "s1",
             "oauth_token": "foobar",
             "edam_expires": "1395118279645",
             "edam_userId": "101010",
-            "edam_noteStoreUrl": "https://sandbox.evernote.com/shard/s1/notestore",
+            "edam_noteStoreUrl": "https://www.evernote.com/shard/s1/notestore",
         }
     )
     request_token_body = urlencode(

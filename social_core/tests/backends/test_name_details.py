@@ -188,7 +188,6 @@ def test_eve_character_name_is_normalized_in_pipeline() -> None:
                 },
             },
         ),
-        ("live.LiveOAuth2", {}),
         (
             "mapmyfitness.MapMyFitnessOAuth2",
             {"username": "u", "email": "u@example.com"},
@@ -207,7 +206,6 @@ def test_eve_character_name_is_normalized_in_pipeline() -> None:
         ("paypal.PayPalOAuth2", {"user_id": "https://example.com/123"}),
         ("phabricator.PhabricatorOAuth2", {}),
         ("ping.PingOpenIdConnect", {}),
-        ("pixelpin.PixelPinOpenIDConnect", {"sub": "123"}),
         ("qq.QQOAuth2", {}),
         ("reddit.RedditOAuth2", {}),
         ("simplelogin.SimpleLoginOAuth2", {}),

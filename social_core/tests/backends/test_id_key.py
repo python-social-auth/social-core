@@ -40,7 +40,6 @@ class ConfigurableIdKeyTest(TestCase):
         "social_core.backends.yandex.YandexOpenId",
     )
     nested_response_backends = (
-        ("social_core.backends.behance.BehanceOAuth2", ("user",)),
         ("social_core.backends.clever.CleverOAuth2", ("data",)),
         ("social_core.backends.coinbase.CoinbaseOAuth2", ("data",)),
         ("social_core.backends.digitalocean.DigitalOceanOAuth", ("account",)),
@@ -169,11 +168,6 @@ class ConfigurableIdKeyTest(TestCase):
                 "social_core.backends.azuread_tenant.AzureADV2TenantOAuth2",
                 "email",
                 {},
-            ),
-            (
-                "social_core.backends.behance.BehanceOAuth2",
-                "fullname",
-                {"user": {}},
             ),
             (
                 "social_core.backends.bitbucket.BitbucketOAuth2",
