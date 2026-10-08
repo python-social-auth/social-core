@@ -82,8 +82,9 @@ class VendOAuth2(BaseOAuth2):
                 legacy_domain_prefix
                 and str(legacy_domain_prefix).lower() == domain_prefix
             ):
-                legacy_social.uid = uid
-                legacy_social.save()
+                self.strategy.storage.user.migrate_social_auth(
+                    legacy_social, uid, self.id_key()
+                )
         return uid
 
     def get_user_details(self, response):

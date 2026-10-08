@@ -764,6 +764,14 @@ class OpenIdConnectAuth(OIDCDiscoveryMixin, BaseOAuth2PKCE):
 
         return userinfo
 
+    def get_stored_user_id_keys(self, id_key: str) -> tuple[str, ...]:
+        """Older OIDC backends stored the subject under the alias ``id``."""
+        return (
+            ("sub", "id")
+            if id_key == "sub"
+            else super().get_stored_user_id_keys(id_key)
+        )
+
     def get_user_id(self, details, response):
         id_key = self.id_key()
         if id_key == "sub":

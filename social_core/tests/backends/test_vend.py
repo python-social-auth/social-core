@@ -87,6 +87,7 @@ class VendOAuth2Test(OAuth2Test):
         self.assertIs(user, victim)
         self.assertEqual(len(User.cache), 1)
         self.assertEqual(legacy_social.uid, "shop-a:7")
+        self.assertEqual(legacy_social.id_key, "id")
         self.assertIsNone(TestUserSocialAuth.get_social_auth("vend", "7"))
         self.assertIs(
             TestUserSocialAuth.get_social_auth("vend", "shop-a:7"),

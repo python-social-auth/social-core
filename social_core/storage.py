@@ -338,8 +338,10 @@ class UserMixin:
         raise NotImplementedError("Implement in subclass")
 
     @classmethod
-    def migrate_social_auth(cls, social, uid: str, id_key: str):
-        """Atomically replace an association's identifier and identifier key."""
+    def migrate_social_auth(
+        cls, social, uid: str, id_key: str, *, evidence_key: str | None = None
+    ):
+        """Atomically replace identifiers, revalidating supplied evidence under lock."""
         raise NotImplementedError("Implement in subclass")
 
 
