@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+### Removed
+
+- Removed obsolete authentication backends: Microsoft Live Connect (`live`),
+  Evernote Sandbox (`evernote-sandbox`), PixelPin (`pixelpin-openidconnect`),
+  Behance (`behance`), and NGP VAN ActionID OpenID (`actionid-openid`). Their
+  authentication endpoints have been retired or are no longer available; see
+  [#1176](https://github.com/python-social-auth/social-core/issues/1176).
+  Remove `social_core.backends.live.LiveOAuth2`,
+  `social_core.backends.evernote.EvernoteSandboxOAuth`,
+  `social_core.backends.pixelpin.PixelPinOpenIDConnect`,
+  `social_core.backends.behance.BehanceOAuth2`, and
+  `social_core.backends.ngpvan.ActionIDOpenID` from backend configuration.
+  Live Connect users can configure `social_core.backends.microsoft.MicrosoftOAuth2`
+  (`microsoft-graph`), but identifiers are not compatible and existing account
+  associations are not migrated automatically. Production Evernote remains
+  supported. This removes the old ActionID OpenID integration, not the ActionID
+  service. Existing stored account associations are not deleted.
+
 ### Security
 
 - OpenID session state uses explicit JSON-compatible serialization instead of

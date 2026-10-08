@@ -1,5 +1,5 @@
 """
-Evernote OAuth1 backend (with sandbox mode support), docs at:
+Evernote OAuth1 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/evernote.html
 """
 
@@ -17,11 +17,11 @@ class EvernoteOAuth(BaseOAuth1):
     Possible Values:
        {'edam_expires': ['1367525289541'],
         'edam_noteStoreUrl': [
-            'https://sandbox.evernote.com/shard/s1/notestore'
+            'https://www.evernote.com/shard/s1/notestore'
         ],
         'edam_shard': ['s1'],
         'edam_userId': ['123841'],
-        'edam_webApiUrlPrefix': ['https://sandbox.evernote.com/shard/s1/'],
+        'edam_webApiUrlPrefix': ['https://www.evernote.com/shard/s1/'],
         'oauth_token': [
             'S=s1:U=1e3c1:E=13e66dbee45:C=1370f2ac245:P=185:A=my_user:' \
             'H=411443c5e8b20f8718ed382a19d4ae38'
@@ -74,11 +74,3 @@ class EvernoteOAuth(BaseOAuth1):
     def user_data(self, access_token: dict, *args, **kwargs) -> dict[str, Any] | None:
         """Return user data provided"""
         return access_token.copy()
-
-
-class EvernoteSandboxOAuth(EvernoteOAuth):
-    name = "evernote-sandbox"
-    title = "Evernote (Sandbox)"
-    AUTHORIZATION_URL = "https://sandbox.evernote.com/OAuth.action"
-    REQUEST_TOKEN_URL = "https://sandbox.evernote.com/oauth"
-    ACCESS_TOKEN_URL = "https://sandbox.evernote.com/oauth"
