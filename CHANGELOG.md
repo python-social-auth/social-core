@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## [6.1.0](https://github.com/python-social-auth/social-core/releases/tag/6.1.0) - 2026-10-08
 
 ### Removed
 
@@ -56,13 +56,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   including when only name fields are configured.
 - OpenID keeps usable names from earlier response schemas when a later
   alias is blank, while preserving blanks when no usable name is supplied.
+- Required Auth0, Fence, SAML, and Twitch validation remains active when Python
+  runs with optimization enabled.
+- Okta reuses the validated, cached OpenID Connect discovery loader.
+- Cached methods retain argument and return type checking, including their
+  `invalidate()` and `refresh()` controls.
 
-### Changed
+### Breaking
 
 - Storage implementations must accept the optional keyword-only `evidence_key`
   argument to `migrate_social_auth()` and revalidate supplied evidence atomically.
   The pipeline now passes keyed `legacy_identifiers`; `legacy_uids` and
   `get_legacy_user_ids()` remain available for compatibility.
+
+### Changed
+
+- Allowed newer Google Auth versions for the Google One Tap backend.
+- Updated development dependencies, lint configuration, and CI actions.
 
 ## [6.0.0](https://github.com/python-social-auth/social-core/releases/tag/6.0.0) - 2026-10-06
 
