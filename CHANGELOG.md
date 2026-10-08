@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Removed
 
+- Removed the Docker Hub OAuth2 backend (`docker`) because its authorization,
+  token, and profile endpoints are no longer available. Remove
+  `social_core.backends.docker.DockerOAuth2` from backend configuration.
+  See [#1176](https://github.com/python-social-auth/social-core/issues/1176).
 - Removed obsolete authentication backends: Microsoft Live Connect (`live`),
   Evernote Sandbox (`evernote-sandbox`), PixelPin (`pixelpin-openidconnect`),
   Behance (`behance`), and NGP VAN ActionID OpenID (`actionid-openid`). Their
