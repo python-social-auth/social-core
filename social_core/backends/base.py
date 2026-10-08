@@ -20,6 +20,7 @@ from social_core.exceptions import (
     ErrorStage,
     SocialAuthBaseException,
 )
+from social_core.identifiers import UNVERIFIED_LEGACY_TRANSITIONS
 from social_core.registry import REGISTRY
 from social_core.utils import (
     constant_time_compare,
@@ -445,22 +446,58 @@ class BaseAuth:
         """Return a user identifier selected by an explicit response key."""
         return self.get_user_id_from_sources(details, response, id_key=id_key)
 
-    def get_legacy_user_ids(self, details, response) -> list[str]:
-        """Return current values of identifiers used by older releases."""
-        if self.setting("ID_KEY"):
-            return []
+    def get_legacy_user_identifiers(self, details, response) -> list[tuple[str, str]]:
+        """Return keyed identifiers for built-in and configured transitions."""
+        configured = self.setting("LEGACY_ID_KEYS", ())
+        if not isinstance(configured, (list, tuple)) or any(
+            not isinstance(key, str) or not key for key in configured
+        ):
+            raise AuthConfigurationError(
+                self,
+                code="invalid_setting",
+                parameter="LEGACY_ID_KEYS",
+                stage="pipeline",
+            )
         identifiers = []
-        for id_key in self.LEGACY_ID_KEYS:
+        for id_key in dict.fromkeys((*self.LEGACY_ID_KEYS, *configured)):
+            if id_key == self.id_key():
+                continue
             try:
                 identifier = self.get_user_id_for_key(details, response, id_key)
             except AuthResponseError as error:
                 if error.code != "missing_claim":
                     raise
                 continue
-            value = str(identifier)
-            if value not in identifiers:
-                identifiers.append(value)
+            pair = (id_key, str(identifier))
+            if pair not in identifiers:
+                identifiers.append(pair)
         return identifiers
+
+    def get_legacy_user_ids(self, details, response) -> list[str]:
+        """Compatibility wrapper returning unkeyed historical identifiers."""
+        return list(
+            dict.fromkeys(
+                uid for _, uid in self.get_legacy_user_identifiers(details, response)
+            )
+        )
+
+    def get_stored_user_id_keys(self, id_key: str) -> tuple[str, ...]:
+        """Return stored evidence fields, including backend-specific aliases."""
+        return (id_key,)
+
+    def allow_unverified_legacy_uid_migration(
+        self, old_id_key: str, id_key: str
+    ) -> bool:
+        """Allow missing proof only for audited historical transitions by default."""
+        transition = UNVERIFIED_LEGACY_TRANSITIONS.get(self.name)
+        backend_class = f"{type(self).__module__}.{type(self).__name__}"
+        default = bool(
+            transition
+            and transition[0] == backend_class
+            and old_id_key in ("", transition[1])
+            and id_key == self.id_key() == self.ID_KEY == transition[2]
+        )
+        return bool(self.setting("ALLOW_UNVERIFIED_LEGACY_UID_MIGRATION", default))
 
     def get_user_id(self, details, response):
         """Return a unique ID for the current user, by default from server

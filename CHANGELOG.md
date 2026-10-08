@@ -15,6 +15,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Resolve historical identifiers through indexed `(provider, id_key, uid)`
+  lookups instead of scanning stored JSON during authentication. Configure
+  backend-scoped `LEGACY_ID_KEYS` for explicit identifier changes.
+- Require matching stored identifier evidence for migration by default, except
+  for audited built-in transitions that lacked evidence in social-core 5.2.0.
+  Conflicting evidence always stops authentication, including when
+  `ALLOW_UNVERIFIED_LEGACY_UID_MIGRATION` is explicitly enabled. Missing evidence
+  stops authentication unless the transition's compatibility policy allows it.
+- Preserve historical OIDC subject aliases and atomic Vend shop-scoped migration.
 - Backends return `None` for unavailable names instead of invented empty
   strings, preventing logins and account associations from clearing existing
   names. Name normalization still fills missing or blank fields from available
@@ -25,6 +34,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   including when only name fields are configured.
 - OpenID keeps usable names from earlier response schemas when a later
   alias is blank, while preserving blanks when no usable name is supplied.
+
+### Changed
+
+- Storage implementations must accept the optional keyword-only `evidence_key`
+  argument to `migrate_social_auth()` and revalidate supplied evidence atomically.
+  The pipeline now passes keyed `legacy_identifiers`; `legacy_uids` and
+  `get_legacy_user_ids()` remain available for compatibility.
 
 ## [6.0.0](https://github.com/python-social-auth/social-core/releases/tag/6.0.0) - 2026-10-06
 
