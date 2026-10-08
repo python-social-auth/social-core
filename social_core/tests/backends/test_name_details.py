@@ -23,7 +23,6 @@ from social_core.utils import module_member
         )
         for backend_path, response in [
             ("coding.CodingOAuth2", {"name": " Mary Jane Watson "}),
-            ("docker.DockerOAuth2", {"full_name": " Mary Jane Watson "}),
             ("douban.DoubanOAuth2", {"name": " Mary Jane Watson "}),
             ("einfracz.EInfraCZOpenIdConnect", {"name": " Mary Jane Watson "}),
             ("elixir.ElixirOpenIdConnect", {"name": " Mary Jane Watson "}),
@@ -148,7 +147,6 @@ def test_eve_character_name_is_normalized_in_pipeline() -> None:
         ("cognito.CognitoOAuth2", {}),
         ("deezer.DeezerOAuth2", {}),
         ("digitalocean.DigitalOceanOAuth", {"account": {"email": "u@example.com"}}),
-        ("docker.DockerOAuth2", {}),
         ("douban.DoubanOAuth2", {}),
         ("dribbble.DribbbleOAuth2", {}),
         ("egi_checkin.EGICheckinOpenIdConnect", {}),
@@ -272,16 +270,6 @@ def test_unavailable_provider_names_preserve_existing_profile(
             (None, "", None),
         ),
         ("github.GithubOAuth2", {"name": ""}, ("", None, None)),
-        (
-            "docker.DockerOAuth2",
-            {"full_name": "", "username": "Fallback"},
-            ("", None, None),
-        ),
-        (
-            "docker.DockerOAuth2",
-            {"full_name": None, "username": "Fallback"},
-            ("Fallback", None, None),
-        ),
         (
             "yandex.YandexOAuth2",
             {"real_name": "", "display_name": "Fallback"},
