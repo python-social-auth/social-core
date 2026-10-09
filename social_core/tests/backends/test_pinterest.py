@@ -10,7 +10,7 @@ class PinterestOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     access_token_body = json.dumps({"access_token": "foobar", "token_type": "bearer"})
     user_data_body = json.dumps(
         {
-            "id": "4788400174839062",
+            "user_id": "4788400174839062",
             "first_name": "Foo",
             "last_name": "Bar",
             "username": "foobar",
@@ -18,7 +18,11 @@ class PinterestOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     )
 
     def test_login(self) -> None:
-        self.do_login()
+        user = self.do_login()
+        self.assertEqual(
+            (user.social[0].uid, user.social[0].id_key),
+            ("4788400174839062", "user_id"),
+        )
 
     def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
@@ -41,7 +45,11 @@ class PinterestOAuth2BrokenServerResponseTest(OAuth2Test, BaseAuthUrlTestMixin):
     )
 
     def test_login(self) -> None:
-        self.do_login()
+        user = self.do_login()
+        self.assertEqual(
+            (user.social[0].uid, user.social[0].id_key),
+            ("4788400174839062", "user_id"),
+        )
 
     def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()

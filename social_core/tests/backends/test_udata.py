@@ -23,10 +23,20 @@ class DatagouvfrOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
             "oauth_callback_confirmed": "true",
         }
     )
-    user_data_body = json.dumps({})
+    user_data_body = json.dumps(
+        {
+            "id": "5a8f79b9c8d8c919774d6e40",
+            "first_name": "foobar",
+            "email": "foobar@example.com",
+        }
+    )
 
     def test_login(self) -> None:
-        self.do_login()
+        user = self.do_login()
+        self.assertEqual(
+            (user.social[0].uid, user.social[0].id_key),
+            ("5a8f79b9c8d8c919774d6e40", "id"),
+        )
 
     def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()

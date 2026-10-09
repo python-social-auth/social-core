@@ -1,5 +1,7 @@
 import json
 
+from social_core.pipeline.social_auth import social_uid
+
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 
@@ -23,7 +25,18 @@ class DropboxOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     )
 
     def test_login(self) -> None:
-        self.do_login()
+        user = self.do_login()
+        self.assertEqual(
+            (user.social[0].uid, user.social[0].id_key),
+            ("dbid:AAH4f99T0taONIb-OurWxbNQ6ywGRopQngc", "account_id"),
+        )
 
     def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
+
+    def test_distinct_accounts_have_distinct_identifiers(self) -> None:
+        identifiers = [
+            social_uid(self.backend, {}, {"account_id": account_id})["uid"]
+            for account_id in ("dbid:first", "dbid:second")
+        ]
+        self.assertEqual(identifiers, ["dbid:first", "dbid:second"])

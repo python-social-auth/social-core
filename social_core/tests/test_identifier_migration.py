@@ -51,6 +51,34 @@ class IdentifierMigrationTest(TestCase):
     def assert_conflict(self):
         return self.assertRaisesRegex(AuthAssociationError, "")
 
+    def test_missing_user_identifier_fails_before_string_conversion(self) -> None:
+        for raw_uid in (None, ""):
+            with (
+                self.subTest(raw_uid=raw_uid),
+                patch.object(self.backend, "get_user_id", return_value=raw_uid),
+                self.assertRaises(AuthResponseError) as caught,
+            ):
+                social_uid(self.backend, {}, {})
+            self.assertEqual(caught.exception.code, "missing_claim")
+            self.assertEqual(caught.exception.stage, "pipeline")
+
+    def test_numeric_zero_user_identifier_remains_valid(self) -> None:
+        with patch.object(self.backend, "get_user_id", return_value=0):
+            identifiers = social_uid(self.backend, {}, {})
+        self.assertEqual(identifiers["uid"], "0")
+
+    def test_valid_identifier_does_not_match_poisoned_none_association(self) -> None:
+        poisoned = self.candidate(id_key="", uid="None")
+        identifiers = social_uid(
+            self.backend,
+            {},
+            {"stable_id": "stable-victim", "email": "new@example.com"},
+        )
+        result = social_user(self.backend, **identifiers)
+        self.assertTrue(result["is_new"])
+        self.assertIsNone(result["social"])
+        self.assertEqual((poisoned.uid, poisoned.id_key), ("None", ""))
+
     def test_verified_keyed_and_empty_key_migration(self) -> None:
         for key in ("email", ""):
             with self.subTest(key=key):

@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+
+### Security
+
+- Reject missing provider user identifiers before converting them to strings,
+  preventing absent identifiers from being stored and matched as the shared UID
+  `"None"`.
+- Use documented stable identifiers for HubSpot (`hub_id` and `user_id`), Monzo
+  (`user_id`), WLCG (`sub`), Asana (`data.gid`), and Dropbox (`account_id`).
+  HubSpot identities are scoped to both the portal and installing user.
+- MineID and the legacy Upwork OAuth1 backend now fail closed because their
+  profile responses do not expose a documented immutable account identifier.
+  Custom MineID deployments can configure `ID_KEY` after adding such a field to
+  their profile response.
+
+Existing social-auth rows whose UID is `"None"` cannot be attributed to a
+specific provider account. Administrators should review and remove those rows,
+then require affected users to authenticate again; they are not migrated
+automatically.
+
 ## [6.1.0](https://github.com/python-social-auth/social-core/releases/tag/6.1.0) - 2026-10-08
 
 ### Removed

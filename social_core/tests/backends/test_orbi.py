@@ -14,6 +14,7 @@ class OrbiOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     )
     user_data_body = json.dumps(
         {
+            "id": 12345,
             "username": "foobar",
             "first_name": "Foo",
             "last_name": "Bar",
@@ -27,7 +28,8 @@ class OrbiOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     )
 
     def test_login(self) -> None:
-        self.do_login()
+        user = self.do_login()
+        self.assertEqual((user.social[0].uid, user.social[0].id_key), ("12345", "id"))
 
     def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()

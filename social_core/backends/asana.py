@@ -9,6 +9,8 @@ from .oauth import BaseOAuth2
 class AsanaOAuth2(BaseOAuth2):
     name = "asana"
     title = "Asana"
+    ID_KEY = "gid"
+    REQUIRES_USER_ID = True
     AUTHORIZATION_URL = "https://app.asana.com/-/oauth_authorize"
     ACCESS_TOKEN_URL = "https://app.asana.com/-/oauth_token"
     REFRESH_TOKEN_URL = "https://app.asana.com/-/oauth_token"
@@ -18,6 +20,7 @@ class AsanaOAuth2(BaseOAuth2):
         ("expires_in", "expires_in"),
         ("refresh_token", "refresh_token"),
         ("name", "name"),
+        ("gid", "gid"),
     ]
 
     def get_user_details(self, response):
@@ -34,9 +37,12 @@ class AsanaOAuth2(BaseOAuth2):
         }
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
-        return self.get_json(
+        response = self.get_json(
             self.USER_DATA_URL, headers={"Authorization": f"Bearer {access_token}"}
         )
+        if response is not None and isinstance(response.get("data"), dict):
+            response["gid"] = response["data"].get("gid")
+        return response
 
     def extra_data(
         self,

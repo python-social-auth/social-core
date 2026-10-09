@@ -15,7 +15,7 @@ class ORCIDOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         {
             "access_token": "foobar",
             "token_type": "bearer",
-            "orcid-identifier": {"path": "0000-0002-2601-8132"},
+            "orcid": "0000-0002-2601-8132",
         }
     )
     user_data_body = json.dumps(
@@ -87,7 +87,11 @@ class ORCIDOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         return super().auth_handlers(start_url)
 
     def test_login(self) -> None:
-        self.do_login()
+        user = self.do_login()
+        self.assertEqual(
+            (user.social[0].uid, user.social[0].id_key),
+            ("0000-0002-2601-8132", "orcid"),
+        )
 
     def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
