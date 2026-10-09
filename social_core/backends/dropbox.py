@@ -11,7 +11,9 @@ from .oauth import BaseOAuth2
 class DropboxOAuth2V2(BaseOAuth2):
     name = "dropbox-oauth2"
     title = "Dropbox"
-    ID_KEY = "uid"
+    ID_KEY = "account_id"
+    REQUIRES_USER_ID = True
+    EXTRA_DATA = [("account_id", "account_id")]
     AUTHORIZATION_URL = "https://www.dropbox.com/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://api.dropboxapi.com/oauth2/token"
     REDIRECT_STATE = False

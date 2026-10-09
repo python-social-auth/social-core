@@ -2,7 +2,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from social_core.exceptions import AuthAssociationError, AuthPolicyError
+from social_core.exceptions import (
+    AuthAssociationError,
+    AuthPolicyError,
+    AuthResponseError,
+)
 from social_core.identifiers import identifier_matches
 from social_core.utils import normalize_user_names
 
@@ -39,7 +43,15 @@ def social_names(backend: BaseAuth, details, *args, **kwargs):
 
 
 def social_uid(backend: BaseAuth, details, response, *args, **kwargs):
-    uid = str(backend.get_user_id(details, response))
+    raw_uid = backend.get_user_id(details, response)
+    if raw_uid is None or raw_uid == "":
+        raise AuthResponseError(
+            backend,
+            claim=backend.id_key(),
+            code="missing_claim",
+            stage="pipeline",
+        )
+    uid = str(raw_uid)
     id_key = backend.id_key()
     identifiers = backend.get_legacy_user_identifiers(details, response)
     return {

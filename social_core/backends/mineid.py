@@ -8,6 +8,7 @@ class MineIDOAuth2(BaseOAuth2):
 
     name = "mineid"
     title = "MineID"
+    REQUIRES_USER_ID = True
     AUTHORIZATION_URL = "{scheme}://{host}/oauth/authorize"
     ACCESS_TOKEN_URL = "{scheme}://{host}/oauth/access_token"
     SCOPE_SEPARATOR = ","

@@ -14,6 +14,8 @@ class HubSpotOAuth2(BaseOAuth2):
     name = "hubspot"
     title = "HubSpot"
     icon = "hubspot.svg"
+    ID_KEY = "hubspot_identity"
+    REQUIRES_USER_ID = True
     AUTHORIZATION_URL = "https://app.hubspot.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://api.hubapi.com/oauth/v1/token"
     USER_DATA_URL = "https://api.hubapi.com/oauth/v1/access-tokens/"
@@ -23,6 +25,7 @@ class HubSpotOAuth2(BaseOAuth2):
         ("hub_id", "hub_id"),
         ("app_id", "app_id"),
         ("user_id", "user_id"),
+        ("hubspot_identity", "hubspot_identity"),
         ("refresh_token", "refresh_token"),
         ("expires_in", "expires_in"),
     ]
@@ -34,7 +37,18 @@ class HubSpotOAuth2(BaseOAuth2):
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data information from service"""
-        return self.get_json(
+        response = self.get_json(
             self.USER_DATA_URL + access_token,
             headers={"Authorization": f"Bearer {access_token}"},
         )
+        if response is not None:
+            hub_id = response.get("hub_id")
+            user_id = response.get("user_id")
+            if (
+                hub_id is not None
+                and hub_id != ""
+                and user_id is not None
+                and user_id != ""
+            ):
+                response["hubspot_identity"] = f"{hub_id}:{user_id}"
+        return response

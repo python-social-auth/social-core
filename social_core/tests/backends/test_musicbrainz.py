@@ -18,12 +18,17 @@ class MusicBrainzAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     user_data_body = json.dumps(
         {
             "sub": "foobar",
+            "metabrainz_user_id": 123,
             "email": "foo@bar.com",
         }
     )
 
     def test_login(self) -> None:
-        self.do_login()
+        user = self.do_login()
+        self.assertEqual(
+            (user.social[0].uid, user.social[0].id_key),
+            ("123", "metabrainz_user_id"),
+        )
 
     def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()

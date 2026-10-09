@@ -13,12 +13,13 @@ class GrafanaOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         }
     )
     user_data_body = json.dumps(
-        {"login": "fooboy", "email": "foo@bar.com", "name": "Foo Bar"}
+        {"id": 123, "login": "fooboy", "email": "foo@bar.com", "name": "Foo Bar"}
     )
     expected_username = "fooboy"
 
     def test_login(self) -> None:
-        self.do_login()
+        user = self.do_login()
+        self.assertEqual((user.social[0].uid, user.social[0].id_key), ("123", "id"))
 
     def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
