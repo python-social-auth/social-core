@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import copy
-import datetime
+import datetime as dt
 import json
 from typing import Protocol, cast
 from unittest.mock import patch
@@ -171,13 +171,13 @@ class BaseOpenIdConnectTest(
 
         def resume_after_expiration(partial):
             claims = partial.kwargs[PARTIAL_ID_TOKEN_KEY]
-            expired_time = datetime.datetime.fromtimestamp(
+            expired_time = dt.datetime.fromtimestamp(
                 claims["exp"] + self.backend.ID_TOKEN_MAX_AGE + 1,
-                datetime.timezone.utc,
+                dt.timezone.utc,
             )
             with (
                 patch("jwt.api_jwt.datetime") as jwt_datetime,
-                patch("social_core.backends.open_id_connect.datetime") as oidc_datetime,
+                patch("social_core.backends.open_id_connect.dt") as oidc_datetime,
             ):
                 jwt_datetime.now.return_value = expired_time
                 oidc_datetime.datetime.now.return_value = expired_time
@@ -360,18 +360,14 @@ class BaseOpenIdConnectTest(
         )
 
     def test_refresh_rejects_expired_id_token(self) -> None:
-        expiration_datetime = datetime.datetime.now(
-            datetime.timezone.utc
-        ) - datetime.timedelta(days=1)
+        expiration_datetime = dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=1)
         self.assert_refresh_rejected(
             self.refresh_response(expiration_datetime=expiration_datetime),
             "response_expired",
         )
 
     def test_refresh_rejects_stale_issue_time(self) -> None:
-        issue_datetime = datetime.datetime.now(
-            datetime.timezone.utc
-        ) - datetime.timedelta(
+        issue_datetime = dt.datetime.now(dt.timezone.utc) - dt.timedelta(
             seconds=self.backend.ID_TOKEN_MAX_AGE * 2,
         )
         self.assert_refresh_rejected(

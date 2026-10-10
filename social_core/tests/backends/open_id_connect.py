@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import datetime
+import datetime as dt
 import json
 from calendar import timegm
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
@@ -161,10 +161,8 @@ class OpenIdConnectTest(
         if refresh_token is not None:
             body["refresh_token"] = refresh_token
         client_key = client_key or self.client_key
-        now = datetime.datetime.now(datetime.timezone.utc)
-        expiration_datetime = expiration_datetime or (
-            now + datetime.timedelta(seconds=30)
-        )
+        now = dt.datetime.now(dt.timezone.utc)
+        expiration_datetime = expiration_datetime or (now + dt.timedelta(seconds=30))
         issue_datetime = issue_datetime or now
         nonce = nonce or "a-nonce"
         issuer = issuer or self.issuer
@@ -282,9 +280,9 @@ class OpenIdConnectTest(
         self.authtoken_raised("invalid_signature", tamper_message=True)
 
     def test_expired_signature(self) -> None:
-        expiration_datetime = datetime.datetime.now(
-            datetime.timezone.utc
-        ) - datetime.timedelta(seconds=30)
+        expiration_datetime = dt.datetime.now(dt.timezone.utc) - dt.timedelta(
+            seconds=30
+        )
         self.authtoken_raised(
             "response_expired",
             expiration_datetime=expiration_datetime,
@@ -297,9 +295,9 @@ class OpenIdConnectTest(
         self.authtoken_raised("invalid_claim", client_key="someone-else")
 
     def test_invalid_issue_time(self) -> None:
-        expiration_datetime = datetime.datetime.now(
-            datetime.timezone.utc
-        ) - datetime.timedelta(seconds=self.backend.ID_TOKEN_MAX_AGE * 2)
+        expiration_datetime = dt.datetime.now(dt.timezone.utc) - dt.timedelta(
+            seconds=self.backend.ID_TOKEN_MAX_AGE * 2
+        )
         self.authtoken_raised("response_expired", issue_datetime=expiration_datetime)
 
     def test_invalid_nonce(self) -> None:

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import datetime
+import datetime as dt
 import json
 from typing import Any, cast
 
@@ -112,7 +112,7 @@ class WhitelistDomainsTest(DummyOAuth2Test):
             self.do_login()
 
 
-DELTA = datetime.timedelta(days=1)
+DELTA = dt.timedelta(days=1)
 
 
 class ExpirationTimeTest(DummyOAuth2Test):
@@ -124,9 +124,7 @@ class ExpirationTimeTest(DummyOAuth2Test):
             "first_name": "Foo",
             "last_name": "Bar",
             "email": "foo@bar.com",
-            "expires": (
-                datetime.datetime.now(datetime.timezone.utc) + DELTA
-            ).timestamp(),
+            "expires": (dt.datetime.now(dt.timezone.utc) + DELTA).timestamp(),
         }
     )
 
