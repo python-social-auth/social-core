@@ -1,4 +1,4 @@
-import datetime
+import datetime as dt
 from urllib.parse import urlencode
 
 import pytest
@@ -8,9 +8,7 @@ from social_core.exceptions import AuthInputError
 
 from .open_id import OpenIdTest
 
-JANRAIN_NONCE = datetime.datetime.now(datetime.timezone.utc).strftime(
-    "%Y-%m-%dT%H:%M:%SZ"
-)
+JANRAIN_NONCE = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 class LiveJournalOpenIdTest(OpenIdTest):

@@ -1,4 +1,4 @@
-import datetime
+import datetime as dt
 import json
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -17,9 +17,7 @@ from social_core.tests.models import TestUserSocialAuth, User, UserWithNames
 from .open_id import OpenIdTest
 
 INFO_URL = "https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?"
-JANRAIN_NONCE = datetime.datetime.now(datetime.timezone.utc).strftime(
-    "%Y-%m-%dT%H:%M:%SZ"
-)
+JANRAIN_NONCE = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 @pytest.mark.parametrize("flow", ["registration", "association", "login"])

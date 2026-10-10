@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import base64
-import datetime
+import datetime as dt
 import time
 from calendar import timegm
 from json import loads
@@ -361,7 +361,7 @@ class OpenIdConnectAuth(OIDCDiscoveryMixin, BaseOAuth2PKCE):
         self.strategy.storage.association.remove([nonce_id])
 
     def validate_temporal_claims(self, id_token) -> None:
-        utc_timestamp = timegm(datetime.datetime.now(datetime.timezone.utc).timetuple())
+        utc_timestamp = timegm(dt.datetime.now(dt.timezone.utc).timetuple())
 
         if "nbf" in id_token and utc_timestamp < id_token["nbf"]:
             raise AuthResponseError(

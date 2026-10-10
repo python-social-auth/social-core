@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import datetime
+import datetime as dt
 from typing import Any
 
 from .oauth import BaseOAuth2
@@ -54,8 +54,8 @@ class AsanaOAuth2(BaseOAuth2):
     ) -> dict[str, Any]:
         data = super().extra_data(user, uid, response, details, pipeline_kwargs)
         if self.setting("ESTIMATE_EXPIRES_ON"):
-            expires_on = datetime.datetime.now(
-                datetime.timezone.utc
-            ) + datetime.timedelta(seconds=data["expires"])
+            expires_on = dt.datetime.now(dt.timezone.utc) + dt.timedelta(
+                seconds=data["expires"]
+            )
             data["expires_on"] = expires_on.isoformat()
         return data
