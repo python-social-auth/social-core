@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+### Changed
+
+- Verified compatibility with Python 3.15.
+
 ## [6.1.1](https://github.com/python-social-auth/social-core/releases/tag/6.1.1) - 2026-10-10
 
 ### Security
