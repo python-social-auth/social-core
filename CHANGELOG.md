@@ -25,6 +25,10 @@ specific provider account. Administrators should review and remove those rows,
 then require affected users to authenticate again; they are not migrated
 automatically.
 
+### Changed
+
+- Verified compatibility with Python 3.15.
+
 ## [6.1.0](https://github.com/python-social-auth/social-core/releases/tag/6.1.0) - 2026-10-08
 
 ### Removed
