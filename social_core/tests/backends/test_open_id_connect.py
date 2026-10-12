@@ -140,6 +140,13 @@ class BaseOpenIdConnectTest(
     def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
 
+    def test_partial_pipeline_saves_validated_claims(self) -> None:
+        resume = self.resume_partial_pipeline
+        with patch.object(self, "resume_partial_pipeline", side_effect=resume) as mock:
+            self.do_partial_pipeline()
+        saved = [c.args[0].kwargs.get(PARTIAL_ID_TOKEN_KEY) for c in mock.mock_calls]
+        self.assertEqual(saved, [self.backend.id_token] * 2)
+
     def test_partial_pipeline_before_details_and_uid(self) -> None:
         self.pipeline_settings()
         pipeline = list(self.strategy.get_pipeline(self.backend))

@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Verified compatibility with Python 3.15.
 
+### Fixed
+
+- OpenID Connect partial pipelines now save the validated ID token claims when
+  the framework authenticates with a new backend instance, as Django does.
+  Resuming previously failed with `invalid_claim`.
+- Facebook Limited Login no longer loses its validated claims and partial resume
+  authorization when the framework authenticates with a new backend instance.
+
 ## [6.1.1](https://github.com/python-social-auth/social-core/releases/tag/6.1.1) - 2026-10-10
 
 ### Security

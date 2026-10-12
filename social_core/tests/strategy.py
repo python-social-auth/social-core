@@ -4,6 +4,7 @@ import json
 from typing import TYPE_CHECKING, Any, cast
 
 from social_core.strategy import BaseStrategy, BaseTemplateStrategy
+from social_core.utils import module_member
 
 if TYPE_CHECKING:
     from social_core.backends.base import BaseAuth
@@ -124,8 +125,29 @@ class TestStrategy(BaseStrategy):
     def remove_from_request_data(self, name) -> None:
         self._request_data.pop(name, None)
 
-    def authenticate(self, *args, **kwargs):
-        user = super().authenticate(*args, **kwargs)
+    def authenticate(self, backend: BaseAuth, *args, **kwargs):
+        """Authenticate with new backend instances, never the given one.
+
+        Strategies may authenticate this way: create a new instance of every
+        configured backend class and return the first result that is not None.
+        State kept on the backend between complete() and the pipeline is then
+        lost, so the tests catch backends that depend on it.
+        """
+        kwargs["strategy"] = self
+        kwargs["storage"] = self.storage
+        kwargs["backend"] = backend
+        args, kwargs = self.clean_authenticate_args(*args, **kwargs)
+        # New instances are created without arguments, so they start from the
+        # default strategy. It shares the settings, but not the request data
+        # or session.
+        default_strategy = TestStrategy(self.storage)
+        default_strategy.set_settings(self._settings.copy())
+        user = None
+        for path in self.get_backends():
+            candidate = module_member(path)(default_strategy)
+            user = candidate.authenticate(*args, **kwargs)
+            if user is not None:
+                break
         if isinstance(user, self.storage.user.user_model()):
             self.session_set("username", user.username)
         return user
