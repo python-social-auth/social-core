@@ -80,21 +80,51 @@ class VKontakteOpenAPI(BaseAuth):
         session_value = self.strategy.session_get(
             f"vk_app_{cast('str', self.setting('APP_ID'))}"
         )
-        if "id" not in self.data or not session_value:
-            raise ValueError("VK.com authentication is not completed")
+        if "id" not in self.data:
+            raise AuthInputError(
+                self, parameter="id", code="missing_parameter", stage="callback"
+            )
+        if not session_value:
+            raise AuthSessionError(
+                self, code="session_context_missing", stage="callback"
+            )
+        if not isinstance(session_value, (str, bytes)):
+            raise AuthResponseError(self, code="malformed_response", stage="callback")
 
-        mapping = parse_qs(session_value)
+        try:
+            mapping = parse_qs(session_value)
+        except (TypeError, ValueError) as error:
+            raise AuthResponseError(
+                self, code="malformed_response", stage="callback"
+            ) from error
+        required_claims = ("expire", "mid", "secret", "sid", "sig")
+        missing_claim = next(
+            (claim for claim in required_claims if not mapping.get(claim)), None
+        )
+        if missing_claim is not None:
+            raise AuthResponseError(
+                self,
+                claim=missing_claim,
+                code="missing_claim",
+                stage="callback",
+            )
+
+        try:
+            expires = int(mapping["expire"])
+        except (TypeError, ValueError) as error:
+            raise AuthResponseError(
+                self, claim="expire", code="invalid_claim", stage="callback"
+            ) from error
         check_str = "".join(
             f"{item}={mapping[item]}" for item in ["expire", "mid", "secret", "sid"]
         )
 
         _key, secret = self.get_key_and_secret()
         vk_hash = vk_sig(check_str + secret)
-        if (
-            not constant_time_compare(vk_hash, mapping["sig"])
-            or int(mapping["expire"]) < time()
-        ):
-            raise ValueError("VK.com authentication failed: Invalid Hash")
+        if not constant_time_compare(vk_hash, mapping["sig"]):
+            raise AuthResponseError(self, code="invalid_signature", stage="callback")
+        if expires < time():
+            raise AuthResponseError(self, code="response_expired", stage="callback")
 
         kwargs.update({"backend": self, "response": self.user_data(mapping["mid"])})
         return self.strategy.authenticate(*args, **kwargs)

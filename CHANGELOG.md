@@ -18,6 +18,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Verified compatibility with Python 3.15.
 
+### Fixed
+
+- Raise structured authentication errors for missing, malformed, invalid, or
+  expired VK OpenAPI callback state.
+
 ## [6.1.1](https://github.com/python-social-auth/social-core/releases/tag/6.1.1) - 2026-10-10
 
 ### Security
