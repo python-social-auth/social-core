@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+### Security
+
+- Document the project's security boundaries, assumptions, downstream
+  responsibilities, and triage dispositions in the
+  [threat model](https://github.com/python-social-auth/social-core/blob/master/THREAT_MODEL.md).
+
 ### Changed
 
 - Verified compatibility with Python 3.15.
