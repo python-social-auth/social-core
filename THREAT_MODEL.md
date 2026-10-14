@@ -112,10 +112,12 @@ The normal trust transitions for redirect-based backends are:
 6. The trusted framework integration establishes the local login session and
    performs a validated redirect.
 
-Signed-callback backends can differ. Telegram validates the bot-token HMAC and
-a 24-hour callback age directly; it does not create state or nonce data, bind
-the callback to an initiating browser session, or make the callback single-use.
-(documented)
+Signed-callback and direct signed-token backends can differ. Telegram validates
+the bot-token HMAC and a 24-hour callback age directly. Facebook Limited Login
+validates a client-supplied signed ID token's provider signature and applicable
+identity and time claims, but intentionally does not enforce its nonce. Neither
+flow binds the signed input to an initiating browser session or makes it
+single-use. (documented)
 
 Partial pipelines add a persistence boundary. Authentication and disconnection
 partials must retain their flow type and initiating user/session context;
@@ -185,6 +187,7 @@ family of deployments. (maintainer)
 | SAML | Trusted IdP certificates and endpoints are configured; `SECURITY_CONFIG` retains the validations required by the deployment | Disabling signature, assertion, request-correlation, or destination checks removes the affected SAML guarantee |
 | Account identifiers | Bundled backends use stable `ID_KEY` values where providers expose them; Drip, Last.fm, and Mixcloud are association-only; EmailAuth and UsernameAuth rely on application credential and validation policy; migrations require evidence except for audited built-in compatibility transitions | Audited defaults accept a documented missing-evidence race; mutable custom identifiers, using an exception outside its conditions, or explicitly enabling unverified migration elsewhere accepts additional account-binding risk |
 | Telegram callback | The callback has a valid bot-token HMAC and an `auth_date` no more than 24 hours old | Authenticity and age are checked, but initiation, browser-session correlation, and single-use replay protection are not provided |
+| Facebook Limited Login | The client-supplied ID token passes the backend's provider-signature, identity, and time-claim validation | Nonce, initiation, browser-session correlation, and single-use replay protection are not provided |
 | Pipelines and fields | The default security-relevant pipeline ordering is preserved; custom pipelines preserve equivalent validation and association ordering; protected account fields remain protected | Removing or reordering validation, trusting unverified email, or unprotecting authorization-sensitive fields transfers responsibility to the integrator |
 | Partial and email flows | Partial storage preserves ownership/type metadata; external resume confirmation is implemented; email codes retain a finite expiry | Custom resume behavior or disabled expiry removes the corresponding replay and flow-binding guarantees |
 | Application policy | Inactive-user, allowlist, group, and token-revocation settings match application policy | These settings define policy; they do not by themselves prove identity or make untrusted claims trustworthy |
@@ -204,6 +207,7 @@ other transitions is a security-weakening configuration. (maintainer)
 | --- | --- | --- | --- |
 | `do_auth` | Request fields such as `next` and configured fields stored in the session | Yes | Route-level CSRF policy, request limits, and a validated Host value |
 | `do_complete` / backend `auth_complete` | OAuth codes, state, signed payloads, SAML assertions, OpenID responses, errors, and provider-specific callback fields | Yes | Preserve correlation state where the backend uses it and, for ordinary account linking, the initiating authenticated user; add an application binding for Telegram when initiation or single-use is required |
+| Facebook Limited Login `do_auth` | Client-supplied signed ID token | Yes, until validated | Add application-level initiation and single-use binding when login-CSRF or account-linking replay protection is required |
 | Provider token/user-info/discovery calls | HTTP status, headers, JSON, JWT, XML, and form responses | Yes, until validated | Configure the intended HTTPS provider endpoints and trusted TLS roots; restrict egress where required |
 | Generic OpenID initiation | Claimed identifier/provider URL | Yes when exposed by the application | Decide whether user-selected discovery is appropriate and apply deployment egress policy |
 | `do_disconnect` | Authenticated user, association selector, and redirect | Redirect and selector may be attacker-controlled; user context must be trusted | Authenticate and authorize the route and preserve the user-bound session |
@@ -245,7 +249,7 @@ backend namespace or bypass the local flow and user bindings. (maintainer)
 
 | Property and conditions | Violation symptom | Severity | Provenance |
 | --- | --- | --- | --- |
-| A backend that implements callback correlation accepts a callback only for the initiating flow and session after its state, nonce, or request-ID check succeeds; Telegram instead accepts only callbacks with a valid bot-token HMAC and an age of at most 24 hours, without claiming initiation, session, or single-use correlation | A correlated backend accepts an uninitiated or mismatched callback, or Telegram accepts a callback with an invalid HMAC or excessive age | Security-critical | `(documented)` |
+| A backend that implements callback correlation accepts a callback only for the initiating flow and session after its state, nonce, or request-ID check succeeds; Telegram instead accepts only callbacks with a valid bot-token HMAC and an age of at most 24 hours, while Facebook Limited Login accepts only ID tokens passing its provider-signature, identity, and time-claim validation; neither exception claims initiation, session, or single-use correlation | A correlated backend accepts an uninitiated or mismatched callback, Telegram accepts a callback with an invalid HMAC or excessive age, or Facebook Limited Login accepts an ID token with an invalid provider signature, identity claim, or time claim | Security-critical | `(documented)` |
 | OIDC/JWT and SAML identity assertions are used only after the backend-required signature, issuer, audience, time, nonce/request, subject, and destination checks succeed | Forged or misdirected assertion authenticates or links an account | Security-critical | `(documented)` |
 | An authenticating provider identity is bound by backend namespace and a non-empty stable provider identifier; conflicting migration evidence always fails closed, while missing evidence fails except for the audited compatibility transitions documented in section 5a | One provider identity authenticates as a different local user outside the documented missing-evidence exception, or two identities collapse onto one association | Security-critical | `(documented)` |
 | Bundled mutable-identifier exceptions do not independently authenticate a remote provider identity: Drip, Last.fm, and Mixcloud are association-only, while EmailAuth and UsernameAuth require application-supplied credential and validation policy | A mutable remote identifier creates or authenticates a local user through an association-only backend, or a legacy backend authenticates without the application's required validation | Security-critical | `(documented)` |
@@ -276,8 +280,11 @@ identity-flow violations above. (maintainer)
 - OAuth state, OIDC nonce, PKCE, and SAML request correlation address different
   protocol threats. Enabling one is not a substitute for the checks required by
   the others. Telegram's signed callback authenticates its data and age but does
-  not provide browser-session binding or single-use replay protection.
-  (maintainer)
+  not provide browser-session binding or single-use replay protection. Facebook
+  Limited Login authenticates the provider-signed ID token and validates its
+  applicable identity and time claims, but its direct token flow intentionally
+  does not enforce nonce, browser-session binding, or single-use replay
+  protection. (maintainer)
 - A valid provider signature proves that the configured provider made a claim;
   it does not prove the claim is true in the physical world or prevent that
   provider from impersonating identities in its namespace. (maintainer)
@@ -314,8 +321,8 @@ Integrators must:
   CSRF, and authenticated-user semantics. Preserve the initiating authenticated
   user through ordinary account-linking callbacks, and reject or restart a
   pending flow if that principal changes. Add application-level initiation and
-  single-use binding before using Telegram where login-CSRF or account-linking
-  replay protection is required. (maintainer)
+  single-use binding before using Telegram or Facebook Limited Login where
+  login-CSRF or account-linking replay protection is required. (maintainer)
 - Validate Host and forwarded headers, terminate HTTPS securely, and configure
   canonical callback URLs. See
   [Security considerations](https://python-social-auth.readthedocs.io/en/latest/security.html).
