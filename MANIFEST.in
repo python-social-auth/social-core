@@ -1,6 +1,6 @@
 recursive-include social_core *.py
 
-include *.txt CHANGELOG.md LICENSE README.md social_core/tests/testkey.pem
+include *.txt CHANGELOG.md LICENSE README.md THREAT_MODEL.md social_core/tests/testkey.pem
 recursive-include social_core/tests *.txt *.json
 
 recursive-exclude .tox *

@@ -14,6 +14,15 @@ and storage solutions.
 
 Project documentation is available at <https://python-social-auth.readthedocs.io/>.
 
+## Security
+
+See the [current threat model](https://github.com/python-social-auth/social-core/blob/master/THREAT_MODEL.md)
+for the supported security boundaries and the
+[security policy](https://github.com/python-social-auth/social-core/security/policy)
+for private vulnerability reporting. When a release includes a threat model,
+the copy in its source distribution or repository tag records the boundaries
+applicable to that release.
+
 ## Setup
 
 ```shell
