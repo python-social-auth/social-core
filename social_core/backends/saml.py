@@ -17,9 +17,12 @@ from typing import Any, cast
 # pylint: disable-next=no-name-in-module
 from lxml.etree import XMLSyntaxError
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
+from onelogin.saml2.constants import OneLogin_Saml2_Constants
 from onelogin.saml2.errors import OneLogin_Saml2_Error, OneLogin_Saml2_ValidationError
 from onelogin.saml2.response import OneLogin_Saml2_Response
 from onelogin.saml2.settings import OneLogin_Saml2_Settings
+from onelogin.saml2.utils import OneLogin_Saml2_Utils
+from onelogin.saml2.xml_utils import OneLogin_Saml2_XML
 from xmlsec import Error as XMLSecError
 
 from social_core.exceptions import (
@@ -346,14 +349,73 @@ class SAMLAuth(BaseAuth):
     def _validate_in_response_to(
         self, auth: OneLogin_Saml2_Auth, request_id: str
     ) -> None:
-        in_response_to = auth.get_last_response_in_response_to()
-        if not in_response_to or not constant_time_compare(in_response_to, request_id):
+        in_response_to_values = self._processed_response_in_response_to(auth)
+        if not any(
+            constant_time_compare(in_response_to, request_id)
+            for in_response_to in in_response_to_values
+        ):
             raise AuthSessionError(
                 self,
                 "SAML login failed: invalid InResponseTo",
                 code="state_mismatch",
                 stage="callback",
             )
+
+    def _processed_response_in_response_to(
+        self, auth: OneLogin_Saml2_Auth
+    ) -> tuple[str, ...]:
+        """Return ``InResponseTo`` values from a response validated by ``auth``.
+
+        When only the assertion is signed, ``samlp:Response/@InResponseTo`` is
+        outside the signature and can be stripped in transit. Fall back to the
+        signed copies in bearer ``SubjectConfirmationData`` elements, since
+        python3-saml accepts any usable bearer confirmation.
+        """
+        get_in_response_to = getattr(auth, "get_last_response_in_response_to", None)
+        in_response_to = get_in_response_to() if get_in_response_to else None
+        if in_response_to:
+            return (cast("str", in_response_to),)
+        get_response_xml = getattr(auth, "get_last_response_xml", None)
+        response_xml = get_response_xml() if get_response_xml else None
+        if not response_xml:
+            return ()
+        document = OneLogin_Saml2_XML.to_etree(response_xml)
+        confirmations = OneLogin_Saml2_XML.query(
+            document,
+            "/samlp:Response/saml:Assertion/saml:Subject/saml:SubjectConfirmation",
+        )
+        current_url = OneLogin_Saml2_Utils.get_self_url_no_query(
+            self._saml_request_data()
+        )
+        # Match python3-saml's strict SubjectConfirmationData checks. Its
+        # ALLOWED_CLOCK_DRIFT applies to assertion Conditions, not confirmations.
+        now = OneLogin_Saml2_Utils.now()
+        values = []
+        for confirmation in confirmations:
+            method = confirmation.get("Method")
+            if method and method != OneLogin_Saml2_Constants.CM_BEARER:
+                continue
+            data = confirmation.find(
+                "saml:SubjectConfirmationData",
+                namespaces=OneLogin_Saml2_Constants.NSMAP,
+            )
+            if data is None:
+                continue
+            recipient = data.get("Recipient")
+            if recipient and current_url not in recipient:
+                continue
+            not_on_or_after = data.get("NotOnOrAfter")
+            if (
+                not_on_or_after
+                and OneLogin_Saml2_Utils.parse_SAML_to_time(not_on_or_after) <= now
+            ):
+                continue
+            not_before = data.get("NotBefore")
+            if not_before and OneLogin_Saml2_Utils.parse_SAML_to_time(not_before) > now:
+                continue
+            if value := data.get("InResponseTo"):
+                values.append(value)
+        return tuple(values)
 
     def _response_in_response_to(self, idp: SAMLIdentityProvider) -> str | None:
         try:
@@ -395,9 +457,8 @@ class SAMLAuth(BaseAuth):
         request_id: str | None,
         kwargs: dict[str, Any],
     ) -> bool:
-        get_in_response_to = getattr(auth, "get_last_response_in_response_to", None)
-        in_response_to = get_in_response_to() if get_in_response_to else None
-        if in_response_to:
+        in_response_to_values = self._processed_response_in_response_to(auth)
+        if in_response_to_values:
             if not request_id:
                 raise AuthSessionError(
                     self,
@@ -556,17 +617,19 @@ class SAMLAuth(BaseAuth):
         errors = saml_settings.validate_metadata(metadata)
         return metadata, errors
 
-    def _create_saml_auth(self, idp: SAMLIdentityProvider):
-        """Get an instance of OneLogin_Saml2_Auth"""
-        config = self.generate_saml_config(idp)
-        request_info = {
+    def _saml_request_data(self) -> dict[str, Any]:
+        return {
             "https": "on" if self.strategy.request_is_secure() else "off",
             "http_host": self.strategy.request_host(),
             "script_name": self.strategy.request_path(),
             "get_data": self.strategy.request_get(),
             "post_data": self.strategy.request_post(),
         }
-        return OneLogin_Saml2_Auth(request_info, config)
+
+    def _create_saml_auth(self, idp: SAMLIdentityProvider):
+        """Get an instance of OneLogin_Saml2_Auth"""
+        config = self.generate_saml_config(idp)
+        return OneLogin_Saml2_Auth(self._saml_request_data(), config)
 
     def _get_saml_auth(self, idp: SAMLIdentityProvider, *, stage: ErrorStage):
         try:

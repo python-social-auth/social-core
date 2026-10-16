@@ -346,6 +346,65 @@ class SAMLProtocolTest(BaseBackendTest):
         self.complete(node)
         self.rejected(node, exception=AuthSessionError)
 
+    def test_stripped_unsigned_in_response_to_is_still_correlated(self):
+        # With an assertion-only signature the envelope attribute is not
+        # covered; the signed SubjectConfirmationData copy must still be used.
+        node = saml.response()
+        del node.attrib["InResponseTo"]
+        for encrypted in (False, True):
+            with self.subTest(encrypted=encrypted):
+                stripped = saml.signed_response(deepcopy(node))
+                if encrypted:
+                    saml.encrypt(saml.find(stripped, "saml:Assertion"))
+                self.strategy.session_set(self.key, "wrong-request")
+                self.rejected(stripped, exception=AuthSessionError)
+                self.strategy.session_pop(self.key)
+                self.rejected(stripped, exception=AuthSessionError)
+                self.strategy.session_set(self.key, "request-id")
+                self.complete(stripped)
+                self.assertIsNone(self.strategy.session_get(self.key))
+                self.rejected(stripped, exception=AuthSessionError)
+
+    def test_stripped_in_response_to_checks_all_bearer_confirmations(self):
+        for invalid_confirmation in ("non-bearer", "missing-data", "expired"):
+            with self.subTest(invalid_confirmation=invalid_confirmation):
+                self.strategy.session_set(self.key, "request-id")
+                node = saml.response()
+                del node.attrib["InResponseTo"]
+                subject = saml.find(node, ".//saml:Subject")
+                confirmation = deepcopy(saml.find(subject, "saml:SubjectConfirmation"))
+                data = saml.find(confirmation, "saml:SubjectConfirmationData")
+                data.set("InResponseTo", "wrong-request")
+                if invalid_confirmation == "non-bearer":
+                    confirmation.set(
+                        "Method", "urn:oasis:names:tc:SAML:2.0:cm:holder-of-key"
+                    )
+                elif invalid_confirmation == "missing-data":
+                    confirmation.remove(data)
+                else:
+                    data.set("NotOnOrAfter", saml.NOW)
+                subject.insert(1, confirmation)
+                self.complete(saml.signed_response(node))
+
+    def test_stripped_in_response_to_ignores_unusable_matching_confirmation(self):
+        for invalid_confirmation in ("expired", "not-yet-valid", "wrong-recipient"):
+            with self.subTest(invalid_confirmation=invalid_confirmation):
+                self.strategy.session_set(self.key, "request-id")
+                node = saml.response("wrong-request")
+                del node.attrib["InResponseTo"]
+                subject = saml.find(node, ".//saml:Subject")
+                confirmation = deepcopy(saml.find(subject, "saml:SubjectConfirmation"))
+                data = saml.find(confirmation, "saml:SubjectConfirmationData")
+                data.set("InResponseTo", "request-id")
+                if invalid_confirmation == "expired":
+                    data.set("NotOnOrAfter", saml.NOW)
+                elif invalid_confirmation == "not-yet-valid":
+                    data.set("NotBefore", "2024-06-01T12:00:01Z")
+                else:
+                    data.set("Recipient", "https://wrong.example.com/acs")
+                subject.insert(1, confirmation)
+                self.rejected(saml.signed_response(node), exception=AuthSessionError)
+
     def test_unsolicited_login_and_account_linking(self):
         node = saml.signed_response(saml.response(None))
         self.rejected(node, user=User("existing"), exception=AuthSessionError)
