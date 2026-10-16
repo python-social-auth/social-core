@@ -13,6 +13,16 @@ including original colors, proportions, and padding. Line endings and trailing w
 are normalized where needed. Applications are responsible
 for following the providers' sign-in and brand-use guidance when displaying them.
 
+weblate.svg
+  Owner: Weblate contributors.
+  Source repository: https://github.com/WeblateOrg/graphics
+  Source revision: a75e0d3fe3617c1061eb1551eed696256c9a5d4d
+  Source file: logo/weblate.svg
+  Source URL: https://github.com/WeblateOrg/graphics/blob/a75e0d3fe3617c1061eb1551eed696256c9a5d4d/logo/weblate.svg
+  Copied from the local graphics checkout on 2026-10-16.
+  Unmodified full-color Weblate symbol with the original padding.
+  Source repository license: GPL-3.0 (see LICENSE.weblate).
+
 amazon.svg
   Owner: Amazon.com, Inc. or its affiliates.
   Source repository: https://github.com/aws-amplify/amplify-ui

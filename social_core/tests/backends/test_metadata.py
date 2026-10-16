@@ -10,6 +10,8 @@ from social_core.backends.email import EmailAuth
 from social_core.backends.github_enterprise import GithubEnterpriseOrganizationOAuth2
 from social_core.backends.salesforce import SalesforceOAuth2Sandbox
 from social_core.backends.username import UsernameAuth
+from social_core.tests.models import TestStorage
+from social_core.tests.strategy import TestStrategy
 
 
 def test_custom_backend_metadata_is_optional() -> None:
@@ -18,9 +20,14 @@ def test_custom_backend_metadata_is_optional() -> None:
 
     assert CustomAuth.title is None
     assert CustomAuth.icon is None
+    assert CustomAuth.get_title(TestStrategy(TestStorage)) == "custom"
 
 
 def test_enterprise_backend_reuses_provider_icon() -> None:
+    assert (
+        GithubEnterpriseOrganizationOAuth2.get_title(TestStrategy(TestStorage))
+        == "GitHub Enterprise Organization"
+    )
     assert GithubEnterpriseOrganizationOAuth2.title == "GitHub Enterprise Organization"
     assert GithubEnterpriseOrganizationOAuth2.icon == "github.svg"
     assert GithubEnterpriseOrganizationOAuth2.name == "github-enterprise-org"
