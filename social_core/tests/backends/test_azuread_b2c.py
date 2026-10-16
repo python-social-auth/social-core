@@ -386,3 +386,37 @@ class AzureADB2COAuth2Test(OAuth2Test, BaseAuthUrlTestMixin, AzureOAuth2TestMixi
         )
 
         self.do_login()
+
+    def test_login_rejects_unsupported_subject_placeholder(self) -> None:
+        self.access_token_body = self.build_access_token_body(
+            sub=self.backend.UNSUPPORTED_SUBJECT
+        )
+
+        with self.assertRaises(AuthResponseError) as caught:
+            self.do_start()
+
+        self.assertEqual(caught.exception.code, "invalid_claim")
+        self.assertEqual(caught.exception.claim, "sub")
+        self.assertEqual(caught.exception.stage, "user_info")
+
+    def test_login_rejects_legacy_unsupported_subject_placeholder(self) -> None:
+        self.access_token_body = self.build_access_token_body(
+            sub=self.backend.LEGACY_UNSUPPORTED_SUBJECT
+        )
+
+        with self.assertRaises(AuthResponseError) as caught:
+            self.do_start()
+
+        self.assertEqual(caught.exception.code, "invalid_claim")
+        self.assertEqual(caught.exception.claim, "sub")
+        self.assertEqual(caught.exception.stage, "user_info")
+
+    def test_login_uses_configured_oid_on_unsupported_subject_flow(self) -> None:
+        self.strategy.set_settings({f"SOCIAL_AUTH_{self.name}_ID_KEY": "oid"})
+        self.access_token_body = self.build_access_token_body(
+            sub=self.backend.UNSUPPORTED_SUBJECT
+        )
+
+        user = self.do_login()
+
+        self.assertEqual(user.social[0].uid, "11223344-5566-7788-9999-aabbccddeeff")
