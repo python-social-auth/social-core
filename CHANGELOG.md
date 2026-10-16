@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+### Added
+
+- Add a Weblate OpenID Connect backend with Hosted Weblate defaults, configurable
+  issuer, PKCE, official branding, and optional legal-version storage.
+- Add a strategy-aware backend `get_title()` method for sign-in labels.
+
+### Security
+
+- Keep externally resumed partial pipelines bound to the local user who
+  initiated them, preventing a validation link from associating its provider
+  identity with a different authenticated account.
+- Document the project's security boundaries, assumptions, downstream
+  responsibilities, including the correlation limits of Telegram and Facebook
+  Limited Login, and triage dispositions in the
+  [threat model](https://github.com/python-social-auth/social-core/blob/master/THREAT_MODEL.md).
+
 ### Changed
 
 - Verified compatibility with Python 3.15.
@@ -18,6 +34,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   Resuming previously failed with `invalid_claim`.
 - Facebook Limited Login no longer loses its validated claims and partial resume
   authorization when the framework authenticates with a new backend instance.
+- Raise structured authentication errors for missing, malformed, invalid, or
+  expired VK OpenAPI callback state.
 
 ## [6.1.1](https://github.com/python-social-auth/social-core/releases/tag/6.1.1) - 2026-10-10
 

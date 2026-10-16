@@ -82,6 +82,11 @@ class BaseAuth:
         self.data = self.strategy.request_data()
         self.redirect_uri = self.strategy.absolute_uri(self.redirect_uri)
 
+    @classmethod
+    def get_title(cls, strategy: BaseStrategy) -> str:
+        """Return a sign-in label using the application's strategy settings."""
+        return cls.title or cls.name
+
     def log_debug(self, message, *args) -> None:
         social_logger.debug(f"{self.name}: {message}", *args)
 

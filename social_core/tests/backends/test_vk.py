@@ -99,6 +99,81 @@ class VKontakteOpenAPITest(BaseBackendTest):
 
         self.assertEqual(user.social[0].uid, VIEWER_ID)
 
+    def test_accepts_byte_encoded_signed_session(self) -> None:
+        self.strategy.set_request_data(self.request_data(), self.backend)
+        self.strategy.session_set(
+            f"vk_app_{APP_ID}", self.signed_session(VIEWER_ID).encode()
+        )
+
+        user = self.backend.complete()
+
+        self.assertEqual(user.social[0].uid, VIEWER_ID)
+
+    def test_rejects_missing_request_id(self) -> None:
+        request_data = self.request_data()
+        del request_data["id"]
+        self.strategy.set_request_data(request_data, self.backend)
+        self.strategy.session_set(f"vk_app_{APP_ID}", self.signed_session())
+
+        with assert_auth_error(self, AuthInputError, "missing_parameter") as caught:
+            self.backend.complete()
+
+        self.assertEqual(caught.exception.parameter, "id")
+        self.assertEqual(caught.exception.stage, "callback")
+        self.assertEqual(User.cache, {})
+        self.assertEqual(TestUserSocialAuth.cache_by_uid, {})
+
+    def test_rejects_missing_signed_session(self) -> None:
+        self.strategy.set_request_data(self.request_data(), self.backend)
+
+        with assert_auth_error(
+            self, AuthSessionError, "session_context_missing"
+        ) as caught:
+            self.backend.complete()
+
+        self.assertEqual(caught.exception.stage, "callback")
+        self.assertEqual(User.cache, {})
+        self.assertEqual(TestUserSocialAuth.cache_by_uid, {})
+
+    def test_rejects_malformed_signed_session(self) -> None:
+        self.strategy.set_request_data(self.request_data(), self.backend)
+        self.strategy.session_set(f"vk_app_{APP_ID}", 42)
+
+        with assert_auth_error(self, AuthResponseError, "malformed_response") as caught:
+            self.backend.complete()
+
+        self.assertEqual(caught.exception.stage, "callback")
+        self.assertEqual(User.cache, {})
+        self.assertEqual(TestUserSocialAuth.cache_by_uid, {})
+
+    def test_rejects_incomplete_signed_session(self) -> None:
+        self.strategy.set_request_data(self.request_data(), self.backend)
+        session = parse_qs(self.signed_session())
+        del session["secret"]
+        self.strategy.session_set(f"vk_app_{APP_ID}", urlencode(session))
+
+        with assert_auth_error(self, AuthResponseError, "missing_claim") as caught:
+            self.backend.complete()
+
+        self.assertEqual(caught.exception.claim, "secret")
+        self.assertEqual(caught.exception.stage, "callback")
+        self.assertEqual(User.cache, {})
+        self.assertEqual(TestUserSocialAuth.cache_by_uid, {})
+
+    def test_rejects_invalid_session_expiry(self) -> None:
+        self.strategy.set_request_data(self.request_data(), self.backend)
+        session = parse_qs(self.signed_session())
+        session["expire"] = "tomorrow"
+        self.strategy.session_set(f"vk_app_{APP_ID}", urlencode(session))
+
+        with assert_auth_error(self, AuthResponseError, "invalid_claim") as caught:
+            self.backend.complete()
+
+        self.assertEqual(caught.exception.claim, "expire")
+        self.assertEqual(caught.exception.stage, "callback")
+        self.assertEqual(User.cache, {})
+        self.assertEqual(TestUserSocialAuth.cache_by_uid, {})
+
     def test_rejects_invalid_session_signature(self) -> None:
         for signature in ("0" * 32, "é"):
             self.strategy.set_request_data(self.request_data(), self.backend)
@@ -108,9 +183,12 @@ class VKontakteOpenAPITest(BaseBackendTest):
             )
             with (
                 self.subTest(signature=signature),
-                self.assertRaisesRegex(ValueError, "Invalid Hash"),
+                assert_auth_error(
+                    self, AuthResponseError, "invalid_signature"
+                ) as caught,
             ):
                 self.backend.complete()
+            self.assertEqual(caught.exception.stage, "callback")
 
         self.assertEqual(User.cache, {})
         self.assertEqual(TestUserSocialAuth.cache_by_uid, {})
@@ -122,9 +200,10 @@ class VKontakteOpenAPITest(BaseBackendTest):
             self.signed_session(expires=int(time()) - 1),
         )
 
-        with self.assertRaisesRegex(ValueError, "Invalid Hash"):
+        with assert_auth_error(self, AuthResponseError, "response_expired") as caught:
             self.backend.complete()
 
+        self.assertEqual(caught.exception.stage, "callback")
         self.assertEqual(User.cache, {})
         self.assertEqual(TestUserSocialAuth.cache_by_uid, {})
 
