@@ -296,6 +296,16 @@ def _extend_partial_pipeline(
     return partial
 
 
+def _external_partial_pipeline_user_matches(
+    partial: PartialMixin, user: UserProtocol | None
+) -> bool:
+    """Keep authenticated external resumes bound to their initiating user."""
+    if user is None:
+        return True
+    partial_user = partial.kwargs.get("user")
+    return partial_user is not None and partial_user.id == user.id
+
+
 def _select_partial_pipeline_token(
     request_token: str | None,
     session_token: str | None,
@@ -425,19 +435,35 @@ def partial_pipeline_result(
     )
     if partial and partial_matches:
         backend.validate_partial_pipeline(partial, user)
-        if _partial_pipeline_requires_confirmation(
+        requires_confirmation = _partial_pipeline_requires_confirmation(
             partial,
             request_token,
             effective_request_data,
             selection.pending_resume,
+        )
+        external_resume = bool(
+            selection.pending_resume
+            or requires_confirmation
+            or (
+                not selection.owns_token
+                and partial.data.get(PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME)
+            )
+        )
+        if external_resume and not _external_partial_pipeline_user_matches(
+            partial, user
         ):
+            result = PartialPipelineResult(halt=True)
+        elif requires_confirmation:
             result = _external_partial_pipeline_result(
                 backend, partial, selection.token, effective_request_data
             )
         elif selection.owns_token:
             result = PartialPipelineResult(
                 partial=_extend_partial_pipeline(
-                    partial, effective_request_data, user, kwargs
+                    partial,
+                    effective_request_data,
+                    None if selection.pending_resume else user,
+                    kwargs,
                 )
             )
         elif partial.data.get(PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME):
