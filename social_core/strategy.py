@@ -134,7 +134,8 @@ class BaseStrategy:
 
     def restore_session(self, session_id: str, kwargs: dict[str, Any]) -> None:
         """
-        Restores session and updates kwargs to match it.
+        Restore the session used by subsequent strategy operations and update
+        session-derived kwargs, including the authenticated user, to match it.
 
         This is only called if get_session_id returns a value.
         """

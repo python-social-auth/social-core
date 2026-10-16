@@ -16,6 +16,9 @@ class LiveJournalOpenId(OpenIdAuth):
     name = "livejournal"
     title = "LiveJournal"
 
+    def requires_openid_provider_binding(self) -> bool:
+        return True
+
     def get_user_details(self, response):
         """Generate username from identity url"""
         values = super().get_user_details(response)
@@ -27,11 +30,36 @@ class LiveJournalOpenId(OpenIdAuth):
 
     def openid_url(self) -> str:
         """Returns LiveJournal authentication URL"""
-        if not self.data.get("openid_lj_user"):
+        username = self.data.get("openid_lj_user")
+        if not username:
             raise AuthInputError(
                 self,
                 parameter="openid_lj_user",
                 code="missing_parameter",
                 stage="begin",
             )
-        return f"https://{self.data['openid_lj_user']}.livejournal.com"
+        url = f"https://{username}.livejournal.com"
+        try:
+            parsed = urlsplit(url)
+            valid_port = parsed.port is None
+        except ValueError:
+            parsed = None
+            valid_port = False
+        valid_host = (
+            parsed is not None
+            and parsed.hostname is not None
+            and parsed.hostname.endswith(".livejournal.com")
+        )
+        valid_shape = (
+            parsed is not None
+            and valid_port
+            and not any((parsed.path, parsed.query, parsed.fragment))
+        )
+        if not (self._is_https_url(url) and valid_host and valid_shape):
+            raise AuthInputError(
+                self,
+                parameter="openid_lj_user",
+                code="invalid_parameter",
+                stage="begin",
+            )
+        return url
