@@ -119,6 +119,12 @@ identity and time claims, but intentionally does not enforce its nonce. Neither
 flow binds the signed input to an initiating browser session or makes it
 single-use. (documented)
 
+OpenID backends bind positive assertions to backend-scoped discovery state in
+the initiating browser session or a session selected by the provider-signed
+return URL. The generic OpenID backend intentionally accepts a provider selected
+by the application user. Fixed-provider backends additionally require the exact
+HTTPS provider endpoint discovered during initiation. (documented)
+
 Partial pipelines add a persistence boundary. Authentication and disconnection
 partials must retain their flow type and initiating user/session context;
 externally resumed partials require the documented confirmation path before
@@ -250,6 +256,7 @@ backend namespace or bypass the local flow and user bindings. (maintainer)
 | Property and conditions | Violation symptom | Severity | Provenance |
 | --- | --- | --- | --- |
 | A backend that implements callback correlation accepts a callback only for the initiating flow and session after its state, nonce, or request-ID check succeeds; Telegram instead accepts only callbacks with a valid bot-token HMAC and an age of at most 24 hours, while Facebook Limited Login accepts only ID tokens passing its provider-signature, identity, and time-claim validation; neither exception claims initiation, session, or single-use correlation | A correlated backend accepts an uninitiated or mismatched callback, Telegram accepts a callback with an invalid HMAC or excessive age, or Facebook Limited Login accepts an ID token with an invalid provider signature, identity claim, or time claim | Security-critical | `(documented)` |
+| An OpenID backend accepts a positive assertion only when it matches backend-scoped discovery state from the initiating or provider-authenticated restored browser session; generic OpenID remains provider-selectable, while fixed-provider callbacks and verified signing endpoints must additionally match the exact HTTPS endpoint discovered at initiation | An uninitiated or cross-session OpenID assertion reaches the pipeline, discovery state crosses backend namespaces, or a cleartext or foreign-provider assertion authenticates under a fixed backend | Security-critical | `(documented)` |
 | OIDC/JWT and SAML identity assertions are used only after the backend-required signature, issuer, audience, time, nonce/request, subject, and destination checks succeed | Forged or misdirected assertion authenticates or links an account | Security-critical | `(documented)` |
 | An authenticating provider identity is bound by backend namespace and a non-empty stable provider identifier; conflicting migration evidence always fails closed, while missing evidence fails except for the audited compatibility transitions documented in section 5a | One provider identity authenticates as a different local user outside the documented missing-evidence exception, or two identities collapse onto one association | Security-critical | `(documented)` |
 | Bundled mutable-identifier exceptions do not independently authenticate a remote provider identity: Drip, Last.fm, and Mixcloud are association-only, while EmailAuth and UsernameAuth require application-supplied credential and validation policy | A mutable remote identifier creates or authenticates a local user through an association-only backend, or a legacy backend authenticates without the application's required validation | Security-critical | `(documented)` |

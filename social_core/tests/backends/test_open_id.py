@@ -1,28 +1,48 @@
 from __future__ import annotations
 
 import copy
+from types import SimpleNamespace
 from typing import TYPE_CHECKING, cast
 from unittest.mock import patch
+from urllib.parse import urlencode
 
 from openid.consumer.consumer import CancelResponse, FailureResponse, SuccessResponse
 from openid.consumer.discover import OpenIDServiceEndpoint
 from openid.extensions import ax, sreg
-from openid.message import OPENID2_NS, Message
+from openid.message import OPENID1_NS, OPENID2_NS, Message
 
+from social_core.backends.belgiumeid import BelgiumEIDOpenId
+from social_core.backends.fedora import FedoraOpenId
+from social_core.backends.launchpad import LaunchpadOpenId
 from social_core.backends.livejournal import LiveJournalOpenId
 from social_core.backends.open_id import OpenIdAuth
-from social_core.exceptions import AuthCanceled, AuthResponseError, AuthSessionError
+from social_core.backends.openinfra import OpenInfraOpenId
+from social_core.backends.openstack import OpenStackOpenId
+from social_core.backends.steam import SteamOpenId
+from social_core.backends.suse import OpenSUSEOpenId
+from social_core.backends.ubuntu import UbuntuOpenId
+from social_core.backends.yandex import YandexOpenId
+from social_core.exceptions import (
+    AuthCanceled,
+    AuthConfigurationError,
+    AuthProviderError,
+    AuthResponseError,
+    AuthSessionError,
+)
 from social_core.pipeline.social_auth import social_names
+from social_core.store import OpenIdSessionWrapper
 from social_core.tests.exception_helpers import assert_auth_error
+from social_core.tests.models import TestUserSocialAuth, User
 from social_core.utils import PARTIAL_TOKEN_SESSION_NAME
 
 from .base import BaseBackendTest
+from .open_id import OpenIdTest
 
 if TYPE_CHECKING:
     from social_core.strategy import HttpResponseProtocol
-    from social_core.tests.models import User
 
 VERIFIED_RESPONSE_KEY = "_openid_verified_response"
+BACKEND_SESSION_KEY = "_social_auth_backend"
 IDENTITY = "http://foobar.livejournal.com/"
 DEPARTMENT = "https://example.com/attributes/department"
 
@@ -46,12 +66,20 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
         component_names=("Foo", "Bar"),
         fullname: str | None = "Foo Bar",
         ax_fullnames=(),
+        server_url="https://example.com/openid",
+        claimed_id: str | None = IDENTITY,
+        local_id=None,
+        return_to=None,
+        namespace=OPENID2_NS,
     ):
         endpoint = OpenIDServiceEndpoint()
-        endpoint.claimed_id = IDENTITY
-        endpoint.server_url = "https://example.com/openid"
+        endpoint.claimed_id = claimed_id
+        endpoint.local_id = local_id
+        endpoint.server_url = server_url
         vars(endpoint)["display_identifier"] = "Display identifier"
-        message = Message(OPENID2_NS)
+        message = Message(namespace)
+        message.setArg(namespace, "mode", "id_res")
+        message.setArg(namespace, "return_to", return_to or self.complete_url)
         if profile:
             profile_fields = {"nickname": "user", "email": "user@example.com"}
             if fullname is not None:
@@ -75,6 +103,17 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
             if signed_ax or not key.startswith("openid.ax.")
         ]
         return SuccessResponse(endpoint, message, signed_fields)
+
+    def set_openid_context(
+        self,
+        endpoint: OpenIDServiceEndpoint,
+        *,
+        backend: OpenIdAuth | None = None,
+    ) -> None:
+        backend = backend or self.backend
+        session = self.strategy.openid_session_dict("openid")
+        session[OpenIdSessionWrapper.endpoint_key] = endpoint
+        session[BACKEND_SESSION_KEY] = backend.name
 
     def test_full_name_only_details(self) -> None:
         details = self.backend.get_user_details(
@@ -168,6 +207,7 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
 
     def start_partial(self, response, *, early=True):
         self.pipeline_settings()
+        self.set_openid_context(response.endpoint)
         if early:
             pipeline = list(self.strategy.get_pipeline(self.backend))
             pipeline.remove("social_core.tests.pipeline.ask_for_password")
@@ -265,6 +305,8 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
         self.assertNotIn("department", user.social[0].extra_data)
 
     def test_livejournal_identity_username_survives_partial(self) -> None:
+        endpoint = "https://www.livejournal.com/openid/server.bml"
+        response = self.verified_response(profile=False, server_url=endpoint)
         self.backend = LiveJournalOpenId(self.strategy, redirect_uri=self.complete_url)
         # The strategy only authenticates with configured backend classes.
         self.strategy.set_settings(
@@ -274,7 +316,16 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
                 )
             }
         )
-        result = self.start_partial(self.verified_response(profile=False))
+        self.strategy.set_request_data(
+            {"openid.mode": "id_res", "openid.op_endpoint": endpoint}, self.backend
+        )
+        self.strategy.openid_session_dict("openid")[
+            OpenIdSessionWrapper.endpoint_key
+        ] = response.endpoint
+        self.strategy.openid_session_dict("openid")[BACKEND_SESSION_KEY] = (
+            self.backend.name
+        )
+        result = self.start_partial(response)
 
         user = self.finish_partial(result)
 
@@ -324,3 +375,509 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
                 consumer.return_value.complete.return_value = response
                 self.backend.complete()
             authenticate.assert_not_called()
+
+    def test_generic_callback_requires_initiation_state(self) -> None:
+        response = self.verified_response()
+        self.strategy.set_request_data({"openid.mode": "id_res"}, self.backend)
+        with (
+            patch.object(
+                self.backend, "_complete_generic_response", return_value=response
+            ),
+            patch.object(self.strategy, "authenticate") as authenticate,
+            assert_auth_error(self, AuthSessionError, "session_context_missing"),
+        ):
+            self.backend.complete()
+        authenticate.assert_not_called()
+
+    def test_generic_callback_requires_matching_backend(self) -> None:
+        response = self.verified_response()
+        self.set_openid_context(response.endpoint)
+        self.strategy.openid_session_dict("openid")[BACKEND_SESSION_KEY] = "ubuntu"
+        self.strategy.set_request_data({"openid.mode": "id_res"}, self.backend)
+        with (
+            patch.object(
+                self.backend, "_complete_generic_response", return_value=response
+            ),
+            patch.object(self.strategy, "authenticate") as authenticate,
+            assert_auth_error(self, AuthSessionError, "session_context_missing"),
+        ):
+            self.backend.complete()
+        authenticate.assert_not_called()
+
+    def test_generic_callback_rejects_malformed_initiation_state(self) -> None:
+        response = self.verified_response()
+        self.strategy.session_set(
+            "openid", {OpenIdSessionWrapper.endpoint_key: b"old pickle"}
+        )
+        self.strategy.set_request_data({"openid.mode": "id_res"}, self.backend)
+        with (
+            patch(
+                "social_core.backends.open_id.Consumer.complete",
+                return_value=response,
+            ),
+            assert_auth_error(self, AuthSessionError, "session_context_missing"),
+        ):
+            self.backend.complete()
+        self.assertEqual(self.strategy.session_get("openid"), {})
+
+    def test_generic_completion_clears_newly_malformed_state(self) -> None:
+        response = self.verified_response()
+        self.set_openid_context(response.endpoint)
+        self.strategy.set_request_data({"openid.mode": "id_res"}, self.backend)
+
+        def corrupt_session(*args) -> None:
+            self.strategy.session_set(
+                "openid", {OpenIdSessionWrapper.endpoint_key: b"old pickle"}
+            )
+
+        with (
+            patch.object(
+                self.backend, "_complete_generic_response", return_value=response
+            ),
+            patch.object(
+                self.backend,
+                "_validate_completed_generic_provider",
+                side_effect=corrupt_session,
+            ),
+            patch.object(self.strategy, "authenticate") as authenticate,
+        ):
+            self.backend.complete()
+        self.assertEqual(self.strategy.session_get("openid"), {})
+        authenticate.assert_called_once()
+
+    def test_generic_callback_rejects_mismatched_discovery_state(self) -> None:
+        cases = (
+            ("server_url", "https://other.example/openid", "invalid_claim"),
+            ("claimed_id", "https://other.example/user", "invalid_claim"),
+            ("local_id", "https://other.example/local", "invalid_claim"),
+        )
+        for field, value, code in cases:
+            with self.subTest(field=field):
+                response = self.verified_response(local_id=IDENTITY)
+                expected = copy.copy(response.endpoint)
+                setattr(expected, field, value)
+                self.set_openid_context(expected)
+                self.strategy.set_request_data({"openid.mode": "id_res"}, self.backend)
+                with (
+                    patch.object(
+                        self.backend,
+                        "_complete_generic_response",
+                        return_value=response,
+                    ),
+                    patch.object(self.strategy, "authenticate") as authenticate,
+                    assert_auth_error(self, AuthResponseError, code),
+                ):
+                    self.backend.complete()
+                authenticate.assert_not_called()
+
+    def test_generic_same_session_completion_succeeds(self) -> None:
+        response = self.verified_response(
+            claimed_id=f"{IDENTITY}#provider-fragment",
+            local_id=IDENTITY,
+        )
+        expected = copy.copy(response.endpoint)
+        expected.claimed_id = IDENTITY
+        self.set_openid_context(expected)
+        self.strategy.set_request_data({"openid.mode": "id_res"}, self.backend)
+        with (
+            patch.object(
+                self.backend, "_complete_generic_response", return_value=response
+            ),
+            patch.object(self.strategy, "authenticate") as authenticate,
+        ):
+            self.backend.complete()
+        authenticate.assert_called_once()
+        self.assertEqual(self.strategy.session_get("openid"), {})
+
+    def test_generic_callback_does_not_use_unsigned_session_id(self) -> None:
+        response = self.verified_response()
+        self.strategy.set_request_data(
+            {
+                "openid.mode": "id_res",
+                self.strategy.SESSION_SAVE_KEY: "attacker-session",
+            },
+            self.backend,
+        )
+        with (
+            patch.object(
+                self.backend, "_complete_generic_response", return_value=response
+            ),
+            patch.object(self.strategy, "restore_session") as restore_session,
+            assert_auth_error(self, AuthResponseError, "invalid_claim"),
+        ):
+            self.backend.complete()
+        restore_session.assert_not_called()
+
+    def test_generic_callback_requires_signed_return_to(self) -> None:
+        response = self.verified_response()
+        response.signed_fields.remove("openid.return_to")
+        self.strategy.set_request_data({"openid.mode": "id_res"}, self.backend)
+        with (
+            patch.object(
+                self.backend, "_complete_generic_response", return_value=response
+            ),
+            assert_auth_error(self, AuthResponseError, "invalid_claim"),
+        ):
+            self.backend.complete()
+
+    def test_generic_callback_rejects_malformed_return_to(self) -> None:
+        response = self.verified_response(return_to="https://[invalid")
+        self.strategy.set_request_data({"openid.mode": "id_res"}, self.backend)
+        with (
+            patch.object(
+                self.backend, "_complete_generic_response", return_value=response
+            ),
+            assert_auth_error(self, AuthResponseError, "invalid_claim"),
+        ):
+            self.backend.complete()
+
+    def test_generic_callback_rejects_mismatched_session_id(self) -> None:
+        response = self.verified_response(
+            return_to=f"{self.complete_url}?psa_session_id=initiating-session"
+        )
+        self.strategy.set_request_data(
+            {
+                "openid.mode": "id_res",
+                self.strategy.SESSION_SAVE_KEY: "other-session",
+            },
+            self.backend,
+        )
+        with (
+            patch.object(
+                self.backend, "_complete_generic_response", return_value=response
+            ),
+            patch.object(self.strategy, "restore_session") as restore_session,
+            assert_auth_error(self, AuthResponseError, "invalid_claim"),
+        ):
+            self.backend.complete()
+        restore_session.assert_not_called()
+
+    def test_generic_callback_rejects_duplicate_signed_session_id(self) -> None:
+        response = self.verified_response(
+            return_to=(
+                f"{self.complete_url}?psa_session_id=first&psa_session_id=second"
+            )
+        )
+        self.strategy.set_request_data(
+            {
+                "openid.mode": "id_res",
+                self.strategy.SESSION_SAVE_KEY: "first",
+            },
+            self.backend,
+        )
+        with (
+            patch.object(
+                self.backend, "_complete_generic_response", return_value=response
+            ),
+            patch.object(self.strategy, "restore_session") as restore_session,
+            assert_auth_error(self, AuthResponseError, "invalid_claim"),
+        ):
+            self.backend.complete()
+        restore_session.assert_not_called()
+
+    def test_generic_restored_session_completion_succeeds(self) -> None:
+        response = self.verified_response(
+            return_to=f"{self.complete_url}?psa_session_id=initiating-session"
+        )
+        self.set_openid_context(response.endpoint)
+        initiating_state = copy.deepcopy(self.strategy.session_get("openid"))
+        self.strategy.session_set("openid", {})
+        initiating_user = User("initiator")
+        victim = User("victim")
+        self.strategy.set_request_data(
+            {
+                "openid.mode": "id_res",
+                self.strategy.SESSION_SAVE_KEY: "initiating-session",
+            },
+            self.backend,
+        )
+
+        def restore_session(session_id, kwargs) -> None:
+            self.assertEqual(session_id, "initiating-session")
+            self.strategy.session_set("openid", copy.deepcopy(initiating_state))
+            kwargs["user"] = initiating_user
+
+        with (
+            patch.object(
+                self.backend, "_complete_generic_response", return_value=response
+            ),
+            patch.object(self.strategy, "restore_session", restore_session),
+            patch.object(self.strategy, "authenticate") as authenticate,
+        ):
+            self.backend.complete(user=victim)
+        self.assertIs(authenticate.call_args.kwargs["user"], initiating_user)
+
+    def test_generic_attacker_response_cannot_use_victim_session(self) -> None:
+        expected = self.verified_response(server_url="https://victim.example/openid")
+        self.set_openid_context(expected.endpoint)
+        response = self.verified_response(
+            server_url="https://attacker.example/openid",
+            claimed_id="https://attacker.example/id/mallory",
+        )
+        self.strategy.set_request_data({"openid.mode": "id_res"}, self.backend)
+        victim = User("victim")
+        with (
+            patch.object(
+                self.backend, "_complete_generic_response", return_value=response
+            ),
+            patch.object(self.strategy, "authenticate") as authenticate,
+            assert_auth_error(self, AuthResponseError, "invalid_claim"),
+        ):
+            self.backend.complete(user=victim)
+        authenticate.assert_not_called()
+
+    def test_generic_op_identifier_completion_succeeds(self) -> None:
+        response = self.verified_response(
+            server_url="https://provider.example/openid",
+            claimed_id="https://provider.example/id/user",
+        )
+        expected = copy.copy(response.endpoint)
+        expected.claimed_id = None
+        expected.local_id = None
+        expected.type_uris = ["http://specs.openid.net/auth/2.0/server"]
+        self.set_openid_context(expected)
+        self.strategy.set_request_data({"openid.mode": "id_res"}, self.backend)
+        with (
+            patch.object(
+                self.backend, "_complete_generic_response", return_value=response
+            ),
+            patch.object(self.strategy, "authenticate") as authenticate,
+        ):
+            self.backend.complete()
+        authenticate.assert_called_once()
+
+    def test_generic_op_identifier_requires_claimed_identity(self) -> None:
+        response = self.verified_response(claimed_id=None)
+        expected = copy.copy(response.endpoint)
+        expected.type_uris = ["http://specs.openid.net/auth/2.0/server"]
+        self.set_openid_context(expected)
+        self.strategy.set_request_data({"openid.mode": "id_res"}, self.backend)
+        with (
+            patch.object(
+                self.backend, "_complete_generic_response", return_value=response
+            ),
+            patch.object(self.strategy, "authenticate") as authenticate,
+            assert_auth_error(self, AuthResponseError, "invalid_claim"),
+        ):
+            self.backend.complete()
+        authenticate.assert_not_called()
+
+    def bound_backend(
+        self,
+        *,
+        expected_endpoint="https://login.ubuntu.com/+openid",
+        callback_endpoint="https://login.ubuntu.com/+openid",
+        openid2=True,
+    ) -> UbuntuOpenId:
+        backend = UbuntuOpenId(self.strategy, redirect_uri=self.complete_url)
+        self.strategy.set_request_data(
+            {
+                "openid.mode": "id_res",
+                "openid.op_endpoint": callback_endpoint,
+                **({"openid.ns": OPENID2_NS} if openid2 else {}),
+            },
+            backend,
+        )
+        endpoint = OpenIDServiceEndpoint()
+        endpoint.server_url = expected_endpoint
+        self.strategy.openid_session_dict("openid")[
+            OpenIdSessionWrapper.endpoint_key
+        ] = endpoint
+        self.strategy.openid_session_dict("openid")[BACKEND_SESSION_KEY] = backend.name
+        return backend
+
+    def test_fixed_provider_backends_require_binding(self) -> None:
+        for backend_class in (
+            UbuntuOpenId,
+            OpenSUSEOpenId,
+            YandexOpenId,
+            LaunchpadOpenId,
+            FedoraOpenId,
+            BelgiumEIDOpenId,
+            OpenStackOpenId,
+            OpenInfraOpenId,
+            LiveJournalOpenId,
+            SteamOpenId,
+        ):
+            with self.subTest(backend=backend_class.name):
+                backend = backend_class(self.strategy, redirect_uri=self.complete_url)
+                self.assertTrue(backend.requires_openid_provider_binding())
+        self.assertFalse(self.backend.requires_openid_provider_binding())
+
+    def test_fixed_provider_rejects_callback_without_initiation(self) -> None:
+        backend = UbuntuOpenId(self.strategy, redirect_uri=self.complete_url)
+        self.strategy.set_request_data(
+            {
+                "openid.mode": "id_res",
+                "openid.op_endpoint": "https://login.ubuntu.com/+openid",
+            },
+            backend,
+        )
+        with (
+            patch.object(backend, "consumer") as consumer,
+            assert_auth_error(self, AuthSessionError, "session_context_missing"),
+        ):
+            backend.complete()
+        consumer.assert_not_called()
+
+    def test_fixed_provider_rejects_insecure_saved_endpoint(self) -> None:
+        backend = self.bound_backend(
+            expected_endpoint="http://login.ubuntu.com/+openid",
+            callback_endpoint="http://login.ubuntu.com/+openid",
+        )
+        with (
+            patch.object(backend, "consumer") as consumer,
+            assert_auth_error(self, AuthResponseError, "invalid_claim"),
+        ):
+            backend.complete()
+        consumer.assert_not_called()
+
+    def test_fixed_provider_rejects_untrusted_callback_before_completion(self) -> None:
+        for callback_endpoint, code in (
+            ("https://attacker.example/openid", "invalid_claim"),
+            ("http://login.ubuntu.com/+openid", "invalid_claim"),
+            ("", "missing_claim"),
+        ):
+            with self.subTest(callback_endpoint=callback_endpoint):
+                backend = self.bound_backend(callback_endpoint=callback_endpoint)
+                with (
+                    patch.object(backend, "consumer") as consumer,
+                    assert_auth_error(self, AuthResponseError, code),
+                ):
+                    backend.complete()
+                consumer.assert_not_called()
+
+    def test_fixed_provider_rechecks_verified_endpoint(self) -> None:
+        backend = self.bound_backend()
+        response = self.verified_response(server_url="https://attacker.example/openid")
+        with (
+            patch.object(backend, "consumer") as consumer,
+            patch.object(self.strategy, "authenticate") as authenticate,
+            assert_auth_error(self, AuthResponseError, "invalid_claim"),
+        ):
+            consumer.return_value.complete.return_value = response
+            backend.complete()
+        consumer.return_value.complete.assert_called_once()
+        authenticate.assert_not_called()
+
+    def test_fixed_provider_rejects_generic_initiation_state(self) -> None:
+        endpoint = "https://login.ubuntu.com/+openid"
+        backend = self.bound_backend(expected_endpoint=endpoint)
+        self.strategy.openid_session_dict("openid")[BACKEND_SESSION_KEY] = "openid"
+        with (
+            patch.object(backend, "consumer") as consumer,
+            assert_auth_error(self, AuthSessionError, "session_context_missing"),
+        ):
+            backend.complete()
+        consumer.assert_not_called()
+
+    def test_fixed_provider_accepts_openid1_without_op_endpoint(self) -> None:
+        endpoint = "https://login.ubuntu.com/+openid"
+        backend = self.bound_backend(
+            expected_endpoint=endpoint,
+            callback_endpoint="",
+            openid2=False,
+        )
+        response = self.verified_response(
+            server_url=endpoint,
+            namespace=OPENID1_NS,
+        )
+        with (
+            patch.object(backend, "consumer") as consumer,
+            patch.object(self.strategy, "authenticate") as authenticate,
+        ):
+            consumer.return_value.complete.return_value = response
+            backend.complete()
+        authenticate.assert_called_once()
+
+    def test_fixed_provider_accepts_matching_verified_endpoint(self) -> None:
+        endpoint = "https://login.ubuntu.com/+openid"
+        backend = self.bound_backend(expected_endpoint=endpoint)
+        response = self.verified_response(server_url=endpoint)
+        with (
+            patch.object(backend, "consumer") as consumer,
+            patch.object(self.strategy, "authenticate") as authenticate,
+        ):
+            consumer.return_value.complete.return_value = response
+            backend.complete()
+        authenticate.assert_called_once()
+
+    def test_fixed_provider_cancel_does_not_require_initiation(self) -> None:
+        backend = UbuntuOpenId(self.strategy, redirect_uri=self.complete_url)
+        self.strategy.set_request_data({"openid.mode": "cancel"}, backend)
+        endpoint = OpenIDServiceEndpoint()
+        with (
+            patch.object(backend, "consumer") as consumer,
+            assert_auth_error(self, AuthCanceled, "authorization_declined"),
+        ):
+            consumer.return_value.complete.return_value = CancelResponse(endpoint)
+            backend.complete()
+        consumer.return_value.complete.assert_called_once()
+
+    def test_fixed_provider_requires_secure_discovery(self) -> None:
+        backend = UbuntuOpenId(self.strategy, redirect_uri=self.complete_url)
+        for server_url, code in (
+            (None, "malformed_response"),
+            ("http://login.ubuntu.com/+openid", "tls_error"),
+        ):
+            with (
+                self.subTest(server_url=server_url),
+                patch.object(backend, "consumer") as consumer,
+                assert_auth_error(self, AuthProviderError, code),
+            ):
+                consumer.return_value.begin.return_value = SimpleNamespace(
+                    endpoint=SimpleNamespace(server_url=server_url)
+                )
+                backend.openid_request()
+            self.assertEqual(self.strategy.session_get("openid"), {})
+
+    def test_fixed_provider_requires_secure_configured_url(self) -> None:
+        class InsecureOpenId(OpenIdAuth):
+            URL = "http://provider.example/openid"
+
+        backend = InsecureOpenId(self.strategy, redirect_uri=self.complete_url)
+        with (
+            patch.object(backend, "consumer") as consumer,
+            assert_auth_error(self, AuthConfigurationError, "invalid_setting"),
+        ):
+            backend.openid_request()
+        consumer.assert_not_called()
+
+
+class UbuntuForeignProviderTest(OpenIdTest):
+    backend_path = "social_core.backends.ubuntu.UbuntuOpenId"
+    expected_username = "alice"
+    discovery_body = """<?xml version="1.0" encoding="UTF-8"?>
+<xrds:XRDS xmlns:xrds="xri://$xrds" xmlns="xri://$xrd*($v*2.0)">
+    <XRD>
+        <Service priority="0">
+            <Type>http://specs.openid.net/auth/2.0/server</Type>
+            <URI>https://login.ubuntu.com/+openid</URI>
+        </Service>
+    </XRD>
+</xrds:XRDS>"""
+    server_response = urlencode(
+        {
+            "openid.ns": OPENID2_NS,
+            "openid.mode": "id_res",
+            "openid.op_endpoint": "https://attacker.example/openid",
+            "openid.claimed_id": "https://attacker.example/id/mallory",
+            "openid.identity": "https://attacker.example/id/mallory",
+            "openid.sreg.nickname": "alice",
+        }
+    )
+
+    def openid_url(self) -> str:
+        return f"{super().openid_url()}/"
+
+    def test_foreign_provider_cannot_migrate_legacy_association(self) -> None:
+        alice = User(username="alice")
+        social = TestUserSocialAuth(
+            alice, "ubuntu", "alice", extra_data={"auth_time": 1}, id_key=""
+        )
+
+        with assert_auth_error(self, AuthResponseError, "invalid_claim"):
+            self.do_start()
+
+        self.assertEqual(social.uid, "alice")
+        self.assertEqual(social.id_key, "")

@@ -307,6 +307,7 @@ class OpenIdSessionTests(TestCase):
             endpoint_fields(self.reload_session()[ENDPOINT_KEY]),
             endpoint_fields(endpoint),
         )
+        self.assertEqual(self.reload_session()["_social_auth_backend"], "openid")
 
     def test_existing_provider_association_is_reused(self) -> None:
         TestAssociation.reset_cache()

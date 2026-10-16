@@ -18,6 +18,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Keep externally resumed partial pipelines bound to the local user who
   initiated them, preventing a validation link from associating its provider
   identity with a different authenticated account.
+- Fixed-provider OpenID backends now require authentication to start in the
+  current session and accept assertions only from the exact HTTPS provider
+  endpoint discovered at that time. Previously, an attacker-controlled OpenID
+  provider could complete authentication under another provider's backend name
+  and, for some unmigrated legacy associations, take over an existing account.
+- Generic OpenID callbacks now require backend-scoped discovery state from the
+  initiating or provider-authenticated restored browser session. This prevents
+  a valid assertion initiated by an attacker from being associated with a user
+  in another browser session.
 - Document the project's security boundaries, assumptions, downstream
   responsibilities, including the correlation limits of Telegram and Facebook
   Limited Login, and triage dispositions in the

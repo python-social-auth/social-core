@@ -18,7 +18,7 @@ class LiveJournalOpenIdTest(OpenIdTest):
     <XRD>
         <Service priority="0">
             <Type>http://specs.openid.net/auth/2.0/signon</Type>
-            <URI>http://www.livejournal.com/openid/server.bml</URI>
+            <URI>https://www.livejournal.com/openid/server.bml</URI>
             <LocalID>http://foobar.livejournal.com/</LocalID>
         </Service>
     </XRD>
@@ -29,7 +29,7 @@ class LiveJournalOpenIdTest(OpenIdTest):
             "openid.mode": "id_res",
             "openid.claimed_id": "http://foobar.livejournal.com/",
             "openid.identity": "http://foobar.livejournal.com/",
-            "openid.op_endpoint": "http://www.livejournal.com/openid/server.bml",
+            "openid.op_endpoint": "https://www.livejournal.com/openid/server.bml",
             "openid.return_to": f"http://myapp.com/complete/livejournal/?janrain_nonce={JANRAIN_NONCE}",
             "openid.response_nonce": f"{JANRAIN_NONCE}wGp2rj",
             "openid.assoc_handle": "1364932966:ZTiur8sem3r2jzZougMZ:4d1cc3b44e",
@@ -57,7 +57,7 @@ session_type:DH-SHA1
     def _setup_handlers(self) -> None:
         responses.add(
             responses.POST,
-            "http://www.livejournal.com/openid/server.bml",
+            "https://www.livejournal.com/openid/server.bml",
             headers={
                 "Accept-Encoding": "identity",
                 "Content-Type": "application/x-www-form-urlencoded",
@@ -98,3 +98,19 @@ session_type:DH-SHA1
     def test_openid_url_uses_https(self) -> None:
         self.strategy.set_request_data({"openid_lj_user": "foobar"}, self.backend)
         self.assertEqual(self.backend.openid_url(), "https://foobar.livejournal.com")
+
+    def test_openid_url_rejects_host_injection(self) -> None:
+        for username in (
+            "foobar/path",
+            "foobar?query",
+            "foobar#fragment",
+            "foobar:443",
+            "foobar:invalid",
+        ):
+            with self.subTest(username=username):
+                self.strategy.set_request_data(
+                    {"openid_lj_user": username}, self.backend
+                )
+                with self.assertRaises(AuthInputError) as caught:
+                    self.backend.openid_url()
+                self.assertEqual(caught.exception.code, "invalid_parameter")

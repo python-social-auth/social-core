@@ -12,7 +12,7 @@ from .open_id import OpenIdAuth
 class OpenStackOpenId(OpenIdAuth):
     name = "openstack"
     title = "OpenStack"
-    URL = "openstackid.org"
+    URL = "https://openstackid.org"
 
     def get_user_details(self, response):
         """Generate username from identity url"""
