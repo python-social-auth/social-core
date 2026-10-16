@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Security
 
+- Odnoklassniki iframe app launches can no longer associate a new OK identity
+  with the local user already logged in to the receiving browser. Authenticated
+  sessions now accept only an OK identity already associated with that user.
 - Keep externally resumed partial pipelines bound to the local user who
   initiated them, preventing a validation link from associating its provider
   identity with a different authenticated account.

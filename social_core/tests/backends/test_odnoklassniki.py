@@ -1,9 +1,11 @@
 import json
+from unittest.mock import patch
 
 import responses
 
 from social_core.backends.odnoklassniki import odnoklassniki_sig
-from social_core.exceptions import AuthInputError, AuthResponseError
+from social_core.exceptions import AuthInputError, AuthResponseError, AuthSessionError
+from social_core.tests.models import TestUserSocialAuth, User
 from social_core.utils import get_querystring
 
 from .base import BaseBackendTest
@@ -88,6 +90,72 @@ class OdnoklassnikiAppTest(BaseBackendTest):
         query = get_querystring(request_url)
         self.assertEqual(query["method"], "users.getInfo")
         self.assertEqual(query["uids"], "12345")
+
+    def test_authenticated_user_accepts_existing_association(self) -> None:
+        user = User("existing")
+        social = TestUserSocialAuth(
+            user, self.backend.name, "12345", id_key=self.backend.id_key()
+        )
+        self.strategy.set_request_data(self.request_data(), self.backend)
+        self.add_user_response()
+
+        result = self.backend.complete(user=user)
+
+        self.assertIs(result, user)
+        self.assertEqual(user.social, [social])
+        self.assertEqual(len(User.cache), 1)
+
+    def test_authenticated_user_accepts_unkeyed_existing_association(self) -> None:
+        user = User("existing")
+        social = TestUserSocialAuth(
+            user, self.backend.name, "12345", extra_data={"uid": "12345"}
+        )
+        self.strategy.set_request_data(self.request_data(), self.backend)
+        self.add_user_response()
+
+        result = self.backend.complete(user=user)
+
+        self.assertIs(result, user)
+        self.assertEqual(user.social, [social])
+        self.assertEqual(social.id_key, self.backend.id_key())
+        self.assertEqual(len(User.cache), 1)
+
+    def test_authenticated_user_rejects_new_association(self) -> None:
+        user = User("existing")
+        self.strategy.set_request_data(self.request_data(), self.backend)
+        self.add_user_response()
+
+        with (
+            patch.object(self.strategy, "authenticate") as authenticate,
+            self.assertRaises(AuthSessionError) as caught,
+        ):
+            self.backend.complete(user=user)
+
+        authenticate.assert_not_called()
+        self.assertEqual(caught.exception.code, "user_mismatch")
+        self.assertEqual(caught.exception.stage, "callback")
+        self.assertEqual(caught.exception.source, "session")
+        self.assertEqual(user.social, [])
+        self.assertEqual(list(User.cache.values()), [user])
+        self.assertEqual(TestUserSocialAuth.cache_by_uid, {})
+
+    def test_authenticated_user_rejects_different_association(self) -> None:
+        owner = User("owner")
+        user = User("existing")
+        social = TestUserSocialAuth(
+            owner, self.backend.name, "12345", id_key=self.backend.id_key()
+        )
+        self.strategy.set_request_data(self.request_data(), self.backend)
+        self.add_user_response()
+
+        with self.assertRaises(AuthSessionError) as caught:
+            self.backend.complete(user=user)
+
+        self.assertEqual(caught.exception.code, "user_mismatch")
+        self.assertEqual(caught.exception.stage, "callback")
+        self.assertEqual(owner.social, [social])
+        self.assertEqual(user.social, [])
+        self.assertEqual(len(User.cache), 2)
 
     def test_rejects_mismatched_user_details_uid(self) -> None:
         self.strategy.set_request_data(self.request_data(), self.backend)

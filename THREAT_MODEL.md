@@ -26,7 +26,7 @@ Reports covered by sections 3 or 9 may be closed by citing this model.
 
 Provenance tags used below are `(documented)` for statements supported by the
 project documentation and `(maintainer)` for decisions accepted as part of this
-model. Confidence at acceptance: **27 documented / 60 maintainer / 0 inferred**.
+model. Confidence at acceptance: **29 documented / 60 maintainer / 0 inferred**.
 
 social-auth-core is an in-process Python library that implements common social
 authentication and authorization flows. It connects an embedding web
@@ -115,9 +115,12 @@ The normal trust transitions for redirect-based backends are:
 Signed-callback and direct signed-token backends can differ. Telegram validates
 the bot-token HMAC and a 24-hour callback age directly. Facebook Limited Login
 validates a client-supplied signed ID token's provider signature and applicable
-identity and time claims, but intentionally does not enforce its nonce. Neither
-flow binds the signed input to an initiating browser session or makes it
-single-use. (documented)
+identity and time claims, but intentionally does not enforce its nonce. The
+Odnoklassniki iframe app validates the launch signature and provider user, but
+has no application-controlled initiation value; in an authenticated local
+session, core therefore accepts only an OK identity already associated with
+that user. These flows do not bind their signed input to an initiating browser
+session or make it single-use. (documented)
 
 OpenID backends bind positive assertions to backend-scoped discovery state in
 the initiating browser session or a session selected by the provider-signed
@@ -194,6 +197,7 @@ family of deployments. (maintainer)
 | Account identifiers | Bundled backends use stable `ID_KEY` values where providers expose them; Drip, Last.fm, and Mixcloud are association-only; EmailAuth and UsernameAuth rely on application credential and validation policy; migrations require evidence except for audited built-in compatibility transitions | Audited defaults accept a documented missing-evidence race; mutable custom identifiers, using an exception outside its conditions, or explicitly enabling unverified migration elsewhere accepts additional account-binding risk |
 | Telegram callback | The callback has a valid bot-token HMAC and an `auth_date` no more than 24 hours old | Authenticity and age are checked, but initiation, browser-session correlation, and single-use replay protection are not provided |
 | Facebook Limited Login | The client-supplied ID token passes the backend's provider-signature, identity, and time-claim validation | Nonce, initiation, browser-session correlation, and single-use replay protection are not provided |
+| Odnoklassniki iframe app | The launch signature and provider user match; an authenticated local session accepts only an OK identity already associated with that user | Initiation, browser-session correlation, and single-use replay protection are not provided; new account association from an authenticated session is rejected |
 | Pipelines and fields | The default security-relevant pipeline ordering is preserved; custom pipelines preserve equivalent validation and association ordering; protected account fields remain protected | Removing or reordering validation, trusting unverified email, or unprotecting authorization-sensitive fields transfers responsibility to the integrator |
 | Partial and email flows | Partial storage preserves ownership/type metadata; external resume confirmation is implemented; email codes retain a finite expiry | Custom resume behavior or disabled expiry removes the corresponding replay and flow-binding guarantees |
 | Application policy | Inactive-user, allowlist, group, and token-revocation settings match application policy | These settings define policy; they do not by themselves prove identity or make untrusted claims trustworthy |
@@ -212,7 +216,7 @@ other transitions is a security-weakening configuration. (maintainer)
 | Entry point or operation | Input | Attacker-controlled? | Caller responsibility |
 | --- | --- | --- | --- |
 | `do_auth` | Request fields such as `next` and configured fields stored in the session | Yes | Route-level CSRF policy, request limits, and a validated Host value |
-| `do_complete` / backend `auth_complete` | OAuth codes, state, signed payloads, SAML assertions, OpenID responses, errors, and provider-specific callback fields | Yes | Preserve correlation state where the backend uses it and, for ordinary account linking, the initiating authenticated user; add an application binding for Telegram when initiation or single-use is required |
+| `do_complete` / backend `auth_complete` | OAuth codes, state, signed payloads, SAML assertions, OpenID responses, errors, and provider-specific callback fields | Yes | Preserve correlation state where the backend uses it and, for ordinary account linking, the initiating authenticated user; add an application binding for Telegram or the Odnoklassniki iframe app when initiation or single-use is required |
 | Facebook Limited Login `do_auth` | Client-supplied signed ID token | Yes, until validated | Add application-level initiation and single-use binding when login-CSRF or account-linking replay protection is required |
 | Provider token/user-info/discovery calls | HTTP status, headers, JSON, JWT, XML, and form responses | Yes, until validated | Configure the intended HTTPS provider endpoints and trusted TLS roots; restrict egress where required |
 | Generic OpenID initiation | Claimed identifier/provider URL | Yes when exposed by the application | Decide whether user-selected discovery is appropriate and apply deployment egress policy |
@@ -261,6 +265,7 @@ backend namespace or bypass the local flow and user bindings. (maintainer)
 | An authenticating provider identity is bound by backend namespace and a non-empty stable provider identifier; conflicting migration evidence always fails closed, while missing evidence fails except for the audited compatibility transitions documented in section 5a | One provider identity authenticates as a different local user outside the documented missing-evidence exception, or two identities collapse onto one association | Security-critical | `(documented)` |
 | Bundled mutable-identifier exceptions do not independently authenticate a remote provider identity: Drip, Last.fm, and Mixcloud are association-only, while EmailAuth and UsernameAuth require application-supplied credential and validation policy | A mutable remote identifier creates or authenticates a local user through an association-only backend, or a legacy backend authenticates without the application's required validation | Security-critical | `(documented)` |
 | Association-only flows and their partial resumes are bound by core to the initiating authenticated local user; ordinary linking has the same property when the framework preserves that user through callback; disconnection acts on the authenticated user supplied by the integration | An attacker links to or disconnects from another user's account under the stated integration conditions | Security-critical | `(documented)` |
+| An Odnoklassniki iframe app launch received in an authenticated local session proceeds only when its validated OK identity is already associated with that same user | An uncorrelated launch creates or changes an association for the authenticated local user | Security-critical | `(documented)` |
 | External partial resumes require ownership or the explicit confirmation path before external request data continues the saved flow; an authenticated confirmer must match the initiating local user, and confirmation never replaces the partial's stored user | A resume link authenticates the recipient into an attacker-selected flow without confirmation, or binds the saved provider identity to a different authenticated local user | Security-critical | `(documented)` |
 | With redirect sanitization enabled and trusted allowlists, request-derived HTTP(S) redirects use an allowed host and scheme; private-use redirects use an explicitly allowed scheme | Successful flow redirects to an attacker-controlled destination outside those conditions | Security-critical | `(documented)` |
 | With HTTPS endpoints, TLS verification enabled, and trusted endpoint configuration, provider credentials and responses are exchanged through the configured authenticated TLS channel | Network attacker reads credentials or substitutes identity data | Security-critical | `(maintainer)` |
@@ -291,7 +296,10 @@ identity-flow violations above. (maintainer)
   Limited Login authenticates the provider-signed ID token and validates its
   applicable identity and time claims, but its direct token flow intentionally
   does not enforce nonce, browser-session binding, or single-use replay
-  protection. (maintainer)
+  protection. An Odnoklassniki iframe app launch likewise has no initiation,
+  browser-session binding, age limit, or single-use protection; core prevents it
+  from creating a new association in an authenticated local session, but an
+  anonymous session can still accept a replayed valid launch. (maintainer)
 - A valid provider signature proves that the configured provider made a claim;
   it does not prove the claim is true in the physical world or prevent that
   provider from impersonating identities in its namespace. (maintainer)
@@ -328,8 +336,9 @@ Integrators must:
   CSRF, and authenticated-user semantics. Preserve the initiating authenticated
   user through ordinary account-linking callbacks, and reject or restart a
   pending flow if that principal changes. Add application-level initiation and
-  single-use binding before using Telegram or Facebook Limited Login where
-  login-CSRF or account-linking replay protection is required. (maintainer)
+  single-use binding before using Telegram, Facebook Limited Login, or the
+  Odnoklassniki iframe app where login-CSRF or replay protection is required.
+  Use the state-bound Odnoklassniki OAuth2 flow for account linking. (maintainer)
 - Validate Host and forwarded headers, terminate HTTPS securely, and configure
   canonical callback URLs. See
   [Security considerations](https://python-social-auth.readthedocs.io/en/latest/security.html).

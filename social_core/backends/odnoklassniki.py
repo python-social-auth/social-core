@@ -6,14 +6,17 @@ Odnoklassniki OAuth2 and Iframe Application backends, docs at:
 from __future__ import annotations
 
 from hashlib import md5
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 from urllib.parse import unquote
 
-from social_core.exceptions import AuthInputError, AuthResponseError
-from social_core.utils import constant_time_compare
+from social_core.exceptions import AuthInputError, AuthResponseError, AuthSessionError
+from social_core.utils import constant_time_compare, user_is_authenticated
 
 from .base import BaseAuth
 from .oauth import BaseOAuth2
+
+if TYPE_CHECKING:
+    from social_core.storage import UserProtocol
 
 
 def odnoklassniki_sig(payload: str) -> str:
@@ -94,6 +97,25 @@ class OdnoklassnikiApp(BaseAuth):
             "last_name": last_name,
         }
 
+    def _validate_authenticated_user(
+        self, user: UserProtocol | None, response: dict[str, Any]
+    ) -> None:
+        """Prevent an unbound iframe launch from creating an association."""
+        if not user_is_authenticated(user):
+            return
+
+        uid = self.get_user_id(self.get_user_details(response), response)
+        social = self.strategy.get_storage(stage="callback").user.get_social_auth(
+            self.name, str(uid)
+        )
+        if social is None or social.user != user:
+            raise AuthSessionError(
+                self,
+                "Odnoklassniki iframe launch is not bound to the authenticated user",
+                code="user_mismatch",
+                stage="callback",
+            )
+
     def auth_complete(self, *args, **kwargs):
         self.verify_auth_sig()
         response = self.get_response()
@@ -133,6 +155,8 @@ class OdnoklassnikiApp(BaseAuth):
                     code="invalid_claim",
                     stage="callback",
                 )
+
+            self._validate_authenticated_user(kwargs.get("user"), details)
 
             auth_data_fields = cast(
                 "tuple[str, ...]",
