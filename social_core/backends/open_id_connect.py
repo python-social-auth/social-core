@@ -120,8 +120,12 @@ class OpenIdConnectAuth(OIDCDiscoveryMixin, BaseOAuth2PKCE):
     ) -> UserProtocol | HttpResponseProtocol | None:
         # Only persist claims validated by this backend, never caller-supplied
         # pipeline arguments. Partial storage will carry them across requests.
-        if self.id_token is not None:
-            kwargs[_VALIDATED_ID_TOKEN_KEY] = self.id_token.copy()
+        # The strategy may run the pipeline on a new backend instance, so read
+        # the claims from the instance the pipeline steps receive.
+        backend = kwargs.get("backend", self)
+        id_token = backend.id_token if isinstance(backend, OpenIdConnectAuth) else None
+        if id_token is not None:
+            kwargs[_VALIDATED_ID_TOKEN_KEY] = id_token.copy()
         else:
             kwargs.pop(_VALIDATED_ID_TOKEN_KEY, None)
         return super().pipeline(pipeline, pipeline_index, *args, **kwargs)

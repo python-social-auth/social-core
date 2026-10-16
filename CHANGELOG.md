@@ -29,6 +29,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- OpenID Connect partial pipelines now save the validated ID token claims when
+  the framework authenticates with a new backend instance, as Django does.
+  Resuming previously failed with `invalid_claim`.
+- Facebook Limited Login no longer loses its validated claims and partial resume
+  authorization when the framework authenticates with a new backend instance.
 - Raise structured authentication errors for missing, malformed, invalid, or
   expired VK OpenAPI callback state.
 

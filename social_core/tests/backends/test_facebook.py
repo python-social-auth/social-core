@@ -510,7 +510,9 @@ class FacebookLimitedLoginTest(OpenIdConnectTest[FacebookLimitedLogin]):
 
         with (
             patch.object(
-                self.backend, "authenticate", side_effect=RuntimeError("Resume failed")
+                FacebookLimitedLogin,
+                "authenticate",
+                side_effect=RuntimeError("Resume failed"),
             ),
             self.assertRaisesRegex(RuntimeError, "Resume failed"),
         ):

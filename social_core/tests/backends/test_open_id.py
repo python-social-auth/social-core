@@ -266,6 +266,14 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
 
     def test_livejournal_identity_username_survives_partial(self) -> None:
         self.backend = LiveJournalOpenId(self.strategy, redirect_uri=self.complete_url)
+        # The strategy only authenticates with configured backend classes.
+        self.strategy.set_settings(
+            {
+                "SOCIAL_AUTH_AUTHENTICATION_BACKENDS": (
+                    "social_core.backends.livejournal.LiveJournalOpenId",
+                )
+            }
+        )
         result = self.start_partial(self.verified_response(profile=False))
 
         user = self.finish_partial(result)

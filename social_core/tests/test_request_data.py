@@ -8,16 +8,23 @@ from unittest.mock import patch
 from social_core.backends.base import BaseAuth
 from social_core.exceptions import AuthPolicyError
 from social_core.pipeline.utils import partial_load, partial_prepare
+from social_core.strategy import BaseStrategy
 from social_core.utils import PARTIAL_TOKEN_SESSION_NAME, partial_pipeline_result
 
 from .models import TestPartial, TestStorage
 from .strategy import Redirect, TestStrategy
 
 
+class SameInstanceStrategy(TestStrategy):
+    """Authenticate with the given backend so tests can patch its pipeline."""
+
+    authenticate = BaseStrategy.authenticate
+
+
 class PipelineRequestDataTest(unittest.TestCase):
     def setUp(self) -> None:
         TestPartial.reset_cache()
-        self.strategy = TestStrategy(TestStorage)
+        self.strategy = SameInstanceStrategy(TestStorage)
         self.backend = BaseAuth(self.strategy)
         self.strategy.set_request_data({"field": "current"}, self.backend)
 

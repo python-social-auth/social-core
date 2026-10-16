@@ -30,23 +30,29 @@ class FacebookLimitedLogin(OpenIdConnectAuth):
         ):
             return None
 
+        # The strategy may call authenticate() on a new backend instance. Keep
+        # the claims on the instance that the caller authorized and that the
+        # pipeline steps receive.
+        backend = kwargs["backend"]
+        if not isinstance(backend, FacebookLimitedLogin):
+            return None
+        kwargs["response"] = backend.validated_response(kwargs["response"])
+        return super().authenticate(*args, **kwargs)
+
+    def validated_response(self, response: dict[str, Any]) -> dict[str, Any]:
+        """Return the validated ID-token claims to use as the login response."""
         # Only continue_pipeline() may authorize reuse of restored claims.
         # Consume that authorization before entering any pipeline steps.
         partial_resume = self._partial_pipeline_resume
         self._partial_pipeline_resume = False
-        if (
-            not partial_resume
-            or self.id_token is None
-            or "access_token" in kwargs["response"]
-        ):
-            raw_jwt = kwargs.get("response", {}).get("access_token")
+        if not partial_resume or self.id_token is None or "access_token" in response:
+            raw_jwt = response.get("access_token")
             if not raw_jwt:
                 raise AuthResponseError(
                     self, "Missing access_token", code="missing_claim", stage="callback"
                 )
             self.id_token = self.validate_and_return_id_token(raw_jwt, "")
-        kwargs["response"] = self.id_token.copy()
-        return super().authenticate(*args, **kwargs)
+        return self.id_token.copy()
 
     def continue_pipeline(self, partial):
         # The OIDC parent restores claims from trusted partial storage before
