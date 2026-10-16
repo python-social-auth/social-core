@@ -51,6 +51,11 @@ class AzureADB2COAuth2(AzureADOAuth2):
     title = "Azure AD B2C"
     icon = "microsoft.svg"
     ID_KEY = "sub"
+    # Known ``sub`` spellings issued by flows whose "Subject (sub) claim"
+    # token compatibility setting is "Not supported".
+    UNSUPPORTED_SUBJECT = "Not supported currently. Use oid claim."
+    LEGACY_UNSUPPORTED_SUBJECT = "Not supported currently.Use oid claim."
+    UNSUPPORTED_SUBJECTS = (UNSUPPORTED_SUBJECT, LEGACY_UNSUPPORTED_SUBJECT)
 
     BASE_URL = "https://{authority_host}/{tenant_name}.onmicrosoft.com"
     AUTHORIZATION_URL = "{base_url}/oauth2/v2.0/authorize"
@@ -228,6 +233,23 @@ class AzureADB2COAuth2(AzureADOAuth2):
         extra_arguments = super().auth_extra_arguments()
         extra_arguments["p"] = self._get_policy(stage="begin")
         return extra_arguments
+
+    def get_user_id(
+        self, details: Mapping[str, Any], response: Mapping[str, Any]
+    ) -> Any:
+        """Return the configured stable user identifier.
+
+        User flows that do not support the ``sub`` claim put the same
+        placeholder text there for every user; refuse it instead of binding
+        all of them to one association. Such flows expose the object ID as
+        ``oid``, which can be selected with the ``ID_KEY`` setting.
+        """
+        user_id = super().get_user_id(details, response)
+        if user_id in self.UNSUPPORTED_SUBJECTS:
+            raise AuthResponseError(
+                self, claim=self.id_key(), code="invalid_claim", stage="user_info"
+            )
+        return user_id
 
     def get_user_details(self, response):
         """

@@ -35,6 +35,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   `SubjectConfirmationData` `InResponseTo` when the unsigned response envelope
   attribute is missing, so a solicited response cannot be replayed as
   IdP-initiated by stripping it.
+- Reject the Azure AD B2C placeholder `sub` claims
+  (`Not supported currently. Use oid claim.` and the legacy spelling without
+  the space after the period) issued by user flows whose "Subject (sub) claim"
+  setting is "Not supported", preventing every user of such a flow from being
+  bound to one association. Configure
+  `SOCIAL_AUTH_AZUREAD_B2C_OAUTH2_ID_KEY = "oid"` to use the object ID claim
+  on those flows. Existing rows stored under the placeholder UID cannot be
+  attributed to a specific account and should be reviewed and removed.
 
 ### Changed
 
