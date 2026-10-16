@@ -31,6 +31,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   responsibilities, including the correlation limits of Telegram and Facebook
   Limited Login, and triage dispositions in the
   [threat model](https://github.com/python-social-auth/social-core/blob/master/THREAT_MODEL.md).
+- Correlate SAML responses with the AuthnRequest using the signed
+  `SubjectConfirmationData` `InResponseTo` when the unsigned response envelope
+  attribute is missing, so a solicited response cannot be replayed as
+  IdP-initiated by stripping it.
 
 ### Changed
 
