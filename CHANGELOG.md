@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+### Added
+
+- Add a Weblate OpenID Connect backend with Hosted Weblate defaults, configurable
+  issuer, PKCE, official branding, and optional legal-version storage.
+- Add a strategy-aware backend `get_title()` method for sign-in labels.
+
 ### Security
 
 - Document the project's security boundaries, assumptions, downstream
