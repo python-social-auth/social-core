@@ -392,6 +392,56 @@ class VKAppOAuth2Test(BaseBackendTest):
         self.assertEqual(user.social[0].uid, VIEWER_ID)
         self.assertEqual(user.social[0].provider, self.backend.name)
 
+    def test_authenticated_user_accepts_existing_association(self) -> None:
+        user = User("existing")
+        social = TestUserSocialAuth(
+            user, self.backend.name, VIEWER_ID, id_key=self.backend.id_key()
+        )
+        self.strategy.set_request_data(self.signed_request_data(), self.backend)
+        self.add_user_response()
+
+        with patch.object(
+            self.strategy, "authenticate", wraps=self.strategy.authenticate
+        ) as authenticate:
+            result = self.backend.complete(user=user)
+
+        self.assertIs(result, user)
+        self.assertIs(authenticate.call_args.kwargs["user"], user)
+        self.assertEqual(user.social, [social])
+        self.assertEqual(len(User.cache), 1)
+
+    def test_authenticated_user_rejects_new_association(self) -> None:
+        user = User("existing")
+        self.strategy.set_request_data(self.signed_request_data(), self.backend)
+        self.add_user_response()
+
+        with (
+            patch.object(self.strategy, "authenticate") as authenticate,
+            assert_auth_error(self, AuthSessionError, "user_mismatch"),
+        ):
+            self.backend.complete(user=user)
+
+        authenticate.assert_not_called()
+        self.assertEqual(user.social, [])
+        self.assertEqual(list(User.cache.values()), [user])
+        self.assertEqual(TestUserSocialAuth.cache_by_uid, {})
+
+    def test_authenticated_user_rejects_different_association(self) -> None:
+        owner = User("owner")
+        user = User("existing")
+        social = TestUserSocialAuth(
+            owner, self.backend.name, VIEWER_ID, id_key=self.backend.id_key()
+        )
+        self.strategy.set_request_data(self.signed_request_data(), self.backend)
+        self.add_user_response()
+
+        with assert_auth_error(self, AuthSessionError, "user_mismatch"):
+            self.backend.complete(user=user)
+
+        self.assertEqual(owner.social, [social])
+        self.assertEqual(user.social, [])
+        self.assertEqual(len(User.cache), 2)
+
     def test_ignores_api_result(self) -> None:
         data = self.signed_request_data()
         data["api_result"] = json.dumps(

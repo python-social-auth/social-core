@@ -158,6 +158,26 @@ class BaseAuth:
         self.strategy.session_pop(f"{self.name}_state")
         return state
 
+    def _validate_unbound_authenticated_user(
+        self, user: UserProtocol | None, response: dict[str, Any]
+    ) -> None:
+        """Prevent an unbound authentication response from creating an association."""
+        if not user_is_authenticated(user):
+            return
+
+        uid = self.get_user_id(self.get_user_details(response), response)
+        social = self.strategy.get_storage(stage="callback").user.get_social_auth(
+            self.name, str(uid)
+        )
+        if social is None or social.user != user:
+            raise AuthSessionError(
+                self,
+                "Unbound authentication response is not associated with the "
+                "authenticated user",
+                code="user_mismatch",
+                stage="callback",
+            )
+
     def association_user_id_key(self, pipeline_type: str = "authentication") -> str:
         """Name of the initiator binding saved in pipeline arguments."""
         operation = "disconnect" if pipeline_type == "disconnect" else "association"

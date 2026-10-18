@@ -580,9 +580,13 @@ class VKAppOAuth2(VKOAuth2):
 
         request = self.strategy.request_data()
         response = self._user_profile(cast("str", self.data["access_token"]), user_id)
-        return self.strategy.authenticate(
-            auth=self,
-            backend=self,
-            request=request,
-            response=response,
+        self._validate_unbound_authenticated_user(kwargs.get("user"), response)
+        kwargs.update(
+            {
+                "auth": self,
+                "backend": self,
+                "request": request,
+                "response": response,
+            }
         )
+        return self.strategy.authenticate(*args, **kwargs)
