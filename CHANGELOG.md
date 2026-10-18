@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Security
 
+- VK iframe app launches can no longer associate a new VK identity with the
+  local user already logged in to the receiving browser. Authenticated sessions
+  now accept only a VK identity already associated with that user; anonymous
+  launches remain unbound and replayable as documented in the threat model.
 - Odnoklassniki iframe app launches can no longer associate a new OK identity
   with the local user already logged in to the receiving browser. Authenticated
   sessions now accept only an OK identity already associated with that user.
