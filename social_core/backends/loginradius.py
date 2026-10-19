@@ -77,7 +77,7 @@ class LoginRadiusAuth(BaseOAuth2):
         return self.get_json(
             self.PROFILE_URL,
             params={"access_token": access_token},
-            data=self.auth_complete_params(self.validate_state()),
+            data=self.auth_complete_params(self.get_request_state()),
             headers=self.auth_headers(),
             method="GET",
         )

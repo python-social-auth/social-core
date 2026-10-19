@@ -85,25 +85,35 @@ class ShopifyOAuth2Test(BaseBackendTest):
         self.assertEqual(query["client_id"], "a-key")
         self.assertEqual(query["scope"], "read_products,read_customers")
         self.assertEqual(query["redirect_uri"], "http://myapp.com")
-        self.assertEqual(state, self.strategy.session_get("shopify_state"))
+        transaction = self.strategy.session_get(self.backend.transaction_key(state))
+        assert isinstance(transaction, dict)
+        self.assertEqual(
+            state,
+            transaction["state"],
+        )
 
     def test_auth_url_requires_shop(self) -> None:
         self.strategy.remove_from_request_data("shop")
         with self.assertRaises(AuthInputError):
             self.backend.start()
 
-    def test_auth_url_reuses_state_for_concurrent_starts(self) -> None:
+    def test_auth_url_creates_distinct_states_for_concurrent_starts(self) -> None:
         first_url = self.backend.start().url
         first_state = get_querystring(first_url)["state"]
 
         second_url = self.backend.start().url
         second_state = get_querystring(second_url)["state"]
 
-        self.assertEqual(first_state, second_state)
-        self.assertEqual(first_state, self.strategy.session_get("shopify_state"))
+        self.assertNotEqual(first_state, second_state)
 
         self.strategy.set_request_data(
             self.signed_callback_data(first_state), self.backend
+        )
+        with patch.object(shopify.Session, "request_token", return_value=ACCESS_TOKEN):
+            self.backend.complete()
+
+        self.strategy.set_request_data(
+            self.signed_callback_data(second_state), self.backend
         )
         with patch.object(shopify.Session, "request_token", return_value=ACCESS_TOKEN):
             self.backend.complete()
@@ -134,9 +144,7 @@ class ShopifyOAuth2Test(BaseBackendTest):
         token_data = cast("dict[str, str]", request_token.call_args.args[0])
         self.assertEqual(token_data["code"], "foobar")
         self.assertEqual(token_data["shop"], SHOP)
-        self.assertEqual(
-            token_data["state"], self.strategy.session_get("shopify_state")
-        )
+        self.assertEqual(token_data["state"], self.backend.data["state"])
 
     def test_invalid_callback_signature_is_not_cancellation(self) -> None:
         state = self.backend.get_or_create_state()

@@ -149,7 +149,12 @@ class GithubAppAuthTest(GithubOAuth2Test, OAuth2StateTestMixin):
         self.assertTrue(redirect.url.startswith(self.backend.authorization_url()))
         state = get_querystring(redirect.url).get("state")
         self.assertIsNotNone(state)
-        self.assertEqual(state, self.backend.get_session_state())
+        transaction = self.strategy.session_get(self.backend.transaction_key(state))
+        assert isinstance(transaction, dict)
+        self.assertEqual(
+            state,
+            transaction["state"],
+        )
         self.assertEqual(len(responses.calls), 0)
 
     def test_restarted_oauth_exchanges_only_fresh_code(self) -> None:
@@ -231,7 +236,7 @@ class GithubAppAuthTest(GithubOAuth2Test, OAuth2StateTestMixin):
 
     def test_installation_callback_accepts_matching_state(self) -> None:
         start_url = self.backend.start().url
-        state = self.backend.get_session_state()
+        state = get_querystring(start_url)["state"]
         self.strategy.set_request_data(
             self.installation_callback_data(state), self.backend
         )

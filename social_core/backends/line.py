@@ -39,7 +39,7 @@ class LineOAuth2(BaseOAuth2):
             "response_type": self.RESPONSE_TYPE,
             "client_id": client_id,
             "redirect_uri": self.get_redirect_uri(),
-            "state": self.get_or_create_state(),
+            "state": state,
             "scope": self.get_scope(),
         }
 

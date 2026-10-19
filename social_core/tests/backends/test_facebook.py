@@ -225,7 +225,7 @@ class FacebookAppOAuth2Test(BaseBackendTest):
 
     def callback_state(self) -> str:
         context = self.render_context()
-        state = self.strategy.session_get("facebook-app_state")
+        state = get_querystring(str(context["FACEBOOK_COMPLETE_URI"]))["redirect_state"]
         self.assertIsNotNone(state)
         self.assertEqual(
             get_querystring(str(context["FACEBOOK_COMPLETE_URI"]))["redirect_state"],
@@ -235,7 +235,7 @@ class FacebookAppOAuth2Test(BaseBackendTest):
 
     def test_auth_html_creates_redirect_state(self) -> None:
         context = self.render_context()
-        state = self.strategy.session_get("facebook-app_state")
+        state = get_querystring(str(context["FACEBOOK_COMPLETE_URI"]))["redirect_state"]
 
         self.assertIsNotNone(state)
         self.assertEqual(context["FACEBOOK_APP_NAMESPACE"], "a-key")

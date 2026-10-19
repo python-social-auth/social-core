@@ -346,7 +346,10 @@ class UserMixin:
 
 
 class NonceMixin:
-    """One use numbers"""
+    """One-use values scoped by ``server_url`` (a legacy field name).
+
+    The scope can be a provider URL or a protocol-specific identifier.
+    """
 
     server_url = ""
     timestamp = 0
@@ -365,6 +368,11 @@ class NonceMixin:
     @classmethod
     def delete(cls, nonce):
         """Delete a Nonce instance"""
+        raise NotImplementedError("Implement in subclass")
+
+    @classmethod
+    def consume(cls, server_url: str, timestamp: int, salt: str) -> bool:
+        """Atomically remove exactly one nonce matching all three fields."""
         raise NotImplementedError("Implement in subclass")
 
 

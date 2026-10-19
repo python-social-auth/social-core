@@ -355,14 +355,7 @@ class VKIDOAuth2(BaseOAuth2PKCE):
                 )
         params = super().auth_complete_params(state)
         params.pop("client_secret", None)
-        verifier = self.strategy.session_pop(f"{self.name}_code_verifier")
-        if not verifier:
-            raise AuthSessionError(
-                self,
-                parameter="code_verifier",
-                code="session_context_missing",
-                stage="callback",
-            )
+        verifier = params["code_verifier"]
         params.update(
             code_verifier=verifier, device_id=self.data["device_id"], state=state
         )

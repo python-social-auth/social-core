@@ -1,7 +1,10 @@
 import json
 from abc import ABC
 
-from social_core.exceptions import AuthConfigurationError
+import responses
+
+from social_core.exceptions import AuthConfigurationError, AuthSessionError
+from social_core.utils import get_querystring, parse_qs
 
 from .oauth import (
     BaseAuthUrlTestMixin,
@@ -166,7 +169,45 @@ class TwitterOAuth2TestPkcePlain(TwitterOAuth2Mixin, OAuth2PkcePlainTest):
 
 
 class TwitterOAuth2TestPkceS256(TwitterOAuth2Mixin, OAuth2PkceS256Test):
-    pass
+    def test_two_tabs_keep_their_own_pkce_verifiers(self) -> None:
+        urls = [self.backend.start().url for _ in range(2)]
+        params = [get_querystring(url) for url in urls]
+        self.assertNotEqual(params[0]["state"], params[1]["state"])
+        self.pre_complete_callback(urls[0])
+        responses.add(
+            responses.GET,
+            self.user_data_url,
+            body=self.user_data_body,
+            content_type=self.user_data_content_type,
+        )
+        for item in reversed(params):
+            self.strategy.set_request_data(
+                {"code": "foobar", "state": item["state"]}, self.backend
+            )
+            user = self.backend.complete()
+            self.assertEqual(user.username, self.expected_username)
+            token_requests = [
+                call
+                for call in responses.calls
+                if call.request.url == self.backend.access_token_url()
+            ]
+            verifier = parse_qs(token_requests[-1].request.body)["code_verifier"]
+            self.assertEqual(
+                self.backend.generate_code_challenge(verifier, "S256"),
+                item["code_challenge"],
+            )
+            with self.assertRaises(AuthSessionError):
+                self.backend.complete()
+            self.assertEqual(
+                len(
+                    [
+                        call
+                        for call in responses.calls
+                        if call.request.url == self.backend.access_token_url()
+                    ]
+                ),
+                len(token_requests),
+            )
 
 
 class TwitterOAuth2TestInvalidCodeChallengeMethod(
