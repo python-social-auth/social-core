@@ -95,3 +95,15 @@ class ORCIDOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
 
     def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
+
+    def test_profile_extra_params_are_isolated_per_login(self) -> None:
+        extra_params = {"locale": "en"}
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_ORCID_PROFILE_EXTRA_PARAMS": extra_params}
+        )
+        self.user_data_url = (
+            "https://pub.orcid.org/v2.0/0000-0002-2601-8132"
+            "?locale=en&access_token=foobar"
+        )
+        self.do_login()
+        self.assertEqual(extra_params, {"locale": "en"})

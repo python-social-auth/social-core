@@ -104,7 +104,7 @@ class ORCIDOAuth2(BaseOAuth2):
         """Loads user data from service"""
         params: dict[str, str] = cast(
             "dict[str, str]", self.setting("PROFILE_EXTRA_PARAMS", {})
-        )
+        ).copy()
         params["access_token"] = access_token
 
         # Reference Docs: ORCID Auth Flow:

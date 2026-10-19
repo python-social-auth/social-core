@@ -49,6 +49,6 @@ class BoxOAuth2(BaseOAuth2):
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
-        params = cast("dict", self.setting("PROFILE_EXTRA_PARAMS", {}))
+        params = cast("dict", self.setting("PROFILE_EXTRA_PARAMS", {})).copy()
         params["access_token"] = access_token
         return self.get_json("https://api.box.com/2.0/users/me", params=params)
