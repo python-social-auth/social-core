@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Security
 
+- Email and domain allowlists now refuse authentication and account linking
+  when a provider's e-mail address is missing or malformed. Deployments using a
+  global allowlist with backends that omit e-mail addresses must configure the
+  provider to supply one or scope the allowlist to compatible backends.
 - VK iframe app launches can no longer associate a new VK identity with the
   local user already logged in to the receiving browser. Authenticated sessions
   now accept only a VK identity already associated with that user; anonymous

@@ -6,6 +6,8 @@ import time
 import warnings
 from contextlib import contextmanager
 from contextvars import ContextVar
+from email.errors import HeaderParseError
+from email.headerregistry import Address
 from typing import TYPE_CHECKING, Any, Literal, cast
 
 import requests
@@ -393,7 +395,7 @@ class BaseAuth:
             data[alias] = value
         return data
 
-    def auth_allowed(self, response, details):
+    def auth_allowed(self, response: Any, details: dict[str, Any]) -> bool:
         """Return True if the user should be allowed to authenticate, by
         default check if email is whitelisted (if there's a whitelist)"""
         emails = [
@@ -406,14 +408,22 @@ class BaseAuth:
         ]
         email = details.get("email")
         allowed = True
-        if email and (emails or domains):
-            email = email.lower()
-            parts = email.split("@", 1)
-            if len(parts) != 2:
+        if emails or domains:
+            # An allowlist requires a matching address, including when the
+            # provider omits the address or returns a non-string value.
+            email = email.lower() if isinstance(email, str) else ""
+            try:
+                address = Address(addr_spec=email)
+            except (HeaderParseError, ValueError, IndexError):
+                # Python 3.10/3.11 also raise IndexError for empty addresses
+                # or missing domains, rather than a parsing exception.
                 allowed = False
             else:
-                domain = parts[1]
-                allowed = email in emails or domain in domains
+                allowed = bool(
+                    address.username
+                    and address.domain
+                    and (email in emails or address.domain in domains)
+                )
         allow_groups = self.get_group_setting("ALLOW_GROUPS", response, [])
         if not isinstance(allow_groups, (list, tuple, set)) or any(
             not isinstance(group, str) or not group for group in allow_groups
