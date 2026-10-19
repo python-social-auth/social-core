@@ -64,6 +64,14 @@ class BoxOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
 
+    def test_profile_extra_params_are_isolated_per_login(self) -> None:
+        extra_params = {"fields": "id,login"}
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_BOX_PROFILE_EXTRA_PARAMS": extra_params}
+        )
+        self.do_login()
+        self.assertEqual(extra_params, {"fields": "id,login"})
+
     def refresh_token_arguments(self):
         uri = self.strategy.build_absolute_uri("/complete/box/")
         return {"redirect_uri": uri}

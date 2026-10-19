@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Security
 
+- Box and ORCID no longer write access tokens into the shared
+  `PROFILE_EXTRA_PARAMS` setting, preventing concurrent profile requests from
+  using another login's token.
 - Email and domain allowlists now refuse authentication and account linking
   when a provider's e-mail address is missing or malformed. Deployments using a
   global allowlist with backends that omit e-mail addresses must configure the
