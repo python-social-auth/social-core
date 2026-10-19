@@ -624,10 +624,107 @@ def provider_error(
     return AuthProviderError(backend, detail, code=code, **fields)
 
 
+_REQUEST_ERROR_URL_RE = re.compile(r"[a-zA-Z][a-zA-Z0-9+.-]*://[^\s<>\"']+")
+_REQUEST_ERROR_TARGET_RE = re.compile(
+    r"(?i)(\b(?:for url:|with url:|invalid url|failed to parse:|"
+    r"no connection adapters were found for)\s*)"
+    r"(?:'[^']*'|\"[^\"]*\"|[^\s<>]+)"
+)
+
+
+def redact_request_error(
+    error: BaseException, *, request_url: str | None = None
+) -> None:
+    """Redact URLs in chained Requests/urllib3 exception messages in place.
+
+    Keep exception identities and attached request/response objects available
+    for recovery, but remove URL credentials from ordinary tracebacks. Attached
+    objects and traceback locals still require application-side scrubbing.
+    """
+    seen: set[int] = set()
+    pending = [error]
+    errors = []
+    urls: set[str] = set()
+    if request_url:
+        urls.add(request_url)
+    while pending:
+        current = pending.pop()
+        if id(current) in seen:
+            continue
+        seen.add(id(current))
+        errors.append(current)
+        pending.extend(arg for arg in current.args if isinstance(arg, BaseException))
+        pending.extend(
+            chained
+            for chained in (current.__cause__, current.__context__)
+            if chained is not None
+        )
+        # urllib3 stores relative request targets on its RequestError objects.
+        url = getattr(current, "url", None)
+        if isinstance(url, str) and url:
+            urls.add(url)
+        if isinstance(current, requests.RequestException):
+            for attached in (current.request, current.response):
+                url = getattr(attached, "url", None)
+                if isinstance(url, str) and url:
+                    urls.add(url)
+
+    replacements: set[str] = set()
+    for url in urls:
+        replacements.add(url)
+        # Transport errors may print only the relative target of an absolute URL.
+        try:
+            parsed = urlparse(url)
+        except ValueError:
+            pass  # Invalid URLs must still be redacted verbatim.
+        else:
+            if parsed.scheme and parsed.netloc:
+                target = urlunparse(
+                    (
+                        "",
+                        "",
+                        parsed.path or "/",
+                        parsed.params,
+                        parsed.query,
+                        parsed.fragment,
+                    )
+                )
+                if target != "/":
+                    replacements.add(target)
+    replacements.update(repr(url)[1:-1] for url in tuple(replacements))
+    known_urls = (
+        re.compile(
+            "(?:"
+            + "|".join(
+                re.escape(url) for url in sorted(replacements, key=len, reverse=True)
+            )
+            + r")[^\s<>\"']*"
+        )
+        if replacements
+        else None
+    )
+
+    def replace_url(match: re.Match[str]) -> str:
+        value = match[0]
+        return "<redacted-url>" + value[len(value.rstrip(")]} ,")) :]
+
+    def redact(message: str) -> str:
+        if known_urls is not None:
+            message = known_urls.sub(replace_url, message)
+        message = _REQUEST_ERROR_TARGET_RE.sub(r"\1<redacted-url>", message)
+        return _REQUEST_ERROR_URL_RE.sub(replace_url, message)
+
+    for current in errors:
+        current.args = tuple(
+            redact(arg) if isinstance(arg, str) else arg for arg in current.args
+        )
+
+
 def http_error(
     backend: BaseAuth, error: requests.HTTPError, *, stage: ErrorStage = "user_info"
 ) -> SocialAuthBaseException:
     """Normalize a Requests HTTP failure, including errors without responses."""
+    redact_request_error(error)
     response = error.response
     status = response.status_code if response is not None else None
     retry_after = response.headers.get("Retry-After") if response is not None else None

@@ -84,6 +84,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Redact request URLs from chained HTTP and transport exception messages so
+  ordinary tracebacks omit credentials in URL paths and query strings.
 - OpenID Connect partial pipelines now save the validated ID token claims when
   the framework authenticates with a new backend instance, as Django does.
   Resuming previously failed with `invalid_claim`.
