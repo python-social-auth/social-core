@@ -524,6 +524,7 @@ oQIDAQAB
             authenticate.assert_not_called()
 
     def test_get_decoded_info_success(self) -> None:
+        self.strategy.set_settings({"SOCIAL_AUTH_GOOGLE_ONETAP_KEY": self.client_id})
         self.backend.data = {
             "credential": jwt.encode(
                 self._get_jwt_payload(),
@@ -539,6 +540,36 @@ oQIDAQAB
 
         self.assertEqual(user.email, "test@test.com")
         self.assertEqual(user.first_name, "test name")
+
+    def test_get_decoded_info_requires_client_id(self) -> None:
+        for name, settings in (
+            ("unset", {}),
+            ("none", {"SOCIAL_AUTH_GOOGLE_ONETAP_KEY": None}),
+            ("empty", {"SOCIAL_AUTH_GOOGLE_ONETAP_KEY": ""}),
+        ):
+            self.strategy.set_settings(settings)
+            self.backend.data = {
+                "credential": jwt.encode(
+                    {**self._get_jwt_payload(), "aud": "other-client"},
+                    self.private_key,
+                    algorithm="RS256",
+                    headers={"kid": "test_key"},
+                ),
+                "g_csrf_token": "csrf",
+            }
+            request = mock.Mock(COOKIES={"g_csrf_token": "csrf"})
+            with (
+                self.subTest(name=name),
+                mock.patch.object(self.strategy, "authenticate") as authenticate,
+                self.assertRaises(AuthConfigurationError) as caught,
+            ):
+                self.backend.auth_complete(request=request)
+            self.assertEqual(caught.exception.code, "missing_setting")
+            self.assertEqual(caught.exception.stage, "token_validation")
+            self.assertEqual(
+                caught.exception.parameter, "SOCIAL_AUTH_GOOGLE_ONETAP_KEY"
+            )
+            authenticate.assert_not_called()
 
     def test_rejects_unverified_email_before_authentication(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_GOOGLE_ONETAP_KEY": self.client_id})

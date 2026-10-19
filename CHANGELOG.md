@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Security
 
+- Google One Tap now requires a configured client ID before validating ID
+  tokens. Deployments without one must set `SOCIAL_AUTH_GOOGLE_ONETAP_KEY` to
+  keep One Tap sign-in working.
 - Discourse callbacks now require the session that started login, preventing
   login CSRF and unauthorized account linking. In-progress logins from before
   this upgrade, or those that lose their session, must restart.

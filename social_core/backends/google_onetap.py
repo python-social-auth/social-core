@@ -59,11 +59,21 @@ class GoogleOneTap(BaseGoogleAuth, BaseAuth):
             )
 
     def get_decoded_info(self):
+        # google-auth skips audience validation when it receives None.
+        client_id = self.setting("KEY")
+        if not client_id:
+            raise AuthConfigurationError(
+                self,
+                parameter="SOCIAL_AUTH_GOOGLE_ONETAP_KEY",
+                code="missing_setting",
+                stage="token_validation",
+            )
+
         try:
             idinfo = id_token.verify_oauth2_token(
                 self.data.get(self.CREDENTIAL_KEY),
                 transport_requests.Request(),
-                self.setting("KEY"),
+                client_id,
             )
         except ValueError as error:
             raise AuthResponseError(
