@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Security
 
+- Discourse callbacks now require the session that started login, preventing
+  login CSRF and unauthorized account linking. In-progress logins from before
+  this upgrade, or those that lose their session, must restart.
 - OAuth2 authorization starts now use distinct, session-bound, expiring states
   that are claimed once before token exchange, with PKCE verifiers kept per
   transaction. In-progress OAuth2 logins from before this upgrade must restart;

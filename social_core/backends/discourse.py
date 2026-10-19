@@ -5,7 +5,7 @@ from hashlib import sha256
 from typing import cast
 from urllib.parse import parse_qs, urlencode
 
-from social_core.exceptions import AuthInputError, AuthResponseError
+from social_core.exceptions import AuthInputError, AuthResponseError, AuthSessionError
 from social_core.groups import read_groups
 from social_core.utils import constant_time_compare, drop_lists
 
@@ -28,6 +28,7 @@ class DiscourseAuth(BaseAuth):
         return_url = self.redirect_uri
         nonce = self.strategy.random_string(64)
         self.add_nonce(nonce)
+        self.strategy.session_set(f"{self.name}_nonce", nonce)
 
         payload = urlencode({"nonce": nonce, "return_sso_url": return_url})
         base_64_payload = urlsafe_b64encode(payload.encode("utf8")).decode("ascii")
@@ -79,6 +80,18 @@ class DiscourseAuth(BaseAuth):
     def delete_nonce(self, nonce) -> None:
         self.strategy.storage.nonce.delete(nonce)
 
+    def validate_session_nonce(self, nonce: object) -> None:
+        """Require the callback nonce from the session that started login."""
+        session_nonce = self.strategy.session_get(f"{self.name}_nonce")
+        if not isinstance(session_nonce, str) or not session_nonce:
+            raise AuthSessionError(
+                self, "nonce", code="session_context_missing", stage="callback"
+            )
+        if not isinstance(nonce, str) or not constant_time_compare(
+            nonce, session_nonce
+        ):
+            raise AuthSessionError(self, code="state_mismatch", stage="callback")
+
     def auth_complete(self, *args, **kwargs):
         """
         The user has been redirected back from the IdP and we should
@@ -109,11 +122,13 @@ class DiscourseAuth(BaseAuth):
 
         decoded_params = urlsafe_b64decode(sso_params.encode("utf8")).decode("ascii")
 
-        # Validate the nonce to ensure the request was not modified
+        # Bind the signed callback to the session that initiated this login.
         response = drop_lists(parse_qs(decoded_params, keep_blank_values=True))
+        self.validate_session_nonce(response.get("nonce"))
         nonce_obj = self.get_nonce(response.get("nonce"))
         if nonce_obj:
             self.delete_nonce(nonce_obj)
+            self.strategy.session_pop(f"{self.name}_nonce")
         else:
             raise AuthResponseError(
                 self,
