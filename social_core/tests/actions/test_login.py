@@ -85,6 +85,68 @@ class LoginActionTest(BaseActionTest):
         redirect = self.do_login(after_complete_checks=False)
         self.assertEqual(redirect.url, "/after-login")
 
+    def test_callback_redirect_value_is_not_a_setting_name(self) -> None:
+        self.strategy.set_settings({"MEDIA_ROOT": "/srv/myapp/media"})
+        self.strategy.set_request_data({"next": "MEDIA_ROOT"}, self.backend)
+
+        redirect = self.do_login(after_complete_checks=False)
+
+        self.assertEqual(redirect.url, f"{self.login_redirect_url}?next=MEDIA_ROOT")
+
+    def test_session_redirect_value_is_not_a_prefixed_setting_name(self) -> None:
+        self.strategy.set_settings({"SOCIAL_AUTH_GITHUB_MEDIA_ROOT": "/secret-value"})
+        self.strategy.session_set("next", "MEDIA_ROOT")
+
+        redirect = self.do_login(after_complete_checks=False)
+
+        self.assertEqual(redirect.url, f"{self.login_redirect_url}?next=MEDIA_ROOT")
+
+    def test_new_user_redirect_keeps_precedence_over_setting_name(self) -> None:
+        self.strategy.set_settings(
+            {
+                "MEDIA_ROOT": "/srv/myapp/media",
+                "SOCIAL_AUTH_NEW_USER_REDIRECT_URL": "/new-user",
+            }
+        )
+        self.strategy.set_request_data({"next": "MEDIA_ROOT"}, self.backend)
+
+        redirect = self.do_login(after_complete_checks=False)
+
+        self.assertEqual(redirect.url, "/new-user?next=MEDIA_ROOT")
+
+    def test_returning_user_redirect_value_is_not_a_setting_name(self) -> None:
+        self.strategy.set_settings(
+            {
+                "MEDIA_ROOT": "/srv/myapp/media",
+                "SOCIAL_AUTH_NEW_USER_REDIRECT_URL": "/new-user",
+            }
+        )
+        self.strategy.set_request_data({"next": "MEDIA_ROOT"}, self.backend)
+        first_redirect = self.do_login(after_complete_checks=False)
+        self.assertEqual(first_redirect.url, "/new-user?next=MEDIA_ROOT")
+        self._logout(self.backend)
+
+        redirect = self.do_login(after_complete_checks=False)
+
+        self.assertEqual(redirect.url, f"{self.login_redirect_url}?next=MEDIA_ROOT")
+
+    def test_non_url_setting_value_is_not_read_from_next(self) -> None:
+        self.strategy.set_settings({"MEDIA_ROOT": 42})
+        self.strategy.set_request_data({"next": "MEDIA_ROOT"}, self.backend)
+
+        redirect = self.do_login(after_complete_checks=False)
+
+        self.assertEqual(redirect.url, f"{self.login_redirect_url}?next=MEDIA_ROOT")
+
+    def test_association_redirect_value_is_not_a_setting_name(self) -> None:
+        self.user = TestUserSocialAuth.create_user("test-user")
+        self.strategy.set_settings({"MEDIA_ROOT": "/srv/myapp/media"})
+        self.strategy.set_request_data({"next": "MEDIA_ROOT"}, self.backend)
+
+        redirect = self.do_login(after_complete_checks=False)
+
+        self.assertEqual(redirect.url, f"{self.login_redirect_url}?next=MEDIA_ROOT")
+
     def test_backslash_redirect_value_falls_back(self) -> None:
         self.strategy.set_request_data({"next": "/\\evil.com"}, self.backend)
         redirect = self.do_login(after_complete_checks=False)

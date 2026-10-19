@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Security
 
+- Prevent request-provided `next` values from resolving configuration settings
+  into post-login redirects, which could disclose URL-like setting values.
 - Odnoklassniki iframe logins now confirm that the signed launch's user ID
   belongs to the presented provider session, preventing account substitution
   by moving digits between undelimited signature fields.
