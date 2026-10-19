@@ -30,6 +30,7 @@ from social_core.utils import (
     module_member,
     normalize_user_names,
     parse_qs,
+    redact_request_error,
     social_logger,
     user_agent,
     user_is_authenticated,
@@ -742,28 +743,35 @@ class BaseAuth:
                 verify=verify,
             )
         except requests.exceptions.SSLError as error:
+            redact_request_error(error, request_url=url)
             raise AuthProviderError(self, code="tls_error", stage=stage) from error
         except requests.Timeout as error:
+            redact_request_error(error, request_url=url)
             raise AuthProviderError(self, code="timeout", stage=stage) from error
         except (
             requests.exceptions.InvalidURL,
             requests.exceptions.InvalidSchema,
             requests.exceptions.MissingSchema,
         ) as error:
+            redact_request_error(error, request_url=url)
             raise AuthConfigurationError(
                 self, code="invalid_setting", parameter="url", stage=stage
             ) from error
         except requests.ConnectionError as error:
+            redact_request_error(error, request_url=url)
             raise AuthProviderError(
                 self, code="connection_failed", stage=stage
             ) from error
         except requests.HTTPError as error:
+            redact_request_error(error, request_url=url)
             raise http_error(self, error, stage=stage) from error
         except requests.RequestException as error:
+            redact_request_error(error, request_url=url)
             raise AuthProviderError(self, stage=stage) from error
         try:
             response.raise_for_status()
         except requests.HTTPError as error:
+            redact_request_error(error, request_url=url)
             raise http_error(self, error, stage=stage) from error
         return response
 
