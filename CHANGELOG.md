@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Security
 
+- Scope Mailchimp sign-in identities to both the account and the authorizing
+  login, preventing different Mailchimp users on one account from sharing a
+  local user. Account-keyed associations migrate only when their stored login
+  identifier matches; rows without that evidence require authenticated linking
+  or account recovery. Mailchimp now rejects configured `ID_KEY` values other
+  than `mailchimp_identity`; remove any old `user_id` override before upgrading.
 - Google One Tap now requires a configured client ID before validating ID
   tokens. Deployments without one must set `SOCIAL_AUTH_GOOGLE_ONETAP_KEY` to
   keep One Tap sign-in working.
