@@ -209,8 +209,14 @@ vary by protocol, such as whether PKCE is required for a confidential client,
 remain supported unless the backend documentation requires a stronger posture.
 Audited entries in `UNVERIFIED_LEGACY_TRANSITIONS` are supported compatibility
 defaults, not non-default builds; they accept the documented first-login race
-when stored evidence is missing. Explicitly enabling unverified migration for
-other transitions is a security-weakening configuration. (maintainer)
+when stored evidence is missing for rows created under the historical key.
+An association created under a configured stable `ID_KEY` is outside that
+exception: its current UID can be re-keyed without changing identity, while a
+historical-key match requires evidence or an explicit unverified-migration
+opt-in. If operators remove the old setting or backfill an incorrect key, the
+association's origin cannot be inferred from the row; they must audit and
+repair those records. Explicitly enabling unverified migration for other
+transitions is a security-weakening configuration. (maintainer)
 
 ## 6. Assumptions about inputs
 

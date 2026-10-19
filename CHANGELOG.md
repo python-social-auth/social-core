@@ -18,6 +18,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Odnoklassniki iframe logins now confirm that the signed launch's user ID
   belongs to the presented provider session, preventing account substitution
   by moving digits between undelimited signature fields.
+- Reject unverified historical-identifier matches when `ID_KEY` is configured,
+  preventing an account with a matching username from claiming a pre-6.0
+  association created under a stable identifier. Existing same-identifier
+  associations still re-key; deployments with older rows should review their
+  stored identifier keys before changing `ID_KEY` settings. Compatibility UID
+  hooks retain empty-key policy semantics and require an explicit opt-in for
+  unverified matches when `ID_KEY` is configured.
 - Box and ORCID no longer write access tokens into the shared
   `PROFILE_EXTRA_PARAMS` setting, preventing concurrent profile requests from
   using another login's token.

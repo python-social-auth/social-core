@@ -405,6 +405,95 @@ class IdentifierMigrationTest(TestCase):
             )
         )
 
+    def test_configured_default_key_rejects_unverified_historical_match(self) -> None:
+        self.backend = GoogleOAuth2(self.strategy)
+        self.strategy.set_settings({"SOCIAL_AUTH_GOOGLE_OAUTH2_ID_KEY": "sub"})
+        self.assertTrue(self.backend.allow_unverified_legacy_uid_migration("", "sub"))
+        self.assertFalse(
+            self.backend.allow_unverified_legacy_uid_migration("email", "sub")
+        )
+        legacy = self.candidate(id_key="", uid="victim-sub")
+        identifiers = social_uid(
+            self.backend, {}, {"sub": "attacker-sub", "email": "victim-sub"}
+        )
+        with self.assertRaises(AuthAssociationError) as caught:
+            social_user(self.backend, **identifiers)
+        self.assertEqual(caught.exception.code, "identifier_migration_conflict")
+        self.assertEqual((legacy.uid, legacy.id_key), ("victim-sub", ""))
+
+        result = social_user(
+            self.backend,
+            **social_uid(self.backend, {}, {"sub": "victim-sub"}),
+        )
+        self.assertIs(result["social"], legacy)
+        self.assertEqual((legacy.uid, legacy.id_key), ("victim-sub", "sub"))
+
+    def test_legacy_uid_hook_cannot_claim_current_uid_allowance(self) -> None:
+        self.backend = GoogleOAuth2(self.strategy)
+        self.strategy.set_settings({"SOCIAL_AUTH_GOOGLE_OAUTH2_ID_KEY": "sub"})
+        legacy = self.candidate(id_key="", uid="victim-sub")
+        with patch.object(
+            self.backend, "get_legacy_user_ids", return_value=["victim-sub"]
+        ):
+            identifiers = social_uid(self.backend, {}, {"sub": "attacker-sub"})
+        with self.assertRaises(AuthAssociationError) as caught:
+            social_user(self.backend, **identifiers)
+        self.assertEqual(caught.exception.code, "identifier_migration_conflict")
+        self.assertEqual((legacy.uid, legacy.id_key), ("victim-sub", ""))
+
+    def test_legacy_uid_hook_preserves_empty_key_for_custom_policy(self) -> None:
+        observed_keys = []
+
+        class CustomGoogle(GoogleOAuth2):
+            def get_legacy_user_ids(self, details, response) -> list[str]:
+                return ["victim-sub"]
+
+            def allow_unverified_legacy_uid_migration(
+                self, old_id_key: str, id_key: str
+            ) -> bool:
+                observed_keys.append(old_id_key)
+                return bool(old_id_key)
+
+        self.backend = CustomGoogle(self.strategy)
+        self.strategy.set_settings(
+            {
+                "SOCIAL_AUTH_GOOGLE_OAUTH2_ID_KEY": "sub",
+                "SOCIAL_AUTH_GOOGLE_OAUTH2_ALLOW_UNVERIFIED_LEGACY_UID_MIGRATION": True,
+            }
+        )
+        legacy = self.candidate(id_key="", uid="victim-sub")
+        with self.assertRaises(AuthAssociationError) as caught:
+            social_user(
+                self.backend,
+                **social_uid(self.backend, {}, {"sub": "attacker-sub"}),
+            )
+        self.assertEqual(caught.exception.code, "identifier_migration_conflict")
+        self.assertEqual(observed_keys, [""])
+        self.assertEqual((legacy.uid, legacy.id_key), ("victim-sub", ""))
+
+    def test_legacy_uid_hook_requires_opt_in_or_evidence_with_configured_key(
+        self,
+    ) -> None:
+        self.backend = GoogleOAuth2(self.strategy)
+        self.strategy.set_settings({"SOCIAL_AUTH_GOOGLE_OAUTH2_ID_KEY": "sub"})
+        legacy = self.candidate(
+            id_key="", uid="victim-sub", extra_data={"sub": "attacker-sub"}
+        )
+        with patch.object(
+            self.backend, "get_legacy_user_ids", return_value=["victim-sub"]
+        ):
+            identifiers = social_uid(self.backend, {}, {"sub": "attacker-sub"})
+        self.assertIs(social_user(self.backend, **identifiers)["social"], legacy)
+        self.assertEqual((legacy.uid, legacy.id_key), ("attacker-sub", "sub"))
+
+        TestUserSocialAuth.reset_cache()
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_GOOGLE_OAUTH2_ALLOW_UNVERIFIED_LEGACY_UID_MIGRATION": True}
+        )
+        legacy = self.candidate(id_key="", uid="victim-sub")
+        self.assertIs(social_user(self.backend, **identifiers)["social"], legacy)
+        self.assertEqual((legacy.uid, legacy.id_key), ("attacker-sub", "sub"))
+
     def test_custom_subclass_does_not_inherit_unsafe_default(self) -> None:
         class CustomGoogle(GoogleOAuth2):
             pass
@@ -570,6 +659,56 @@ class BackendIdentifierMigrationTest(TestCase):
                 )
                 User.reset_cache()
                 TestUserSocialAuth.reset_cache()
+
+    def test_configured_stable_key_does_not_claim_another_accounts_uid(self) -> None:
+        affected = {"keycloak", "cognito", "trello", "arcgis"}
+        for path, details, response, id_key in self.cases:
+            backend = module_member(path)(self.strategy)
+            if backend.name not in affected:
+                continue
+            for stored_key in ("", "username"):
+                with self.subTest(backend=backend.name, stored_key=stored_key):
+                    User.reset_cache()
+                    TestUserSocialAuth.reset_cache()
+                    self.strategy.set_settings(
+                        {f"SOCIAL_AUTH_{backend.name.upper()}_ID_KEY": id_key}
+                    )
+                    legacy = TestUserSocialAuth(
+                        User("victim"), backend.name, "victim-id", id_key=stored_key
+                    )
+                    attacker_details = dict.fromkeys(details, "victim-id")
+                    attacker_response = {
+                        **response,
+                        id_key: "attacker-id",
+                        "username": "victim-id",
+                        "preferred_username": "victim-id",
+                    }
+                    identifiers = social_uid(
+                        backend, attacker_details, attacker_response
+                    )
+                    self.assertIn(
+                        ("username", "victim-id"),
+                        identifiers["legacy_identifiers"],
+                    )
+                    with self.assertRaises(AuthAssociationError) as caught:
+                        social_user(backend, **identifiers)
+                    self.assertEqual(
+                        caught.exception.code, "identifier_migration_conflict"
+                    )
+                    self.assertEqual(
+                        (legacy.uid, legacy.id_key), ("victim-id", stored_key)
+                    )
+
+                    if stored_key == "":
+                        owner_response = {**attacker_response, id_key: "victim-id"}
+                        result = social_user(
+                            backend,
+                            **social_uid(backend, attacker_details, owner_response),
+                        )
+                        self.assertIs(result["social"], legacy)
+                        self.assertEqual(
+                            (legacy.uid, legacy.id_key), ("victim-id", id_key)
+                        )
 
     def test_oidc_backends_migrate_legacy_identifiers(self) -> None:
         for path in self.oidc_cases:
