@@ -45,7 +45,18 @@ class TelegramAuth(BaseAuth):
                 stage="callback",
             )
 
-        data_check_lines = [f"{k}={v}" for k, v in response.items() if k != "hash"]
+        data_check_lines: list[str] = []
+        for key, value in response.items():
+            if key == "hash":
+                continue
+            line = f"{key}={value}"
+            # A line feed inside a field makes distinct callback fields produce
+            # the same signed string, allowing the verified id to change.
+            if "\n" in line:
+                raise AuthInputError(
+                    self, parameter=key, code="invalid_parameter", stage="callback"
+                )
+            data_check_lines.append(line)
         data_check_string = "\n".join(sorted(data_check_lines))
         secret_key = hashlib.sha256(bot_token.encode()).digest()
         built_hash = hmac.new(
