@@ -4,11 +4,12 @@ import hashlib
 import hmac
 import time
 import unittest
+from unittest.mock import patch
 
 from social_core.backends.discourse import DiscourseAuth
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 from social_core.backends.telegram import TelegramAuth
-from social_core.exceptions import AuthResponseError
+from social_core.exceptions import AuthInputError, AuthResponseError
 from social_core.tests.models import TestStorage
 from social_core.tests.strategy import TestStrategy
 
@@ -51,6 +52,40 @@ class SignatureComparisonTest(unittest.TestCase):
         TelegramAuth(self.strategy).verify_data(
             {"auth_date": auth_date, "id": "42", "hash": signature}
         )
+
+    def test_telegram_line_feed_cannot_change_signed_fields(self):
+        self.strategy.set_settings({"SOCIAL_AUTH_TELEGRAM_BOT_TOKEN": "secret"})
+        backend = TelegramAuth(self.strategy)
+        auth_date = int(time.time())
+        signature = hmac.new(
+            hashlib.sha256(b"secret").digest(),
+            f"auth_date={auth_date}\nid=42\nlast_name=Smith".encode(),
+            hashlib.sha256,
+        ).hexdigest()
+        backend.verify_data(
+            {
+                "auth_date": auth_date,
+                "id": "42",
+                "last_name": "Smith",
+                "hash": signature,
+            }
+        )
+
+        for fields, parameter in (
+            ({"id": "42\nlast_name=Smith"}, "id"),
+            ({"id\nlast_name": "42"}, "id\nlast_name"),
+        ):
+            backend.data = {"auth_date": auth_date, **fields, "hash": signature}
+            with (
+                self.subTest(parameter=parameter),
+                patch.object(self.strategy, "authenticate") as authenticate,
+                self.assertRaises(AuthInputError) as caught,
+            ):
+                backend.auth_complete()
+            self.assertEqual(caught.exception.code, "invalid_parameter")
+            self.assertEqual(caught.exception.parameter, parameter)
+            self.assertEqual(caught.exception.stage, "callback")
+            authenticate.assert_not_called()
 
     def test_discourse_hmac_mismatch_is_a_signature_failure(self):
         backend = DiscourseAuth(self.strategy)
