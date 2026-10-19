@@ -6,6 +6,7 @@ from urllib.parse import quote
 from .utils import (
     get_allowed_redirect_schemes,
     is_private_use_redirect,
+    is_url,
     partial_pipeline_result,
     sanitize_redirect,
     setting_url,
@@ -166,15 +167,22 @@ def do_complete(
         return cast("HttpResponseProtocol", authenticated_user)
 
     authenticated_user = cast("PipelineUserProtocol | None", authenticated_user)
+    # A request value may be a redirect URL, but never a setting name.
+    redirect_url = (
+        redirect_value
+        if isinstance(redirect_value, str)
+        and is_url(redirect_value, get_allowed_redirect_schemes(backend))
+        else None
+    )
     url: str | None
 
     if is_authenticated:
         if not authenticated_user:
-            url = setting_url(backend, redirect_value, "LOGIN_REDIRECT_URL")
+            url = setting_url(backend, redirect_url, "LOGIN_REDIRECT_URL")
         else:
             url = setting_url(
                 backend,
-                redirect_value,
+                redirect_url,
                 "NEW_ASSOCIATION_REDIRECT_URL",
                 "LOGIN_REDIRECT_URL",
             )
@@ -190,11 +198,11 @@ def do_complete(
                 url = setting_url(
                     backend,
                     "NEW_USER_REDIRECT_URL",
-                    redirect_value,
+                    redirect_url,
                     "LOGIN_REDIRECT_URL",
                 )
             else:
-                url = setting_url(backend, redirect_value, "LOGIN_REDIRECT_URL")
+                url = setting_url(backend, redirect_url, "LOGIN_REDIRECT_URL")
         else:
             if backend.setting("INACTIVE_USER_LOGIN", False):
                 login(backend, authenticated_user, _get_social_user(authenticated_user))
