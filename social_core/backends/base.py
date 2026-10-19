@@ -529,8 +529,13 @@ class BaseAuth:
         default = bool(
             transition
             and transition[0] == backend_class
-            and old_id_key in ("", transition[1])
             and id_key == self.id_key() == self.ID_KEY == transition[2]
+            # A pre-6.0 unkeyed row can contain the configured ID_KEY's value.
+            # Only its current UID can be trusted without stored evidence.
+            and (
+                old_id_key == ""
+                or (old_id_key == transition[1] and not self.setting("ID_KEY"))
+            )
         )
         return bool(self.setting("ALLOW_UNVERIFIED_LEGACY_UID_MIGRATION", default))
 

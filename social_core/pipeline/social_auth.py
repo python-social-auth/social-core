@@ -75,22 +75,25 @@ def _legacy_social_auth(
     backend, storage, provider, uid, id_key, legacy_identifiers, legacy_uids
 ):
     # Empty-key candidates cover integrations and rows not yet backfilled.
-    lookups = [("", uid, "")]
+    lookups = [("", uid, "", False)]
     for old_key, old_uid in legacy_identifiers:
         old_uid = str(old_uid)
         if (old_key, old_uid) == (id_key, uid):
             continue
-        lookups.extend(((old_key, old_uid, old_key), (old_key, old_uid, "")))
+        lookups.extend(
+            ((old_key, old_uid, old_key, False), (old_key, old_uid, "", False))
+        )
     keyed_uids = {str(old_uid) for _, old_uid in legacy_identifiers}
+    # Keep compatibility-hook provenance separate from the public old-key value.
     lookups.extend(
-        ("", str(old_uid), "")
+        ("", str(old_uid), "", True)
         for old_uid in legacy_uids
         if str(old_uid) not in keyed_uids
     )
     matches = []
     matched_keys = []
     candidates = {}
-    for old_key, old_uid, stored_key in lookups:
+    for old_key, old_uid, stored_key, from_compat_uid in lookups:
         lookup = (old_uid, stored_key)
         if lookup not in candidates:
             candidates[lookup] = storage.get_social_auth(
@@ -98,7 +101,7 @@ def _legacy_social_auth(
             )
         candidate = candidates[lookup]
         if candidate is not None:
-            matched_keys.append(old_key)
+            matched_keys.append((old_key, from_compat_uid))
             if candidate not in matches:
                 matches.append(candidate)
     if len(matches) > 1:
@@ -125,9 +128,16 @@ def _legacy_social_auth(
         if evidence_key is None:
             evidence_key = key
     if evidence_key is None:
+        # With a configured ID_KEY, an unkeyed compatibility UID has unknown
+        # provenance and needs explicit permission before consulting the hook.
+        allow_compat_uid = (
+            not backend.setting("ID_KEY")
+            or backend.setting("ALLOW_UNVERIFIED_LEGACY_UID_MIGRATION", None) is True
+        )
         if not any(
-            backend.allow_unverified_legacy_uid_migration(key, id_key)
-            for key in matched_keys
+            (not from_compat_uid or allow_compat_uid)
+            and backend.allow_unverified_legacy_uid_migration(key, id_key)
+            for key, from_compat_uid in matched_keys
         ):
             raise AuthAssociationError(
                 backend,
