@@ -15,6 +15,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Security
 
+- OAuth2 authorization starts now use distinct, session-bound, expiring states
+  that are claimed once before token exchange, with PKCE verifiers kept per
+  transaction. In-progress OAuth2 logins from before this upgrade must restart;
+  custom storage implementations must provide atomic ``NonceMixin.consume()``.
+  New abandoned session transactions are pruned on a subsequent authorization start.
 - Prevent request-provided `next` values from resolving configuration settings
   into post-login redirects, which could disclose URL-like setting values.
 - Odnoklassniki iframe logins now confirm that the signed launch's user ID

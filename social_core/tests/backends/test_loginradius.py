@@ -58,7 +58,7 @@ class LoginRadiusAuthTest(BaseBackendTest):
 
     def do_start(self):
         context = self.render_context()
-        state = self.strategy.session_get("loginradius_state")
+        state = context["LOGINRADIUS_REDIRECT_STATE"]
         self.strategy.set_request_data(
             {"token": "loginradius-token", "redirect_state": state}, self.backend
         )
@@ -74,7 +74,7 @@ class LoginRadiusAuthTest(BaseBackendTest):
 
     def test_auth_html_creates_redirect_state(self) -> None:
         context = self.render_context()
-        state = self.strategy.session_get("loginradius_state")
+        state = context["LOGINRADIUS_REDIRECT_STATE"]
 
         self.assertIsNotNone(state)
         self.assertEqual(context["LOGINRADIUS_KEY"], "a-key")

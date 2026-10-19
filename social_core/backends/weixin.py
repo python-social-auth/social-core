@@ -126,19 +126,7 @@ class WeixinOAuth2APP(WeixinOAuth2):
     REDIRECT_STATE = False
 
     def auth_url(self) -> str:
-        if self.STATE_PARAMETER or self.REDIRECT_STATE:
-            # Store state in session for further request validation. The state
-            # value is passed as state parameter (as specified in OAuth2 spec),
-            # but also added to redirect, that way we can still verify the
-            # request if the provider doesn't implement the state parameter.
-            # Reuse token if any.
-            name = f"{self.name}_state"
-            state = self.strategy.session_get(name)
-            if state is None:
-                state = self.state_token()
-                self.strategy.session_set(name, state)
-        else:
-            state = None
+        state = self.get_or_create_state()
 
         params = self.auth_params(state)
         params.update(self.get_scope_argument())

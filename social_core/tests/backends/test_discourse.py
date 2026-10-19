@@ -1,6 +1,6 @@
 import hashlib
 import hmac
-from base64 import b64encode
+from base64 import b64decode, b64encode
 from unittest.mock import patch
 from urllib.parse import parse_qs, urlencode, urlparse
 
@@ -32,11 +32,13 @@ class DiscourseTest(BaseBackendTest):
         start = self.backend.start()
         start_url = start.url
         return_url = self.backend.redirect_uri
+        start_params = parse_qs(urlparse(start_url).query)
+        started_payload = parse_qs(b64decode(start_params["sso"][0]).decode())
         payload = {
             "external_id": "42",
             "email": "user@example.com",
             "username": "beepboop",
-            "nonce": "6YRje7xlXhpyeJ6qtvBeTUjHkXo1UCTQmCrzN8GXfja3AoAFk2CieDRYgSqMYi4W",
+            "nonce": started_payload["nonce"][0],
             "return_sso_url": "http://myapp.com/",
         }
         if groups is not None:

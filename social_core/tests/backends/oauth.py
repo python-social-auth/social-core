@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from typing import Generic, TypeVar, cast
 from unittest.mock import patch
 from urllib.parse import urlparse
@@ -8,7 +9,11 @@ import requests
 import responses
 
 from social_core.backends.oauth import BaseOAuth1, BaseOAuth2, OAuthAuth
-from social_core.exceptions import AuthInputError, AuthSessionError
+from social_core.exceptions import (
+    AuthConfigurationError,
+    AuthInputError,
+    AuthSessionError,
+)
 from social_core.tests.models import User
 from social_core.utils import get_querystring, parse_qs, url_add_parameters
 
@@ -143,13 +148,162 @@ class OAuth2Test(BaseOAuthTest[BaseOAuth2BackendT], Generic[BaseOAuth2BackendT])
 class OAuth2StateTestMixin(Generic[BaseOAuth2BackendT]):
     backend: BaseOAuth2BackendT
 
+    def test_abandoned_transaction_is_pruned_on_next_start(self) -> None:
+        case = cast("BaseBackendTest[BaseOAuth2BackendT]", self)
+        now = int(time.time())
+        with patch("social_core.backends.oauth.time.time", return_value=now):
+            old_state = get_querystring(case.backend.start().url)["state"]
+        with patch("social_core.backends.oauth.time.time", return_value=now + 1801):
+            new_state = get_querystring(case.backend.start().url)["state"]
+
+        case.assertIsNone(
+            case.strategy.session_get(case.backend.transaction_key(old_state))
+        )
+        case.assertIsNotNone(
+            case.strategy.session_get(case.backend.transaction_key(new_state))
+        )
+        case.assertEqual(
+            case.strategy.session_get(f"{case.backend.name}_oauth2_transaction_index"),
+            {new_state: now + 1801},
+        )
+
+    def test_state_collision_retries_without_replacing_first_transaction(self) -> None:
+        case = cast("BaseBackendTest[BaseOAuth2BackendT]", self)
+        now = int(time.time())
+        with patch.object(
+            case.backend,
+            "state_token",
+            side_effect=["first-state", "first-state", "second-state"],
+        ):
+            with patch("social_core.backends.oauth.time.time", return_value=now - 1):
+                first = get_querystring(case.backend.start().url)["state"]
+            with patch("social_core.backends.oauth.time.time", return_value=now):
+                second = get_querystring(case.backend.start().url)["state"]
+
+        case.assertEqual((first, second), ("first-state", "second-state"))
+        for state in (first, second):
+            transaction = case.strategy.session_get(case.backend.transaction_key(state))
+            assert isinstance(transaction, dict)
+            case.assertEqual(transaction["state"], state)
+            case.strategy.set_request_data(
+                {"code": "foobar", "state": state}, case.backend
+            )
+            case.assertEqual(case.backend.validate_state(), state)
+        case.assertEqual(len(responses.calls), 0)
+
+    def test_state_collision_exhaustion_preserves_first_transaction(self) -> None:
+        case = cast("BaseBackendTest[BaseOAuth2BackendT]", self)
+        with patch.object(case.backend, "state_token", return_value="same-state"):
+            state = get_querystring(case.backend.start().url)["state"]
+            with case.assertRaises(AuthSessionError):
+                case.backend.start()
+        case.strategy.set_request_data({"code": "foobar", "state": state}, case.backend)
+        case.assertEqual(case.backend.validate_state(), state)
+        case.assertEqual(len(responses.calls), 0)
+
+    def test_concurrent_states_complete_in_either_order(self) -> None:
+        case = cast("BaseBackendTest[BaseOAuth2BackendT]", self)
+        states = [
+            get_querystring(case.backend.start().url).get("state") for _ in range(2)
+        ]
+        case.assertIsNotNone(states[0])
+        case.assertIsNotNone(states[1])
+        case.assertNotEqual(*states)
+        for state in reversed(states):
+            case.strategy.set_request_data(
+                {"code": "foobar", "state": state}, case.backend
+            )
+            case.assertEqual(case.backend.validate_state(), state)
+        case.assertIsNone(
+            case.strategy.session_get(f"{case.backend.name}_oauth2_transaction_index")
+        )
+        case.assertEqual(len(responses.calls), 0)
+
+    def test_state_replay_and_foreign_session_rejected(self) -> None:
+        case = cast("BaseBackendTest[BaseOAuth2BackendT]", self)
+        state = get_querystring(case.backend.start().url)["state"]
+        foreign = case.strategy.new_request()
+        foreign.session_pop(case.backend.transaction_key(state))
+        foreign_backend = type(case.backend)(foreign, redirect_uri=case.complete_url)
+        foreign.set_request_data({"code": "foobar", "state": state}, foreign_backend)
+        with case.assertRaises(AuthSessionError):
+            foreign_backend.validate_state()
+        case.assertIsNotNone(
+            case.strategy.session_get(case.backend.transaction_key(state))
+        )
+
+        case.strategy.set_request_data({"code": "foobar", "state": state}, case.backend)
+        case.assertEqual(case.backend.validate_state(), state)
+        with case.assertRaises(AuthSessionError):
+            case.backend.validate_state()
+        case.assertEqual(len(responses.calls), 0)
+
+    def test_two_requests_with_same_session_snapshot_cannot_both_claim(self) -> None:
+        case = cast("BaseBackendTest[BaseOAuth2BackendT]", self)
+        state = get_querystring(case.backend.start().url)["state"]
+        first_strategy = case.strategy.new_request()
+        second_strategy = case.strategy.new_request()
+        first = type(case.backend)(first_strategy, redirect_uri=case.complete_url)
+        second = type(case.backend)(second_strategy, redirect_uri=case.complete_url)
+        for strategy, backend in ((first_strategy, first), (second_strategy, second)):
+            strategy.set_request_data({"code": "foobar", "state": state}, backend)
+        case.assertEqual(first.validate_state(), state)
+        with case.assertRaises(AuthSessionError):
+            second.validate_state()
+        case.assertEqual(len(responses.calls), 0)
+
+    def test_expired_state_rejected(self) -> None:
+        case = cast("BaseBackendTest[BaseOAuth2BackendT]", self)
+        state = get_querystring(case.backend.start().url)["state"]
+        transaction = case.strategy.session_get(case.backend.transaction_key(state))
+        assert isinstance(transaction, dict)
+        timestamp = transaction["timestamp"]
+        case.strategy.set_request_data({"code": "foobar", "state": state}, case.backend)
+        with (
+            patch(
+                "social_core.backends.oauth.time.time", return_value=timestamp + 1801
+            ),
+            case.assertRaises(AuthSessionError),
+        ):
+            case.backend.validate_state()
+        case.assertIsNotNone(
+            case.strategy.session_get(case.backend.transaction_key(state))
+        )
+        case.assertEqual(case.backend.validate_state(), state)
+        case.assertEqual(len(responses.calls), 0)
+
+    def test_legacy_state_requires_restart(self) -> None:
+        case = cast("BaseBackendTest[BaseOAuth2BackendT]", self)
+        case.strategy.session_set(f"{case.backend.name}_state", "old-state")
+        case.strategy.set_request_data(
+            {"code": "foobar", "state": "old-state"}, case.backend
+        )
+        with case.assertRaises(AuthSessionError):
+            case.backend.validate_state()
+
+    def test_missing_atomic_storage_contract_fails_closed(self) -> None:
+        case = cast("BaseBackendTest[BaseOAuth2BackendT]", self)
+        state = get_querystring(case.backend.start().url)["state"]
+        case.strategy.set_request_data({"code": "foobar", "state": state}, case.backend)
+        with (
+            patch.object(
+                case.strategy.storage.nonce, "consume", side_effect=NotImplementedError
+            ),
+            case.assertRaises(AuthConfigurationError),
+        ):
+            case.backend.validate_state()
+        case.assertEqual(len(responses.calls), 0)
+
     def test_auth_url_contains_state_parameter(self) -> None:
         case = cast("BaseBackendTest[BaseOAuth2BackendT]", self)
         start_url = case.backend.start().url
-        state = get_querystring(start_url).get("state")
-
-        case.assertIsNotNone(state)
-        case.assertEqual(state, case.strategy.session_get(f"{case.backend.name}_state"))
+        state = get_querystring(start_url)["state"]
+        transaction = case.strategy.session_get(case.backend.transaction_key(state))
+        assert isinstance(transaction, dict)
+        case.assertEqual(
+            state,
+            transaction["state"],
+        )
 
     def test_complete_rejects_missing_state_parameter(self) -> None:
         case = cast("BaseBackendTest[BaseOAuth2BackendT]", self)

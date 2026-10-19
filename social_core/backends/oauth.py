@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import hashlib
+import time
 from typing import TYPE_CHECKING, Any, Literal, cast
 
 from oauthlib.oauth1 import SIGNATURE_TYPE_AUTH_HEADER
@@ -435,6 +436,125 @@ class BaseOAuth2(OAuthAuth):
     REDIRECT_STATE = True
     STATE_PARAMETER = True
     USE_BASIC_AUTH = False
+    STATE_LIFETIME = 1800
+    _oauth2_transaction: dict[str, Any] | None = None
+
+    def transaction_key(self, state: str) -> str:
+        return f"{self.name}_oauth2_state_{state}"
+
+    def _transaction_index_key(self) -> str:
+        return f"{self.name}_oauth2_transaction_index"
+
+    def _nonce_scope(self) -> str:
+        return f"social_core.oauth2.{self.name}"
+
+    def _state_lifetime(self) -> int:
+        lifetime = self.setting("STATE_LIFETIME", self.STATE_LIFETIME)
+        if isinstance(lifetime, bool) or not isinstance(lifetime, int) or lifetime <= 0:
+            raise AuthConfigurationError(
+                self, parameter="STATE_LIFETIME", code="invalid_setting", stage="begin"
+            )
+        return lifetime
+
+    def _prune_transactions(self, now: int, lifetime: int) -> dict[str, int]:
+        """Discard expired session transactions on the next authorization start."""
+        index = self.strategy.session_get(self._transaction_index_key())
+        if not isinstance(index, dict):
+            return {}
+        active = {}
+        for state, timestamp in index.items():
+            if (
+                not isinstance(state, str)
+                or not isinstance(timestamp, int)
+                or isinstance(timestamp, bool)
+            ):
+                continue
+            if timestamp > now or now - timestamp > lifetime:
+                self.strategy.session_pop(self.transaction_key(state))
+            else:
+                active[state] = timestamp
+        return active
+
+    def get_or_create_state(self) -> str | None:
+        if self.ASSOCIATION_ONLY:
+            return self.get_association_state()
+        if not self.STATE_PARAMETER and not self.REDIRECT_STATE:
+            return None
+        lifetime = self._state_lifetime()
+        timestamp = int(time.time())
+        active = self._prune_transactions(timestamp, lifetime)
+        for _ in range(3):
+            state = self.state_token()
+            if state in active:
+                continue
+            if self.strategy.storage.nonce.use(self._nonce_scope(), timestamp, state):
+                self.strategy.session_set(
+                    self.transaction_key(state),
+                    {"state": state, "timestamp": timestamp},
+                )
+                active[state] = timestamp
+                self.strategy.session_set(self._transaction_index_key(), active)
+                return state
+        raise AuthSessionError(self, code="session_context_missing", stage="begin")
+
+    def validate_state(self) -> str | None:
+        if self.ASSOCIATION_ONLY:
+            return super().validate_state()
+        if not self.STATE_PARAMETER and not self.REDIRECT_STATE:
+            return None
+        self._oauth2_transaction = None
+        request_state = self.get_request_state()
+        if not request_state:
+            raise AuthInputError(
+                self, parameter="state", code="missing_parameter", stage="callback"
+            )
+        if not isinstance(request_state, str) or len(request_state) > 128:
+            raise AuthSessionError(self, code="state_mismatch", stage="callback")
+        transaction = self.strategy.session_get(self.transaction_key(request_state))
+        stored_state = (
+            transaction.get("state") if isinstance(transaction, dict) else None
+        )
+        if not isinstance(stored_state, str) or not constant_time_compare(
+            request_state, stored_state
+        ):
+            raise AuthSessionError(
+                self, "state", code="session_context_missing", stage="callback"
+            )
+        timestamp = transaction.get("timestamp")
+        if isinstance(timestamp, bool) or not isinstance(timestamp, int):
+            raise AuthSessionError(
+                self, "state", code="session_context_missing", stage="callback"
+            )
+        now = time.time()
+        if timestamp > now or now - timestamp > self._state_lifetime():
+            raise AuthSessionError(self, code="state_mismatch", stage="callback")
+        try:
+            claimed = self.strategy.storage.nonce.consume(
+                self._nonce_scope(), timestamp, request_state
+            )
+        except NotImplementedError as error:
+            raise AuthConfigurationError(
+                self,
+                parameter="storage.nonce.consume",
+                code="invalid_setting",
+                stage="callback",
+            ) from error
+        if not claimed:
+            raise AuthSessionError(self, code="state_mismatch", stage="callback")
+        self.strategy.session_pop(self.transaction_key(request_state))
+        index = self.strategy.session_get(self._transaction_index_key())
+        if isinstance(index, dict) and request_state in index:
+            active = {
+                state: timestamp
+                for state, timestamp in index.items()
+                if state != request_state
+            }
+            if active:
+                self.strategy.session_set(self._transaction_index_key(), active)
+            else:
+                self.strategy.session_pop(self._transaction_index_key())
+        self._oauth2_transaction = transaction
+        return request_state
 
     def use_basic_auth(self) -> bool:
         return self.USE_BASIC_AUTH
@@ -545,6 +665,7 @@ class BaseOAuth2(OAuthAuth):
     @handle_http_errors
     def auth_complete(self, *args, **kwargs):
         """Completes login process, must return user instance"""
+        state: str | None
         if self.ASSOCIATION_ONLY:
             state = self.validate_association_state(
                 self.get_request_state(), kwargs.get("user")
@@ -673,8 +794,7 @@ class BaseOAuth2PKCE(BaseOAuth2):
     PKCE_DEFAULT_CODE_VERIFIER_LENGTH = 43
     DEFAULT_USE_PKCE = True
 
-    def create_code_verifier(self):
-        name = f"{self.name}_code_verifier"
+    def create_code_verifier(self, state: str | None = None) -> str:
         code_verifier_len = cast(
             "int",
             self.setting(
@@ -683,12 +803,37 @@ class BaseOAuth2PKCE(BaseOAuth2):
             ),
         )
         code_verifier = self.strategy.random_string(code_verifier_len)
-        self.strategy.session_set(name, code_verifier)
+        if state is not None and not self.ASSOCIATION_ONLY:
+            transaction = self.strategy.session_get(self.transaction_key(state))
+            if not isinstance(transaction, dict) or transaction.get("state") != state:
+                raise AuthSessionError(
+                    self, "state", code="session_context_missing", stage="begin"
+                )
+            self.strategy.session_set(
+                self.transaction_key(state),
+                {**transaction, "code_verifier": code_verifier},
+            )
+        else:
+            self.strategy.session_set(f"{self.name}_code_verifier", code_verifier)
         return code_verifier
 
-    def get_code_verifier(self):
-        name = f"{self.name}_code_verifier"
-        return self.strategy.session_get(name)
+    def get_code_verifier(self, state: str | None = None) -> str:
+        if self.ASSOCIATION_ONLY:
+            verifier = self.strategy.session_pop(f"{self.name}_code_verifier")
+        elif state is None:
+            verifier = self.strategy.session_get(f"{self.name}_code_verifier")
+        else:
+            transaction = getattr(self, "_oauth2_transaction", None)
+            verifier = (
+                transaction.get("code_verifier")
+                if isinstance(transaction, dict)
+                else None
+            )
+        if not isinstance(verifier, str) or not verifier:
+            raise AuthSessionError(
+                self, "code_verifier", code="session_context_missing", stage="callback"
+            )
+        return verifier
 
     def generate_code_challenge(self, code_verifier, challenge_method):
         method = challenge_method.lower()
@@ -717,7 +862,7 @@ class BaseOAuth2PKCE(BaseOAuth2):
                     default=self.PKCE_DEFAULT_CODE_CHALLENGE_METHOD,
                 ),
             )
-            code_verifier = self.create_code_verifier()
+            code_verifier = self.create_code_verifier(state)
             code_challenge = self.generate_code_challenge(
                 code_verifier, code_challenge_method
             )
@@ -729,7 +874,7 @@ class BaseOAuth2PKCE(BaseOAuth2):
         params = super().auth_complete_params(state=state)
 
         if self.setting("USE_PKCE", default=self.DEFAULT_USE_PKCE):
-            code_verifier = self.get_code_verifier()
+            code_verifier = self.get_code_verifier(state)
             params["code_verifier"] = code_verifier
 
         return params

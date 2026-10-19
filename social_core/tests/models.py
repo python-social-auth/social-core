@@ -243,18 +243,30 @@ class TestNonce(NonceMixin, BaseModel):
 
     @classmethod
     def use(cls, server_url, timestamp, salt):
+        if f"{server_url}:{timestamp}:{salt}" in cls.cache:
+            return False
         nonce = TestNonce(server_url, timestamp, salt)
-        TestNonce.cache[server_url] = nonce
+        TestNonce.cache[f"{server_url}:{timestamp}:{salt}"] = nonce
         return nonce
 
     @classmethod
     def get(cls, server_url: str, salt: str):
-        return TestNonce.cache[server_url]
+        return next(
+            (
+                nonce
+                for nonce in cls.cache.values()
+                if nonce.server_url == server_url and nonce.salt == salt
+            ),
+            None,
+        )
 
     @classmethod
     def delete(cls, nonce) -> None:
-        server_url = nonce.server_url
-        del TestNonce.cache[server_url]
+        del TestNonce.cache[f"{nonce.server_url}:{nonce.timestamp}:{nonce.salt}"]
+
+    @classmethod
+    def consume(cls, server_url: str, timestamp: int, salt: str) -> bool:
+        return cls.cache.pop(f"{server_url}:{timestamp}:{salt}", None) is not None
 
 
 class TestAssociation(AssociationMixin, BaseModel):

@@ -48,16 +48,7 @@ class SoundcloudOAuth2(BaseOAuth2):
 
     def auth_url(self):
         """Return redirect url"""
-        state = None
-        if self.STATE_PARAMETER or self.REDIRECT_STATE:
-            # Store state in session for further request validation. The state
-            # value is passed as state parameter (as specified in OAuth2 spec),
-            # but also added to redirect_uri, that way we can still verify the
-            # request if the provider doesn't implement the state parameter.
-            # Reuse token if any.
-            name = f"{self.name}_state"
-            state = self.strategy.session_get(name) or self.state_token()
-            self.strategy.session_set(name, state)
+        state = self.get_or_create_state()
 
         params = self.auth_params(state)
         params.update(self.get_scope_argument())

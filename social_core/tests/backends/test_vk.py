@@ -701,6 +701,9 @@ class VKIDOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         ]
         for data, exception in cases:
             with self.subTest(data=data):
+                fresh_state = get_querystring(self.backend.start().url)["state"]
+                if data.get("state") == state:
+                    data["state"] = fresh_state
                 self.strategy.get_request_data().clear()
                 self.strategy.set_request_data(data, self.backend)
                 with self.assertRaises(exception):
@@ -719,16 +722,19 @@ class VKIDOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
 
     def test_missing_session_state(self) -> None:
         data = self.prepare_callback()
-        self.strategy.session_pop("vk-id_state")
+        self.strategy.session_pop(self.backend.transaction_key(data["state"]))
         with self.assertRaises(AuthSessionError):
             self.backend.complete()
         self.assertEqual(len(responses.calls), 0)
         self.assertTrue(data["state"])
 
     def test_missing_verifier(self) -> None:
-        self.prepare_callback()
-        self.strategy.session_pop("vk-id_code_verifier")
-        with assert_auth_error(self, AuthSessionError, "session_context_missing"):
+        data = self.prepare_callback()
+        key = self.backend.transaction_key(data["state"])
+        transaction = self.strategy.session_get(key).copy()
+        transaction.pop("code_verifier")
+        self.strategy.session_set(key, transaction)
+        with self.assertRaises(AuthSessionError):
             self.backend.complete()
         self.assertEqual(len(responses.calls), 0)
 
@@ -767,11 +773,15 @@ class VKIDOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
                     {f"SOCIAL_AUTH_{self.name}_PKCE_CODE_CHALLENGE_METHOD": method}
                 )
                 params = get_querystring(self.backend.start().url)
+                transaction = self.strategy.session_get(
+                    self.backend.transaction_key(params["state"])
+                )
+                assert isinstance(transaction, dict)
                 self.assertEqual(params["code_challenge_method"], "S256")
                 self.assertEqual(
                     params["code_challenge"],
                     self.backend.generate_code_challenge(
-                        self.strategy.session_get("vk-id_code_verifier"), "S256"
+                        transaction["code_verifier"], "S256"
                     ),
                 )
 
