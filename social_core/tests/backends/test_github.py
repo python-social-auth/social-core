@@ -297,6 +297,15 @@ class GithubOAuth2NoEmailTest(GithubOAuth2Test):
         self.add_emails_response([], status=403)
         self.do_login()
 
+    def test_login_email_denied_with_domain_whitelist(self) -> None:
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_GITHUB_WHITELISTED_DOMAINS": ["example.com"]}
+        )
+        self.add_emails_response([], status=403)
+
+        with self.assertRaises(AuthPolicyError):
+            self.do_login()
+
     def test_login_with_empty_email_list(self) -> None:
         self.add_emails_response([])
         user = self.do_login()

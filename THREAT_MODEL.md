@@ -26,7 +26,7 @@ Reports covered by sections 3 or 9 may be closed by citing this model.
 
 Provenance tags used below are `(documented)` for statements supported by the
 project documentation and `(maintainer)` for decisions accepted as part of this
-model. Confidence at acceptance: **29 documented / 60 maintainer / 0 inferred**.
+model. Confidence at acceptance: **29 documented / 61 maintainer / 0 inferred**.
 
 social-auth-core is an in-process Python library that implements common social
 authentication and authorization flows. It connects an embedding web
@@ -200,7 +200,7 @@ family of deployments. (maintainer)
 | VK and Odnoklassniki iframe apps | The launch signature and provider user match; an authenticated local session accepts only a provider identity already associated with that user | Initiation, browser-session correlation, and single-use replay protection are not provided; new account association from an authenticated session is rejected |
 | Pipelines and fields | The default security-relevant pipeline ordering is preserved; custom pipelines preserve equivalent validation and association ordering; protected account fields remain protected | Removing or reordering validation, trusting unverified email, or unprotecting authorization-sensitive fields transfers responsibility to the integrator |
 | Partial and email flows | Partial storage preserves ownership/type metadata; external resume confirmation is implemented; email codes retain a finite expiry | Custom resume behavior or disabled expiry removes the corresponding replay and flow-binding guarantees |
-| Application policy | Inactive-user, allowlist, group, and token-revocation settings match application policy | These settings define policy; they do not by themselves prove identity or make untrusted claims trustworthy |
+| Application policy | Inactive-user, allowlist, group, and token-revocation settings match application policy; configured e-mail and domain allowlists require a matching address | These settings define policy; they do not by themselves prove identity or make untrusted claims trustworthy; an identity without a usable e-mail address cannot satisfy an e-mail-based allowlist |
 
 An issue that requires an explicit security-weakening configuration is
 `OUT-OF-MODEL: non-default-build`. Backend-specific defaults that legitimately
@@ -270,9 +270,11 @@ backend namespace or bypass the local flow and user bindings. (maintainer)
 | With redirect sanitization enabled and trusted allowlists, request-derived HTTP(S) redirects use an allowed host and scheme; private-use redirects use an explicitly allowed scheme | Successful flow redirects to an attacker-controlled destination outside those conditions | Security-critical | `(documented)` |
 | With HTTPS endpoints, TLS verification enabled, and trusted endpoint configuration, provider credentials and responses are exchanged through the configured authenticated TLS channel | Network attacker reads credentials or substitutes identity data | Security-critical | `(maintainer)` |
 | Default user-detail updates do not overwrite protected identity and authorization-sensitive local fields | Provider profile data changes local IDs, password, activity, staff, superuser, username, or email unexpectedly | Security-critical when it changes authentication or authorization; otherwise correctness | `(documented)` |
+| With an e-mail or domain allowlist configured and the policy pipeline step preserved, authentication or account linking proceeds only when the provider identity presents a matching e-mail address | A missing, malformed, or non-matching e-mail address bypasses the configured allowlist | Security-critical when the allowlist gates account access | `(maintainer)` |
 | Malformed or rejected provider data does not establish a local authenticated identity; supported failure paths raise social-auth authentication exceptions | Invalid data authenticates a user | Security-critical; exception taxonomy mistakes without identity impact are correctness-only | `(documented)` |
 
-These properties concern identity integrity and credential confidentiality. The
+These properties concern identity integrity, configured authentication policy,
+and credential confidentiality. The
 absence of a crash, slowdown, provider outage, or generic parsing exception is
 not independently a claimed security property unless it causes one of the
 identity-flow violations above. (maintainer)
