@@ -116,11 +116,12 @@ Signed-callback and direct signed-token backends can differ. Telegram validates
 the bot-token HMAC and a 24-hour callback age directly. Facebook Limited Login
 validates a client-supplied signed ID token's provider signature and applicable
 identity and time claims, but intentionally does not enforce its nonce. The VK
-and Odnoklassniki iframe apps validate the launch signature and provider user,
-but have no application-controlled initiation value; in an authenticated local
-session, core therefore accepts only a provider identity already associated
-with that user. These flows do not bind their signed input to an initiating
-browser session or make it single-use. (documented)
+and Odnoklassniki iframe apps validate the launch signature and provider user.
+Odnoklassniki also confirms the user ID through the presented provider session.
+Neither app has an application-controlled initiation value; in an
+authenticated local session, core therefore accepts only a provider identity
+already associated with that user. These flows do not bind their signed input
+to an initiating browser session or make it single-use. (documented)
 
 OpenID backends bind positive assertions to backend-scoped discovery state in
 the initiating browser session or a session selected by the provider-signed
@@ -197,7 +198,7 @@ family of deployments. (maintainer)
 | Account identifiers | Bundled backends use stable `ID_KEY` values where providers expose them; Drip, Last.fm, and Mixcloud are association-only; EmailAuth and UsernameAuth rely on application credential and validation policy; migrations require evidence except for audited built-in compatibility transitions | Audited defaults accept a documented missing-evidence race; mutable custom identifiers, using an exception outside its conditions, or explicitly enabling unverified migration elsewhere accepts additional account-binding risk |
 | Telegram callback | The callback has a valid bot-token HMAC and an `auth_date` no more than 24 hours old | Authenticity and age are checked, but initiation, browser-session correlation, and single-use replay protection are not provided |
 | Facebook Limited Login | The client-supplied ID token passes the backend's provider-signature, identity, and time-claim validation | Nonce, initiation, browser-session correlation, and single-use replay protection are not provided |
-| VK and Odnoklassniki iframe apps | The launch signature and provider user match; an authenticated local session accepts only a provider identity already associated with that user | Initiation, browser-session correlation, and single-use replay protection are not provided; new account association from an authenticated session is rejected |
+| VK and Odnoklassniki iframe apps | The launch signature and provider user match; Odnoklassniki confirms the user ID through the presented provider session; an authenticated local session accepts only a provider identity already associated with that user | Initiation, browser-session correlation, and single-use replay protection are not provided; new account association from an authenticated session is rejected |
 | Pipelines and fields | The default security-relevant pipeline ordering is preserved; custom pipelines preserve equivalent validation and association ordering; protected account fields remain protected | Removing or reordering validation, trusting unverified email, or unprotecting authorization-sensitive fields transfers responsibility to the integrator |
 | Partial and email flows | Partial storage preserves ownership/type metadata; external resume confirmation is implemented; email codes retain a finite expiry | Custom resume behavior or disabled expiry removes the corresponding replay and flow-binding guarantees |
 | Application policy | Inactive-user, allowlist, group, and token-revocation settings match application policy; configured e-mail and domain allowlists require a matching address | These settings define policy; they do not by themselves prove identity or make untrusted claims trustworthy; an identity without a usable e-mail address cannot satisfy an e-mail-based allowlist |

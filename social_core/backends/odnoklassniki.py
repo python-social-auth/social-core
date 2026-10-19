@@ -97,6 +97,29 @@ class OdnoklassnikiApp(BaseAuth):
     def auth_complete(self, *args, **kwargs):
         self.verify_auth_sig()
         response = self.get_response()
+        session_secret_key = response.get("session_secret_key")
+        if not isinstance(session_secret_key, str) or not session_secret_key:
+            raise AuthInputError(
+                self,
+                parameter="session_secret_key",
+                code="missing_parameter"
+                if session_secret_key in (None, "")
+                else "invalid_parameter",
+                stage="callback",
+            )
+        session_user_id = odnoklassniki_api(
+            self,
+            {"method": "users.getLoggedInUser", "session_key": response["session_key"]},
+            self.API_URL,
+            self.setting("PUBLIC_NAME"),
+            session_secret_key,
+            "iframe_session",
+        )
+        if not isinstance(session_user_id, str):
+            raise AuthResponseError(self, code="malformed_response", stage="callback")
+        if session_user_id != response["logged_user_id"]:
+            raise AuthResponseError(self, code="invalid_claim", stage="callback")
+
         fields = (
             "uid",
             "first_name",
@@ -242,7 +265,10 @@ def odnoklassniki_api(
     if request_type == "oauth":
         data["sig"] = odnoklassniki_oauth_sig(data, client_secret)
     elif request_type == "iframe_session":
-        data["sig"] = odnoklassniki_iframe_sig(data, data["session_secret_key"])
+        data["sig"] = odnoklassniki_iframe_sig(
+            {key: value for key, value in data.items() if key != "session_key"},
+            client_secret,
+        )
     elif request_type == "iframe_nosession":
         data["sig"] = odnoklassniki_iframe_sig(data, client_secret)
     else:
@@ -253,4 +279,6 @@ def odnoklassniki_api(
             code="malformed_response",
             stage="callback",
         )
+    if request_type == "iframe_session":
+        return backend.get_json(f"{api_url}fb.do", method="POST", data=data)
     return backend.get_json(f"{api_url}fb.do", params=data)
