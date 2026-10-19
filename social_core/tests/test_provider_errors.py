@@ -99,12 +99,14 @@ class ProviderErrorTest(unittest.TestCase):
                 self.assertNotIn("private-token", str(error.public_metadata()))
 
     def test_refresh_rejection_requires_new_authentication(self):
-        error = provider_error(
-            self.backend, {"error": "invalid_grant"}, stage="refresh"
-        )
-        assert error is not None
-        self.assertEqual(error.code, "reauthentication_required")
-        self.assertEqual(error.source, "provider_response")
+        for provider_code in ("invalid_grant", "bad_refresh_token"):
+            with self.subTest(provider_code=provider_code):
+                error = provider_error(
+                    self.backend, {"error": provider_code}, stage="refresh"
+                )
+                assert isinstance(error, AuthCredentialError)
+                self.assertEqual(error.code, "reauthentication_required")
+                self.assertEqual(error.source, "provider_response")
 
     def test_legacy_error_hook_allows_login_and_refresh(self):
         backend = BaseOAuth2(TestStrategy(TestStorage))

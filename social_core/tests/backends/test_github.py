@@ -6,6 +6,7 @@ import responses
 
 from social_core.exceptions import (
     AuthCanceled,
+    AuthCredentialError,
     AuthInputError,
     AuthPolicyError,
     AuthSessionError,
@@ -192,6 +193,20 @@ class GithubAppAuthTest(GithubOAuth2Test, OAuth2StateTestMixin):
                     self.backend.complete()
 
         self.assertEqual(len(responses.calls), 0)
+
+    def test_rejected_refresh_token_requires_reauthentication(self) -> None:
+        # GitHub answers an expired or reused refresh token with HTTP 200.
+        self.refresh_token_body = json.dumps(
+            {
+                "error": "bad_refresh_token",
+                "error_description": "The refresh token passed is incorrect or expired.",
+            }
+        )
+
+        with self.assertRaises(AuthCredentialError) as context:
+            self.do_refresh_token()
+        self.assertEqual(context.exception.code, "reauthentication_required")
+        self.assertEqual(context.exception.stage, "refresh")
 
     def test_installation_callback_preserves_provider_errors(self) -> None:
         data = self.installation_callback_data()

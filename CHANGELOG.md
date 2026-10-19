@@ -64,6 +64,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   authorization when the framework authenticates with a new backend instance.
 - Raise structured authentication errors for missing, malformed, invalid, or
   expired VK OpenAPI callback state.
+- GitHub's `bad_refresh_token` response now raises `AuthCredentialError` with
+  `reauthentication_required`, like `invalid_grant`, instead of an
+  `AuthProviderError`.
 
 ## [6.1.1](https://github.com/python-social-auth/social-core/releases/tag/6.1.1) - 2026-10-10
 
