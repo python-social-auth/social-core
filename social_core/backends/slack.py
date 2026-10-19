@@ -4,7 +4,11 @@ Slack OAuth2 backend, docs at:
     https://api.slack.com/docs/oauth
 """
 
+from __future__ import annotations
+
 from typing import Any, cast
+
+from social_core.exceptions import AuthPolicyError, AuthResponseError
 
 from .oauth import BaseOAuth2
 
@@ -57,6 +61,24 @@ class SlackOAuth2(BaseOAuth2):
             "https://slack.com/api/users.identity",
             headers={"Authorization": f"Bearer {access_token}"},
         )
+        if team := self.setting("TEAM"):
+            if not isinstance(response, dict) or response.get("ok") is not True:
+                raise AuthResponseError(
+                    self, code="malformed_response", stage="user_info"
+                )
+            slack_team = response.get("team")
+            if (
+                not isinstance(slack_team, dict)
+                or not isinstance(slack_team.get("id"), str)
+                or not slack_team["id"]
+            ):
+                raise AuthResponseError(
+                    self, code="missing_claim", claim="team.id", stage="user_info"
+                )
+            if slack_team["id"] != str(team):
+                raise AuthPolicyError(
+                    self, code="membership_required", stage="user_info"
+                )
         if not response.get("id", None):
             response["id"] = response["user"]["id"]
         return response

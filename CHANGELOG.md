@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Security
 
+- Enforce `SOCIAL_AUTH_SLACK_TEAM` against the workspace ID returned by Slack
+  before login. Configurations using a workspace name or Enterprise organization
+  ID must change to a workspace ID.
 - Scope Mailchimp sign-in identities to both the account and the authorizing
   login, preventing different Mailchimp users on one account from sharing a
   local user. Account-keyed associations migrate only when their stored login
