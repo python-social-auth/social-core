@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from social_core.exceptions import (
     AuthAssociationError,
@@ -175,6 +175,7 @@ def social_user(
     user: UserProtocol | None = None,
     *args,
     id_key="",
+    response: dict[str, Any] | None = None,
     legacy_uids=(),
     legacy_identifiers=(),
     **kwargs,
@@ -187,6 +188,8 @@ def social_user(
         social, evidence_key = _legacy_social_auth(
             backend, storage, provider, uid, id_key, legacy_identifiers, legacy_uids
         )
+        if social is None and response is not None:
+            social = backend.get_legacy_social_auth(uid, id_key, response, user=user)
         if social is not None:
             if user and social.user != user:
                 raise AuthAssociationError(

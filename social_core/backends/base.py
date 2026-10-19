@@ -42,7 +42,12 @@ if TYPE_CHECKING:
     from requests import Response
     from requests.auth import AuthBase
 
-    from social_core.storage import PartialMixin, PipelineUserProtocol, UserProtocol
+    from social_core.storage import (
+        PartialMixin,
+        PipelineUserProtocol,
+        UserMixin,
+        UserProtocol,
+    )
     from social_core.strategy import BaseStrategy, HttpResponseProtocol
 
 
@@ -295,7 +300,7 @@ class BaseAuth:
             return out
         user = cast("UserProtocol | None", out.get("user"))
         if user:
-            pipeline_user = cast("PipelineUserProtocol", user)
+            pipeline_user: PipelineUserProtocol = cast("PipelineUserProtocol", user)
             pipeline_user.social_user = cast("Any", out.get("social"))
             pipeline_user.is_new = bool(out.get("is_new"))
         return user
@@ -516,6 +521,16 @@ class BaseAuth:
                 uid for _, uid in self.get_legacy_user_identifiers(details, response)
             )
         )
+
+    def get_legacy_social_auth(
+        self,
+        uid: str,
+        id_key: str,
+        response: dict[str, Any],
+        user: UserProtocol | None = None,
+    ) -> UserMixin | None:
+        """Find a backend-specific legacy association with verified evidence."""
+        return None
 
     def get_stored_user_id_keys(self, id_key: str) -> tuple[str, ...]:
         """Return stored evidence fields, including backend-specific aliases."""
