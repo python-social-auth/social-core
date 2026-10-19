@@ -596,7 +596,12 @@ def provider_error(
         "invalid_scope",
     }:
         return AuthConfigurationError(backend, detail, code="invalid_setting", **fields)
-    if provider_code in {"invalid_grant", "bad_verification_code", "invalid_token"}:
+    if provider_code in {
+        "invalid_grant",
+        "bad_verification_code",
+        "bad_refresh_token",
+        "invalid_token",
+    }:
         code = (
             "credential_rejected"
             if provider_code == "invalid_token"
