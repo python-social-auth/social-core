@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Security
 
+- Odnoklassniki iframe logins now confirm that the signed launch's user ID
+  belongs to the presented provider session, preventing account substitution
+  by moving digits between undelimited signature fields.
 - Box and ORCID no longer write access tokens into the shared
   `PROFILE_EXTRA_PARAMS` setting, preventing concurrent profile requests from
   using another login's token.
