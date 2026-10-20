@@ -218,6 +218,13 @@ association's origin cannot be inferred from the row; they must audit and
 repair those records. Explicitly enabling unverified migration for other
 transitions is a security-weakening configuration. (maintainer)
 
+EVE Online binds a transferable character's `CharacterID` to its
+`CharacterOwnerHash`. An existing association without a saved owner hash accepts
+the next valid owner hash once; that login may belong to a new owner if the
+character was transferred before the backfill. Deployments that cannot accept
+this uncertainty must review and repair those rows before sign-in. Later
+owner-hash changes fail closed. (maintainer)
+
 ## 6. Assumptions about inputs
 
 | Entry point or operation | Input | Attacker-controlled? | Caller responsibility |
@@ -269,7 +276,7 @@ backend namespace or bypass the local flow and user bindings. (maintainer)
 | A backend that implements callback correlation accepts a callback only for the initiating flow and session after its state, nonce, or request-ID check succeeds; ordinary OAuth2 login state is transaction-specific, expires, and is consumed once before token exchange; Telegram instead accepts only callbacks with a valid bot-token HMAC and an age of at most 24 hours, while Facebook Limited Login accepts only ID tokens passing its provider-signature, identity, and time-claim validation; neither exception claims initiation, session, or single-use correlation | A correlated backend accepts an uninitiated or mismatched callback, an OAuth2 login callback reuses consumed state, Telegram accepts a callback with an invalid HMAC or excessive age, or Facebook Limited Login accepts an ID token with an invalid provider signature, identity claim, or time claim | Security-critical | `(documented)` |
 | An OpenID backend accepts a positive assertion only when it matches backend-scoped discovery state from the initiating or provider-authenticated restored browser session; generic OpenID remains provider-selectable, while fixed-provider callbacks and verified signing endpoints must additionally match the exact HTTPS endpoint discovered at initiation | An uninitiated or cross-session OpenID assertion reaches the pipeline, discovery state crosses backend namespaces, or a cleartext or foreign-provider assertion authenticates under a fixed backend | Security-critical | `(documented)` |
 | OIDC/JWT and SAML identity assertions are used only after the backend-required signature, issuer, audience, time, nonce/request, subject, and destination checks succeed | Forged or misdirected assertion authenticates or links an account | Security-critical | `(documented)` |
-| An authenticating provider identity is bound by backend namespace and a non-empty stable provider identifier; conflicting migration evidence always fails closed, while missing evidence fails except for the audited compatibility transitions documented in section 5a | One provider identity authenticates as a different local user outside the documented missing-evidence exception, or two identities collapse onto one association | Security-critical | `(documented)` |
+| An authenticating provider identity is bound by backend namespace and a non-empty stable provider identifier; conflicting migration evidence always fails closed, while missing evidence fails except for the audited compatibility transitions and EVE Online owner-hash backfill documented in section 5a | One provider identity authenticates as a different local user outside the documented missing-evidence exceptions, or two identities collapse onto one association | Security-critical | `(documented)` |
 | Bundled mutable-identifier exceptions do not independently authenticate a remote provider identity: Drip, Last.fm, and Mixcloud are association-only, while EmailAuth and UsernameAuth require application-supplied credential and validation policy | A mutable remote identifier creates or authenticates a local user through an association-only backend, or a legacy backend authenticates without the application's required validation | Security-critical | `(documented)` |
 | Association-only flows and their partial resumes are bound by core to the initiating authenticated local user; ordinary linking has the same property when the framework preserves that user through callback; disconnection acts on the authenticated user supplied by the integration | An attacker links to or disconnects from another user's account under the stated integration conditions | Security-critical | `(documented)` |
 | A VK or Odnoklassniki iframe app launch received in an authenticated local session proceeds only when its validated provider identity is already associated with that same user | An uncorrelated launch creates or changes an association for the authenticated local user | Security-critical | `(documented)` |
@@ -321,7 +328,10 @@ identity-flow violations above. (maintainer)
   requires the integrator's explicit policy and verification. Audited built-in
   legacy transitions may accept missing migration evidence by default and do
   not guarantee continuous ownership against the documented first-login race;
-  a report showing only that accepted race concerns a disclaimed property.
+  EVE Online associations without a saved owner hash likewise accept the next
+  valid owner hash once; this does not prove continuous ownership through a
+  transfer before that login. A report showing only one of these accepted
+  missing-evidence races concerns a disclaimed property.
   (documented)
 - Token refresh and revocation helpers do not guarantee provider-side logout,
   immediate revocation, or deletion of every provider session. (documented)
