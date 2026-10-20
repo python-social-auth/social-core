@@ -184,9 +184,7 @@ class SteamOpenIdTest(OpenIdTest):
         return_to = inputs["openid.return_to"]
         assert return_to, "The OpenID return_to value must be set in the test"
         params["openid.return_to"] = return_to
-        params["janrain_nonce"] = dict(parse_qsl(urlsplit(return_to).query))[
-            "janrain_nonce"
-        ]
+        params.update(parse_qsl(urlsplit(return_to).query))
         return urlencode(params)
 
     def test_login(self) -> None:

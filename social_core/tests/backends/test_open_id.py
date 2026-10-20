@@ -25,6 +25,7 @@ from social_core.backends.yandex import YandexOpenId
 from social_core.exceptions import (
     AuthCanceled,
     AuthConfigurationError,
+    AuthInputError,
     AuthProviderError,
     AuthResponseError,
     AuthSessionError,
@@ -114,6 +115,13 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
         session = self.strategy.openid_session_dict("openid")
         session[OpenIdSessionWrapper.endpoint_key] = endpoint
         session[BACKEND_SESSION_KEY] = backend.name
+        self.bind_callback(backend)
+
+    def bind_callback(self, backend: OpenIdAuth | None = None) -> str:
+        backend = backend or self.backend
+        state = backend.create_state()
+        self.strategy.set_request_data({"redirect_state": state}, backend)
+        return state
 
     def test_full_name_only_details(self) -> None:
         details = self.backend.get_user_details(
@@ -389,6 +397,64 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
             self.backend.complete()
         authenticate.assert_not_called()
 
+    def test_pending_generic_login_rejects_foreign_callback_state(self) -> None:
+        response = self.verified_response()
+        self.set_openid_context(response.endpoint)
+        victim_state = self.strategy.session_get("openid_state")
+        self.strategy.set_request_data(
+            {"openid.mode": "id_res", "redirect_state": "attacker-state"},
+            self.backend,
+        )
+        victim = User("victim")
+        with (
+            patch.object(
+                self.backend, "_complete_generic_response", return_value=response
+            ),
+            patch.object(self.strategy, "authenticate") as authenticate,
+            assert_auth_error(self, AuthSessionError, "state_mismatch"),
+        ):
+            self.backend.complete(user=victim)
+        authenticate.assert_not_called()
+        self.assertEqual(self.strategy.session_get("openid_state"), victim_state)
+        self.assertEqual(victim.social, [])
+
+    def test_pending_login_rejects_missing_or_orphaned_state(self) -> None:
+        response = self.verified_response()
+        self.set_openid_context(response.endpoint)
+        state = self.strategy.session_get("openid_state")
+        self.strategy.set_request_data({"openid.mode": "id_res"}, self.backend)
+        self.strategy.remove_from_request_data("redirect_state")
+        with (
+            patch.object(
+                self.backend, "_complete_generic_response", return_value=response
+            ),
+            patch.object(self.strategy, "authenticate") as authenticate,
+            assert_auth_error(self, AuthInputError, "missing_parameter"),
+        ):
+            self.backend.complete()
+        authenticate.assert_not_called()
+        self.assertEqual(self.strategy.session_get("openid_state"), state)
+
+        self.strategy.set_request_data({"redirect_state": state}, self.backend)
+        self.strategy.session_pop("openid_state")
+        with (
+            patch.object(
+                self.backend, "_complete_generic_response", return_value=response
+            ),
+            patch.object(self.strategy, "authenticate") as authenticate,
+            assert_auth_error(self, AuthSessionError, "session_context_missing"),
+        ):
+            self.backend.complete()
+        authenticate.assert_not_called()
+
+    def test_callback_state_is_consumed_once(self) -> None:
+        state = self.bind_callback()
+        self.backend.validate_state()
+        self.assertIsNone(self.strategy.session_get("openid_state"))
+        with assert_auth_error(self, AuthSessionError, "session_context_missing"):
+            self.backend.validate_state()
+        self.assertEqual(self.backend.data["redirect_state"], state)
+
     def test_generic_callback_requires_matching_backend(self) -> None:
         response = self.verified_response()
         self.set_openid_context(response.endpoint)
@@ -576,11 +642,19 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
         restore_session.assert_not_called()
 
     def test_generic_restored_session_completion_succeeds(self) -> None:
-        response = self.verified_response(
-            return_to=f"{self.complete_url}?psa_session_id=initiating-session"
-        )
+        response = self.verified_response()
         self.set_openid_context(response.endpoint)
+        with (
+            patch.object(
+                self.strategy, "get_session_id", return_value="initiating-session"
+            ),
+            patch.object(self.backend, "setup_request") as setup_request,
+        ):
+            self.backend.auth_url()
+            return_to = setup_request.return_value.redirectURL.call_args.args[1]
+        response = self.verified_response(return_to=return_to)
         initiating_state = copy.deepcopy(self.strategy.session_get("openid"))
+        initiating_token = self.strategy.session_pop("openid_state")
         self.strategy.session_set("openid", {})
         initiating_user = User("initiator")
         victim = User("victim")
@@ -588,6 +662,7 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
             {
                 "openid.mode": "id_res",
                 self.strategy.SESSION_SAVE_KEY: "initiating-session",
+                "redirect_state": initiating_token,
             },
             self.backend,
         )
@@ -595,6 +670,7 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
         def restore_session(session_id, kwargs) -> None:
             self.assertEqual(session_id, "initiating-session")
             self.strategy.session_set("openid", copy.deepcopy(initiating_state))
+            self.strategy.session_set("openid_state", initiating_token)
             kwargs["user"] = initiating_user
 
         with (
@@ -684,6 +760,7 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
             OpenIdSessionWrapper.endpoint_key
         ] = endpoint
         self.strategy.openid_session_dict("openid")[BACKEND_SESSION_KEY] = backend.name
+        self.bind_callback(backend)
         return backend
 
     def test_fixed_provider_backends_require_binding(self) -> None:
@@ -801,6 +878,22 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
             consumer.return_value.complete.return_value = response
             backend.complete()
         authenticate.assert_called_once()
+
+    def test_fixed_provider_rejects_foreign_state_at_same_endpoint(self) -> None:
+        endpoint = "https://login.ubuntu.com/+openid"
+        backend = self.bound_backend(expected_endpoint=endpoint)
+        victim_state = self.strategy.session_get("ubuntu_state")
+        self.strategy.set_request_data({"redirect_state": "attacker-state"}, backend)
+        response = self.verified_response(server_url=endpoint)
+        with (
+            patch.object(backend, "consumer") as consumer,
+            patch.object(self.strategy, "authenticate") as authenticate,
+            assert_auth_error(self, AuthSessionError, "state_mismatch"),
+        ):
+            consumer.return_value.complete.return_value = response
+            backend.complete(user=User("victim"))
+        authenticate.assert_not_called()
+        self.assertEqual(self.strategy.session_get("ubuntu_state"), victim_state)
 
     def test_fixed_provider_cancel_does_not_require_initiation(self) -> None:
         backend = UbuntuOpenId(self.strategy, redirect_uri=self.complete_url)

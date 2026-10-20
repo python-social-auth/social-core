@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, cast
-from urllib.parse import parse_qsl, urldefrag, urlsplit
+from urllib.parse import parse_qsl, urldefrag, urlencode, urlsplit, urlunsplit
 
 from openid.consumer.consumer import (
     CANCEL,
@@ -466,20 +466,70 @@ class OpenIdAuth(BaseAuth):
         if session_id := self.strategy.get_session_id():
             params[self.strategy.SESSION_SAVE_KEY] = session_id
 
-        return url_add_parameters(self.strategy.absolute_uri(self.redirect_uri), params)
+        return self._add_return_to_parameters(
+            self.strategy.absolute_uri(self.redirect_uri), params
+        )
+
+    @staticmethod
+    def _add_return_to_parameters(url: str, params: dict[str, str]) -> str:
+        if not params:
+            return url
+        parsed = urlsplit(url)
+        query = [
+            (key, value)
+            for key, value in parse_qsl(parsed.query, keep_blank_values=True)
+            if key not in params
+        ]
+        query.extend(params.items())
+        return urlunsplit(parsed._replace(query=urlencode(query)))
+
+    def _return_to_for_login(self) -> str:
+        return self._add_return_to_parameters(
+            self.get_return_to(), {"redirect_state": self.create_state()}
+        )
+
+    def create_state(self) -> str:
+        """Bind the next positive assertion to this browser's OpenID login."""
+        state = self.strategy.random_string(32)
+        self.strategy.session_set(f"{self.name}_state", state)
+        return state
+
+    def validate_state(self) -> None:
+        """Require the verified return URL's state in the initiating session."""
+        request_state = self.data.get("redirect_state")
+        if not isinstance(request_state, str) or not request_state:
+            raise AuthInputError(
+                self,
+                parameter="redirect_state",
+                code="missing_parameter",
+                stage="callback",
+            )
+        name = f"{self.name}_state"
+        session_state = self.strategy.session_get(name)
+        if not isinstance(session_state, str) or not session_state:
+            raise AuthSessionError(
+                self, "state", code="session_context_missing", stage="callback"
+            )
+        if not constant_time_compare(request_state, session_state):
+            raise AuthSessionError(self, code="state_mismatch", stage="callback")
+        self.strategy.session_pop(name)
 
     def auth_url(self):
         """Return auth URL returned by service"""
         openid_request = self.setup_request(self.auth_extra_arguments())
         # Construct completion URL, including page we should redirect to
-        return openid_request.redirectURL(self.trust_root(), self.get_return_to())
+        return openid_request.redirectURL(
+            self.trust_root(), self._return_to_for_login()
+        )
 
     def auth_html(self):
         """Return auth HTML returned by service"""
         openid_request = self.setup_request(self.auth_extra_arguments())
         form_tag = {"id": "openid_message"}
         return openid_request.htmlMarkup(
-            self.trust_root(), self.get_return_to(), form_tag_attrs=form_tag
+            self.trust_root(),
+            self._return_to_for_login(),
+            form_tag_attrs=form_tag,
         )
 
     def trust_root(self):
@@ -587,6 +637,7 @@ class OpenIdAuth(BaseAuth):
         else:
             initiated_endpoint = self._expected_openid_endpoint()
             self._validate_completed_generic_provider(response, initiated_endpoint)
+        self.validate_state()
         self._clear_openid_context()
         # Retain both the verified message and its signed fields so extension
         # data keeps the same trust checks after a JSON-serialized partial.

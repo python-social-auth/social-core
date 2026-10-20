@@ -15,6 +15,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Security
 
+- OpenID callbacks now require a transaction value signed into the return URL
+  and stored in the initiating session. This prevents a callback from another
+  browser from linking an account while a login at the same provider is pending.
+  In-progress OpenID logins must restart after upgrading; unsolicited assertions
+  are no longer accepted.
 - Reject EVE Online sign-ins when a character's owner hash changes, preventing
   transferred characters from authenticating as the previous local user. The
   old association must be removed before the new owner can sign in.
