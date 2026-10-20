@@ -2,19 +2,24 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Protocol
+import datetime as dt
+import json
+from typing import TYPE_CHECKING, Any, Protocol, cast
 from unittest.mock import patch
+
+import responses
 
 from social_core.exceptions import AuthConfigurationError, AuthResponseError
 from social_core.tests.exception_helpers import assert_auth_error
-from social_core.tests.models import TestAssociation
+from social_core.tests.models import TestAssociation, TestStorage, User
+from social_core.tests.strategy import TestStrategy
+from social_core.utils import get_querystring
 
 if TYPE_CHECKING:
     from contextlib import AbstractContextManager
     from unittest.case import _AssertRaisesContext
 
     from social_core.backends.open_id_connect import OpenIdConnectAuth
-    from social_core.tests.strategy import TestStrategy
 
 
 class OpenIdConnectNonceAssertionsCapable(Protocol):
@@ -26,6 +31,10 @@ class OpenIdConnectNonceAssertionsCapable(Protocol):
     def pre_complete_callback(self, start_url) -> None: ...
 
     def test_invalid_signature(self) -> None: ...
+
+    def extra_settings(self) -> dict: ...
+
+    def prepare_access_token_body(self, **kwargs) -> str: ...
 
     def subTest(self, **params) -> AbstractContextManager: ...
 
@@ -45,6 +54,107 @@ class OpenIdConnectNonceAssertionsCapable(Protocol):
 
 
 class OpenIdConnectNonceAssertionsMixin:
+    def test_victim_code_rejected_in_other_browser(
+        self: OpenIdConnectNonceAssertionsCapable,
+    ) -> None:
+        victim_params = get_querystring(self.backend.auth_url())
+        attacker_strategy = TestStrategy(TestStorage)
+        attacker_strategy.set_settings(self.extra_settings())
+        attacker_backend = type(self.backend)(
+            attacker_strategy, redirect_uri=self.backend.redirect_uri
+        )
+        attacker_params = get_querystring(attacker_backend.auth_url())
+        responses.add(
+            responses.POST,
+            attacker_backend.access_token_url(),
+            json=json.loads(
+                self.prepare_access_token_body(
+                    nonce=victim_params["nonce"], subject="victim"
+                )
+            ),
+        )
+        attacker_strategy.set_request_data(
+            {"code": "victim-code", "state": attacker_params["state"]},
+            attacker_backend,
+        )
+        with assert_auth_error(self, AuthResponseError, "nonce_mismatch") as error:
+            attacker_backend.complete()
+        self.assertEqual(error.exception.stage, "token_validation")
+        self.assertEqual(len(TestAssociation.get(handle=victim_params["nonce"])), 1)
+
+    def test_nonce_missing_from_validated_transaction_rejects_login(
+        self: OpenIdConnectNonceAssertionsCapable,
+    ) -> None:
+        params = get_querystring(self.backend.auth_url())
+        key = self.backend.transaction_key(params["state"])
+        transaction = self.strategy.session_get(key)
+        transaction.pop("oidc_nonce")
+        self.strategy.set_request_data(
+            {"code": "victim-code", "state": params["state"]}, self.backend
+        )
+        responses.add(
+            responses.POST,
+            self.backend.access_token_url(),
+            json=json.loads(self.prepare_access_token_body(nonce=params["nonce"])),
+        )
+        with assert_auth_error(self, AuthResponseError, "nonce_mismatch"):
+            self.backend.complete()
+
+    def test_nonce_bound_to_one_of_two_pending_transactions(
+        self: OpenIdConnectNonceAssertionsCapable,
+    ) -> None:
+        first = get_querystring(self.backend.auth_url())
+        second = get_querystring(self.backend.auth_url())
+        self.strategy.set_request_data(
+            {"code": "first-code", "state": second["state"]}, self.backend
+        )
+        responses.add(
+            responses.POST,
+            self.backend.access_token_url(),
+            json=json.loads(self.prepare_access_token_body(nonce=first["nonce"])),
+        )
+        with assert_auth_error(self, AuthResponseError, "nonce_mismatch"):
+            self.backend.complete()
+        self.assertEqual(len(TestAssociation.get(handle=first["nonce"])), 1)
+
+    def test_association_only_nonce_uses_validated_user_context(
+        self: OpenIdConnectNonceAssertionsCapable,
+    ) -> None:
+        cast(Any, self.backend).ASSOCIATION_ONLY = True
+        user = User("local")
+        self.backend.prepare_auth(user)
+        params = get_querystring(self.backend.auth_url())
+        self.assertEqual(
+            self.backend.validate_association_state(params["state"], user),
+            params["state"],
+        )
+        self.backend.validate_claims(
+            {
+                "iat": int(dt.datetime.now(dt.timezone.utc).timestamp()),
+                "nonce": params["nonce"],
+            }
+        )
+        self.assertFalse(TestAssociation.get(handle=params["nonce"]))
+
+    def test_association_only_rejects_other_context_nonce(
+        self: OpenIdConnectNonceAssertionsCapable,
+    ) -> None:
+        cast(Any, self.backend).ASSOCIATION_ONLY = True
+        user = User("local")
+        self.backend.prepare_auth(user)
+        first = get_querystring(self.backend.auth_url())
+        self.backend.prepare_auth(user)
+        second = get_querystring(self.backend.auth_url())
+        self.backend.validate_association_state(second["state"], user)
+        with assert_auth_error(self, AuthResponseError, "nonce_mismatch"):
+            self.backend.validate_claims(
+                {
+                    "iat": int(dt.datetime.now(dt.timezone.utc).timestamp()),
+                    "nonce": first["nonce"],
+                }
+            )
+        self.assertEqual(len(TestAssociation.get(handle=first["nonce"])), 1)
+
     def test_everything_works(self: OpenIdConnectNonceAssertionsCapable) -> None:
         self.do_login()
         self.assertFalse(TestAssociation.cache)

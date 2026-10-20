@@ -808,7 +808,7 @@ class ExampleOpenIdConnectAcrValuesTest(OpenIdConnectTest):
         self.do_login()
 
     def test_acr_values_in_auth_params(self) -> None:
-        params = self.backend.auth_params(state="test-state")
+        params = self.backend.auth_params(state=self.backend.get_or_create_state())
         self.assertEqual(params["acr_values"], "urn:mace:incommon:iap:silver")
 
 
@@ -848,7 +848,7 @@ class ExampleOpenIdConnectLoginHintTest(OpenIdConnectTest):
         self.do_login()
 
     def test_login_hint_in_auth_params(self) -> None:
-        params = self.backend.auth_params(state="test-state")
+        params = self.backend.auth_params(state=self.backend.get_or_create_state())
         self.assertEqual(params["login_hint"], "user@example.com")
 
 
@@ -888,7 +888,7 @@ class ExampleOpenIdConnectIdTokenHintTest(OpenIdConnectTest):
         self.do_login()
 
     def test_id_token_hint_in_auth_params(self) -> None:
-        params = self.backend.auth_params(state="test-state")
+        params = self.backend.auth_params(state=self.backend.get_or_create_state())
         self.assertEqual(
             params["id_token_hint"],
             "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.fake",
@@ -931,7 +931,7 @@ class ExampleOpenIdConnectUiLocalesTest(OpenIdConnectTest):
         self.do_login()
 
     def test_ui_locales_in_auth_params(self) -> None:
-        params = self.backend.auth_params(state="test-state")
+        params = self.backend.auth_params(state=self.backend.get_or_create_state())
         self.assertEqual(params["ui_locales"], "en-US fr-CA")
 
 
@@ -965,7 +965,7 @@ class ExampleOpenIdConnectInvalidParamsTest(OpenIdConnectTest):
                     f"SOCIAL_AUTH_{self.backend.name.upper().replace('-', '_')}_ACR_VALUES": "",
                 }
             )
-            self.backend.auth_params(state="test-state")
+            self.backend.auth_params(state=self.backend.get_or_create_state())
 
     def test_empty_login_hint_raises_error(self) -> None:
         with self.assertRaises(AuthConfigurationError):
@@ -975,7 +975,7 @@ class ExampleOpenIdConnectInvalidParamsTest(OpenIdConnectTest):
                     f"SOCIAL_AUTH_{self.backend.name.upper().replace('-', '_')}_LOGIN_HINT": "",
                 }
             )
-            self.backend.auth_params(state="test-state")
+            self.backend.auth_params(state=self.backend.get_or_create_state())
 
     def test_empty_id_token_hint_raises_error(self) -> None:
         with self.assertRaises(AuthConfigurationError):
@@ -985,7 +985,7 @@ class ExampleOpenIdConnectInvalidParamsTest(OpenIdConnectTest):
                     f"SOCIAL_AUTH_{self.backend.name.upper().replace('-', '_')}_ID_TOKEN_HINT": "",
                 }
             )
-            self.backend.auth_params(state="test-state")
+            self.backend.auth_params(state=self.backend.get_or_create_state())
 
     def test_empty_ui_locales_raises_error(self) -> None:
         with self.assertRaises(AuthConfigurationError):
@@ -995,4 +995,4 @@ class ExampleOpenIdConnectInvalidParamsTest(OpenIdConnectTest):
                     f"SOCIAL_AUTH_{self.backend.name.upper().replace('-', '_')}_UI_LOCALES": "",
                 }
             )
-            self.backend.auth_params(state="test-state")
+            self.backend.auth_params(state=self.backend.get_or_create_state())
