@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Security
 
+- Reject EVE Online sign-ins when a character's owner hash changes, preventing
+  transferred characters from authenticating as the previous local user. The
+  old association must be removed before the new owner can sign in.
 - Enforce `SOCIAL_AUTH_SLACK_TEAM` against the workspace ID returned by Slack
   before login. Configurations using a workspace name or Enterprise organization
   ID must change to a workspace ID.
