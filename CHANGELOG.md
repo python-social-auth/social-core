@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Security
 
+- Bind OpenID Connect nonces to the initiating browser session and OAuth2 state,
+  rejecting authorization codes from other login attempts. In-progress OIDC
+  logins must restart after upgrading.
 - OpenID callbacks now require a transaction value signed into the return URL
   and stored in the initiating session. This prevents a callback from another
   browser from linking an account while a login at the same provider is pending.

@@ -96,7 +96,7 @@ class AuthenticationFailureBoundaryTest(unittest.TestCase):
                     ),
                     self.assertRaises(AuthConfigurationError) as caught,
                 ):
-                    backend.auth_params("state")
+                    backend.auth_params(backend.get_or_create_state())
                 self.assertEqual(caught.exception.stage, "begin")
                 self.assertEqual(caught.exception.recovery, "contact_administrator")
 
