@@ -106,21 +106,30 @@ rather than being duplicated here. The companion Django integration lives in
   claims.
 - Mock provider traffic in tests. Tests must not depend on live identity
   providers, external discovery documents, or mutable remote account data.
-- Review `THREAT_MODEL.md` when changing public authentication entry points,
-  supported protocols or backends, strategy or storage interfaces, pipeline and
-  partial-resume behavior, outbound network or filesystem access, or
-  security-relevant defaults for TLS, redirects, state, nonces, PKCE, assertion
-  validation, account identifiers and migration, email-code expiry, or protected
-  user fields.
-- Review does not necessarily require an edit. Update the threat model in the
-  same change only when its scope, actors, trust boundaries, assumptions,
-  claimed or disclaimed security properties, downstream responsibilities, known
-  misuse or non-findings, or triage dispositions change or leave a gap,
-  following its "Conditions that change this model" section. Features covered
-  by existing guidance do not need individual entries. Keep feature-level API,
-  configuration, implementation, and limit details in the relevant project
-  documentation; link to them only when needed to explain a distinct boundary,
-  exception, or triage outcome.
+- Review `THREAT_MODEL.md` for changes to public flows, protocols, input
+  formats, sessions, persistence, network/filesystem effects, extension
+  contracts, deployment assumptions, or security-relevant defaults. Compare
+  the change with existing model statements before deciding whether to edit.
+- A fix restoring an already claimed property normally needs regression tests,
+  a changelog entry, and relevant user documentation, not a new threat-model
+  entry. For example, enforcing a configured workspace restriction fits the
+  general authentication-policy guarantee; introducing a signed flow without
+  session correlation requires an explicit exception.
+- Edit the model only when a boundary, actor, assumption, guarantee, exception,
+  downstream responsibility, or triage rule changes or leaves a gap. Prefer
+  updating an existing general statement. Backend-specific text needs a
+  distinct boundary or exception that the shared property cannot express
+  accurately. Keep each necessary exception in one place and cross-reference it.
+- Put configuration names, defaults, limits, API usage, deployment requirements,
+  upgrade steps, and remediation in `social-docs`; put release history in the
+  changelog. Do not accumulate per-fix narratives, repeated disclaimers,
+  manually maintained claim counts, or documentation back-map appendices in
+  the threat model.
+- When a shared contract changes, review the `social-auth-app-django` model too.
+  Update it only if its own guarantees or assumptions change. Core owns protocol
+  validation and shared pipeline/interface contracts; Django owns HTTP/CSRF,
+  session, concrete storage, template, and error-presentation boundaries. Keep
+  both models understandable without duplicating the companion's details.
 
 ## Testing and linting instructions
 

@@ -70,7 +70,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - VK iframe app launches can no longer associate a new VK identity with the
   local user already logged in to the receiving browser. Authenticated sessions
   now accept only a VK identity already associated with that user; anonymous
-  launches remain unbound and replayable as documented in the threat model.
+  launches remain unbound and replayable as documented for the
+  [VK backend](https://python-social-auth.readthedocs.io/en/latest/backends/vk.html).
 - Odnoklassniki iframe app launches can no longer associate a new OK identity
   with the local user already logged in to the receiving browser. Authenticated
   sessions now accept only an OK identity already associated with that user.
@@ -87,8 +88,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   a valid assertion initiated by an attacker from being associated with a user
   in another browser session.
 - Document the project's security boundaries, assumptions, downstream
-  responsibilities, including the correlation limits of Telegram and Facebook
-  Limited Login, and triage dispositions in the
+  responsibilities and triage dispositions in the
   [threat model](https://github.com/python-social-auth/social-core/blob/master/THREAT_MODEL.md).
 - Correlate SAML responses with the AuthnRequest using the signed
   `SubjectConfirmationData` `InResponseTo` when the unsigned response envelope
@@ -105,6 +105,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Consolidate the core and Django threat models around security boundaries and
+  guarantees, with operational guidance in the
+  [security documentation](https://python-social-auth.readthedocs.io/en/latest/security.html).
 - Verified compatibility with Python 3.15.
 
 ### Fixed
