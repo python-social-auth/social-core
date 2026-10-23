@@ -3,8 +3,9 @@ from __future__ import annotations
 import secrets
 from contextlib import contextmanager
 from contextvars import ContextVar
-from typing import TYPE_CHECKING, Any, Generic, Protocol, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
 
+from .backends.base import HttpResponseProtocol
 from .backends.utils import get_backend
 from .exceptions import AuthConfigurationError, ErrorStage
 from .groups import validate_group_mapping
@@ -27,12 +28,7 @@ if TYPE_CHECKING:
     from .storage import BaseStorage, CodeMixin, PartialMixin, UserProtocol
 
 
-ResponseT_co = TypeVar("ResponseT_co", covariant=True)
-
-
-class HttpResponseProtocol(Protocol):
-    @property
-    def url(self) -> str: ...
+ResponseT_co = TypeVar("ResponseT_co", bound=HttpResponseProtocol, covariant=True)
 
 
 class BaseTemplateStrategy:
@@ -294,9 +290,11 @@ class BaseStrategy(Generic[ResponseT_co]):
 
     def get_backend(
         self, name: str, redirect_uri: str | None = None, **kwargs
-    ) -> BaseAuth[Any]:
+    ) -> BaseAuth[ResponseT_co]:
         """Return a configured backend instance"""
-        backend_class = self.get_backend_class(name)
+        backend_class = cast(
+            "type[BaseAuth[ResponseT_co]]", self.get_backend_class(name)
+        )
         kwargs["redirect_uri"] = redirect_uri
         return backend_class(self, **kwargs)
 

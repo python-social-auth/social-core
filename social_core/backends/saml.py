@@ -35,7 +35,7 @@ from social_core.exceptions import (
 from social_core.groups import read_groups
 from social_core.utils import constant_time_compare, user_is_authenticated
 
-from .base import BaseAuth
+from .base import BaseAuth, HttpResponseProtocol
 
 # Helpful constants:
 OID_COMMON_NAME = "urn:oid:2.5.4.3"
@@ -263,7 +263,7 @@ class SAMLIdentityProvider:
         )
 
 
-class SAMLAuth(BaseAuth):
+class SAMLAuth(BaseAuth[HttpResponseProtocol]):
     """
     PSA Backend that implements SAML 2.0 Service Provider (SP) functionality.
 

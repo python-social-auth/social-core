@@ -12,7 +12,7 @@ from urllib.parse import unquote
 from social_core.exceptions import AuthInputError, AuthResponseError
 from social_core.utils import constant_time_compare
 
-from .base import BaseAuth
+from .base import BaseAuth, HttpResponseProtocol
 from .oauth import BaseOAuth2
 
 
@@ -60,7 +60,7 @@ class OdnoklassnikiOAuth2(BaseOAuth2):
         )
 
 
-class OdnoklassnikiApp(BaseAuth):
+class OdnoklassnikiApp(BaseAuth[HttpResponseProtocol]):
     """Odnoklassniki iframe app authentication backend"""
 
     name = "odnoklassniki-app"
