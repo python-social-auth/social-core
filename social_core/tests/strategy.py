@@ -126,12 +126,12 @@ class TestStrategy(BaseStrategy):
         self._request_data.pop(name, None)
 
     def authenticate(self, backend: BaseAuth, *args, **kwargs):
-        """Authenticate with new backend instances, never the given one.
+        """Authenticate through new backend instances, as some frameworks do.
 
         Strategies may authenticate this way: create a new instance of every
         configured backend class and return the first result that is not None.
-        State kept on the backend between complete() and the pipeline is then
-        lost, so the tests catch backends that depend on it.
+        Backend authenticate() overrides then run on the new instance, while the
+        pipeline runs on the given backend, so the tests cover both.
         """
         kwargs["strategy"] = self
         kwargs["storage"] = self.storage
