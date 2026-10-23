@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import wraps
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from social_core.utils import (
     PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME,
@@ -14,14 +14,17 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     from social_core.backends.base import BaseAuth
-    from social_core.strategy import BaseStrategy, HttpResponseProtocol
+    from social_core.strategy import BaseStrategy
+
+
+ResponseT = TypeVar("ResponseT")
 
 
 def partial_step(
     save_to_session: bool, allow_external_resume: bool = False
 ) -> Callable[
-    [Callable[..., dict[str, Any] | HttpResponseProtocol | None]],
-    Callable[..., dict[str, Any] | HttpResponseProtocol],
+    [Callable[..., dict[str, Any] | ResponseT | None]],
+    Callable[..., dict[str, Any] | ResponseT],
 ]:
     """Wraps func to behave like a partial pipeline step, any output
     that's not None or {} will be considered a response object and
@@ -46,8 +49,8 @@ def partial_step(
     # Step signatures vary, and the wrapper injects current_partial and other
     # keyword arguments, so input and output callables have different signatures.
     def decorator(
-        func: Callable[..., dict[str, Any] | HttpResponseProtocol | None],
-    ) -> Callable[..., dict[str, Any] | HttpResponseProtocol]:
+        func: Callable[..., dict[str, Any] | ResponseT | None],
+    ) -> Callable[..., dict[str, Any] | ResponseT]:
         @wraps(func)
         def wrapper(
             strategy: BaseStrategy,
@@ -55,7 +58,7 @@ def partial_step(
             pipeline_index: int,
             *args: Any,
             **kwargs: Any,
-        ) -> dict[str, Any] | HttpResponseProtocol:
+        ) -> dict[str, Any] | ResponseT:
             current_partial = partial_prepare(
                 strategy, backend, pipeline_index, *args, **kwargs
             )
