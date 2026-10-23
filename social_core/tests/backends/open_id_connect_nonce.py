@@ -130,7 +130,7 @@ class OpenIdConnectNonceAssertionsMixin:
         )
         self.backend.validate_claims(
             {
-                "iat": int(dt.datetime.now(dt.timezone.utc).timestamp()),
+                "iat": int(dt.datetime.now(dt.UTC).timestamp()),
                 "nonce": params["nonce"],
             }
         )
@@ -149,7 +149,7 @@ class OpenIdConnectNonceAssertionsMixin:
         with assert_auth_error(self, AuthResponseError, "nonce_mismatch"):
             self.backend.validate_claims(
                 {
-                    "iat": int(dt.datetime.now(dt.timezone.utc).timestamp()),
+                    "iat": int(dt.datetime.now(dt.UTC).timestamp()),
                     "nonce": first["nonce"],
                 }
             )

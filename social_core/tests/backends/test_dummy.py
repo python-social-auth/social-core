@@ -230,7 +230,7 @@ class ExpirationTimeTest(DummyOAuth2Test):
             "first_name": "Foo",
             "last_name": "Bar",
             "email": "foo@bar.com",
-            "expires": (dt.datetime.now(dt.timezone.utc) + DELTA).timestamp(),
+            "expires": (dt.datetime.now(dt.UTC) + DELTA).timestamp(),
         }
     )
 

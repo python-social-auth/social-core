@@ -54,8 +54,6 @@ class AsanaOAuth2(BaseOAuth2):
     ) -> dict[str, Any]:
         data = super().extra_data(user, uid, response, details, pipeline_kwargs)
         if self.setting("ESTIMATE_EXPIRES_ON"):
-            expires_on = dt.datetime.now(dt.timezone.utc) + dt.timedelta(
-                seconds=data["expires"]
-            )
+            expires_on = dt.datetime.now(dt.UTC) + dt.timedelta(seconds=data["expires"])
             data["expires_on"] = expires_on.isoformat()
         return data

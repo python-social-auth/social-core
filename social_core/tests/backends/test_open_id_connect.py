@@ -180,7 +180,7 @@ class BaseOpenIdConnectTest(
             claims = partial.kwargs[PARTIAL_ID_TOKEN_KEY]
             expired_time = dt.datetime.fromtimestamp(
                 claims["exp"] + self.backend.ID_TOKEN_MAX_AGE + 1,
-                dt.timezone.utc,
+                dt.UTC,
             )
             with (
                 patch("jwt.api_jwt.datetime") as jwt_datetime,
@@ -367,14 +367,14 @@ class BaseOpenIdConnectTest(
         )
 
     def test_refresh_rejects_expired_id_token(self) -> None:
-        expiration_datetime = dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=1)
+        expiration_datetime = dt.datetime.now(dt.UTC) - dt.timedelta(days=1)
         self.assert_refresh_rejected(
             self.refresh_response(expiration_datetime=expiration_datetime),
             "response_expired",
         )
 
     def test_refresh_rejects_stale_issue_time(self) -> None:
-        issue_datetime = dt.datetime.now(dt.timezone.utc) - dt.timedelta(
+        issue_datetime = dt.datetime.now(dt.UTC) - dt.timedelta(
             seconds=self.backend.ID_TOKEN_MAX_AGE * 2,
         )
         self.assert_refresh_rejected(
