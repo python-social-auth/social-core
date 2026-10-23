@@ -1,4 +1,5 @@
 import unittest
+from typing import Any
 
 from social_core.backends.base import BaseAuth
 from social_core.exceptions import AuthConfigurationError
@@ -38,7 +39,7 @@ class StrategyNoneStorageTestCase(unittest.TestCase):
 
     def test_send_email_validation_raises_error(self) -> None:
         """Test that send_email_validation raises StrategyMissingBackendError with None storage"""
-        backend = BaseAuth(self.strategy)
+        backend: BaseAuth[Any] = BaseAuth(self.strategy)
         with self.assertRaises(AuthConfigurationError):
             self.strategy.send_email_validation(backend, "test@example.com")
 
@@ -50,7 +51,7 @@ class StrategyNoneStorageTestCase(unittest.TestCase):
 
     def test_authenticate_raises_error(self) -> None:
         """Test that authenticate raises StrategyMissingBackendError with None storage"""
-        backend = BaseAuth(self.strategy)
+        backend: BaseAuth[Any] = BaseAuth(self.strategy)
         with self.assertRaises(AuthConfigurationError) as cm:
             self.strategy.authenticate(backend)
         self.assertEqual(cm.exception.code, "missing_setting")

@@ -3,7 +3,7 @@ import jwt
 from social_core.exceptions import AuthConfigurationError, AuthResponseError, ErrorStage
 from social_core.utils import cache, module_member, user_is_authenticated
 
-from .base import BaseAuth
+from .base import BaseAuth, HttpResponseProtocol
 
 # Cache for discovered backends.
 BACKENDSCACHE: dict[str, type[BaseAuth]] = {}
@@ -92,7 +92,7 @@ def load_oidc_config(
     return response
 
 
-class OIDCDiscoveryMixin(BaseAuth):
+class OIDCDiscoveryMixin(BaseAuth[HttpResponseProtocol]):
     """Share validated, cached discovery loading across OAuth2 and OIDC backends."""
 
     def oidc_config_url(self) -> str:

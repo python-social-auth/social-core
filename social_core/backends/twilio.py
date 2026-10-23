@@ -10,10 +10,10 @@ from urllib.parse import urlencode
 from social_core.exceptions import AuthResponseError
 from social_core.utils import url_add_parameters
 
-from .base import BaseAuth
+from .base import BaseAuth, HttpResponseProtocol
 
 
-class TwilioAuth(BaseAuth):
+class TwilioAuth(BaseAuth[HttpResponseProtocol]):
     """Associate Twilio Connect access with an authenticated local user."""
 
     name = "twilio"

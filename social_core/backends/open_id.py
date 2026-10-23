@@ -29,7 +29,7 @@ from social_core.exceptions import (
 from social_core.store import InvalidOpenIdSession, OpenIdSessionWrapper
 from social_core.utils import constant_time_compare, url_add_parameters
 
-from .base import BaseAuth
+from .base import BaseAuth, HttpResponseProtocol
 
 if TYPE_CHECKING:
     from social_core.store import OpenIdStore
@@ -57,7 +57,7 @@ _BACKEND_SESSION_KEY = "_social_auth_backend"
 _LEGACY_SESSION_ID_FIELD = "psa_session_id"
 
 
-class OpenIdAuth(BaseAuth):
+class OpenIdAuth(BaseAuth[HttpResponseProtocol]):
     """Generic OpenID authentication backend"""
 
     name = "openid"

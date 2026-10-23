@@ -26,7 +26,7 @@ from social_core.utils import (
     wrap_access_token_error,
 )
 
-from .base import BaseAuth
+from .base import BaseAuth, HttpResponseProtocol
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -35,7 +35,7 @@ if TYPE_CHECKING:
     from requests.auth import AuthBase
 
 
-class OAuthAuth(BaseAuth):
+class OAuthAuth(BaseAuth[HttpResponseProtocol]):
     """OAuth authentication backend base class.
 
     Settings will be inspected to get more values names that should be

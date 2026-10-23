@@ -10,16 +10,16 @@ from social_core.exceptions import (
     AuthInputError,
     AuthResponseError,
 )
+from social_core.strategy import HttpResponseProtocol
 from social_core.utils import constant_time_compare, handle_http_errors
 
 from .base import BaseAuth
 
 if TYPE_CHECKING:
     from social_core.storage import UserProtocol
-    from social_core.strategy import HttpResponseProtocol
 
 
-class TelegramAuth(BaseAuth):
+class TelegramAuth(BaseAuth[HttpResponseProtocol]):
     name = "telegram"
     title = "Telegram"
     ID_KEY = "id"

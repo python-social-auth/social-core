@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import unittest
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Any, cast
 from unittest.mock import Mock, patch
 
 from social_core.backends.base import BaseAuth
@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 class PipelineResultTest(unittest.TestCase):
     def setUp(self) -> None:
         self.strategy = TestStrategy(TestStorage)
-        self.backend = BaseAuth(self.strategy)
+        self.backend: BaseAuth[Any] = BaseAuth(self.strategy)
 
     def test_response_stops_pipeline(self) -> None:
         response = Redirect("/pause")
@@ -307,7 +307,7 @@ class UserPersistsInPartialPipeline(BaseActionTest):
 class UserCreationTest(unittest.TestCase):
     def setUp(self) -> None:
         self.strategy = TestStrategy(TestStorage)
-        self.backend = BaseAuth(self.strategy)
+        self.backend: BaseAuth[Any] = BaseAuth(self.strategy)
         self.strategy.set_settings(
             {
                 "SOCIAL_AUTH_USER_FIELDS": [

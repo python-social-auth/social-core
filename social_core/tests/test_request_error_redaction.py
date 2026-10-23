@@ -6,6 +6,7 @@ import io
 import logging
 import traceback
 import unittest
+from typing import Any
 from unittest.mock import patch
 
 import requests
@@ -30,7 +31,7 @@ from social_core.utils import (
 class RequestErrorRedactionTest(unittest.TestCase):
     def setUp(self) -> None:
         self.strategy = TestStrategy(TestStorage)
-        self.backend = BaseAuth(self.strategy)
+        self.backend: BaseAuth[Any] = BaseAuth(self.strategy)
 
     def test_request_exception_branches(self) -> None:
         url = "https://provider.example/token?client_secret=SECRET_MARKER"
