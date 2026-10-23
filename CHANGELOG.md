@@ -16,6 +16,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Add a `get_provider_error()` backend hook for callback and HTTP error classification.
 
+### Changed
+
+- Make strategy-generated response types generic so framework-specific HTML
+  responses can be returned from decorated partial pipeline steps.
+
 ### Security
 
 - Bind SAML responses to the browser's pending AuthnRequest instead of a session

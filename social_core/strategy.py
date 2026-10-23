@@ -3,7 +3,7 @@ from __future__ import annotations
 import secrets
 from contextlib import contextmanager
 from contextvars import ContextVar
-from typing import TYPE_CHECKING, Any, Protocol, cast
+from typing import TYPE_CHECKING, Any, Generic, Protocol, TypeVar, cast
 
 from .backends.utils import get_backend
 from .exceptions import AuthConfigurationError, ErrorStage
@@ -25,6 +25,9 @@ if TYPE_CHECKING:
 
     from .backends.base import BaseAuth
     from .storage import BaseStorage, CodeMixin, PartialMixin, UserProtocol
+
+
+ResponseT_co = TypeVar("ResponseT_co", covariant=True)
 
 
 class HttpResponseProtocol(Protocol):
@@ -56,7 +59,7 @@ class BaseTemplateStrategy:
         raise NotImplementedError("Implement in subclass")
 
 
-class BaseStrategy:
+class BaseStrategy(Generic[ResponseT_co]):
     ALLOWED_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     DEFAULT_TEMPLATE_STRATEGY = BaseTemplateStrategy
 
@@ -159,7 +162,7 @@ class BaseStrategy:
         backend: BaseAuth,
         partial: PartialMixin,
         request_data: dict[str, Any],
-    ) -> HttpResponseProtocol | None:
+    ) -> ResponseT_co | None:
         return None
 
     def partial_pipeline_external_resume_confirmed(
@@ -269,7 +272,7 @@ class BaseStrategy:
 
     # Implement the following methods on strategies sub-classes
 
-    def redirect(self, url: str) -> HttpResponseProtocol:
+    def redirect(self, url: str) -> ResponseT_co:
         """Return a response redirect to the given URL"""
         raise NotImplementedError("Implement in subclass")
 
@@ -277,7 +280,7 @@ class BaseStrategy:
         """Return value for given setting name"""
         raise NotImplementedError("Implement in subclass")
 
-    def html(self, content: str) -> HttpResponseProtocol:
+    def html(self, content: str) -> ResponseT_co:
         """Return HTTP response with given content"""
         raise NotImplementedError("Implement in subclass")
 
