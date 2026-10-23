@@ -164,6 +164,7 @@ disable = [
 extension-pkg-allow-list = ["lxml.etree"]
 
 [tool.pyright]
+pythonVersion = "3.11"
 reportOptionalMemberAccess = "none"
 reportPossiblyUnboundVariable = "none"
 venv = ".venv"
