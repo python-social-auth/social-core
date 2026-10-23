@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Literal
 
-from social_core.backends.base import BaseAuth
+from social_core.backends.base import BaseAuth, HttpResponseProtocol
 from social_core.exceptions import AuthResponseError
 
 from .oauth import BaseOAuth1, BaseOAuth2
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
 
-class BaseGoogleAuth(BaseAuth):
+class BaseGoogleAuth(BaseAuth[HttpResponseProtocol]):
     LEGACY_ID_KEYS = ("email",)
     MUTABLE_ID_KEYS = ("email",)
 

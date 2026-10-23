@@ -42,7 +42,7 @@ if TYPE_CHECKING:
 
     from .backends.base import BaseAuth
     from .storage import PartialMixin, UserProtocol
-    from .strategy import BaseStrategy
+    from .strategy import BaseStrategy, HttpResponseProtocol
 
 SETTING_PREFIX = "SOCIAL_AUTH"
 
@@ -56,7 +56,7 @@ PARTIAL_TOKEN_PENDING_CONFIRMATION_SESSION_NAME = (
 )
 PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME = "allow_external_resume"
 
-ResponseT = TypeVar("ResponseT")
+ResponseT = TypeVar("ResponseT", bound="HttpResponseProtocol")
 
 
 social_logger = logging.getLogger("social")

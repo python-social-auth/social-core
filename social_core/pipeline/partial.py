@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import wraps
-from typing import TYPE_CHECKING, Any, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Protocol, TypeVar, overload
 
 from social_core.utils import (
     PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME,
@@ -14,18 +14,27 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     from social_core.backends.base import BaseAuth
-    from social_core.strategy import BaseStrategy
+    from social_core.strategy import BaseStrategy, HttpResponseProtocol
 
 
-ResponseT = TypeVar("ResponseT")
+ResponseT = TypeVar("ResponseT", bound="HttpResponseProtocol")
+
+
+class _PartialStepDecorator(Protocol):
+    @overload
+    def __call__(
+        self, func: Callable[..., dict[str, Any] | None]
+    ) -> Callable[..., dict[str, Any]]: ...
+
+    @overload
+    def __call__(
+        self, func: Callable[..., dict[str, Any] | ResponseT | None]
+    ) -> Callable[..., dict[str, Any] | ResponseT]: ...
 
 
 def partial_step(
     save_to_session: bool, allow_external_resume: bool = False
-) -> Callable[
-    [Callable[..., dict[str, Any] | ResponseT | None]],
-    Callable[..., dict[str, Any] | ResponseT],
-]:
+) -> _PartialStepDecorator:
     """Wraps func to behave like a partial pipeline step, any output
     that's not None or {} will be considered a response object and
     will be returned to user.
@@ -48,9 +57,7 @@ def partial_step(
 
     # Step signatures vary, and the wrapper injects current_partial and other
     # keyword arguments, so input and output callables have different signatures.
-    def decorator(
-        func: Callable[..., dict[str, Any] | ResponseT | None],
-    ) -> Callable[..., dict[str, Any] | ResponseT]:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(func)
         def wrapper(
             strategy: BaseStrategy[ResponseT],

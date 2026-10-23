@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import unittest
 from functools import partial
+from typing import Any
 from unittest.mock import Mock, patch
 
 import jwt
@@ -38,7 +39,7 @@ from social_core.utils import http_error, module_member, provider_error
 
 class ProviderErrorTest(unittest.TestCase):
     def setUp(self):
-        self.backend = BaseAuth(TestStrategy(TestStorage))
+        self.backend: BaseAuth[Any] = BaseAuth(TestStrategy(TestStorage))
 
     def response(self, status, data=None):
         response = Mock(spec=requests.Response, status_code=status, headers={})
