@@ -13,6 +13,7 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Concatenate,
+    Generic,
     ParamSpec,
     Protocol,
     TypeVar,
@@ -41,7 +42,7 @@ if TYPE_CHECKING:
 
     from .backends.base import BaseAuth
     from .storage import PartialMixin, UserProtocol
-    from .strategy import BaseStrategy, HttpResponseProtocol
+    from .strategy import BaseStrategy
 
 SETTING_PREFIX = "SOCIAL_AUTH"
 
@@ -55,14 +56,16 @@ PARTIAL_TOKEN_PENDING_CONFIRMATION_SESSION_NAME = (
 )
 PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME = "allow_external_resume"
 
+ResponseT = TypeVar("ResponseT")
+
 
 social_logger = logging.getLogger("social")
 
 
 @dataclass
-class PartialPipelineResult:
+class PartialPipelineResult(Generic[ResponseT]):
     partial: PartialMixin | None = None
-    response: HttpResponseProtocol | None = None
+    response: ResponseT | None = None
     halt: bool = False
 
 
@@ -360,11 +363,11 @@ def _confirmed_partial_pipeline_request_data(
 
 
 def _external_partial_pipeline_result(
-    backend: BaseAuth,
+    backend: BaseAuth[ResponseT],
     partial: PartialMixin,
     selected_token: str,
     request_data: dict[str, Any],
-) -> PartialPipelineResult:
+) -> PartialPipelineResult[ResponseT]:
     response = backend.strategy.partial_pipeline_external_resume_confirmation(
         backend, partial, request_data
     )
@@ -382,13 +385,13 @@ def _external_partial_pipeline_result(
 
 
 def partial_pipeline_result(
-    backend: BaseAuth,
+    backend: BaseAuth[ResponseT],
     user: UserProtocol | None = None,
     partial_token: str | None = None,
     *args,
     pipeline_type: str = "authentication",
     **kwargs,
-) -> PartialPipelineResult:
+) -> PartialPipelineResult[ResponseT]:
     request_data = backend.strategy.get_request_data()
 
     partial_argument_name = cast(
@@ -419,7 +422,9 @@ def partial_pipeline_result(
     if not selection.token:
         return PartialPipelineResult()
 
-    result = PartialPipelineResult(halt=bool(request_token or confirmation_requested))
+    result: PartialPipelineResult[ResponseT] = PartialPipelineResult(
+        halt=bool(request_token or confirmation_requested)
+    )
     effective_request_data = request_data
     if selection.pending_resume:
         confirmed_request_data = _confirmed_partial_pipeline_request_data(
