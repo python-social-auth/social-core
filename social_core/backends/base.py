@@ -81,7 +81,9 @@ class BaseAuth(Generic[ResponseT]):
     ASSOCIATION_ONLY = False
 
     def __init__(
-        self, strategy: BaseStrategy[ResponseT] | None = None, redirect_uri: str | None = None
+        self,
+        strategy: BaseStrategy[ResponseT] | None = None,
+        redirect_uri: str | None = None,
     ) -> None:
         self._strategy: BaseStrategy[Any] = (
             strategy if strategy is not None else REGISTRY.default_strategy
@@ -250,9 +252,7 @@ class BaseAuth(Generic[ResponseT]):
         """Must return login HTML content returned by provider"""
         return "Implement in subclass"
 
-    def auth_complete(
-        self, *args, **kwargs
-    ) -> ResponseT | UserProtocol | None:
+    def auth_complete(self, *args, **kwargs) -> ResponseT | UserProtocol | None:
         """Completes login process, must return user instance"""
         raise NotImplementedError("Implement in subclass")
 
@@ -294,9 +294,7 @@ class BaseAuth(Generic[ResponseT]):
             error.stage = stage
             raise
 
-    def authenticate(
-        self, *args, **kwargs
-    ) -> UserProtocol | ResponseT | None:
+    def authenticate(self, *args, **kwargs) -> UserProtocol | ResponseT | None:
         """Authenticate user using social credentials
 
         Authentication is made if this is the correct backend, backend

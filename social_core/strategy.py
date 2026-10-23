@@ -111,7 +111,13 @@ class BaseStrategy(Generic[ResponseT_co]):
         return self.storage.user.get_user(*args, **kwargs)
 
     def sync_user_groups(
-        self, user, groups: list[str] | None, *, backend: BaseAuth[Any], response, **kwargs
+        self,
+        user,
+        groups: list[str] | None,
+        *,
+        backend: BaseAuth[Any],
+        response,
+        **kwargs,
     ) -> None:
         """Override to apply configured external memberships to local groups."""
         if validate_group_mapping(
@@ -180,7 +186,9 @@ class BaseStrategy(Generic[ResponseT_co]):
             "list[str]", self.setting("PIPELINE", DEFAULT_AUTH_PIPELINE, backend)
         )
 
-    def get_disconnect_pipeline(self, backend: BaseAuth[Any] | None = None) -> list[str]:
+    def get_disconnect_pipeline(
+        self, backend: BaseAuth[Any] | None = None
+    ) -> list[str]:
         return cast(
             "list[str]",
             self.setting("DISCONNECT_PIPELINE", DEFAULT_DISCONNECT_PIPELINE, backend),

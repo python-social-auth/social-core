@@ -66,10 +66,7 @@ def _handle_partial(
     *args,
     pipeline_type: str = "authentication",
     **kwargs,
-) -> (
-    tuple[Literal[True], _PartialResult | ResponseT]
-    | tuple[Literal[False], None]
-):
+) -> tuple[Literal[True], _PartialResult | ResponseT] | tuple[Literal[False], None]:
     partial = partial_pipeline_result(
         backend, user, *args, pipeline_type=pipeline_type, **kwargs
     )
