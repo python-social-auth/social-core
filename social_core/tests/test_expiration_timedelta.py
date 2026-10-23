@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import time
 import unittest
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import cast
 
 from social_core.exceptions import AuthResponseError
@@ -39,7 +39,7 @@ class ExpirationTimedeltaTestCase(unittest.TestCase):
 
     def test_expires_on_absolute_timestamp_future(self) -> None:
         """Test expires_on with future timestamp."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         future_time = now + timedelta(hours=1)
         social = TestUserSocialAuth(
             self.user,
@@ -54,7 +54,7 @@ class ExpirationTimedeltaTestCase(unittest.TestCase):
 
     def test_expires_on_absolute_timestamp_past(self) -> None:
         """Test expires_on with past timestamp (expired token)."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         past_time = now - timedelta(hours=1)
         social = TestUserSocialAuth(
             self.user,
@@ -99,7 +99,7 @@ class ExpirationTimedeltaTestCase(unittest.TestCase):
 
     def test_expires_as_absolute_timestamp_future(self) -> None:
         """Test expires field with large value (absolute timestamp) in future."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         future_time = now + timedelta(hours=2)
         # Timestamp values are typically > 1 billion (year 2001+)
         social = TestUserSocialAuth(
@@ -115,7 +115,7 @@ class ExpirationTimedeltaTestCase(unittest.TestCase):
 
     def test_expires_as_absolute_timestamp_past(self) -> None:
         """Test expires field with expired absolute timestamp (the original bug)."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         past_time = now - timedelta(hours=1)
         # This tests the bug: expired timestamp should still be recognized as timestamp
         social = TestUserSocialAuth(
@@ -161,7 +161,7 @@ class ExpirationTimedeltaTestCase(unittest.TestCase):
 
     def test_expires_priority_order(self) -> None:
         """Test that expires_on takes priority over expires_in and expires."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         future_time = now + timedelta(hours=3)
         social = TestUserSocialAuth(
             self.user,
@@ -226,7 +226,7 @@ class ExpirationTimedeltaTestCase(unittest.TestCase):
     def test_heuristic_threshold_boundary(self) -> None:
         """Test the heuristic threshold (2 years = 63072000 seconds)."""
         # Value just above threshold should be treated as timestamp
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         # Use a timestamp value (year 2025)
         timestamp_value = int(now.timestamp())
         social1 = TestUserSocialAuth(
@@ -255,7 +255,7 @@ class ExpirationTimedeltaTestCase(unittest.TestCase):
 
     def test_access_token_expired_with_valid_token(self) -> None:
         """Test access_token_expired() with valid token."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         future_time = now + timedelta(hours=1)
         social = TestUserSocialAuth(
             self.user,
@@ -267,7 +267,7 @@ class ExpirationTimedeltaTestCase(unittest.TestCase):
 
     def test_access_token_expired_with_expired_token(self) -> None:
         """Test access_token_expired() with expired token."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         past_time = now - timedelta(hours=1)
         social = TestUserSocialAuth(
             self.user,
@@ -279,7 +279,7 @@ class ExpirationTimedeltaTestCase(unittest.TestCase):
 
     def test_access_token_expired_within_threshold(self) -> None:
         """Test access_token_expired() with token expiring within threshold."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         # Token expires in 3 seconds (within the 5 second threshold)
         near_future = now + timedelta(seconds=3)
         social = TestUserSocialAuth(

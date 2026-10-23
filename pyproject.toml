@@ -40,7 +40,6 @@ classifiers = [
   "Intended Audience :: Developers",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
@@ -63,7 +62,7 @@ license = "BSD-3-Clause"
 license-files = ["LICENSE"]
 name = "social-auth-core"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 version = "6.2.0"
 
 [project.optional-dependencies]
@@ -165,7 +164,6 @@ disable = [
 extension-pkg-allow-list = ["lxml.etree"]
 
 [tool.pyright]
-pythonVersion = "3.10"
 reportOptionalMemberAccess = "none"
 reportPossiblyUnboundVariable = "none"
 venv = ".venv"

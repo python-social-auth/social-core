@@ -89,7 +89,7 @@ class GenericOpenIdBrowserBindingTest(OpenIdTest):
         unsigned_session_return_to = urlunsplit(
             parsed._replace(query=urlencode(callback_args))
         )
-        nonce = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        nonce = dt.datetime.now(dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
         return urlencode(
             {
                 "openid.ns": OPENID2_NS,

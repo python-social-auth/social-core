@@ -8,7 +8,7 @@ from social_core.exceptions import AuthInputError
 
 from .open_id import OpenIdTest
 
-JANRAIN_NONCE = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+JANRAIN_NONCE = dt.datetime.now(dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 class LiveJournalOpenIdTest(OpenIdTest):

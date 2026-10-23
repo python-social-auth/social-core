@@ -6,7 +6,7 @@ signature-tampering tests deliberately mutate the signed result.
 """
 
 from base64 import b64decode, b64encode
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from functools import lru_cache
 from urllib.parse import parse_qs, urlencode, urlsplit
 from zlib import compress, decompress
@@ -53,8 +53,8 @@ def keypair(name):
         .issuer_name(subject)
         .public_key(key.public_key())
         .serial_number(x509.random_serial_number())
-        .not_valid_before(datetime(2020, 1, 1, tzinfo=timezone.utc))
-        .not_valid_after(datetime(2040, 1, 1, tzinfo=timezone.utc))
+        .not_valid_before(datetime(2020, 1, 1, tzinfo=UTC))
+        .not_valid_after(datetime(2040, 1, 1, tzinfo=UTC))
         .sign(key, hashes.SHA256())
     )
     return (
