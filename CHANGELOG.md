@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+### Changed
+
+- When a framework's authentication API calls `BaseAuth.authenticate()` on a
+  backend instance it created itself, as Django's does, the pipeline now runs
+  on the backend passed in `backend` using the new `run_authentication()`, as
+  it already did for other integrations, instead of adopting the caller's
+  strategy. Authenticating a backend with a different strategy than it was
+  created with now raises `AuthConfigurationError`. Type checkers now treat
+  `BaseAuth.strategy` as read-only, and assigning it is deprecated. In both
+  cases, create the backend with the intended strategy instead.
+
 ## [6.2.0](https://github.com/python-social-auth/social-core/releases/tag/6.2.0) - 2026-10-20
 
 ### Added
