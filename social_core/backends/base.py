@@ -8,7 +8,7 @@ from contextlib import contextmanager
 from contextvars import ContextVar
 from email.errors import HeaderParseError
 from email.headerregistry import Address
-from typing import TYPE_CHECKING, Any, Literal, cast
+from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar, cast
 
 import requests
 
@@ -48,10 +48,13 @@ if TYPE_CHECKING:
         UserMixin,
         UserProtocol,
     )
-    from social_core.strategy import BaseStrategy, HttpResponseProtocol
+    from social_core.strategy import BaseStrategy
 
 
-class BaseAuth:
+ResponseT = TypeVar("ResponseT")
+
+
+class BaseAuth(Generic[ResponseT]):
     """A authentication backend that authenticates the user based on
     the provider response.
 
@@ -77,9 +80,9 @@ class BaseAuth:
     ASSOCIATION_ONLY = False
 
     def __init__(
-        self, strategy: BaseStrategy | None = None, redirect_uri: str | None = None
+        self, strategy: BaseStrategy[ResponseT] | None = None, redirect_uri: str | None = None
     ) -> None:
-        self.strategy: BaseStrategy = (
+        self.strategy: BaseStrategy[ResponseT] = (
             strategy if strategy is not None else REGISTRY.default_strategy
         )
         self.redirect_uri = redirect_uri
@@ -208,14 +211,14 @@ class BaseAuth:
             )
         kwargs[key] = str(user.id)
 
-    def start(self) -> HttpResponseProtocol:
+    def start(self) -> ResponseT:
         if self.ASSOCIATION_ONLY:
             self.get_association_state()
         if self.uses_redirect():
             return self.strategy.redirect(self.auth_url())
         return self.strategy.html(self.auth_html())
 
-    def complete(self, *args, **kwargs) -> HttpResponseProtocol | UserProtocol | None:
+    def complete(self, *args, **kwargs) -> ResponseT | UserProtocol | None:
         return self.auth_complete(*args, **kwargs)
 
     def auth_url(self) -> str:
@@ -228,7 +231,7 @@ class BaseAuth:
 
     def auth_complete(
         self, *args, **kwargs
-    ) -> HttpResponseProtocol | UserProtocol | None:
+    ) -> ResponseT | UserProtocol | None:
         """Completes login process, must return user instance"""
         raise NotImplementedError("Implement in subclass")
 
@@ -259,7 +262,7 @@ class BaseAuth:
 
     def authenticate(
         self, *args, **kwargs
-    ) -> UserProtocol | HttpResponseProtocol | None:
+    ) -> UserProtocol | ResponseT | None:
         """Authenticate user using social credentials
 
         Authentication is made if this is the correct backend, backend
@@ -290,7 +293,7 @@ class BaseAuth:
 
     def pipeline(
         self, pipeline: list[str], pipeline_index: int = 0, *args, **kwargs
-    ) -> UserProtocol | HttpResponseProtocol | None:
+    ) -> UserProtocol | ResponseT | None:
         token = self._pipeline_type.set("authentication")
         try:
             out = self.run_pipeline(pipeline, pipeline_index, *args, **kwargs)
@@ -305,7 +308,7 @@ class BaseAuth:
             pipeline_user.is_new = bool(out.get("is_new"))
         return user
 
-    def disconnect(self, *args, **kwargs) -> dict[str, Any] | HttpResponseProtocol:
+    def disconnect(self, *args, **kwargs) -> dict[str, Any] | ResponseT:
         if self.ASSOCIATION_ONLY:
             self._bind_association_user(kwargs, "disconnect")
         pipeline = self.strategy.get_disconnect_pipeline(self)
@@ -324,7 +327,7 @@ class BaseAuth:
 
     def run_pipeline(
         self, pipeline: list[str], pipeline_index: int = 0, *args, **kwargs
-    ) -> dict[str, Any] | HttpResponseProtocol:
+    ) -> dict[str, Any] | ResponseT:
         """Merge step dictionaries into context and return it on completion.
 
         Falsy step results continue execution. Truthy non-dictionary results,
@@ -643,7 +646,7 @@ class BaseAuth:
 
     def continue_pipeline(
         self, partial: PartialMixin
-    ) -> UserProtocol | HttpResponseProtocol | None:
+    ) -> UserProtocol | ResponseT | None:
         """Continue previous halted pipeline"""
         with self._partial_pipeline_context(partial):
             return self.strategy.authenticate(
@@ -652,7 +655,7 @@ class BaseAuth:
 
     def continue_disconnect_pipeline(
         self, partial: PartialMixin
-    ) -> dict[str, Any] | HttpResponseProtocol:
+    ) -> dict[str, Any] | ResponseT:
         """Continue a halted disconnect with its effective request data."""
         with self._partial_pipeline_context(partial, pipeline_type="disconnect"):
             return self.disconnect(

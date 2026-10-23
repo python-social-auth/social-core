@@ -94,7 +94,7 @@ class BaseStrategy(Generic[ResponseT_co]):
             )
         return storage
 
-    def setting(self, name: str, default=None, backend: BaseAuth | None = None):
+    def setting(self, name: str, default=None, backend: BaseAuth[Any] | None = None):
         names = [setting_name(name), name]
         if backend:
             names.insert(0, setting_name(backend.name, name))
@@ -112,7 +112,7 @@ class BaseStrategy(Generic[ResponseT_co]):
         return self.storage.user.get_user(*args, **kwargs)
 
     def sync_user_groups(
-        self, user, groups: list[str] | None, *, backend: BaseAuth, response, **kwargs
+        self, user, groups: list[str] | None, *, backend: BaseAuth[Any], response, **kwargs
     ) -> None:
         """Override to apply configured external memberships to local groups."""
         if validate_group_mapping(
@@ -181,7 +181,7 @@ class BaseStrategy(Generic[ResponseT_co]):
 
     def partial_pipeline_external_resume_confirmation(
         self,
-        backend: BaseAuth,
+        backend: BaseAuth[Any],
         partial: PartialMixin,
         request_data: dict[str, Any],
     ) -> ResponseT_co | None:
@@ -189,7 +189,7 @@ class BaseStrategy(Generic[ResponseT_co]):
 
     def partial_pipeline_external_resume_confirmed(
         self,
-        backend: BaseAuth,
+        backend: BaseAuth[Any],
         request_data: dict[str, Any],
     ) -> bool:
         return False
@@ -197,12 +197,12 @@ class BaseStrategy(Generic[ResponseT_co]):
     def openid_store(self) -> OpenIdStore:
         return OpenIdStore(self)
 
-    def get_pipeline(self, backend: BaseAuth | None = None) -> list[str]:
+    def get_pipeline(self, backend: BaseAuth[Any] | None = None) -> list[str]:
         return cast(
             "list[str]", self.setting("PIPELINE", DEFAULT_AUTH_PIPELINE, backend)
         )
 
-    def get_disconnect_pipeline(self, backend: BaseAuth | None = None) -> list[str]:
+    def get_disconnect_pipeline(self, backend: BaseAuth[Any] | None = None) -> list[str]:
         return cast(
             "list[str]",
             self.setting("DISCONNECT_PIPELINE", DEFAULT_DISCONNECT_PIPELINE, backend),
@@ -222,7 +222,7 @@ class BaseStrategy(Generic[ResponseT_co]):
         return ""
 
     def send_email_validation(
-        self, backend: BaseAuth, email: str, partial_token: str | None = None
+        self, backend: BaseAuth[Any], email: str, partial_token: str | None = None
     ) -> CodeMixin:
         email_validation = self.setting("EMAIL_VALIDATION_FUNCTION")
         if not email_validation:
@@ -261,8 +261,8 @@ class BaseStrategy(Generic[ResponseT_co]):
         return self.tpl.render(tpl, html, context)
 
     def authenticate(
-        self, backend: BaseAuth, *args, **kwargs
-    ) -> UserProtocol | HttpResponseProtocol | None:
+        self, backend: BaseAuth[Any], *args, **kwargs
+    ) -> UserProtocol | ResponseT_co | None:
         """Trigger the authentication mechanism tied to the current
         framework"""
         kwargs["strategy"] = self
@@ -280,13 +280,13 @@ class BaseStrategy(Generic[ResponseT_co]):
         """Return configured backends"""
         return cast("list[str]", self.setting("AUTHENTICATION_BACKENDS", []))
 
-    def get_backend_class(self, name: str) -> type[BaseAuth]:
+    def get_backend_class(self, name: str) -> type[BaseAuth[Any]]:
         """Return a configured backend class"""
         return get_backend(self.get_backends(), name)
 
     def get_backend(
         self, name: str, redirect_uri: str | None = None, **kwargs
-    ) -> BaseAuth:
+    ) -> BaseAuth[Any]:
         """Return a configured backend instance"""
         backend_class = self.get_backend_class(name)
         kwargs["redirect_uri"] = redirect_uri
