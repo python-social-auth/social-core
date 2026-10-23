@@ -10,10 +10,10 @@ from social_core.utils import (
     url_add_parameters,
 )
 
-from .base import BaseAuth
+from .base import BaseAuth, HttpResponseProtocol
 
 
-class LastFmAuth(BaseAuth):
+class LastFmAuth(BaseAuth[HttpResponseProtocol]):
     """
     Last.Fm authentication backend. Requires two settings:
         SOCIAL_AUTH_LASTFM_KEY

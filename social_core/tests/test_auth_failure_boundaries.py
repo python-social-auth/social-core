@@ -10,6 +10,7 @@ import os
 import time
 import unittest
 from functools import partial
+from typing import Any
 from unittest.mock import Mock, patch
 
 import jwt
@@ -101,7 +102,7 @@ class AuthenticationFailureBoundaryTest(unittest.TestCase):
                 self.assertEqual(caught.exception.recovery, "contact_administrator")
 
     def test_invalid_extra_data_setting_fails_during_pipeline_storage(self):
-        backend = BaseAuth(self.strategy)
+        backend: BaseAuth[Any] = BaseAuth(self.strategy)
         social = Mock()
         for entry in ((), ("a", "b", "c", "d")):
             self.strategy.set_settings({"SOCIAL_AUTH_EXTRA_DATA": [entry]})
@@ -934,7 +935,7 @@ class AuthenticationFailureBoundaryTest(unittest.TestCase):
 
     def test_missing_storage_is_reported_at_each_pipeline_entry(self):
         strategy = TestStrategy(None)
-        backend = BaseAuth(strategy)
+        backend: BaseAuth[Any] = BaseAuth(strategy)
         operations = (
             partial(user.get_username, strategy, {}, backend),
             partial(user.user_details, strategy, {}, None),
@@ -952,7 +953,7 @@ class AuthenticationFailureBoundaryTest(unittest.TestCase):
             self.assertEqual(caught.exception.stage, "pipeline")
 
     def test_invalid_provider_url_is_configuration_failure(self):
-        backend = BaseAuth(self.strategy)
+        backend: BaseAuth[Any] = BaseAuth(self.strategy)
         for cause in (
             requests.exceptions.InvalidURL(),
             requests.exceptions.InvalidSchema(),

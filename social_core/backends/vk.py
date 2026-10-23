@@ -21,7 +21,7 @@ from social_core.exceptions import (
 )
 from social_core.utils import constant_time_compare, handle_http_errors, parse_qs
 
-from .base import BaseAuth
+from .base import BaseAuth, HttpResponseProtocol
 from .oauth import BaseOAuth2, BaseOAuth2PKCE
 
 
@@ -34,7 +34,7 @@ def vk_sig(payload: str) -> str:
     return md5(payload.encode("utf-8")).hexdigest()  # ruff: ignore[hashlib-insecure-hash-function]
 
 
-class VKontakteOpenAPI(BaseAuth):
+class VKontakteOpenAPI(BaseAuth[HttpResponseProtocol]):
     """VK.COM OpenAPI authentication backend"""
 
     name = "vk-openapi"

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import wraps
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Protocol, TypeVar, overload
 
 from social_core.utils import (
     PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME,
@@ -17,12 +17,24 @@ if TYPE_CHECKING:
     from social_core.strategy import BaseStrategy, HttpResponseProtocol
 
 
+ResponseT = TypeVar("ResponseT", bound="HttpResponseProtocol")
+
+
+class _PartialStepDecorator(Protocol):
+    @overload
+    def __call__(
+        self, func: Callable[..., dict[str, Any] | None]
+    ) -> Callable[..., dict[str, Any]]: ...
+
+    @overload
+    def __call__(
+        self, func: Callable[..., dict[str, Any] | ResponseT | None]
+    ) -> Callable[..., dict[str, Any] | ResponseT]: ...
+
+
 def partial_step(
     save_to_session: bool, allow_external_resume: bool = False
-) -> Callable[
-    [Callable[..., dict[str, Any] | HttpResponseProtocol | None]],
-    Callable[..., dict[str, Any] | HttpResponseProtocol],
-]:
+) -> _PartialStepDecorator:
     """Wraps func to behave like a partial pipeline step, any output
     that's not None or {} will be considered a response object and
     will be returned to user.
@@ -45,17 +57,15 @@ def partial_step(
 
     # Step signatures vary, and the wrapper injects current_partial and other
     # keyword arguments, so input and output callables have different signatures.
-    def decorator(
-        func: Callable[..., dict[str, Any] | HttpResponseProtocol | None],
-    ) -> Callable[..., dict[str, Any] | HttpResponseProtocol]:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(func)
         def wrapper(
-            strategy: BaseStrategy,
-            backend: BaseAuth,
+            strategy: BaseStrategy[ResponseT],
+            backend: BaseAuth[ResponseT],
             pipeline_index: int,
             *args: Any,
             **kwargs: Any,
-        ) -> dict[str, Any] | HttpResponseProtocol:
+        ) -> dict[str, Any] | ResponseT:
             current_partial = partial_prepare(
                 strategy, backend, pipeline_index, *args, **kwargs
             )
@@ -88,5 +98,18 @@ def partial_step(
     return decorator
 
 
-# Backward compatible partial decorator, that stores the token in the session
-partial = partial_step(save_to_session=True)
+# Backward compatible partial decorator, that stores the token in the session.
+@overload
+def partial(
+    func: Callable[..., dict[str, Any] | None],
+) -> Callable[..., dict[str, Any]]: ...
+
+
+@overload
+def partial(
+    func: Callable[..., dict[str, Any] | ResponseT | None],
+) -> Callable[..., dict[str, Any] | ResponseT]: ...
+
+
+def partial(func: Callable[..., Any]) -> Callable[..., Any]:
+    return partial_step(save_to_session=True)(func)
