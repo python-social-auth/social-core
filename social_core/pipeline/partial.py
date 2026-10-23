@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import wraps
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar, overload
 
 from social_core.utils import (
     PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME,
@@ -53,8 +53,8 @@ def partial_step(
     ) -> Callable[..., dict[str, Any] | ResponseT]:
         @wraps(func)
         def wrapper(
-            strategy: BaseStrategy,
-            backend: BaseAuth,
+            strategy: BaseStrategy[ResponseT],
+            backend: BaseAuth[ResponseT],
             pipeline_index: int,
             *args: Any,
             **kwargs: Any,
@@ -91,5 +91,18 @@ def partial_step(
     return decorator
 
 
-# Backward compatible partial decorator, that stores the token in the session
-partial = partial_step(save_to_session=True)
+# Backward compatible partial decorator, that stores the token in the session.
+@overload
+def partial(
+    func: Callable[..., dict[str, Any] | None],
+) -> Callable[..., dict[str, Any]]: ...
+
+
+@overload
+def partial(
+    func: Callable[..., dict[str, Any] | ResponseT | None],
+) -> Callable[..., dict[str, Any] | ResponseT]: ...
+
+
+def partial(func: Callable[..., Any]) -> Callable[..., Any]:
+    return partial_step(save_to_session=True)(func)
