@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - Add a `get_provider_error()` backend hook for callback and HTTP error classification.
+- Add a Casdoor OpenID Connect backend for self-hosted Casdoor servers.
 
 ### Security
 
