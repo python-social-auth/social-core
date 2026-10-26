@@ -7,6 +7,8 @@ from social_core.strategy import BaseStrategy, BaseTemplateStrategy
 from social_core.utils import module_member
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from social_core.backends.base import BaseAuth
 
 TEST_URI = "http://myapp.com"
@@ -17,6 +19,7 @@ class Redirect:
     def __init__(self, url, content=None) -> None:
         self.url = url
         self.content = content
+        self.headers: dict[str, str] = {}
 
 
 class TestTemplateStrategy(BaseTemplateStrategy):
@@ -58,6 +61,11 @@ class TestStrategy(BaseStrategy):
     def html(self, content):
         """Return HTTP response with given content"""
         return Redirect("", content=content)
+
+    def html_with_headers(self, content: str, headers: Mapping[str, str]) -> Redirect:
+        response = self.html(content)
+        response.headers.update(headers)
+        return response
 
     def render_html(
         self,

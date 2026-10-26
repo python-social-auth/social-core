@@ -16,6 +16,22 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Add a `get_provider_error()` backend hook for callback and HTTP error classification.
 
+### Security
+
+- Bind SAML responses to the browser's pending AuthnRequest instead of a session
+  selected through RelayState. A same-origin return page supports SameSite=Lax
+  cookies across framework integrations. IdP-initiated login now requires an
+  explicit opt-in; in-progress SAML logins must restart after upgrading.
+- Bind OpenID assertions to the initiating browser session instead of restoring
+  a session selected by the assertion's signed return URL. In-progress OpenID
+  logins must restart after upgrading.
+
+### Removed
+
+- Remove the unused strategy session-restoration methods and session identifier
+  constant. Custom strategies and backends using them must migrate to
+  browser-bound callback correlation.
+
 ## [6.2.0](https://github.com/python-social-auth/social-core/releases/tag/6.2.0) - 2026-10-20
 
 ### Added
