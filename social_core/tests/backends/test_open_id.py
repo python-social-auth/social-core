@@ -44,6 +44,7 @@ if TYPE_CHECKING:
 
 VERIFIED_RESPONSE_KEY = "_openid_verified_response"
 BACKEND_SESSION_KEY = "_social_auth_backend"
+LEGACY_SESSION_ID_FIELD = "psa_session_id"
 IDENTITY = "http://foobar.livejournal.com/"
 DEPARTMENT = "https://example.com/attributes/department"
 
@@ -560,7 +561,7 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
         self.strategy.set_request_data(
             {
                 "openid.mode": "id_res",
-                self.strategy.SESSION_SAVE_KEY: "attacker-session",
+                LEGACY_SESSION_ID_FIELD: "attacker-session",
             },
             self.backend,
         )
@@ -568,11 +569,9 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
             patch.object(
                 self.backend, "_complete_generic_response", return_value=response
             ),
-            patch.object(self.strategy, "restore_session") as restore_session,
             assert_auth_error(self, AuthResponseError, "invalid_claim"),
         ):
             self.backend.complete()
-        restore_session.assert_not_called()
 
     def test_generic_callback_requires_signed_return_to(self) -> None:
         response = self.verified_response()
@@ -604,7 +603,7 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
         self.strategy.set_request_data(
             {
                 "openid.mode": "id_res",
-                self.strategy.SESSION_SAVE_KEY: "other-session",
+                LEGACY_SESSION_ID_FIELD: "other-session",
             },
             self.backend,
         )
@@ -612,11 +611,9 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
             patch.object(
                 self.backend, "_complete_generic_response", return_value=response
             ),
-            patch.object(self.strategy, "restore_session") as restore_session,
             assert_auth_error(self, AuthResponseError, "invalid_claim"),
         ):
             self.backend.complete()
-        restore_session.assert_not_called()
 
     def test_generic_callback_rejects_duplicate_signed_session_id(self) -> None:
         response = self.verified_response(
@@ -627,7 +624,7 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
         self.strategy.set_request_data(
             {
                 "openid.mode": "id_res",
-                self.strategy.SESSION_SAVE_KEY: "first",
+                LEGACY_SESSION_ID_FIELD: "first",
             },
             self.backend,
         )
@@ -635,53 +632,32 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
             patch.object(
                 self.backend, "_complete_generic_response", return_value=response
             ),
-            patch.object(self.strategy, "restore_session") as restore_session,
             assert_auth_error(self, AuthResponseError, "invalid_claim"),
         ):
             self.backend.complete()
-        restore_session.assert_not_called()
 
-    def test_generic_restored_session_completion_succeeds(self) -> None:
-        response = self.verified_response()
+    def test_signed_session_id_cannot_select_attacker_session(self) -> None:
+        response = self.verified_response(
+            return_to=f"{self.complete_url}?psa_session_id=initiating-session"
+        )
         self.set_openid_context(response.endpoint)
-        with (
-            patch.object(
-                self.strategy, "get_session_id", return_value="initiating-session"
-            ),
-            patch.object(self.backend, "setup_request") as setup_request,
-        ):
-            self.backend.auth_url()
-            return_to = setup_request.return_value.redirectURL.call_args.args[1]
-        response = self.verified_response(return_to=return_to)
-        initiating_state = copy.deepcopy(self.strategy.session_get("openid"))
-        initiating_token = self.strategy.session_pop("openid_state")
-        self.strategy.session_set("openid", {})
-        initiating_user = User("initiator")
-        victim = User("victim")
         self.strategy.set_request_data(
             {
                 "openid.mode": "id_res",
-                self.strategy.SESSION_SAVE_KEY: "initiating-session",
-                "redirect_state": initiating_token,
+                LEGACY_SESSION_ID_FIELD: "initiating-session",
+                "redirect_state": self.strategy.session_get("openid_state"),
             },
             self.backend,
         )
-
-        def restore_session(session_id, kwargs) -> None:
-            self.assertEqual(session_id, "initiating-session")
-            self.strategy.session_set("openid", copy.deepcopy(initiating_state))
-            self.strategy.session_set("openid_state", initiating_token)
-            kwargs["user"] = initiating_user
-
         with (
             patch.object(
                 self.backend, "_complete_generic_response", return_value=response
             ),
-            patch.object(self.strategy, "restore_session", restore_session),
             patch.object(self.strategy, "authenticate") as authenticate,
+            assert_auth_error(self, AuthResponseError, "invalid_claim"),
         ):
-            self.backend.complete(user=victim)
-        self.assertIs(authenticate.call_args.kwargs["user"], initiating_user)
+            self.backend.complete()
+        authenticate.assert_not_called()
 
     def test_generic_attacker_response_cannot_use_victim_session(self) -> None:
         expected = self.verified_response(server_url="https://victim.example/openid")
@@ -878,6 +854,34 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
             consumer.return_value.complete.return_value = response
             backend.complete()
         authenticate.assert_called_once()
+
+    def test_fixed_provider_rejects_signed_session_selection(self) -> None:
+        endpoint = "https://login.ubuntu.com/+openid"
+        backend = self.bound_backend(expected_endpoint=endpoint)
+        state = self.strategy.session_get("ubuntu_state")
+        self.strategy.set_request_data(
+            {
+                "openid.mode": "id_res",
+                "openid.ns": OPENID2_NS,
+                "openid.op_endpoint": endpoint,
+                "redirect_state": state,
+                LEGACY_SESSION_ID_FIELD: "attacker-session",
+            },
+            backend,
+        )
+        response = self.verified_response(
+            server_url=endpoint,
+            return_to=f"{self.complete_url}?psa_session_id=attacker-session",
+        )
+        with (
+            patch.object(backend, "consumer") as consumer,
+            patch.object(self.strategy, "authenticate") as authenticate,
+            assert_auth_error(self, AuthResponseError, "invalid_claim"),
+        ):
+            consumer.return_value.complete.return_value = response
+            backend.complete()
+        authenticate.assert_not_called()
+        self.assertEqual(self.strategy.session_get("ubuntu_state"), state)
 
     def test_fixed_provider_rejects_foreign_state_at_same_endpoint(self) -> None:
         endpoint = "https://login.ubuntu.com/+openid"
