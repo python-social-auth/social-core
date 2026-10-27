@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Add a Casdoor OpenID Connect backend for self-hosted Casdoor servers.
+- Add a Casdoor OpenID Connect backend for self-hosted Casdoor servers, with PKCE enabled by default.
 
 ## [6.2.0](https://github.com/python-social-auth/social-core/releases/tag/6.2.0) - 2026-10-20
 

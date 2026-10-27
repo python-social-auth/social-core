@@ -16,6 +16,8 @@ class CasdoorOpenIdConnect(OpenIdConnectAuth):
 
     name = "casdoor"
     title = "Casdoor"
+    # Casdoor supports S256 PKCE and advertises it in its discovery document
+    DEFAULT_USE_PKCE = True
 
     def oidc_endpoint(self) -> str:
         return super().oidc_endpoint().rstrip("/")
