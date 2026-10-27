@@ -10,7 +10,7 @@ dev = [
   "pytest-github-actions-annotate-failures==0.4.2",
   "pytest-profiling==1.8.1",
   "pytest-xdist==3.8.0",
-  "pytest==9.1.1",
+  "pytest==9.2.0",
   "responses==0.26.3",
   { include-group = "pylint" },
   { include-group = "types" }
@@ -86,7 +86,7 @@ dev = [
   "pytest-github-actions-annotate-failures==0.4.2",
   "pytest-profiling==1.8.1",
   "pytest-xdist==3.8.0",
-  "pytest==9.1.1",
+  "pytest==9.2.0",
   "responses==0.26.3",
   "ty==0.0.92",
   "types-defusedxml==0.7.0.20260504",
