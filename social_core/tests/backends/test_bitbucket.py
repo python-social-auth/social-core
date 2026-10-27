@@ -2,7 +2,13 @@ import json
 
 import responses
 
-from social_core.exceptions import AuthResponseError
+from social_core.exceptions import (
+    AuthConfigurationError,
+    AuthCredentialError,
+    AuthProviderError,
+    AuthResponseError,
+)
+from social_core.tests.models import User
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
@@ -93,6 +99,50 @@ class BitbucketOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
             responses.GET, self.bb_api_user_emails, status=200, body=self.emails_body
         )
         self.do_partial_pipeline()
+
+    def refresh_with_response(self, status: int, body: str) -> None:
+        responses.add(
+            responses.GET, self.bb_api_user_emails, status=200, body=self.emails_body
+        )
+        self.do_login()
+        responses.add(
+            responses.POST, self.backend.refresh_token_url(), status=status, body=body
+        )
+        user = next(iter(User.cache.values()))
+        user.social[0].refresh_token(strategy=self.strategy)
+
+    def assert_requires_reauthentication(
+        self, status: int, provider_code: str, description: str
+    ) -> None:
+        body = json.dumps({"error": provider_code, "error_description": description})
+        with self.assertRaises(AuthCredentialError) as context:
+            self.refresh_with_response(status, body)
+        self.assertEqual(context.exception.code, "reauthentication_required")
+        self.assertEqual(context.exception.stage, "refresh")
+        self.assertEqual(context.exception.status_code, status)
+        self.assertEqual(context.exception.provider_code, provider_code)
+
+    def test_expired_refresh_token_requires_reauthentication(self) -> None:
+        self.assert_requires_reauthentication(
+            400, "invalid_request", "Invalid refresh_token"
+        )
+
+    def test_inactive_user_refresh_requires_reauthentication(self) -> None:
+        self.assert_requires_reauthentication(401, "access_denied", "User is inactive")
+
+    def test_unauthorized_refresh_without_error_code_is_unchanged(self) -> None:
+        with self.assertRaises(AuthProviderError) as context:
+            self.refresh_with_response(401, "Unauthorized")
+        self.assertEqual(context.exception.code, "http_error")
+
+    def test_other_refresh_errors_are_unchanged(self) -> None:
+        with self.assertRaises(AuthConfigurationError):
+            self.refresh_with_response(400, json.dumps({"error": "invalid_client"}))
+
+    def test_refresh_outage_is_unchanged(self) -> None:
+        with self.assertRaises(AuthProviderError) as context:
+            self.refresh_with_response(503, "")
+        self.assertEqual(context.exception.code, "unavailable")
 
 
 class BitbucketOAuth2FailTest(BitbucketOAuth2Test):

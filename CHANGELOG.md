@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+
+### Fixed
+
+- Bitbucket's rejection of a revoked refresh token (400 `invalid_request`) or
+  of a deactivated user's refresh token (401 `User is inactive`) now raises
+  `AuthCredentialError` with `reauthentication_required` instead of
+  `AuthProviderError` or `AuthCanceled`.
+
 ## [6.2.0](https://github.com/python-social-auth/social-core/releases/tag/6.2.0) - 2026-10-20
 
 ### Added

@@ -7,7 +7,12 @@ from __future__ import annotations
 
 from typing import Any
 
-from social_core.exceptions import AuthResponseError
+from social_core.exceptions import (
+    AuthCanceled,
+    AuthCredentialError,
+    AuthProviderError,
+    AuthResponseError,
+)
 
 from .oauth import BaseOAuth2
 
@@ -76,6 +81,34 @@ class BitbucketOAuth2(BaseOAuth2):
 
     def auth_complete_credentials(self):
         return self.get_key_and_secret()
+
+    def refresh_token(self, token: str, *args, **kwargs) -> dict:
+        # Bitbucket rejects a revoked refresh token with a 400 invalid_request
+        # "Invalid refresh_token" instead of OAuth's invalid_grant:
+        # https://community.atlassian.com/forums/discussion/1545002/how-do-i-refresh-a-token
+        # A deactivated Atlassian account gets a 401 "User is inactive":
+        # https://jira.atlassian.com/browse/AX-684
+        # Its error code is one provider_error reads as a cancellation, which
+        # can't happen during a refresh, so the status decides there.
+        try:
+            return super().refresh_token(token, *args, **kwargs)
+        except (AuthCanceled, AuthProviderError) as error:
+            inactive_user = isinstance(error, AuthCanceled) and error.status_code == 401
+            revoked = (error.status_code, error.provider_code) == (
+                400,
+                "invalid_request",
+            )
+            if not (inactive_user or revoked):
+                raise
+            raise AuthCredentialError(
+                self,
+                error.detail,
+                code="reauthentication_required",
+                source="provider_response",
+                stage="refresh",
+                provider_code=error.provider_code,
+                status_code=error.status_code,
+            ) from error
 
     def _get_user(self, access_token=None):
         return self.get_json(
