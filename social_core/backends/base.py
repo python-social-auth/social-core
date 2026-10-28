@@ -79,7 +79,7 @@ class BaseAuth:
     def __init__(
         self, strategy: BaseStrategy | None = None, redirect_uri: str | None = None
     ) -> None:
-        self.strategy: BaseStrategy = (
+        self._strategy: BaseStrategy = (
             strategy if strategy is not None else REGISTRY.default_strategy
         )
         self.redirect_uri = redirect_uri
@@ -89,6 +89,26 @@ class BaseAuth:
         self._mutable_id_key_warned = False
         self.data = self.strategy.request_data()
         self.redirect_uri = self.strategy.absolute_uri(self.redirect_uri)
+
+    @property
+    def strategy(self) -> BaseStrategy:
+        """The strategy this backend was created with.
+
+        Type checkers treat this as read-only. Assigning it is deprecated.
+        """
+        return self._strategy
+
+    if not TYPE_CHECKING:  # pragma: no branch
+
+        @strategy.setter
+        def strategy(self, strategy: BaseStrategy) -> None:
+            warnings.warn(
+                "Assigning BaseAuth.strategy is deprecated. Create the backend "
+                "with the intended strategy instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            self._strategy = strategy
 
     @classmethod
     def get_title(cls, strategy: BaseStrategy) -> str:
@@ -265,6 +285,11 @@ class BaseAuth:
         Authentication is made if this is the correct backend, backend
         verification is made by kwargs inspection for current backend
         name presence.
+
+        A framework's authentication API may call this on a backend instance
+        that it created itself with the default strategy, as Django's does.
+        The pipeline always runs on the backend passed in kwargs, which must
+        have been created with the calling strategy.
         """
         # Validate backend and arguments. Require that the Social Auth
         # response be passed in as a keyword argument, to make sure we
@@ -277,8 +302,23 @@ class BaseAuth:
             or "response" not in kwargs
         ):
             return None
+        return kwargs["backend"].run_authentication(*args, **kwargs)
 
-        self.strategy = kwargs.get("strategy") or self.strategy
+    def run_authentication(
+        self, *args, **kwargs
+    ) -> UserProtocol | HttpResponseProtocol | None:
+        """Run the authentication pipeline with this backend's strategy.
+
+        authenticate() calls this on the backend passed in kwargs.
+        """
+        if kwargs["strategy"] is not self.strategy:
+            raise AuthConfigurationError(
+                self,
+                "authentication with a different strategy",
+                code="unsupported_feature",
+                parameter="strategy",
+                stage="callback",
+            )
         self.redirect_uri = kwargs.get("redirect_uri") or self.redirect_uri
         self.data = self.strategy.request_data()
         if self.ASSOCIATION_ONLY:
