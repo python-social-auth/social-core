@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+
+### Fixed
+
+- Classify OAuth `invalid_request` failures as configuration errors and provide
+  actionable log guidance for Azure AD PKCE requirement failures.
+
+### Added
+
+- Add a `get_provider_error()` backend hook for callback and HTTP error classification.
+
 ## [6.2.0](https://github.com/python-social-auth/social-core/releases/tag/6.2.0) - 2026-10-20
 
 ### Added
