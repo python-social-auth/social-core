@@ -590,6 +590,7 @@ def provider_error(
     if provider_code in {"access_denied", "user_denied", "cancelled", "canceled"}:
         return AuthCanceled(backend, detail, **fields)
     if provider_code in {
+        "invalid_request",
         "invalid_client",
         "unauthorized_client",
         "unsupported_grant_type",
@@ -733,8 +734,8 @@ def http_error(
             data = response.json()
         except ValueError:
             data = None
-        classified = provider_error(
-            backend, data, stage=stage, status_code=status, retry_after=retry_after
+        classified = backend.get_provider_error(
+            data, stage=stage, status_code=status, retry_after=retry_after
         )
         if classified is not None:
             return classified
