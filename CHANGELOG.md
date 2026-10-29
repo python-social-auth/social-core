@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+
+### Fixed
+
+- Classify OAuth `invalid_request` failures as configuration errors and provide
+  actionable log guidance for Azure AD PKCE requirement failures.
+
+### Added
+
+- Add a `get_provider_error()` backend hook for callback and HTTP error classification.
+
+### Security
+
+- Bind SAML responses to the browser's pending AuthnRequest instead of a session
+  selected through RelayState. A same-origin return page supports SameSite=Lax
+  cookies across framework integrations. IdP-initiated login now requires an
+  explicit opt-in; in-progress SAML logins must restart after upgrading.
+- Bind OpenID assertions to the initiating browser session instead of restoring
+  a session selected by the assertion's signed return URL. In-progress OpenID
+  logins must restart after upgrading.
+
+### Removed
+
+- Remove the unused strategy session-restoration methods and session identifier
+  constant. Custom strategies and backends using them must migrate to
+  browser-bound callback correlation.
+
 ## [6.2.0](https://github.com/python-social-auth/social-core/releases/tag/6.2.0) - 2026-10-20
 
 ### Added
