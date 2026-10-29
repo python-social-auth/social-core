@@ -2,6 +2,7 @@
 Backend for OpenID Connect Life Science AAI
 https://lifescience-ri.eu/ls-login.html
 """
+
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 
 
