@@ -260,9 +260,93 @@ class LifeScienceOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
             "preferred_username": "foo@lifescience-ri.eu",
             "email": "foo@bar.com",
             "name": "Foo Bar",
+            "given_name": "Foo",
+            "family_name": "Bar",
         }
     )
     allow_invalid_at_hash = True
 
     def test_login(self) -> None:
         self.do_login()
+
+    def test_get_user_details(self) -> None:
+        response = {
+            "preferred_username": "foo@lifescience-ri.eu",
+            "email": "foo@bar.com",
+            "name": "Foo Bar",
+            "given_name": "Foo",
+            "family_name": "Bar",
+        }
+        details = self.backend.get_user_details(response)
+        self.assertEqual(
+            details,
+            {
+                "username": "foo@lifescience-ri.eu",
+                "email": "foo@bar.com",
+                "fullname": "Foo Bar",
+                "first_name": "Foo",
+                "last_name": "Bar",
+            },
+        )
+
+    def test_get_user_details_empty_name(self) -> None:
+        response = {
+            "preferred_username": "foo@lifescience-ri.eu",
+            "email": "foo@bar.com",
+        }
+        details = self.backend.get_user_details(response)
+        self.assertEqual(
+            details,
+            {
+                "username": "foo@lifescience-ri.eu",
+                "email": "foo@bar.com",
+                "fullname": None,
+                "first_name": None,
+                "last_name": None,
+            },
+        )
+
+    def test_get_user_details_custom_username_key(self) -> None:
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_CESID_USERNAME_KEY": "preferred_username"}
+        )
+        response = {
+            "eduperson_unique_id": "12345@cesnet.cz",
+            "preferred_username": "foo@lifescience-ri.eu",
+            "email": "foo@bar.com",
+            "name": "Foo Bar",
+        }
+        details = self.backend.get_user_details(response)
+        self.assertEqual(details["username"], "foo@lifescience-ri.eu")
+
+    def test_extra_data(self) -> None:
+        self.backend.id_token = {
+            "iss": self.issuer,
+            "sub": "12345",
+            "aud": self.client_key,
+        }
+        response = {
+            "expires_in": 3600,
+            "refresh_token": "refresh-123",
+            "id_token": "id-token-xyz",
+            "other_tokens": ["token1", "token2"],
+            "ignored_field": "ignore_me",
+        }
+        extra = self.backend.extra_data(
+            user=None,
+            uid="12345",
+            response=response,
+            details={},
+            pipeline_kwargs={"is_new": True},
+        )
+        self.assertEqual(extra["expires_in"], 3600)
+        self.assertEqual(extra["refresh_token"], "refresh-123")
+        self.assertEqual(extra["id_token"], "id-token-xyz")
+        self.assertEqual(extra["other_tokens"], ["token1", "token2"])
+        self.assertNotIn("ignored_field", extra)
+
+    def test_default_scope(self) -> None:
+        self.assertEqual(self.backend.get_scope(), ["openid", "email"])
+
+    def test_validate_at_hash(self) -> None:
+        self.assertFalse(self.backend.VALIDATE_AT_HASH)
