@@ -4,7 +4,7 @@ from typing import cast
 from unittest.mock import Mock, patch
 
 from social_core.backends.base import BaseAuth
-from social_core.backends.elixir import ElixirOpenIdConnect
+from social_core.backends.lifescience import LifeScienceOpenIdConnect
 from social_core.backends.oauth import BaseOAuth2
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 from social_core.exceptions import (
@@ -165,7 +165,7 @@ class UserMixinRefreshTokenTests(unittest.TestCase):
     def test_missing_renewal_credential(self) -> None:
         unusable_tokens: tuple[object, ...] = (None, "", False, 0, [], {}, 123)
         now = datetime(2026, 1, 1, tzinfo=UTC)
-        for backend_class in (BaseOAuth2, OpenIdConnectAuth, ElixirOpenIdConnect):
+        for backend_class in (BaseOAuth2, OpenIdConnectAuth, LifeScienceOpenIdConnect):
             backend = backend_class(self.strategy)
             for token in unusable_tokens:
                 for seconds in (None, -1, 5, 6):
