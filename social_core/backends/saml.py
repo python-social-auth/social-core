@@ -13,7 +13,7 @@ from __future__ import annotations
 import json
 from html import escape
 from secrets import token_urlsafe
-from typing import TYPE_CHECKING, Any, cast
+from typing import Any, cast
 
 # lxml exposes this exception from its C extension.
 # pylint: disable-next=no-name-in-module
@@ -37,10 +37,7 @@ from social_core.exceptions import (
 from social_core.groups import read_groups
 from social_core.utils import constant_time_compare, user_is_authenticated
 
-from .base import BaseAuth
-
-if TYPE_CHECKING:
-    from social_core.strategy import HttpResponseProtocol
+from .base import BaseAuth, HttpResponseProtocol
 
 # Helpful constants:
 OID_COMMON_NAME = "urn:oid:2.5.4.3"
@@ -268,7 +265,7 @@ class SAMLIdentityProvider:
         )
 
 
-class SAMLAuth(BaseAuth):
+class SAMLAuth(BaseAuth[HttpResponseProtocol]):
     """
     PSA Backend that implements SAML 2.0 Service Provider (SP) functionality.
 

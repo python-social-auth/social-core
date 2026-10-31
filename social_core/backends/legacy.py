@@ -2,10 +2,10 @@ from typing import cast
 
 from social_core.exceptions import AuthInputError
 
-from .base import BaseAuth
+from .base import BaseAuth, HttpResponseProtocol
 
 
-class LegacyAuth(BaseAuth):
+class LegacyAuth(BaseAuth[HttpResponseProtocol]):
     def auth_url(self) -> str:
         return cast("str", self.setting("FORM_URL"))
 

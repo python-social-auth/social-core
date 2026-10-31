@@ -9,10 +9,10 @@ from social_core.exceptions import AuthInputError, AuthResponseError, AuthSessio
 from social_core.groups import read_groups
 from social_core.utils import constant_time_compare, drop_lists
 
-from .base import BaseAuth
+from .base import BaseAuth, HttpResponseProtocol
 
 
-class DiscourseAuth(BaseAuth):
+class DiscourseAuth(BaseAuth[HttpResponseProtocol]):
     name = "discourse"
     title = "Discourse"
     ID_KEY = "external_id"
