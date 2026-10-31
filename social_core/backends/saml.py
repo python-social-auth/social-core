@@ -35,7 +35,6 @@ from social_core.exceptions import (
     ErrorStage,
 )
 from social_core.groups import read_groups
-from social_core.strategy import HttpResponseProtocol
 from social_core.utils import constant_time_compare, user_is_authenticated
 
 from .base import BaseAuth, HttpResponseProtocol
