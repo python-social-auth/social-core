@@ -123,21 +123,21 @@ class CacheTest(unittest.TestCase):
         fetch = Mock(return_value=object())
         cached = cache(ttl=86400)(fetch)
         owner = object()
-        with patch("social_core.utils.time.time", return_value=1000):
+        with patch("social_core.utils._time", return_value=1000):
             value = cached(owner, "first")
         fetch.side_effect = RuntimeError("fetch failed")
 
         with (
-            patch("social_core.utils.time.time", return_value=2000),
+            patch("social_core.utils._time", return_value=2000),
             self.assertRaisesRegex(RuntimeError, "fetch failed"),
         ):
             cached.refresh(owner, "first")
 
         self.assertEqual(fetch.call_count, 2)
-        with patch("social_core.utils.time.time", return_value=1000 + 86400):
+        with patch("social_core.utils._time", return_value=1000 + 86400):
             self.assertIs(cached(owner, "first"), value)
         self.assertEqual(fetch.call_count, 2)
-        with patch("social_core.utils.time.time", return_value=1000 + 86401):
+        with patch("social_core.utils._time", return_value=1000 + 86401):
             self.assertIs(cached(owner, "first"), value)
         self.assertEqual(fetch.call_count, 3)
 
@@ -145,13 +145,13 @@ class CacheTest(unittest.TestCase):
         fetch = Mock(side_effect=lambda *_args: object())
         cached = cache(ttl=86400)(fetch)
         owner = object()
-        with patch("social_core.utils.time.time", return_value=1000):
+        with patch("social_core.utils._time", return_value=1000):
             first = cached(owner, "first")
-        with patch("social_core.utils.time.time", return_value=2000):
+        with patch("social_core.utils._time", return_value=2000):
             refreshed = cached.refresh(owner, "first")
 
         self.assertIsNot(refreshed, first)
-        with patch("social_core.utils.time.time", return_value=1000 + 86401):
+        with patch("social_core.utils._time", return_value=1000 + 86401):
             self.assertIs(cached(owner, "first"), refreshed)
         self.assertEqual(fetch.call_count, 2)
 

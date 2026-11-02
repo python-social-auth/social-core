@@ -307,7 +307,7 @@ class BrokenAssociationTests(unittest.TestCase):
             with self.subTest(lifetime=lifetime, now=now):
                 association.lifetime = lifetime
                 self.assertEqual(association.is_expired(now), expired)
-                with patch("social_core.storage.time.time", return_value=now):
+                with patch("social_core.storage._time", return_value=now):
                     self.assertEqual(association.is_expired(), expired)
 
     association = BrokenAssociation

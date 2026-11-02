@@ -5,10 +5,10 @@ import functools
 import hmac
 import logging
 import re
-import time
 import unicodedata
 from dataclasses import dataclass
 from importlib import import_module
+from time import time as _time
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -881,7 +881,7 @@ class cache:
         ) -> _CacheResult_co:
             cached_value = fn(this, *args, **kwargs)
             cache_key = (this.__class__, args, tuple(sorted(kwargs.items())))
-            self.cache[cache_key] = (time.time(), cached_value)
+            self.cache[cache_key] = (_time(), cached_value)
             return cached_value
 
         def wrapped(
@@ -890,7 +890,7 @@ class cache:
             *args: _CacheParams.args,
             **kwargs: _CacheParams.kwargs,
         ) -> _CacheResult_co:
-            now = time.time()
+            now = _time()
             last_updated = None
             cached_value = None
             cache_key = (this.__class__, args, tuple(sorted(kwargs.items())))
