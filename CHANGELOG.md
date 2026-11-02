@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Bitbucket's rejection of a revoked refresh token (400 `invalid_request`) or
+  of a deactivated user's refresh token (401 `User is inactive`) now raises
+  `AuthCredentialError` with `reauthentication_required` instead of
+  `AuthProviderError` or `AuthCanceled`.
 - Classify OAuth `invalid_request` failures as configuration errors and provide
   actionable log guidance for Azure AD PKCE requirement failures.
 
