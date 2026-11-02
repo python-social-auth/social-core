@@ -139,7 +139,7 @@ rather than being duplicated here. The companion Django integration lives in
 - Run the test suite with `uv run pytest`. During development, run the narrowest
   relevant test module first, then expand coverage in proportion to the change.
 - Use `uvx tox` when compatibility across all supported Python versions matters;
-  select a specific environment such as `uvx tox -e py310` for focused checks.
+  select a specific environment such as `uvx tox -e py315` for focused checks.
 - Run repository formatting and linting with `uvx prek run --all-files`. Let the
   configured hooks invoke Ruff, rumdl, codespell, actionlint, and zizmor rather
   than substituting ad-hoc command lines.

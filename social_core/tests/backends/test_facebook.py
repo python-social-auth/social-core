@@ -428,7 +428,7 @@ class FacebookLimitedLoginTest(OpenIdConnectTest[FacebookLimitedLogin]):
                 self.backend = FacebookLimitedLogin(self.strategy)
                 expired_time = dt.datetime.fromtimestamp(
                     claims["exp"] + self.backend.ID_TOKEN_MAX_AGE + 1,
-                    dt.timezone.utc,
+                    dt.UTC,
                 )
                 with (
                     patch("jwt.api_jwt.datetime") as jwt_datetime,
@@ -457,7 +457,7 @@ class FacebookLimitedLoginTest(OpenIdConnectTest[FacebookLimitedLogin]):
     def test_invalid_token_login(self) -> None:
         # A reused backend must validate every fresh login.
         self.backend.do_auth(self.limited_login_token())
-        expired_time = dt.datetime.now(dt.timezone.utc) - dt.timedelta(seconds=30)
+        expired_time = dt.datetime.now(dt.UTC) - dt.timedelta(seconds=30)
         for kwargs, message in (
             ({"expiration_datetime": expired_time}, "response_expired"),
             ({"tamper_message": True}, "invalid_signature"),

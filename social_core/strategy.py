@@ -59,7 +59,6 @@ class BaseTemplateStrategy:
 class BaseStrategy:
     ALLOWED_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     DEFAULT_TEMPLATE_STRATEGY = BaseTemplateStrategy
-    SESSION_SAVE_KEY = "psa_session_id"
 
     def __init__(
         self,
@@ -125,27 +124,6 @@ class BaseStrategy:
     def session_setdefault(self, name: str, value):
         self.session_set(name, value)
         return self.session_get(name)
-
-    def get_session_id(self) -> str | None:
-        """
-        Return session ID to be used by restore_session.
-        """
-        return None
-
-    def restore_session(self, session_id: str, kwargs: dict[str, Any]) -> None:
-        """
-        Restore the session used by subsequent strategy operations and update
-        session-derived kwargs, including the authenticated user, to match it.
-
-        This is only called if get_session_id returns a value.
-        """
-        raise AuthConfigurationError(
-            None,
-            self.__class__.__name__,
-            "session restore",
-            code="unsupported_feature",
-            stage="callback",
-        )
 
     def openid_session_dict(self, name: str) -> OpenIdSessionWrapper:
         # python3-openid expects class instances; sessions contain explicit,
@@ -302,6 +280,17 @@ class BaseStrategy:
     def html(self, content: str) -> HttpResponseProtocol:
         """Return HTTP response with given content"""
         raise NotImplementedError("Implement in subclass")
+
+    def html_with_headers(
+        self, content: str, headers: Mapping[str, str]
+    ) -> HttpResponseProtocol:
+        """Return HTML with required headers; integrations must implement this."""
+        raise AuthConfigurationError(
+            None,
+            "Strategy does not support HTML response headers",
+            code="unsupported_feature",
+            stage="callback",
+        )
 
     def request_data(self, merge: bool = True) -> dict[str, Any]:
         """Return effective pipeline data, or data from the current request.

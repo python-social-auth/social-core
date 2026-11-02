@@ -74,6 +74,7 @@ class ProviderErrorTest(unittest.TestCase):
     def test_structured_provider_code_overrides_generic_status(self):
         for provider_code, family, code in (
             ("access_denied", AuthCanceled, "authorization_declined"),
+            ("invalid_request", AuthConfigurationError, "invalid_setting"),
             ("invalid_client", AuthConfigurationError, "invalid_setting"),
             ("invalid_grant", AuthCredentialError, "authorization_code_rejected"),
             (
@@ -97,6 +98,16 @@ class ProviderErrorTest(unittest.TestCase):
                 self.assertEqual(error.provider_code, provider_code)
                 self.assertNotIn("private-token", str(error))
                 self.assertNotIn("private-token", str(error.public_metadata()))
+
+    def test_invalid_request_callback(self):
+        backend = BaseOAuth2(TestStrategy(TestStorage))
+        with self.assertRaises(AuthConfigurationError) as caught:
+            backend.process_error(
+                {"error": "invalid_request", "error_description": "private"}
+            )
+        self.assertEqual(caught.exception.code, "invalid_setting")
+        self.assertEqual(caught.exception.stage, "callback")
+        self.assertEqual(caught.exception.detail, "private")
 
     def test_refresh_rejection_requires_new_authentication(self):
         for provider_code in ("invalid_grant", "bad_refresh_token"):

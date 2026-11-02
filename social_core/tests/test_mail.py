@@ -1,5 +1,5 @@
 import unittest
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta, timezone
 from typing import Protocol, cast
 from unittest.mock import Mock, patch
 from zoneinfo import ZoneInfo
@@ -18,7 +18,7 @@ class EmailCodeExpiryTest(unittest.TestCase):
     def setUp(self) -> None:
         TestCode.reset_cache()
         self.strategy = TestStrategy(TestStorage)
-        self.now = datetime(2026, 10, 26, tzinfo=timezone.utc)
+        self.now = datetime(2026, 10, 26, tzinfo=UTC)
         clock = patch("social_core.storage.datetime", wraps=datetime)
         self.addCleanup(clock.stop)
         clock.start().now.return_value = self.now

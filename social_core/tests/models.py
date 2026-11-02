@@ -2,9 +2,7 @@
 from __future__ import annotations
 
 import base64
-from typing import TYPE_CHECKING, Any, TypeVar, cast
-
-from typing_extensions import Self
+from typing import TYPE_CHECKING, Any, Self, TypeVar, cast
 
 from social_core.identifiers import identifier_matches
 from social_core.storage import (

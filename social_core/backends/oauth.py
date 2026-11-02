@@ -22,7 +22,6 @@ from social_core.utils import (
     constant_time_compare,
     handle_http_errors,
     parse_qs,
-    provider_error,
     url_add_parameters,
     wrap_access_token_error,
 )
@@ -656,7 +655,7 @@ class BaseOAuth2(OAuthAuth):
         return response
 
     def process_error(self, data, *, stage: ErrorStage = "callback") -> None:
-        error = provider_error(self, data, stage=stage)
+        error = self.get_provider_error(data, stage=stage)
         if error is not None:
             raise error
         if "denied" in data:

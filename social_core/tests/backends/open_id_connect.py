@@ -161,7 +161,7 @@ class OpenIdConnectTest(
         if refresh_token is not None:
             body["refresh_token"] = refresh_token
         client_key = client_key or self.client_key
-        now = dt.datetime.now(dt.timezone.utc)
+        now = dt.datetime.now(dt.UTC)
         expiration_datetime = expiration_datetime or (now + dt.timedelta(seconds=30))
         issue_datetime = issue_datetime or now
         nonce = nonce or "a-nonce"
@@ -280,9 +280,7 @@ class OpenIdConnectTest(
         self.authtoken_raised("invalid_signature", tamper_message=True)
 
     def test_expired_signature(self) -> None:
-        expiration_datetime = dt.datetime.now(dt.timezone.utc) - dt.timedelta(
-            seconds=30
-        )
+        expiration_datetime = dt.datetime.now(dt.UTC) - dt.timedelta(seconds=30)
         self.authtoken_raised(
             "response_expired",
             expiration_datetime=expiration_datetime,
@@ -295,7 +293,7 @@ class OpenIdConnectTest(
         self.authtoken_raised("invalid_claim", client_key="someone-else")
 
     def test_invalid_issue_time(self) -> None:
-        expiration_datetime = dt.datetime.now(dt.timezone.utc) - dt.timedelta(
+        expiration_datetime = dt.datetime.now(dt.UTC) - dt.timedelta(
             seconds=self.backend.ID_TOKEN_MAX_AGE * 2
         )
         self.authtoken_raised("response_expired", issue_datetime=expiration_datetime)

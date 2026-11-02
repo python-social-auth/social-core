@@ -8,7 +8,7 @@ import time
 import uuid
 from abc import abstractmethod
 from collections.abc import Mapping
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any, Protocol, cast
 
 from openid.association import Association as OpenIdAssociation
@@ -116,8 +116,8 @@ class UserMixin:
             ) from e
 
         try:
-            now = datetime.now(timezone.utc)
-            expiry_time = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+            now = datetime.now(UTC)
+            expiry_time = datetime.fromtimestamp(timestamp, tz=UTC)
             return expiry_time - now
         except (OSError, ValueError) as e:
             raise AuthResponseError(
@@ -152,8 +152,8 @@ class UserMixin:
                 pass
             else:
                 try:
-                    now = datetime.now(timezone.utc)
-                    reference = datetime.fromtimestamp(auth_timestamp, tz=timezone.utc)
+                    now = datetime.now(UTC)
+                    reference = datetime.fromtimestamp(auth_timestamp, tz=UTC)
                     return (reference + timedelta(seconds=seconds)) - now
                 except (OSError, ValueError):
                     # auth_time timestamp out of range, fall back to treating as seconds from now
@@ -451,9 +451,9 @@ class CodeMixin:
             return True
         timestamp = self.timestamp
         if timestamp.tzinfo is None:
-            timestamp = timestamp.replace(tzinfo=timezone.utc)
-        timestamp = timestamp.astimezone(timezone.utc)
-        return datetime.now(timezone.utc) >= timestamp + timedelta(seconds=seconds)
+            timestamp = timestamp.replace(tzinfo=UTC)
+        timestamp = timestamp.astimezone(UTC)
+        return datetime.now(UTC) >= timestamp + timedelta(seconds=seconds)
 
     @classmethod
     def generate_code(cls):
@@ -465,7 +465,7 @@ class CodeMixin:
         code.email = email
         code.code = cls.generate_code()
         code.verified = False
-        code.timestamp = datetime.now(timezone.utc)
+        code.timestamp = datetime.now(UTC)
         code.save()
         return code
 

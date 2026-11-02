@@ -19,7 +19,6 @@ except ImportError:
 from social_core.exceptions import (
     AuthConfigurationError,
     AuthInputError,
-    AuthResponseError,
     AuthSessionError,
 )
 from social_core.pipeline.social_auth import social_names
@@ -63,6 +62,7 @@ class SAMLTest(BaseBackendTest):
                 "idp": "testshib",
                 "RelayState": json.dumps({"idp": "testshib"}),
                 "SAMLResponse": "response",
+                self.backend.BROWSER_RETURN_FIELD: "1",
             },
             self.backend,
         )
@@ -166,6 +166,7 @@ class SAMLTest(BaseBackendTest):
             k: v[0] for k, v in parse_qs(urlparse(response.url).query).items()
         }
         self.assertNotIn(" ", query_values["SAMLResponse"])
+        query_values[self.backend.BROWSER_RETURN_FIELD] = "1"
         self.strategy.set_request_data(query_values, self.backend)
         return self.backend.complete()
 
@@ -227,455 +228,12 @@ class SAMLTest(BaseBackendTest):
         with self.assertRaises(AuthInputError):
             self.do_start()
 
-    def test_relay_state_session_restored_after_saml_response_validation(
-        self,
-    ) -> None:
-        """
-        Session restore uses RelayState data, so it must wait until the SAML response is valid.
-        """
-        events = []
-
-        class ValidAuth:
-            def process_response(self, request_id=None):
-                if request_id is not None:
-                    raise AssertionError("request_id should be None")
-                events.append("process_response")
-
-            def get_errors(self):
-                return []
-
-            def is_authenticated(self):
-                return True
-
-            def get_attributes(self):
-                return {}
-
-            def get_nameid(self):
-                return "name-id"
-
-            def get_session_index(self):
-                return "session-index"
-
-        def restore_session(session_id, kwargs) -> None:
-            events.append("restore_session")
-            self.assertEqual(session_id, "restored-session")
-
-        def authenticate(*args, **kwargs):
-            events.append("authenticate")
-            return "user"
-
-        self.strategy.set_request_data(
-            {
-                "RelayState": json.dumps(
-                    {
-                        "idp": "testshib",
-                        self.strategy.SESSION_SAVE_KEY: "restored-session",
-                    }
-                ),
-                "SAMLResponse": "irrelevant",
-            },
-            self.backend,
-        )
-
-        with (
-            patch.object(self.strategy, "restore_session", restore_session),
-            patch.object(self.strategy, "authenticate", authenticate),
-            patch.object(self.backend, "_create_saml_auth", return_value=ValidAuth()),
-        ):
-            self.assertEqual(self.backend.complete(), "user")
-
-        self.assertEqual(
-            events,
-            ["process_response", "restore_session", "authenticate"],
-        )
-
-    def test_relay_state_restored_session_request_id_validates_in_response_to(
-        self,
-    ) -> None:
-        events: list[str | tuple[str, None] | tuple[str, User]] = []
-        victim = User("victim")
-        key = self.authn_request_id_session_key("testshib")
-        self.strategy.session_set(key, "STALE_ID")
-
-        class ValidAuth:
-            def process_response(self, request_id=None):
-                events.append(("process_response", request_id))
-
-            def get_errors(self):
-                return []
-
-            def is_authenticated(self):
-                return True
-
-            def get_last_response_in_response_to(self):
-                return "TEST_ID"
-
-            def get_attributes(self):
-                return {}
-
-            def get_nameid(self):
-                return "name-id"
-
-            def get_session_index(self):
-                return "session-index"
-
-        def restore_session(session_id, kwargs) -> None:
-            events.append("restore_session")
-            self.assertEqual(session_id, "restored-session")
-            self.strategy.session_set(key, "TEST_ID")
-            kwargs["user"] = victim
-
-        def authenticate(*args, **kwargs):
-            events.append(("authenticate", kwargs["user"]))
-            return "user"
-
-        self.strategy.set_request_data(
-            {
-                "RelayState": json.dumps(
-                    {
-                        "idp": "testshib",
-                        self.strategy.SESSION_SAVE_KEY: "restored-session",
-                    }
-                ),
-                "SAMLResponse": "irrelevant",
-            },
-            self.backend,
-        )
-
-        with (
-            patch.object(self.strategy, "restore_session", restore_session),
-            patch.object(self.strategy, "authenticate", authenticate),
-            patch.object(self.backend, "_create_saml_auth", return_value=ValidAuth()),
-        ):
-            self.assertEqual(self.backend.complete(), "user")
-
-        self.assertEqual(
-            events,
-            [
-                ("process_response", None),
-                "restore_session",
-                ("authenticate", victim),
-            ],
-        )
-        self.assertIsNone(self.strategy.session_get(key))
-
-    def test_relay_state_restored_session_skips_no_id_validation_for_in_response_to(
-        self,
-    ) -> None:
-        events: list[str | tuple[str, str | None] | tuple[str, User]] = []
-        victim = User("victim")
-        key = self.authn_request_id_session_key("testshib")
-
-        class ValidAuth:
-            def process_response(self, request_id=None):
-                if request_id is None:
-                    raise AssertionError(
-                        "request_id should be restored before validation"
-                    )
-                events.append(("process_response", request_id))
-
-            def get_errors(self):
-                return []
-
-            def is_authenticated(self):
-                return True
-
-            def get_last_response_in_response_to(self):
-                return "TEST_ID"
-
-            def get_attributes(self):
-                return {}
-
-            def get_nameid(self):
-                return "name-id"
-
-            def get_session_index(self):
-                return "session-index"
-
-        def restore_session(session_id, kwargs) -> None:
-            events.append("restore_session")
-            self.assertEqual(session_id, "restored-session")
-            self.strategy.session_set(key, "TEST_ID")
-            kwargs["user"] = victim
-
-        def authenticate(*args, **kwargs):
-            events.append(("authenticate", kwargs["user"]))
-            return "user"
-
-        self.strategy.set_request_data(
-            {
-                "RelayState": json.dumps(
-                    {
-                        "idp": "testshib",
-                        self.strategy.SESSION_SAVE_KEY: "restored-session",
-                    }
-                ),
-                "SAMLResponse": "irrelevant",
-            },
-            self.backend,
-        )
-
-        with (
-            patch.object(self.strategy, "restore_session", restore_session),
-            patch.object(self.strategy, "authenticate", authenticate),
-            patch.object(
-                self.backend,
-                "_response_in_response_to",
-                return_value="TEST_ID",
-            ),
-            patch.object(self.backend, "_create_saml_auth", return_value=ValidAuth()),
-        ):
-            self.assertEqual(self.backend.complete(), "user")
-
-        self.assertEqual(
-            events,
-            [
-                ("process_response", "TEST_ID"),
-                "restore_session",
-                ("authenticate", victim),
-            ],
-        )
-        self.assertIsNone(self.strategy.session_get(key))
-
-    def test_relay_state_restored_session_rejects_mismatched_in_response_to(
-        self,
-    ) -> None:
-        events: list[str | tuple[str, None]] = []
-        victim = User("victim")
-        key = self.authn_request_id_session_key("testshib")
-
-        class ValidAuth:
-            def process_response(self, request_id=None):
-                events.append(("process_response", request_id))
-
-            def get_errors(self):
-                return []
-
-            def is_authenticated(self):
-                return True
-
-            def get_last_response_in_response_to(self):
-                return "OTHER_ID"
-
-        def restore_session(session_id, kwargs) -> None:
-            events.append("restore_session")
-            self.assertEqual(session_id, "restored-session")
-            self.strategy.session_set(key, "TEST_ID")
-            kwargs["user"] = victim
-
-        def authenticate(*args, **kwargs):
-            self.fail("authenticate should not be called")
-
-        self.strategy.set_request_data(
-            {
-                "RelayState": json.dumps(
-                    {
-                        "idp": "testshib",
-                        self.strategy.SESSION_SAVE_KEY: "restored-session",
-                    }
-                ),
-                "SAMLResponse": "irrelevant",
-            },
-            self.backend,
-        )
-
-        with (
-            patch.object(self.strategy, "restore_session", restore_session),
-            patch.object(self.strategy, "authenticate", authenticate),
-            patch.object(self.backend, "_create_saml_auth", return_value=ValidAuth()),
-            assert_auth_error(self, AuthSessionError, "state_mismatch"),
-        ):
-            self.backend.complete()
-
-        self.assertEqual(
-            events,
-            [
-                ("process_response", None),
-                "restore_session",
-            ],
-        )
-        self.assertEqual(self.strategy.session_get(key), "TEST_ID")
-
-    def test_relay_state_restored_session_ignores_transient_request_id(self) -> None:
-        events: list[str | tuple[str, str | None]] = []
-        victim = User("victim")
-        key = self.authn_request_id_session_key("testshib")
-        self.strategy.session_set(key, "STALE_ID")
-
-        class ValidAuth:
-            def process_response(self, request_id=None):
-                if request_id is None:
-                    raise AssertionError(
-                        "request_id should be restored before validation"
-                    )
-                events.append(("process_response", request_id))
-
-            def get_errors(self):
-                return []
-
-            def is_authenticated(self):
-                return True
-
-            def get_last_response_in_response_to(self):
-                return "STALE_ID"
-
-        def restore_session(session_id, kwargs) -> None:
-            events.append("restore_session")
-            self.assertEqual(session_id, "restored-session")
-            self.strategy.session_set(key, "TEST_ID")
-            kwargs["user"] = victim
-
-        def authenticate(*args, **kwargs):
-            self.fail("authenticate should not be called")
-
-        self.strategy.set_request_data(
-            {
-                "RelayState": json.dumps(
-                    {
-                        "idp": "testshib",
-                        self.strategy.SESSION_SAVE_KEY: "restored-session",
-                    }
-                ),
-                "SAMLResponse": "irrelevant",
-            },
-            self.backend,
-        )
-
-        with (
-            patch.object(self.strategy, "restore_session", restore_session),
-            patch.object(self.strategy, "authenticate", authenticate),
-            patch.object(
-                self.backend,
-                "_response_in_response_to",
-                return_value="STALE_ID",
-            ),
-            patch.object(self.backend, "_create_saml_auth", return_value=ValidAuth()),
-            assert_auth_error(self, AuthSessionError, "state_mismatch"),
-        ):
-            self.backend.complete()
-
-        self.assertEqual(
-            events,
-            [
-                ("process_response", "STALE_ID"),
-                "restore_session",
-            ],
-        )
-        self.assertEqual(self.strategy.session_get(key), "TEST_ID")
-
-    def test_relay_state_session_not_restored_for_invalid_saml_response(self) -> None:
-        """
-        Invalid SAML responses must not trigger RelayState-derived session changes.
-        """
-
-        class InvalidAuth:
-            def process_response(self, request_id=None):
-                if request_id is not None:
-                    raise AssertionError("request_id should be None")
-
-            def get_errors(self):
-                return ["invalid"]
-
-            def is_authenticated(self):
-                return False
-
-            def get_last_error_reason(self):
-                return "invalid response"
-
-        def restore_session(session_id, kwargs) -> None:
-            self.fail("restore_session should not be called")
-
-        def authenticate(*args, **kwargs):
-            self.fail("authenticate should not be called")
-
-        self.strategy.set_request_data(
-            {
-                "RelayState": json.dumps(
-                    {
-                        "idp": "testshib",
-                        self.strategy.SESSION_SAVE_KEY: "restored-session",
-                        "next": "/after-login",
-                    }
-                ),
-                "SAMLResponse": "irrelevant",
-            },
-            self.backend,
-        )
-
-        with (
-            patch.object(self.strategy, "restore_session", restore_session),
-            patch.object(self.strategy, "authenticate", authenticate),
-            patch.object(self.backend, "_create_saml_auth", return_value=InvalidAuth()),
-            self.assertRaises(AuthResponseError),
-        ):
-            self.backend.complete()
-
-        self.assertIsNone(self.strategy.session_get("next"))
-
-    def test_relay_state_session_not_restored_for_invalid_in_response_to_response(
-        self,
-    ) -> None:
-        """
-        A parseable InResponseTo alone is not enough to trust RelayState session data.
-        """
-        events: list[tuple[str, str]] = []
-
-        class InvalidAuth:
-            def process_response(self, request_id: str | None = None) -> None:
-                if request_id is None:
-                    raise AssertionError("request_id should be TEST_ID")
-                events.append(("process_response", request_id))
-
-            def get_errors(self):
-                return ["invalid"]
-
-            def is_authenticated(self):
-                return False
-
-            def get_last_error_reason(self):
-                return "invalid response"
-
-        def restore_session(session_id, kwargs) -> None:
-            self.fail("restore_session should not be called")
-
-        def authenticate(*args, **kwargs):
-            self.fail("authenticate should not be called")
-
-        self.strategy.set_request_data(
-            {
-                "RelayState": json.dumps(
-                    {
-                        "idp": "testshib",
-                        self.strategy.SESSION_SAVE_KEY: "restored-session",
-                        "next": "/after-login",
-                    }
-                ),
-                "SAMLResponse": "irrelevant",
-            },
-            self.backend,
-        )
-
-        with (
-            patch.object(self.strategy, "restore_session", restore_session),
-            patch.object(self.strategy, "authenticate", authenticate),
-            patch.object(
-                self.backend,
-                "_response_in_response_to",
-                return_value="TEST_ID",
-            ),
-            patch.object(self.backend, "_create_saml_auth", return_value=InvalidAuth()),
-            self.assertRaises(AuthResponseError),
-        ):
-            self.backend.complete()
-
-        self.assertEqual(events, [("process_response", "TEST_ID")])
-        self.assertIsNone(self.strategy.session_get("next"))
-
     def test_authenticated_user_requires_stored_authn_request_id(self) -> None:
         self.strategy.set_request_data(
             {
                 "RelayState": json.dumps({"idp": "testshib"}),
                 "SAMLResponse": "irrelevant",
+                self.backend.BROWSER_RETURN_FIELD: "1",
             },
             self.backend,
         )
@@ -715,6 +273,7 @@ class SAMLTest(BaseBackendTest):
                     {
                         "RelayState": json.dumps({"idp": "testshib"}),
                         "SAMLResponse": "irrelevant",
+                        self.backend.BROWSER_RETURN_FIELD: "1",
                     },
                     self.backend,
                 )
@@ -774,6 +333,7 @@ class SAMLTest(BaseBackendTest):
             {
                 "RelayState": json.dumps({"idp": "testshib"}),
                 "SAMLResponse": "irrelevant",
+                self.backend.BROWSER_RETURN_FIELD: "1",
             },
             self.backend,
         )
@@ -796,6 +356,7 @@ class SAMLTest(BaseBackendTest):
         self.assertIsNone(self.strategy.session_get(key))
 
     def test_anonymous_user_allows_unsolicited_saml_response(self) -> None:
+        self.strategy.set_settings({"SOCIAL_AUTH_SAML_ALLOW_IDP_INITIATED": True})
         events = []
 
         class ValidAuth:
@@ -825,6 +386,7 @@ class SAMLTest(BaseBackendTest):
             {
                 "RelayState": json.dumps({"idp": "testshib"}),
                 "SAMLResponse": "irrelevant",
+                self.backend.BROWSER_RETURN_FIELD: "1",
             },
             self.backend,
         )
@@ -843,6 +405,7 @@ class SAMLTest(BaseBackendTest):
     def test_anonymous_user_allows_unsolicited_response_with_stale_request_id(
         self,
     ) -> None:
+        self.strategy.set_settings({"SOCIAL_AUTH_SAML_ALLOW_IDP_INITIATED": True})
         events = []
         key = self.authn_request_id_session_key("testshib")
         self.strategy.session_set(key, "STALE_ID")
@@ -877,6 +440,7 @@ class SAMLTest(BaseBackendTest):
             {
                 "RelayState": json.dumps({"idp": "testshib"}),
                 "SAMLResponse": "irrelevant",
+                self.backend.BROWSER_RETURN_FIELD: "1",
             },
             self.backend,
         )
@@ -916,6 +480,7 @@ class SAMLTest(BaseBackendTest):
             {
                 "RelayState": json.dumps({"idp": "testshib"}),
                 "SAMLResponse": "irrelevant",
+                self.backend.BROWSER_RETURN_FIELD: "1",
             },
             self.backend,
         )
@@ -942,6 +507,7 @@ class SAMLTest(BaseBackendTest):
             {
                 "RelayState": json.dumps({"idp": "testshib"}),
                 "SAMLResponse": "irrelevant",
+                self.backend.BROWSER_RETURN_FIELD: "1",
             },
             self.backend,
         )
