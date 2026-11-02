@@ -54,6 +54,7 @@ OPENID_ID_FIELD = "openid_identifier"
 SESSION_NAME = "openid"
 _VERIFIED_RESPONSE_KEY = "_openid_verified_response"
 _BACKEND_SESSION_KEY = "_social_auth_backend"
+_LEGACY_SESSION_ID_FIELD = "psa_session_id"
 
 
 class OpenIdAuth(BaseAuth):
@@ -171,7 +172,7 @@ class OpenIdAuth(BaseAuth):
             dict(self.data.items()), self.get_return_to()
         )
 
-    def _verified_session_id(self, response: SuccessResponse) -> str | None:
+    def _validate_signed_return_to(self, response: SuccessResponse) -> None:
         return_to = response.message.getArg(OPENID_NS, "return_to")
         if (
             "openid.return_to" not in response.signed_fields
@@ -191,7 +192,7 @@ class OpenIdAuth(BaseAuth):
                 for key, value in parse_qsl(
                     urlsplit(return_to).query, keep_blank_values=True
                 )
-                if key == self.strategy.SESSION_SAVE_KEY
+                if key == _LEGACY_SESSION_ID_FIELD
             ]
         except ValueError as error:
             raise AuthResponseError(
@@ -202,31 +203,14 @@ class OpenIdAuth(BaseAuth):
                 stage="callback",
             ) from error
 
-        callback_session_id = self.data.get(self.strategy.SESSION_SAVE_KEY)
-        if not session_ids:
-            if callback_session_id is not None:
-                raise AuthResponseError(
-                    self,
-                    "OpenID session identifier is not signed",
-                    claim=self.strategy.SESSION_SAVE_KEY,
-                    code="invalid_claim",
-                    stage="callback",
-                )
-            return None
-        if (
-            len(session_ids) != 1
-            or not session_ids[0]
-            or not isinstance(callback_session_id, str)
-            or not constant_time_compare(session_ids[0], callback_session_id)
-        ):
+        if session_ids or self.data.get(_LEGACY_SESSION_ID_FIELD) is not None:
             raise AuthResponseError(
                 self,
-                "OpenID session identifier does not match the signed return URL",
-                claim=self.strategy.SESSION_SAVE_KEY,
+                "OpenID session restoration is no longer supported",
+                claim=_LEGACY_SESSION_ID_FIELD,
                 code="invalid_claim",
                 stage="callback",
             )
-        return session_ids[0]
 
     @staticmethod
     def _claimed_id(identifier: object) -> str | None:
@@ -462,13 +446,7 @@ class OpenIdAuth(BaseAuth):
         return values
 
     def get_return_to(self) -> str:
-        params: dict[str, str] = {}
-        if session_id := self.strategy.get_session_id():
-            params[self.strategy.SESSION_SAVE_KEY] = session_id
-
-        return self._add_return_to_parameters(
-            self.strategy.absolute_uri(self.redirect_uri), params
-        )
+        return self.strategy.absolute_uri(self.redirect_uri)
 
     @staticmethod
     def _add_return_to_parameters(url: str, params: dict[str, str]) -> str:
@@ -621,10 +599,7 @@ class OpenIdAuth(BaseAuth):
 
         self.process_error(response)
         response = cast("SuccessResponse", response)
-        session_id = self._verified_session_id(response)
-        if session_id:
-            self.strategy.restore_session(session_id, kwargs)
-            self._consumer = None
+        self._validate_signed_return_to(response)
         if self.requires_openid_provider_binding():
             if expected_endpoint is None:
                 raise AuthSessionError(

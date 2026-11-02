@@ -30,6 +30,7 @@ from social_core.utils import (
     module_member,
     normalize_user_names,
     parse_qs,
+    provider_error,
     redact_request_error,
     social_logger,
     user_agent,
@@ -231,6 +232,19 @@ class BaseAuth:
     ) -> HttpResponseProtocol | UserProtocol | None:
         """Completes login process, must return user instance"""
         raise NotImplementedError("Implement in subclass")
+
+    def get_provider_error(
+        self,
+        data: object,
+        *,
+        stage: ErrorStage = "callback",
+        status_code: int | None = None,
+        retry_after: str | None = None,
+    ) -> SocialAuthBaseException | None:
+        """Classify provider errors for callbacks and HTTP failures."""
+        return provider_error(
+            self, data, stage=stage, status_code=status_code, retry_after=retry_after
+        )
 
     def process_error(self, data, *, stage: ErrorStage = "callback") -> None:
         """Hook to process provider response errors.

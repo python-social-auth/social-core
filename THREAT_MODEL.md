@@ -68,7 +68,7 @@ integrations are outside this model; core interface-contract defects are in scop
 The environment supplies a supported runtime and dependencies with their normal
 cryptographic, TLS, parsing, and validation behavior, accurate enough clocks,
 and isolated request contexts. The framework supplies correct request, session,
-login, CSRF, Host, and trusted-proxy semantics. Storage supplies integrity,
+login, CSRF, Host, trusted-proxy, and required response-header semantics. Storage supplies integrity,
 uniqueness, expiry persistence, tenant isolation, and atomic identity/nonce
 claims across workers. Extensions must preserve these contracts.
 
@@ -84,7 +84,7 @@ and the selected backend's documentation.
 | Property | Security violation |
 | --- | --- |
 | Correlated protocols accept callbacks only for the initiating flow/session after required state, nonce, or request checks; OAuth2 login state expires and is consumed once before token exchange | An uninitiated, mismatched, expired, or reused transaction authenticates or links an account |
-| OpenID assertions match a one-use signed transaction and backend-scoped discovery state in the initiating or provider-authenticated restored session; fixed providers bind to the exact discovered HTTPS endpoint | Unsolicited, cross-session, stale, or foreign-provider assertions authenticate under the backend namespace |
+| OpenID assertions match a one-use signed transaction and backend-scoped discovery state in the initiating browser session; fixed providers bind to the exact discovered HTTPS endpoint | Unsolicited, cross-session, stale, or foreign-provider assertions authenticate under the backend namespace |
 | Identity assertions pass backend-required signature, issuer, audience, time, nonce/request, subject, and destination checks | Forged or misdirected assertions authenticate or link an account |
 | Provider identities use a non-empty stable identifier in their backend namespace; missing migration evidence fails except for the compatibility exceptions below, and conflicting evidence always fails | Distinct identities collapse onto one association or access another account outside the exceptions below |
 | Core binds association-only flows and partial resumes to the initiating authenticated user; ordinary linking has this property when the integration preserves that user through callback; disconnection acts on the integration's authenticated user | A flow links to or disconnects another user's account |
@@ -106,6 +106,10 @@ alone do not violate a claimed identity-flow property.
 These exceptions qualify the properties above; procedures belong in the linked
 documentation.
 
+- **Opt-in IdP-initiated SAML:** When explicitly enabled, unsolicited signed
+  responses have no initiating browser request to correlate. Anonymous browsers
+  can accept a valid assertion posted by another party; deployments requiring
+  login CSRF protection must keep this option disabled.
 - **Uncorrelated signed flows:** [Telegram](https://python-social-auth.readthedocs.io/en/latest/backends/telegram.html)
   validates callback HMAC and age; [Facebook Limited Login](https://python-social-auth.readthedocs.io/en/latest/backends/facebook_limited_login.html)
   validates the provider signature and applicable identity/time claims but does
@@ -139,7 +143,8 @@ Core does not run an HTTP service or supply application authorization, account
 recovery, MFA, session-cookie policy, route-level CSRF, TLS termination, Host
 validation, or trusted-proxy configuration. Integrations must supply those
 boundaries and preserve the authenticated user across ordinary linking, or
-reject and restart the flow when that principal changes.
+reject and restart the flow when that principal changes. Strategies that return
+core-generated HTML must apply the requested response headers.
 
 Operators must protect configuration, tokens, secrets, sessions, and persisted
 records. Core does not encrypt them at rest or protect them from a compromised

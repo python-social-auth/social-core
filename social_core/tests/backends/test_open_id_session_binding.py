@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime as dt
 from unittest.mock import patch
-from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+from urllib.parse import parse_qsl, urlencode, urlsplit
 
 import requests
 import responses
@@ -41,10 +41,7 @@ class GenericOpenIdBrowserBindingTest(OpenIdTest):
         self.backend.redirect_uri = (
             f"{self.complete_url}?source=first&source=second&empty="
         )
-        with (
-            patch.object(self.strategy, "get_session_id", return_value="session-123"),
-            patch.object(self.backend, "setup_request") as setup_request,
-        ):
+        with patch.object(self.backend, "setup_request") as setup_request:
             self.backend.auth_url()
             redirect_state = self.strategy.session_get("openid_state")
             assert isinstance(redirect_state, str)
@@ -75,7 +72,6 @@ class GenericOpenIdBrowserBindingTest(OpenIdTest):
                         ("source", "first"),
                         ("source", "second"),
                         ("empty", ""),
-                        (self.strategy.SESSION_SAVE_KEY, "session-123"),
                         ("redirect_state", state),
                     ],
                 )
@@ -83,12 +79,7 @@ class GenericOpenIdBrowserBindingTest(OpenIdTest):
     def get_server_response(self, inputs: dict[str, str | None]) -> str:
         return_to = inputs["openid.return_to"]
         assert return_to is not None
-        parsed = urlsplit(return_to)
-        callback_args = dict(parse_qsl(parsed.query))
-        callback_args.pop(self.strategy.SESSION_SAVE_KEY, None)
-        unsigned_session_return_to = urlunsplit(
-            parsed._replace(query=urlencode(callback_args))
-        )
+        callback_args = dict(parse_qsl(urlsplit(return_to).query))
         nonce = dt.datetime.now(dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
         return urlencode(
             {
@@ -97,7 +88,7 @@ class GenericOpenIdBrowserBindingTest(OpenIdTest):
                 "openid.op_endpoint": self.provider_endpoint,
                 "openid.claimed_id": self.claimed_id,
                 "openid.identity": self.claimed_id,
-                "openid.return_to": unsigned_session_return_to,
+                "openid.return_to": return_to,
                 **callback_args,
                 "openid.response_nonce": f"{nonce}nonce",
                 "openid.assoc_handle": "attacker-handle",
@@ -109,7 +100,7 @@ class GenericOpenIdBrowserBindingTest(OpenIdTest):
             }
         )
 
-    def test_signed_response_without_session_id_cannot_use_victim_session(
+    def test_attacker_response_cannot_use_victim_session(
         self,
     ) -> None:
         self.add_openid_response(
@@ -121,14 +112,11 @@ class GenericOpenIdBrowserBindingTest(OpenIdTest):
         self.strategy.set_request_data(
             {"openid_identifier": self.claimed_id}, self.backend
         )
-        with patch.object(
-            self.strategy, "get_session_id", return_value="attacker-session"
-        ):
-            start = self.backend.start()
+        start = self.backend.start()
         form, inputs = self.get_form_data(start)
         return_to = inputs["openid.return_to"]
         assert return_to is not None
-        self.assertIn("psa_session_id=attacker-session", return_to)
+        self.assertNotIn("psa_session_id", return_to)
         action = form["action"]
         assert action is not None
         responses.add(
@@ -160,12 +148,11 @@ class GenericOpenIdBrowserBindingTest(OpenIdTest):
             self.provider_endpoint,
             body="is_valid:true\n",
         )
-        victim = User("victim")
         with (
             patch.object(victim_strategy, "authenticate") as authenticate,
             assert_auth_error(self, AuthSessionError, "session_context_missing"),
         ):
-            victim_backend.complete(user=victim)
+            victim_backend.complete()
         authenticate.assert_not_called()
 
     def test_same_session_response_uses_saved_discovery_state(self) -> None:
