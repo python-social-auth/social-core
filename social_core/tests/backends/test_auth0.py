@@ -201,12 +201,12 @@ class Auth0OAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         responses.add(responses.GET, self.jwks_url, json={"keys": [JWK_PUBLIC_KEY]})
         token = self.token_response()
 
-        with patch("social_core.utils.time.time", return_value=1000):
+        with patch("social_core.utils._time", return_value=1000):
             details = self.backend.get_user_details(token)
-        with patch("social_core.utils.time.time", return_value=1000 + 86400):
+        with patch("social_core.utils._time", return_value=1000 + 86400):
             self.assertEqual(self.backend.get_user_details(token), details)
         self.assertEqual(len(responses.calls), 1)
-        with patch("social_core.utils.time.time", return_value=1000 + 86401):
+        with patch("social_core.utils._time", return_value=1000 + 86401):
             self.assertEqual(self.backend.get_user_details(token), details)
         self.assertEqual(len(responses.calls), 2)
 
@@ -214,12 +214,12 @@ class Auth0OAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         responses.add(responses.GET, self.jwks_url, json={"keys": [JWK_PUBLIC_KEY]})
         token = self.token_response()
 
-        with patch("social_core.utils.time.time", return_value=1000):
+        with patch("social_core.utils._time", return_value=1000):
             details = self.backend.get_user_details(token)
         responses.replace(
             responses.GET, self.jwks_url, body=requests.ReadTimeout("timed out")
         )
-        with patch("social_core.utils.time.time", return_value=1000 + 86401):
+        with patch("social_core.utils._time", return_value=1000 + 86401):
             self.assertEqual(self.backend.get_user_details(token), details)
 
         self.assertEqual(len(responses.calls), 2)
@@ -310,7 +310,7 @@ class Auth0OAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         self.assertEqual(
             sum(call.request.url == other_url for call in responses.calls), 1
         )
-        with patch("social_core.utils.time.time", return_value=10**12):
+        with patch("social_core.utils._time", return_value=10**12):
             self.assertIs(self.backend.get_jwks_keys_for_uri(other_url), other_keys)
 
     def test_failed_rotation_refresh_preserves_cached_keys(self) -> None:

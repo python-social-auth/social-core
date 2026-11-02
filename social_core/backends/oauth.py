@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import base64
 import hashlib
-import time
+from time import time as _time
 from typing import TYPE_CHECKING, Any, Literal, cast
 
 from oauthlib.oauth1 import SIGNATURE_TYPE_AUTH_HEADER
@@ -480,7 +480,7 @@ class BaseOAuth2(OAuthAuth):
         if not self.STATE_PARAMETER and not self.REDIRECT_STATE:
             return None
         lifetime = self._state_lifetime()
-        timestamp = int(time.time())
+        timestamp = int(_time())
         active = self._prune_transactions(timestamp, lifetime)
         for _ in range(3):
             state = self.state_token()
@@ -524,7 +524,7 @@ class BaseOAuth2(OAuthAuth):
             raise AuthSessionError(
                 self, "state", code="session_context_missing", stage="callback"
             )
-        now = time.time()
+        now = _time()
         if timestamp > now or now - timestamp > self._state_lifetime():
             raise AuthSessionError(self, code="state_mismatch", stage="callback")
         try:

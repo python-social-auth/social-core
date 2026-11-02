@@ -151,9 +151,9 @@ class OAuth2StateTestMixin(Generic[BaseOAuth2BackendT]):
     def test_abandoned_transaction_is_pruned_on_next_start(self) -> None:
         case = cast("BaseBackendTest[BaseOAuth2BackendT]", self)
         now = int(time.time())
-        with patch("social_core.backends.oauth.time.time", return_value=now):
+        with patch("social_core.backends.oauth._time", return_value=now):
             old_state = get_querystring(case.backend.start().url)["state"]
-        with patch("social_core.backends.oauth.time.time", return_value=now + 1801):
+        with patch("social_core.backends.oauth._time", return_value=now + 1801):
             new_state = get_querystring(case.backend.start().url)["state"]
 
         case.assertIsNone(
@@ -175,9 +175,9 @@ class OAuth2StateTestMixin(Generic[BaseOAuth2BackendT]):
             "state_token",
             side_effect=["first-state", "first-state", "second-state"],
         ):
-            with patch("social_core.backends.oauth.time.time", return_value=now - 1):
+            with patch("social_core.backends.oauth._time", return_value=now - 1):
                 first = get_querystring(case.backend.start().url)["state"]
-            with patch("social_core.backends.oauth.time.time", return_value=now):
+            with patch("social_core.backends.oauth._time", return_value=now):
                 second = get_querystring(case.backend.start().url)["state"]
 
         case.assertEqual((first, second), ("first-state", "second-state"))
@@ -260,9 +260,7 @@ class OAuth2StateTestMixin(Generic[BaseOAuth2BackendT]):
         timestamp = transaction["timestamp"]
         case.strategy.set_request_data({"code": "foobar", "state": state}, case.backend)
         with (
-            patch(
-                "social_core.backends.oauth.time.time", return_value=timestamp + 1801
-            ),
+            patch("social_core.backends.oauth._time", return_value=timestamp + 1801),
             case.assertRaises(AuthSessionError),
         ):
             case.backend.validate_state()

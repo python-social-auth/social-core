@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import base64
 import datetime as dt
-import time
 from calendar import timegm
 from json import loads
+from time import time as _time
 from typing import TYPE_CHECKING, Any, Literal, cast
 
 import jwt
@@ -375,7 +375,7 @@ class OpenIdConnectAuth(OIDCDiscoveryMixin, BaseOAuth2PKCE):
         nonce = self.strategy.random_string(64)
         # Store the nonce
         association = OpenIdConnectAssociation(
-            nonce, issued=int(time.time()), lifetime=lifetime, assoc_type=state
+            nonce, issued=int(_time()), lifetime=lifetime, assoc_type=state
         )
         self.strategy.storage.association.store(url, association)
         return nonce
