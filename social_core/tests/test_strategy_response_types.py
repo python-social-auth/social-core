@@ -19,23 +19,23 @@ class HtmlResponse:
     content: str
 
     @property
-    def url(self) -> str:
+    def url(self) -> str:  # pragma: no cover
         return "https://example.com/"
 
 
 class HtmlStrategy(BaseStrategy[HtmlResponse]):
-    def html(self, content: str) -> HtmlResponse:
+    def html(self, content: str) -> HtmlResponse:  # pragma: no cover
         return HtmlResponse(content)
 
 
-def html_pipeline_step(**kwargs: Any) -> HtmlResponse:
+def html_pipeline_step(**kwargs: Any) -> HtmlResponse:  # pragma: no cover
     return HtmlResponse("rendered page")
 
 
 partial_html_step = partial(html_pipeline_step)
 
 
-def response_free_pipeline_step(**kwargs: Any) -> None:
+def response_free_pipeline_step(**kwargs: Any) -> None:  # pragma: no cover
     return None
 
 
@@ -45,7 +45,11 @@ partial_step_response_free_step = partial_step(save_to_session=False)(
 )
 
 
-def verify_response_type_flow(backend: BaseAuth[HtmlResponse]) -> None:
+# These functions are inputs to static type checkers and intentionally aren't
+# executed as runtime tests.
+def verify_response_type_flow(
+    backend: BaseAuth[HtmlResponse],
+) -> None:  # pragma: no cover
     assert_type(backend.start(), HtmlResponse)
     assert_type(backend.strategy.redirect("/"), HtmlResponse)
     assert_type(do_auth(backend), HtmlResponse)
@@ -71,11 +75,16 @@ def verify_response_type_flow(backend: BaseAuth[HtmlResponse]) -> None:
     )
     assert_type(partial_result.response, HtmlResponse | None)
     assert_type(partial_response_free_step(), dict[str, Any])
-    assert_type(partial_step_response_free_step(), dict[str, Any])
+    assert_type(
+        partial_step_response_free_step(),  # pylint: disable=no-value-for-parameter
+        dict[str, Any],
+    )
     assert_type(partial_html_step(), dict[str, Any] | HtmlResponse)
 
 
-def verify_concrete_backend_response_type(strategy: HtmlStrategy) -> None:
+def verify_concrete_backend_response_type(
+    strategy: HtmlStrategy,
+) -> None:  # pragma: no cover
     backend = GithubOAuth2(strategy)
     assert_type(backend.strategy, BaseStrategy[HttpResponseProtocol])
     assert_type(backend.start(), HttpResponseProtocol)
