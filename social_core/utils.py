@@ -381,7 +381,7 @@ def _external_partial_pipeline_result(
             to_plain_dict(request_data) if is_dict_type(request_data) else request_data
         ),
     )
-    return PartialPipelineResult(response=response)
+    return PartialPipelineResult[ResponseT](response=response)
 
 
 def partial_pipeline_result(
