@@ -102,7 +102,7 @@ class BaseAuth(Generic[ResponseT_co]):
         self.redirect_uri = self.strategy.absolute_uri(self.redirect_uri)
 
     @property
-    def strategy(self) -> BaseStrategy:
+    def strategy(self) -> BaseStrategy[ResponseT_co]:
         """The strategy this backend was created with.
 
         Type checkers treat this as read-only. Assigning it is deprecated.
