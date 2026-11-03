@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   created with now raises `AuthConfigurationError`. Type checkers now treat
   `BaseAuth.strategy` as read-only, and assigning it is deprecated. In both
   cases, create the backend with the intended strategy instead.
+- Make strategy-generated response types generic so framework-specific HTML
+  responses can be returned from decorated partial pipeline steps.
 
 ### Fixed
 
@@ -31,11 +33,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Add a `get_provider_error()` backend hook for callback and HTTP error classification.
 - Add a Casdoor OpenID Connect backend for self-hosted Casdoor servers, with PKCE enabled by default.
-
-### Changed
-
-- Make strategy-generated response types generic so framework-specific HTML
-  responses can be returned from decorated partial pipeline steps.
 
 ### Security
 
