@@ -5,7 +5,8 @@ from contextlib import contextmanager
 from contextvars import ContextVar
 from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
 
-from .backends.base import HttpResponseProtocol
+# Preserve the historical import path for integrations and tests.
+from .backends.base import HttpResponseProtocol  # ruff: ignore[unused-import]  # pylint: disable=unused-import
 from .backends.utils import get_backend
 from .exceptions import AuthConfigurationError, ErrorStage
 from .groups import validate_group_mapping
@@ -28,7 +29,7 @@ if TYPE_CHECKING:
     from .storage import BaseStorage, CodeMixin, PartialMixin, UserProtocol
 
 
-ResponseT_co = TypeVar("ResponseT_co", bound=HttpResponseProtocol, covariant=True)
+ResponseT = TypeVar("ResponseT")
 
 
 class BaseTemplateStrategy:
@@ -55,7 +56,7 @@ class BaseTemplateStrategy:
         raise NotImplementedError("Implement in subclass")
 
 
-class BaseStrategy(Generic[ResponseT_co]):
+class BaseStrategy(Generic[ResponseT]):
     ALLOWED_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     DEFAULT_TEMPLATE_STRATEGY = BaseTemplateStrategy
 
@@ -164,7 +165,7 @@ class BaseStrategy(Generic[ResponseT_co]):
         backend: BaseAuth[Any],
         partial: PartialMixin,
         request_data: dict[str, Any],
-    ) -> ResponseT_co | None:
+    ) -> ResponseT | None:
         return None
 
     def partial_pipeline_external_resume_confirmed(
@@ -244,7 +245,7 @@ class BaseStrategy(Generic[ResponseT_co]):
 
     def authenticate(
         self, backend: BaseAuth[Any], *args, **kwargs
-    ) -> UserProtocol | ResponseT_co | None:
+    ) -> UserProtocol | ResponseT | None:
         """Trigger the authentication mechanism tied to the current
         framework"""
         kwargs["strategy"] = self
@@ -268,17 +269,15 @@ class BaseStrategy(Generic[ResponseT_co]):
 
     def get_backend(
         self, name: str, redirect_uri: str | None = None, **kwargs
-    ) -> BaseAuth[ResponseT_co]:
+    ) -> BaseAuth[ResponseT]:
         """Return a configured backend instance"""
-        backend_class = cast(
-            "type[BaseAuth[ResponseT_co]]", self.get_backend_class(name)
-        )
+        backend_class = cast("type[BaseAuth[ResponseT]]", self.get_backend_class(name))
         kwargs["redirect_uri"] = redirect_uri
         return backend_class(self, **kwargs)
 
     # Implement the following methods on strategies sub-classes
 
-    def redirect(self, url: str) -> ResponseT_co:
+    def redirect(self, url: str) -> ResponseT:
         """Return a response redirect to the given URL"""
         raise NotImplementedError("Implement in subclass")
 
@@ -286,13 +285,11 @@ class BaseStrategy(Generic[ResponseT_co]):
         """Return value for given setting name"""
         raise NotImplementedError("Implement in subclass")
 
-    def html(self, content: str) -> ResponseT_co:
+    def html(self, content: str) -> ResponseT:
         """Return HTTP response with given content"""
         raise NotImplementedError("Implement in subclass")
 
-    def html_with_headers(
-        self, content: str, headers: Mapping[str, str]
-    ) -> HttpResponseProtocol:
+    def html_with_headers(self, content: str, headers: Mapping[str, str]) -> ResponseT:
         """Return HTML with required headers; integrations must implement this."""
         raise AuthConfigurationError(
             None,

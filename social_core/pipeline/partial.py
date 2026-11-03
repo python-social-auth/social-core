@@ -14,10 +14,10 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     from social_core.backends.base import BaseAuth
-    from social_core.strategy import BaseStrategy, HttpResponseProtocol
+    from social_core.strategy import BaseStrategy
 
 
-ResponseT = TypeVar("ResponseT", bound="HttpResponseProtocol")
+ResponseT = TypeVar("ResponseT")
 
 
 class _PartialStepDecorator(Protocol):

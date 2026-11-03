@@ -19,11 +19,10 @@ if TYPE_CHECKING:
 
     from .backends.base import BaseAuth
     from .storage import PartialMixin, PipelineUserProtocol, UserMixin, UserProtocol
-    from .strategy import HttpResponseProtocol
 
 
 _PartialResult = TypeVar("_PartialResult")
-ResponseT = TypeVar("ResponseT", bound="HttpResponseProtocol")
+ResponseT = TypeVar("ResponseT")
 
 
 def _get_social_user(user: PipelineUserProtocol) -> UserMixin:

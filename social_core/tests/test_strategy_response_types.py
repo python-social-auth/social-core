@@ -18,14 +18,27 @@ from social_core.utils import PartialPipelineResult, partial_pipeline_result
 class HtmlResponse:
     content: str
 
-    @property
-    def url(self) -> str:  # pragma: no cover
-        return "https://example.com/"
-
 
 class HtmlStrategy(BaseStrategy[HtmlResponse]):
-    def html(self, content: str) -> HtmlResponse:  # pragma: no cover
+    def get_setting(self, name: str) -> Any:
+        return None
+
+    def get_request_data(self, merge: bool = True) -> dict[str, Any]:
+        return {}
+
+    def build_absolute_uri(self, path: str | None = None) -> str:
+        return path or "https://example.com/"
+
+    def redirect(self, url: str) -> HtmlResponse:
+        return HtmlResponse(url)
+
+    def html(self, content: str) -> HtmlResponse:
         return HtmlResponse(content)
+
+
+class HtmlBackend(BaseAuth[HtmlResponse]):
+    def auth_url(self) -> str:
+        return "/provider-login"
 
 
 def html_pipeline_step(**kwargs: Any) -> HtmlResponse:  # pragma: no cover
@@ -43,6 +56,17 @@ partial_response_free_step = partial(response_free_pipeline_step)
 partial_step_response_free_step = partial_step(save_to_session=False)(
     response_free_pipeline_step
 )
+
+
+def test_backend_returns_response_without_redirect_url() -> None:
+    strategy = HtmlStrategy()
+    response = HtmlBackend(strategy).start()
+    html = strategy.html("rendered")
+
+    assert response.content == "/provider-login"
+    assert not hasattr(response, "url")
+    assert html.content == "rendered"
+    assert not hasattr(html, "url")
 
 
 # These functions are inputs to static type checkers and intentionally aren't
@@ -83,13 +107,25 @@ def verify_response_type_flow(
 
 
 def verify_concrete_backend_response_type(
-    strategy: HtmlStrategy,
+    strategy: BaseStrategy[HttpResponseProtocol],
 ) -> None:  # pragma: no cover
     backend = GithubOAuth2(strategy)
     assert_type(backend.strategy, BaseStrategy[HttpResponseProtocol])
     assert_type(backend.start(), HttpResponseProtocol)
     assert_type(do_auth(backend), HttpResponseProtocol)
 
-    factory_backend = strategy.get_backend("github")
-    assert_type(factory_backend, BaseAuth[HtmlResponse])
-    assert_type(factory_backend.start(), HtmlResponse)
+
+def verify_backend_constructor_preserves_response_type(
+    strategy: HtmlStrategy,
+) -> None:  # pragma: no cover
+    backend = BaseAuth(strategy)
+    assert_type(backend, BaseAuth[HtmlResponse])
+    assert_type(backend.strategy, BaseStrategy[HtmlResponse])
+
+
+def verify_backend_factory_preserves_response_type(
+    strategy: HtmlStrategy,
+) -> None:  # pragma: no cover
+    backend = strategy.get_backend("github")
+    assert_type(backend, BaseAuth[HtmlResponse])
+    assert_type(backend.start(), HtmlResponse)
