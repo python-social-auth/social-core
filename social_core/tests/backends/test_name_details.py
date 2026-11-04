@@ -25,7 +25,7 @@ from social_core.utils import module_member
             ("coding.CodingOAuth2", {"name": " Mary Jane Watson "}),
             ("douban.DoubanOAuth2", {"name": " Mary Jane Watson "}),
             ("einfracz.EInfraCZOpenIdConnect", {"name": " Mary Jane Watson "}),
-            ("elixir.ElixirOpenIdConnect", {"name": " Mary Jane Watson "}),
+            ("lifescience.LifeScienceOpenIdConnect", {"name": " Mary Jane Watson "}),
             ("globus.GlobusOpenIdConnect", {"name": " Mary Jane Watson "}),
             ("meetup.MeetupOAuth2", {"name": " Mary Jane Watson "}),
             (
@@ -151,7 +151,6 @@ def test_eve_character_name_is_normalized_in_pipeline() -> None:
         ("dribbble.DribbbleOAuth2", {}),
         ("egi_checkin.EGICheckinOpenIdConnect", {}),
         ("einfracz.EInfraCZOpenIdConnect", {}),
-        ("elixir.ElixirOpenIdConnect", {}),
         ("facebook.FacebookOAuth2", {}),
         ("flickr.FlickrOAuth", {}),
         (
@@ -171,7 +170,6 @@ def test_eve_character_name_is_normalized_in_pipeline() -> None:
         ("kick.KickOAuth2", {}),
         ("legacy.LegacyAuth", {}),
         ("lifescience.LifeScienceOpenIdConnect", {}),
-        ("lifescience_eosc.LifeScienceEoscOpenIdConnect", {}),
         ("line.LineOAuth2", {}),
         (
             "linkedin.LinkedinOAuth2",
