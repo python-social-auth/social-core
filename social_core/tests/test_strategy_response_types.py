@@ -107,12 +107,16 @@ def verify_response_type_flow(
         backend
     )
     assert_type(partial_result.response, HtmlResponse | None)
-    assert_type(partial_response_free_step(backend.strategy, backend, 0), dict[str, Any])
+    assert_type(
+        partial_response_free_step(backend.strategy, backend, 0), dict[str, Any]
+    )
     assert_type(
         partial_step_response_free_step(backend.strategy, backend, 0),
         dict[str, Any],
     )
-    assert_type(partial_html_step(backend.strategy, backend, 0), dict[str, Any] | HtmlResponse)
+    assert_type(
+        partial_html_step(backend.strategy, backend, 0), dict[str, Any] | HtmlResponse
+    )
 
 
 def verify_concrete_backend_response_type(
