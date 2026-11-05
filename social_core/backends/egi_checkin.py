@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from typing import Literal, cast
 
+from social_core.backends.base import ResponseT_co
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 
 CHECKIN_ENV_ENDPOINTS: dict[str, str] = {
@@ -16,7 +17,7 @@ CHECKIN_ENV_ENDPOINTS: dict[str, str] = {
 }
 
 
-class EGICheckinOpenIdConnect(OpenIdConnectAuth):
+class EGICheckinOpenIdConnect(OpenIdConnectAuth[ResponseT_co]):
     name = "egi-checkin"
     title = "EGI Check-in"
     # Check-in provides 3 environments: production, demo and development

@@ -5,12 +5,13 @@ Facebook Limited Login backend, docs at:
 
 from typing import Any
 
+from social_core.backends.base import ResponseT_co
 from social_core.exceptions import AuthResponseError
 
 from .open_id_connect import OpenIdConnectAuth
 
 
-class FacebookLimitedLogin(OpenIdConnectAuth):
+class FacebookLimitedLogin(OpenIdConnectAuth[ResponseT_co]):
     """Facebook Limited Login (OIDC) backend"""
 
     name = "facebook-limited-login"

@@ -1,14 +1,20 @@
-from typing import Any, Literal
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, Literal
 
 import requests
 
+from social_core.backends.base import ResponseT_co
 from social_core.exceptions import AuthProviderError, AuthResponseError, ErrorStage
 from social_core.utils import handle_http_errors
 
 from .oauth import BaseOAuth2
 
+if TYPE_CHECKING:
+    from social_core.storage import UserProtocol
 
-class UntappdOAuth2(BaseOAuth2):
+
+class UntappdOAuth2(BaseOAuth2[ResponseT_co]):
     """Untappd OAuth2 authentication backend"""
 
     name = "untappd"
@@ -75,7 +81,7 @@ class UntappdOAuth2(BaseOAuth2):
             )
 
     @handle_http_errors
-    def auth_complete(self, *args, **kwargs):
+    def auth_complete(self, *args, **kwargs) -> UserProtocol | ResponseT_co | None:
         """Completes login process, must return user instance"""
         client_id, client_secret = self.get_key_and_secret()
         code = self.data.get("code")

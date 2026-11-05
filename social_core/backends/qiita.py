@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Literal
 
+from social_core.backends.base import ResponseT_co
 from social_core.exceptions import AuthResponseError
 
 from .oauth import BaseOAuth2
@@ -21,7 +22,7 @@ if TYPE_CHECKING:
     from social_core.exceptions import ErrorStage
 
 
-class QiitaOAuth2(BaseOAuth2):
+class QiitaOAuth2(BaseOAuth2[ResponseT_co]):
     """Qiita OAuth authentication backend"""
 
     name = "qiita"

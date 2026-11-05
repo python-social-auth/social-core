@@ -5,14 +5,15 @@ from hashlib import sha256
 from typing import cast
 from urllib.parse import parse_qs, urlencode
 
+from social_core.backends.base import ResponseT_co
 from social_core.exceptions import AuthInputError, AuthResponseError, AuthSessionError
 from social_core.groups import read_groups
 from social_core.utils import constant_time_compare, drop_lists
 
-from .base import BaseAuth, HttpResponseProtocol
+from .base import BaseAuth
 
 
-class DiscourseAuth(BaseAuth[HttpResponseProtocol]):
+class DiscourseAuth(BaseAuth[ResponseT_co]):
     name = "discourse"
     title = "Discourse"
     ID_KEY = "external_id"

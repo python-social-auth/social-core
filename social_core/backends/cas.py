@@ -9,12 +9,13 @@ implementation and the standard OIDC implementation in Python Social Auth.
 
 from typing import Any, cast
 
+from social_core.backends.base import ResponseT_co
 from social_core.groups import read_groups
 
 from .open_id_connect import OpenIdConnectAuth
 
 
-class CASOpenIdConnectAuth(OpenIdConnectAuth):
+class CASOpenIdConnectAuth(OpenIdConnectAuth[ResponseT_co]):
     """
     Open ID Connect backends for use with Apereo CAS.
     Currently only the code response type is supported.

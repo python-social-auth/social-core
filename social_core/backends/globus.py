@@ -4,10 +4,11 @@ Globus Auth OpenID Connect backend, docs at:
     http://globus-integration-examples.readthedocs.io
 """
 
+from social_core.backends.base import ResponseT_co
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 
 
-class GlobusOpenIdConnect(OpenIdConnectAuth):
+class GlobusOpenIdConnect(OpenIdConnectAuth[ResponseT_co]):
     name = "globus"
     title = "Globus"
     OIDC_ENDPOINT = "https://auth.globus.org"

@@ -1,10 +1,12 @@
 from typing import Any
 from urllib.parse import urlencode
 
+from social_core.backends.base import ResponseT_co
+
 from .oauth import BaseOAuth2
 
 
-class WLCGOAuth2(BaseOAuth2):
+class WLCGOAuth2(BaseOAuth2[ResponseT_co]):
     """
     WLCG IAM Authentication Backend
     """

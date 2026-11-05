@@ -5,11 +5,13 @@ Google OpenIdConnect:
 
 from typing import Any
 
+from social_core.backends.base import ResponseT_co
+
 from .google import GoogleOAuth2
 from .open_id_connect import OpenIdConnectAuth
 
 
-class GoogleOpenIdConnect(GoogleOAuth2, OpenIdConnectAuth):
+class GoogleOpenIdConnect(GoogleOAuth2[ResponseT_co], OpenIdConnectAuth[ResponseT_co]):
     name = "google-openidconnect"
     title = "Google"
     icon = "google.svg"
@@ -20,10 +22,10 @@ class GoogleOpenIdConnect(GoogleOAuth2, OpenIdConnectAuth):
 
     def get_user_id(self, details, response):
         if self.setting("ID_KEY"):
-            return OpenIdConnectAuth.get_user_id(self, details, response)
+            return super(GoogleOAuth2, self).get_user_id(details, response)
         if self.setting("USE_UNIQUE_USER_ID", False) and self.id_token is not None:
             return self.id_token.get("sub")
-        return OpenIdConnectAuth.get_user_id(self, details, response)
+        return super(GoogleOAuth2, self).get_user_id(details, response)
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Return user data from Google API"""

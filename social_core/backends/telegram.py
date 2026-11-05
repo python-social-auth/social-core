@@ -5,12 +5,12 @@ import hmac
 import time
 from typing import TYPE_CHECKING, Any
 
+from social_core.backends.base import ResponseT_co
 from social_core.exceptions import (
     AuthConfigurationError,
     AuthInputError,
     AuthResponseError,
 )
-from social_core.strategy import HttpResponseProtocol
 from social_core.utils import constant_time_compare, handle_http_errors
 
 from .base import BaseAuth
@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from social_core.storage import UserProtocol
 
 
-class TelegramAuth(BaseAuth[HttpResponseProtocol]):
+class TelegramAuth(BaseAuth[ResponseT_co]):
     name = "telegram"
     title = "Telegram"
     ID_KEY = "id"
@@ -108,9 +108,7 @@ class TelegramAuth(BaseAuth[HttpResponseProtocol]):
         }
 
     @handle_http_errors
-    def auth_complete(
-        self, *args, **kwargs
-    ) -> HttpResponseProtocol | UserProtocol | None:
+    def auth_complete(self, *args, **kwargs) -> ResponseT_co | UserProtocol | None:
         response = self.data
         self.verify_data(response)
         kwargs.update({"response": self.data, "backend": self})

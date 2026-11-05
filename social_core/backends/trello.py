@@ -5,12 +5,13 @@ Trello OAuth1 backend, docs at:
 
 from typing import Any, cast
 
+from social_core.backends.base import ResponseT_co
 from social_core.exceptions import SocialAuthBaseException
 
 from .oauth import BaseOAuth1
 
 
-class TrelloOAuth(BaseOAuth1):
+class TrelloOAuth(BaseOAuth1[ResponseT_co]):
     """Trello OAuth authentication backend"""
 
     name = "trello"

@@ -1,9 +1,11 @@
 from typing import Any
 
+from social_core.backends.base import ResponseT_co
+
 from .oauth import BaseOAuth2PKCE
 
 
-class EtsyOAuth2(BaseOAuth2PKCE):
+class EtsyOAuth2(BaseOAuth2PKCE[ResponseT_co]):
     name = "etsy"
     title = "Etsy"
     ID_KEY = "user_id"

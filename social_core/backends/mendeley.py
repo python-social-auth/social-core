@@ -2,6 +2,8 @@
 
 from typing import Any
 
+from social_core.backends.base import ResponseT_co
+
 from .oauth import BaseOAuth2
 
 BASE_EXTRA_DATA = [("profile_id", "profile_id"), ("name", "name"), ("bio", "bio")]
@@ -28,7 +30,7 @@ class MendeleyMixin:
         raise NotImplementedError("Implement in subclass")
 
 
-class MendeleyOAuth2(MendeleyMixin, BaseOAuth2):
+class MendeleyOAuth2(MendeleyMixin, BaseOAuth2[ResponseT_co]):
     name = "mendeley-oauth2"
     title = "Mendeley"
     AUTHORIZATION_URL = "https://api-oauth2.mendeley.com/oauth/authorize"

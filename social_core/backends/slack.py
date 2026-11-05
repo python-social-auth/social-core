@@ -8,12 +8,13 @@ from __future__ import annotations
 
 from typing import Any, cast
 
+from social_core.backends.base import ResponseT_co
 from social_core.exceptions import AuthPolicyError, AuthResponseError
 
 from .oauth import BaseOAuth2
 
 
-class SlackOAuth2(BaseOAuth2):
+class SlackOAuth2(BaseOAuth2[ResponseT_co]):
     """Slack OAuth authentication backend"""
 
     name = "slack"

@@ -27,6 +27,7 @@ from onelogin.saml2.utils import OneLogin_Saml2_Utils
 from onelogin.saml2.xml_utils import OneLogin_Saml2_XML
 from xmlsec import Error as XMLSecError
 
+from social_core.backends.base import ResponseT_co
 from social_core.exceptions import (
     AuthConfigurationError,
     AuthInputError,
@@ -37,7 +38,7 @@ from social_core.exceptions import (
 from social_core.groups import read_groups
 from social_core.utils import constant_time_compare, user_is_authenticated
 
-from .base import BaseAuth, HttpResponseProtocol
+from .base import BaseAuth
 
 # Helpful constants:
 OID_COMMON_NAME = "urn:oid:2.5.4.3"
@@ -265,7 +266,7 @@ class SAMLIdentityProvider:
         )
 
 
-class SAMLAuth(BaseAuth[HttpResponseProtocol]):
+class SAMLAuth(BaseAuth[ResponseT_co]):
     """
     PSA Backend that implements SAML 2.0 Service Provider (SP) functionality.
 
@@ -314,9 +315,7 @@ class SAMLAuth(BaseAuth[HttpResponseProtocol]):
     EXTRA_DATA = []
     BROWSER_RETURN_FIELD = "psa_saml_browser_return"
 
-    def _browser_return(
-        self, saml_response: Any, relay_state: Any
-    ) -> HttpResponseProtocol:
+    def _browser_return(self, saml_response: Any, relay_state: Any) -> ResponseT_co:
         if not isinstance(saml_response, str):
             raise AuthInputError(
                 self,

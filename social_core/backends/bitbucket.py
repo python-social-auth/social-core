@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from social_core.backends.base import ResponseT_co
 from social_core.exceptions import (
     AuthCanceled,
     AuthCredentialError,
@@ -18,7 +19,7 @@ from social_core.exceptions import (
 from .oauth import BaseOAuth2
 
 
-class BitbucketOAuth2(BaseOAuth2):
+class BitbucketOAuth2(BaseOAuth2[ResponseT_co]):
     name = "bitbucket-oauth2"
     title = "Bitbucket"
     icon = "bitbucket.svg"

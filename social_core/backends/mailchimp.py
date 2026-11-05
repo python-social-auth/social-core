@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from social_core.backends.base import ResponseT_co
 from social_core.exceptions import (
     AuthAssociationError,
     AuthConfigurationError,
@@ -15,7 +16,7 @@ if TYPE_CHECKING:
     from social_core.storage import UserMixin, UserProtocol
 
 
-class MailChimpOAuth2(BaseOAuth2):
+class MailChimpOAuth2(BaseOAuth2[ResponseT_co]):
     """MailChimp OAuth2 authentication backend"""
 
     name = "mailchimp"

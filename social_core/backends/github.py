@@ -6,6 +6,7 @@ Github OAuth2 backend, docs at:
 from typing import Any
 from urllib.parse import urljoin
 
+from social_core.backends.base import ResponseT_co
 from social_core.exceptions import (
     AuthPolicyError,
     AuthProviderError,
@@ -16,7 +17,7 @@ from social_core.exceptions import (
 from .oauth import BaseOAuth2
 
 
-class GithubOAuth2(BaseOAuth2):
+class GithubOAuth2(BaseOAuth2[ResponseT_co]):
     """Github OAuth authentication backend"""
 
     name = "github"
@@ -81,7 +82,7 @@ class GithubOAuth2(BaseOAuth2):
         return self.get_json(url, headers={"Authorization": f"token {access_token}"})
 
 
-class GithubMemberOAuth2(GithubOAuth2):
+class GithubMemberOAuth2(GithubOAuth2[ResponseT_co]):
     no_member_string = ""
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
@@ -107,7 +108,7 @@ class GithubMemberOAuth2(GithubOAuth2):
         raise NotImplementedError("Implement in subclass")
 
 
-class GithubOrganizationOAuth2(GithubMemberOAuth2):
+class GithubOrganizationOAuth2(GithubMemberOAuth2[ResponseT_co]):
     """Github OAuth2 authentication backend for organizations"""
 
     name = "github-org"
@@ -122,7 +123,7 @@ class GithubOrganizationOAuth2(GithubMemberOAuth2):
         )
 
 
-class GithubTeamOAuth2(GithubMemberOAuth2):
+class GithubTeamOAuth2(GithubMemberOAuth2[ResponseT_co]):
     """Github OAuth2 authentication backend for teams"""
 
     name = "github-team"
@@ -137,7 +138,7 @@ class GithubTeamOAuth2(GithubMemberOAuth2):
         )
 
 
-class GithubAppAuth(GithubOAuth2):
+class GithubAppAuth(GithubOAuth2[ResponseT_co]):
     """GitHub App OAuth authentication backend.
 
     App installation callback parameters are untrusted. Stateless installation

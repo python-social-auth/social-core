@@ -4,12 +4,13 @@ OAuth2 Backend to work with microsoft graph.
 
 from typing import Any
 
+from social_core.backends.base import ResponseT_co
 from social_core.exceptions import AuthResponseError
 
 from .oauth import BaseOAuth2
 
 
-class MicrosoftOAuth2(BaseOAuth2):
+class MicrosoftOAuth2(BaseOAuth2[ResponseT_co]):
     name = "microsoft-graph"
     title = "Microsoft"
     icon = "microsoft.svg"

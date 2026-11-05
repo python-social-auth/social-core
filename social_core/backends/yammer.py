@@ -3,10 +3,12 @@ Yammer OAuth2 production and staging backends, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/yammer.html
 """
 
+from social_core.backends.base import ResponseT_co
+
 from .oauth import BaseOAuth2
 
 
-class YammerOAuth2(BaseOAuth2):
+class YammerOAuth2(BaseOAuth2[ResponseT_co]):
     name = "yammer"
     title = "Microsoft Viva Engage"
     AUTHORIZATION_URL = "https://www.yammer.com/dialog/oauth"
@@ -41,7 +43,7 @@ class YammerOAuth2(BaseOAuth2):
         }
 
 
-class YammerStagingOAuth2(YammerOAuth2):
+class YammerStagingOAuth2(YammerOAuth2[ResponseT_co]):
     name = "yammer-staging"
     title = "Microsoft Viva Engage (Staging)"
     AUTHORIZATION_URL = "https://www.staging.yammer.com/dialog/oauth"

@@ -10,11 +10,13 @@ If username is not specified, OpenID 2.0 url used for authentication.
 from typing import Any
 from urllib.parse import urlsplit
 
+from social_core.backends.base import ResponseT_co
+
 from .oauth import BaseOAuth2
 from .open_id import OpenIdAuth
 
 
-class YandexOpenId(OpenIdAuth):
+class YandexOpenId(OpenIdAuth[ResponseT_co]):
     """Yandex OpenID authentication backend"""
 
     name = "yandex-openid"
@@ -37,7 +39,7 @@ class YandexOpenId(OpenIdAuth):
         return values
 
 
-class YandexOAuth2(BaseOAuth2):
+class YandexOAuth2(BaseOAuth2[ResponseT_co]):
     """Legacy Yandex OAuth2 authentication backend"""
 
     name = "yandex-oauth2"
@@ -71,7 +73,7 @@ class YandexOAuth2(BaseOAuth2):
         )
 
 
-class YaruOAuth2(BaseOAuth2):
+class YaruOAuth2(BaseOAuth2[ResponseT_co]):
     name = "yaru"
     title = "Я.ру"
     AUTHORIZATION_URL = "https://oauth.yandex.com/authorize"

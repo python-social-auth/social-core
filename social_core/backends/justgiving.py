@@ -1,13 +1,19 @@
-from typing import Any
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
 
 from requests.auth import HTTPBasicAuth
 
+from social_core.backends.base import ResponseT_co
 from social_core.utils import handle_http_errors
 
 from .oauth import BaseOAuth2
 
+if TYPE_CHECKING:
+    from social_core.storage import UserProtocol
 
-class JustGivingOAuth2(BaseOAuth2):
+
+class JustGivingOAuth2(BaseOAuth2[ResponseT_co]):
     """Just Giving OAuth authentication backend"""
 
     name = "justgiving"
@@ -45,7 +51,7 @@ class JustGivingOAuth2(BaseOAuth2):
         )
 
     @handle_http_errors
-    def auth_complete(self, *args, **kwargs):
+    def auth_complete(self, *args, **kwargs) -> UserProtocol | ResponseT_co | None:
         """Completes login process, must return user instance"""
         state = self.validate_state()
         self.process_error(self.data)

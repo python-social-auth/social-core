@@ -5,10 +5,12 @@ https://www.patreon.com/platform/documentation/oauth
 
 from typing import Any
 
+from social_core.backends.base import ResponseT_co
+
 from .oauth import BaseOAuth2
 
 
-class PatreonOAuth2(BaseOAuth2):
+class PatreonOAuth2(BaseOAuth2[ResponseT_co]):
     """Patreon OAuth2 authentication backend"""
 
     name = "patreon"
