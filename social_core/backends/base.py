@@ -121,7 +121,7 @@ class BaseAuth(Generic[ResponseT_co]):
             self._strategy = strategy
 
     @classmethod
-    def get_title(cls, strategy: BaseStrategy) -> str:
+    def get_title(cls, strategy: BaseStrategy[object]) -> str:
         """Return a sign-in label using the application's strategy settings."""
         return cls.title or cls.name
 

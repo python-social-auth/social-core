@@ -242,7 +242,7 @@ class SocialAuthBaseException(ValueError):
 
     def __init__(
         self,
-        backend: BaseAuth | None = None,
+        backend: BaseAuth[object] | None = None,
         *details: object,
         code: str | None = None,
         source: ErrorSource | None = None,

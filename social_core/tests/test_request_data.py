@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 import unittest
 from types import MappingProxyType
-from typing import Any
 from unittest.mock import patch
 
 from social_core.backends.base import BaseAuth
@@ -26,7 +25,7 @@ class PipelineRequestDataTest(unittest.TestCase):
     def setUp(self) -> None:
         TestPartial.reset_cache()
         self.strategy = SameInstanceStrategy(TestStorage)
-        self.backend: BaseAuth[Any] = BaseAuth(self.strategy)
+        self.backend: BaseAuth[object] = BaseAuth(self.strategy)
         self.strategy.set_request_data({"field": "current"}, self.backend)
 
     def test_nested_context_and_empty_data(self) -> None:

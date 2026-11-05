@@ -3,7 +3,7 @@ from __future__ import annotations
 import secrets
 from contextlib import contextmanager
 from contextvars import ContextVar
-from typing import TYPE_CHECKING, Any, Generic, TypeAlias, cast
+from typing import TYPE_CHECKING, Any, Generic, TypeAlias, TypeVar, cast
 
 from .backends.base import ResponseT_co
 
@@ -32,6 +32,9 @@ if TYPE_CHECKING:
 
     from .backends.base import BaseAuth
     from .storage import BaseStorage, CodeMixin, PartialMixin, UserProtocol
+
+
+_BackendResponseT = TypeVar("_BackendResponseT")
 
 
 class BaseTemplateStrategy:
@@ -92,7 +95,7 @@ class BaseStrategy(Generic[ResponseT_co]):
             )
         return storage
 
-    def setting(self, name: str, default=None, backend: BaseAuth[Any] | None = None):
+    def setting(self, name: str, default=None, backend: BaseAuth[object] | None = None):
         names = [setting_name(name), name]
         if backend:
             names.insert(0, setting_name(backend.name, name))
@@ -114,7 +117,7 @@ class BaseStrategy(Generic[ResponseT_co]):
         user,
         groups: list[str] | None,
         *,
-        backend: BaseAuth[Any],
+        backend: BaseAuth[object],
         response,
         **kwargs,
     ) -> None:
@@ -164,7 +167,7 @@ class BaseStrategy(Generic[ResponseT_co]):
 
     def partial_pipeline_external_resume_confirmation(
         self,
-        backend: BaseAuth[Any],
+        backend: BaseAuth[object],
         partial: PartialMixin,
         request_data: dict[str, Any],
     ) -> ResponseT_co | None:
@@ -172,7 +175,7 @@ class BaseStrategy(Generic[ResponseT_co]):
 
     def partial_pipeline_external_resume_confirmed(
         self,
-        backend: BaseAuth[Any],
+        backend: BaseAuth[object],
         request_data: dict[str, Any],
     ) -> bool:
         return False
@@ -180,13 +183,13 @@ class BaseStrategy(Generic[ResponseT_co]):
     def openid_store(self) -> OpenIdStore:
         return OpenIdStore(self)
 
-    def get_pipeline(self, backend: BaseAuth[Any] | None = None) -> list[str]:
+    def get_pipeline(self, backend: BaseAuth[object] | None = None) -> list[str]:
         return cast(
             "list[str]", self.setting("PIPELINE", DEFAULT_AUTH_PIPELINE, backend)
         )
 
     def get_disconnect_pipeline(
-        self, backend: BaseAuth[Any] | None = None
+        self, backend: BaseAuth[object] | None = None
     ) -> list[str]:
         return cast(
             "list[str]",
@@ -207,7 +210,7 @@ class BaseStrategy(Generic[ResponseT_co]):
         return ""
 
     def send_email_validation(
-        self, backend: BaseAuth[Any], email: str, partial_token: str | None = None
+        self, backend: BaseAuth[object], email: str, partial_token: str | None = None
     ) -> CodeMixin:
         email_validation = self.setting("EMAIL_VALIDATION_FUNCTION")
         if not email_validation:
@@ -246,10 +249,9 @@ class BaseStrategy(Generic[ResponseT_co]):
         return self.tpl.render(tpl, html, context)
 
     def authenticate(
-        self, backend: BaseAuth[Any], *args, **kwargs
-    ) -> UserProtocol | ResponseT_co | None:
-        """Trigger the authentication mechanism tied to the current
-        framework"""
+        self, backend: BaseAuth[_BackendResponseT], *args, **kwargs
+    ) -> UserProtocol | _BackendResponseT | None:
+        """Trigger authentication using a backend created by this strategy."""
         kwargs["strategy"] = self
         kwargs["storage"] = self.storage
         kwargs["backend"] = backend
@@ -265,7 +267,7 @@ class BaseStrategy(Generic[ResponseT_co]):
         """Return configured backends"""
         return cast("list[str]", self.setting("AUTHENTICATION_BACKENDS", []))
 
-    def get_backend_class(self, name: str) -> type[BaseAuth[Any]]:
+    def get_backend_class(self, name: str) -> type[BaseAuth[ResponseT_co]]:
         """Return a configured backend class"""
         return get_backend(self.get_backends(), name)
 

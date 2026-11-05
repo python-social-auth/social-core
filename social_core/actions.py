@@ -33,7 +33,7 @@ def _get_social_user(user: PipelineUserProtocol) -> UserMixin:
 
 
 def _login_user(
-    backend: BaseAuth, login: Callable, authenticated_user: PipelineUserProtocol
+    backend: BaseAuth[object], login: Callable, authenticated_user: PipelineUserProtocol
 ) -> bool:
     social_user = _get_social_user(authenticated_user)
     is_new = authenticated_user.is_new
@@ -42,7 +42,7 @@ def _login_user(
     return is_new
 
 
-def _sanitize_redirect_url(backend: BaseAuth, url: str) -> str:
+def _sanitize_redirect_url(backend: BaseAuth[object], url: str) -> str:
     if backend.setting("SANITIZE_REDIRECTS", True):
         allowed_hosts = [
             *cast("list[str]", backend.setting("ALLOWED_REDIRECT_HOSTS", [])),

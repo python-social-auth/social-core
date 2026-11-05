@@ -1,13 +1,15 @@
+from typing import Any
+
 import jwt
 
-from social_core.backends.base import ResponseT_co
 from social_core.exceptions import AuthConfigurationError, AuthResponseError, ErrorStage
 from social_core.utils import cache, module_member, user_is_authenticated
 
-from .base import BaseAuth
+from .base import BaseAuth, ResponseT_co
 
-# Cache for discovered backends.
-BACKENDSCACHE: dict[str, type[BaseAuth]] = {}
+# Cache for discovered backends. Backend classes are generic, so each can be
+# instantiated with a strategy for any response type.
+BACKENDSCACHE: dict[str, type[BaseAuth[Any]]] = {}
 
 
 def load_backends(backends, force_load=False):
@@ -84,7 +86,7 @@ def user_backends_data(user, backends, storage):
 
 
 def load_oidc_config(
-    backend: BaseAuth, url: str, *, stage: ErrorStage = "begin"
+    backend: BaseAuth[object], url: str, *, stage: ErrorStage = "begin"
 ) -> dict:
     """Fetch and validate a discovery document before it can enter a cache."""
     response = backend.get_json(url, stage=stage)
@@ -109,7 +111,10 @@ class OIDCDiscoveryMixin(BaseAuth[ResponseT_co]):
 
 
 def jwt_error(
-    backend: BaseAuth, error: jwt.PyJWTError, *, stage: ErrorStage = "token_validation"
+    backend: BaseAuth[object],
+    error: jwt.PyJWTError,
+    *,
+    stage: ErrorStage = "token_validation",
 ) -> AuthResponseError:
     """Translate JWT exception types, preserving claims without parsing messages."""
 

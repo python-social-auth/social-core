@@ -112,9 +112,9 @@ SAML_RESPONSE_ERRORS = (
 class SAMLIdentityProvider:
     """Wrapper around configuration for a SAML Identity provider"""
 
-    def __init__(self, backend: BaseAuth, name: str, **kwargs) -> None:
+    def __init__(self, backend: BaseAuth[object], name: str, **kwargs) -> None:
         """Load and parse configuration"""
-        self.backend: BaseAuth = backend
+        self.backend: BaseAuth[object] = backend
         self.name: str = name
         # name should be a slug and must not contain a colon, which
         # could conflict with uid prefixing:

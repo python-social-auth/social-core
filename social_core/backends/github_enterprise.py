@@ -26,7 +26,7 @@ class GithubEnterpriseMixin:
         value = cast("GithubOAuth2", self).setting(name)
         if not value:
             raise AuthConfigurationError(
-                cast("BaseAuth", self),
+                cast("BaseAuth[object]", self),
                 parameter=name,
                 code="missing_setting",
                 stage=stage,

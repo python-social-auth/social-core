@@ -54,10 +54,12 @@ class UserMixin:
     @abstractmethod
     def save(self): ...
 
-    def get_backend(self, strategy: BaseStrategy) -> type[BaseAuth]:
+    def get_backend(self, strategy: BaseStrategy[object]) -> type[BaseAuth[object]]:
         return strategy.get_backend_class(self.provider)
 
-    def get_backend_instance(self, strategy: BaseStrategy) -> BaseAuth | None:
+    def get_backend_instance(
+        self, strategy: BaseStrategy[object]
+    ) -> BaseAuth[object] | None:
         try:
             return strategy.get_backend(self.provider)
         except AuthConfigurationError as error:
@@ -70,7 +72,7 @@ class UserMixin:
         """Return access_token stored in extra_data or None"""
         return self.extra_data.get("access_token")
 
-    def refresh_token(self, strategy: BaseStrategy, *args, **kwargs) -> None:
+    def refresh_token(self, strategy: BaseStrategy[object], *args, **kwargs) -> None:
         """Renew stored credentials using the backend's selected token.
 
         Missing renewal credentials require reauthentication only when the
@@ -230,7 +232,7 @@ class UserMixin:
             and expiration.total_seconds() <= self.ACCESS_TOKEN_EXPIRED_THRESHOLD
         )
 
-    def get_access_token(self, strategy: BaseStrategy) -> str | None:
+    def get_access_token(self, strategy: BaseStrategy[object]) -> str | None:
         """Returns a valid access token."""
         if self.access_token_expired():
             self.refresh_token(strategy)
