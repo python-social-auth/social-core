@@ -3,10 +3,11 @@ from urllib.parse import urlencode
 
 from social_core.exceptions import SocialAuthBaseException
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 
-class UffdOAuth2(BaseOAuth2):
+class UffdOAuth2(BaseOAuth2[ResponseT_co]):
     """Uffd OAuth2 authentication backend
 
     You need to set the following config:

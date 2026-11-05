@@ -10,10 +10,11 @@ from requests_oauthlib import OAuth1
 
 from social_core.exceptions import AuthResponseError
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth1
 
 
-class XingOAuth(BaseOAuth1):
+class XingOAuth(BaseOAuth1[ResponseT_co]):
     """Xing OAuth authentication backend"""
 
     name = "xing"

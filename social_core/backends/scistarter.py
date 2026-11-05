@@ -2,10 +2,11 @@
 
 from typing import Any, cast
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 
-class SciStarterOAuth2(BaseOAuth2):
+class SciStarterOAuth2(BaseOAuth2[ResponseT_co]):
     name = "scistarter"
     title = "SciStarter"
     ID_KEY = "profile_id"

@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from typing import Any, cast
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth1, BaseOAuth2
 
 
-class VimeoOAuth1(BaseOAuth1):
+class VimeoOAuth1(BaseOAuth1[ResponseT_co]):
     """Vimeo OAuth authentication backend"""
 
     name = "vimeo"
@@ -40,7 +41,7 @@ class VimeoOAuth1(BaseOAuth1):
         )
 
 
-class VimeoOAuth2(BaseOAuth2):
+class VimeoOAuth2(BaseOAuth2[ResponseT_co]):
     """Vimeo OAuth2 authentication backend"""
 
     name = "vimeo-oauth2"

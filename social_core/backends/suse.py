@@ -3,10 +3,11 @@ Open Suse OpenId backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/suse.html
 """
 
+from .base import ResponseT_co
 from .open_id import OpenIdAuth
 
 
-class OpenSUSEOpenId(OpenIdAuth):
+class OpenSUSEOpenId(OpenIdAuth[ResponseT_co]):
     name = "opensuse"
     title = "openSUSE"
     icon = "opensuse.svg"

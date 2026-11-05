@@ -30,8 +30,8 @@ def to_plain_dict(value) -> dict[str, Any]:
 
 
 def partial_prepare(
-    strategy: BaseStrategy,
-    backend: BaseAuth,
+    strategy: BaseStrategy[object],
+    backend: BaseAuth[object],
     next_step,
     user: UserProtocol | None = None,
     social=None,
@@ -78,14 +78,18 @@ def partial_prepare(
 
 
 def partial_store(
-    strategy: BaseStrategy, backend: BaseAuth, next_step, *args, **kwargs
+    strategy: BaseStrategy[object],
+    backend: BaseAuth[object],
+    next_step,
+    *args,
+    **kwargs,
 ) -> PartialMixin:
     storage = strategy.get_storage(stage="pipeline")
     partial = partial_prepare(strategy, backend, next_step, *args, **kwargs)
     return storage.partial.store(partial)
 
 
-def partial_load(strategy: BaseStrategy, token: str) -> PartialMixin | None:
+def partial_load(strategy: BaseStrategy[object], token: str) -> PartialMixin | None:
     storage = strategy.get_storage(stage="pipeline")
     partial = storage.partial.load(token)
 

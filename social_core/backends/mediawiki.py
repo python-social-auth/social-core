@@ -17,6 +17,7 @@ from social_core.exceptions import AuthResponseError
 from social_core.groups import read_groups
 from social_core.utils import parse_qs as parse_oauth_response
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth1
 
 
@@ -29,7 +30,7 @@ def force_unicode(value):
     return str(value, "unicode-escape")
 
 
-class MediaWiki(BaseOAuth1):
+class MediaWiki(BaseOAuth1[ResponseT_co]):
     """
     Handles the handshake with Mediawiki and fetching of user data.
     """

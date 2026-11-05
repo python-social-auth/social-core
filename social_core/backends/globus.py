@@ -6,8 +6,10 @@ Globus Auth OpenID Connect backend, docs at:
 
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 
+from .base import ResponseT_co
 
-class GlobusOpenIdConnect(OpenIdConnectAuth):
+
+class GlobusOpenIdConnect(OpenIdConnectAuth[ResponseT_co]):
     name = "globus"
     title = "Globus"
     OIDC_ENDPOINT = "https://auth.globus.org"

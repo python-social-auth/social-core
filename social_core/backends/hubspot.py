@@ -5,10 +5,11 @@ HubSpot OAuth2 backend, docs at:
 
 from typing import Any
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 
-class HubSpotOAuth2(BaseOAuth2):
+class HubSpotOAuth2(BaseOAuth2[ResponseT_co]):
     """HubSpot OAuth2 authentication backend"""
 
     name = "hubspot"

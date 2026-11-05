@@ -11,10 +11,11 @@ from typing import Any
 
 from social_core.exceptions import AuthConfigurationError
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 
-class UdataBaseOAuth2(BaseOAuth2):
+class UdataBaseOAuth2(BaseOAuth2[ResponseT_co]):
     """Udata base OAuth authentication backend."""
 
     SCOPE_SEPARATOR = ","
@@ -42,7 +43,7 @@ class UdataBaseOAuth2(BaseOAuth2):
         return self.get_json(self.USER_DATA_URL, params={"access_token": access_token})
 
 
-class DatagouvfrOAuth2(UdataBaseOAuth2):
+class DatagouvfrOAuth2(UdataBaseOAuth2[ResponseT_co]):
     """Datagouvfr OAuth authentication backend."""
 
     name = "datagouv"

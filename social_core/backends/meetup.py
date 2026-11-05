@@ -5,10 +5,11 @@ Meetup OAuth2 backend, docs at:
 
 from typing import Any
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 
-class MeetupOAuth2(BaseOAuth2):
+class MeetupOAuth2(BaseOAuth2[ResponseT_co]):
     """Meetup OAuth2 authentication backend"""
 
     name = "meetup"

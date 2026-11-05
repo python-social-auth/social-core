@@ -3,10 +3,11 @@ from __future__ import annotations
 import datetime as dt
 from typing import Any
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 
-class AsanaOAuth2(BaseOAuth2):
+class AsanaOAuth2(BaseOAuth2[ResponseT_co]):
     name = "asana"
     title = "Asana"
     ID_KEY = "gid"

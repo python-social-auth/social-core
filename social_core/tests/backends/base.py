@@ -8,7 +8,6 @@ from unittest.mock import patch
 import requests
 import responses
 
-from social_core.backends.base import BaseAuth
 from social_core.backends.utils import load_backends, user_backends_data
 from social_core.tests.models import (
     TestAssociation,
@@ -22,10 +21,11 @@ from social_core.tests.strategy import TestStrategy
 from social_core.utils import PARTIAL_TOKEN_SESSION_NAME, module_member, parse_qs
 
 if TYPE_CHECKING:
+    from social_core.backends.base import BaseAuth
     from social_core.storage import PartialMixin
-    from social_core.strategy import HttpResponseProtocol
+    from social_core.tests.strategy import Redirect
 
-BackendT = TypeVar("BackendT", bound=BaseAuth)
+BackendT = TypeVar("BackendT", bound="BaseAuth[Redirect]")
 
 
 class BaseBackendTest(unittest.TestCase, Generic[BackendT]):
@@ -174,7 +174,7 @@ class BaseBackendTest(unittest.TestCase, Generic[BackendT]):
         partial = cast("PartialMixin", self.strategy.partial_load(token))
         self.assertIsNotNone(partial)
         self.assertEqual(partial.backend, self.backend.name)
-        redirect = cast("HttpResponseProtocol", self.backend.continue_pipeline(partial))
+        redirect = cast("Redirect", self.backend.continue_pipeline(partial))
 
         url = self.strategy.build_absolute_uri("/slug")
         self.assertEqual(redirect.url, url)

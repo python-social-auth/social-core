@@ -5,8 +5,10 @@ https://lifescience-ri.eu/ls-login.html
 
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 
+from .base import ResponseT_co
 
-class LifeScienceEoscOpenIdConnect(OpenIdConnectAuth):
+
+class LifeScienceEoscOpenIdConnect(OpenIdConnectAuth[ResponseT_co]):
     name = "life_science_eosc"
     title = "Life Science Login (EOSC)"
     OIDC_ENDPOINT = "https://login.aai.lifescience-ri.eu/cas/oidc"

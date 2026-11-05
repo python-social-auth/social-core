@@ -6,8 +6,10 @@ from typing import Any
 
 from social_core.backends.oauth import BaseOAuth2
 
+from .base import ResponseT_co
 
-class BungieOAuth2(BaseOAuth2):
+
+class BungieOAuth2(BaseOAuth2[ResponseT_co]):
     name = "bungie"
     title = "Bungie"
     ID_KEY = "membership_id"

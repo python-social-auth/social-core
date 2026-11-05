@@ -4,10 +4,11 @@ Chatwork OAuth2 backend
 
 from typing import Any
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 
-class ChatworkOAuth2(BaseOAuth2):
+class ChatworkOAuth2(BaseOAuth2[ResponseT_co]):
     """Chatwork OAuth authentication backend"""
 
     name = "chatwork"

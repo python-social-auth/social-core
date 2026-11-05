@@ -32,7 +32,7 @@ class TestTemplateStrategy(BaseTemplateStrategy):
         return html
 
 
-class TestStrategy(BaseStrategy):
+class TestStrategy(BaseStrategy[Redirect]):
     __test__ = False
 
     DEFAULT_TEMPLATE_STRATEGY = TestTemplateStrategy
@@ -51,14 +51,14 @@ class TestStrategy(BaseStrategy):
             strategy.session_set(name, value)
         return strategy
 
-    def redirect(self, url):
+    def redirect(self, url: str) -> Redirect:
         return Redirect(url)
 
     def get_setting(self, name):
         """Return value for given setting name"""
         return self._settings[name]
 
-    def html(self, content):
+    def html(self, content: str) -> Redirect:
         """Return HTTP response with given content"""
         return Redirect("", content=content)
 

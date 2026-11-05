@@ -7,10 +7,11 @@ from typing import Any, cast
 
 from social_core.exceptions import SocialAuthBaseException
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth1
 
 
-class TrelloOAuth(BaseOAuth1):
+class TrelloOAuth(BaseOAuth1[ResponseT_co]):
     """Trello OAuth authentication backend"""
 
     name = "trello"

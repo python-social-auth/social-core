@@ -11,13 +11,14 @@ from requests.auth import HTTPBasicAuth
 
 from social_core.utils import handle_http_errors
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 if TYPE_CHECKING:
     from requests.auth import AuthBase
 
 
-class YahooOAuth2(BaseOAuth2):
+class YahooOAuth2(BaseOAuth2[ResponseT_co]):
     """Yahoo OAuth2 authentication backend"""
 
     name = "yahoo-oauth2"

@@ -5,11 +5,12 @@ Google OpenIdConnect:
 
 from typing import Any
 
+from .base import ResponseT_co
 from .google import GoogleOAuth2
 from .open_id_connect import OpenIdConnectAuth
 
 
-class GoogleOpenIdConnect(GoogleOAuth2, OpenIdConnectAuth):
+class GoogleOpenIdConnect(GoogleOAuth2[ResponseT_co], OpenIdConnectAuth[ResponseT_co]):
     name = "google-openidconnect"
     title = "Google"
     icon = "google.svg"

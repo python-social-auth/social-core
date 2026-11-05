@@ -5,10 +5,11 @@ Uber OAuth2 backend, docs at:
 
 from typing import Any
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 
-class UberOAuth2(BaseOAuth2):
+class UberOAuth2(BaseOAuth2[ResponseT_co]):
     name = "uber"
     title = "Uber"
     ID_KEY = "uuid"

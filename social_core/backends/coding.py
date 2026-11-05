@@ -5,10 +5,11 @@ Coding OAuth2 backend, docs at:
 from typing import Any
 from urllib.parse import urljoin
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 
-class CodingOAuth2(BaseOAuth2):
+class CodingOAuth2(BaseOAuth2[ResponseT_co]):
     """Coding OAuth authentication backend"""
 
     name = "coding"

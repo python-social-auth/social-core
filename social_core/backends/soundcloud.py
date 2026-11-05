@@ -7,10 +7,11 @@ from typing import Any
 
 from social_core.utils import url_add_parameters
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 
-class SoundcloudOAuth2(BaseOAuth2):
+class SoundcloudOAuth2(BaseOAuth2[ResponseT_co]):
     """Soundcloud OAuth authentication backend"""
 
     name = "soundcloud"

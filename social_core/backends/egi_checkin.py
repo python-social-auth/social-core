@@ -9,6 +9,8 @@ from typing import Literal, cast
 
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 
+from .base import ResponseT_co
+
 CHECKIN_ENV_ENDPOINTS: dict[str, str] = {
     "prod": "https://aai.egi.eu/auth/realms/egi",
     "demo": "https://aai-demo.egi.eu/auth/realms/egi",
@@ -16,7 +18,7 @@ CHECKIN_ENV_ENDPOINTS: dict[str, str] = {
 }
 
 
-class EGICheckinOpenIdConnect(OpenIdConnectAuth):
+class EGICheckinOpenIdConnect(OpenIdConnectAuth[ResponseT_co]):
     name = "egi-checkin"
     title = "EGI Check-in"
     # Check-in provides 3 environments: production, demo and development

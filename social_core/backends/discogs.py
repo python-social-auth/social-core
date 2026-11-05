@@ -7,8 +7,10 @@ from typing import Any
 
 from social_core.backends.oauth import BaseOAuth1
 
+from .base import ResponseT_co
 
-class DiscogsOAuth1(BaseOAuth1):
+
+class DiscogsOAuth1(BaseOAuth1[ResponseT_co]):
     """
     Implements the OAuth1 authentication mechanism for https://www.discogs.com
     """

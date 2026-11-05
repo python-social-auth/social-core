@@ -5,10 +5,11 @@ Box.net OAuth2 backend, docs at:
 
 from typing import Any, cast
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 
-class BoxOAuth2(BaseOAuth2):
+class BoxOAuth2(BaseOAuth2[ResponseT_co]):
     """Box.net OAuth authentication backend"""
 
     name = "box"

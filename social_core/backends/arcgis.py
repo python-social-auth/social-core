@@ -4,10 +4,11 @@ ArcGIS OAuth2 backend
 
 from typing import Any
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 
-class ArcGISOAuth2(BaseOAuth2):
+class ArcGISOAuth2(BaseOAuth2[ResponseT_co]):
     name = "arcgis"
     title = "ArcGIS"
     ID_KEY = "id"

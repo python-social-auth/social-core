@@ -5,10 +5,11 @@ Foursquare OAuth2 backend, docs at:
 
 from typing import Any
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 
-class FoursquareOAuth2(BaseOAuth2):
+class FoursquareOAuth2(BaseOAuth2[ResponseT_co]):
     name = "foursquare"
     title = "Foursquare"
     AUTHORIZATION_URL = "https://foursquare.com/oauth2/authenticate"

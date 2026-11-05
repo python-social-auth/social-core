@@ -28,7 +28,7 @@ from social_core.utils import (
 )
 
 from .models import TestPartial, TestStorage
-from .strategy import TestStrategy
+from .strategy import Redirect, TestStrategy
 
 if TYPE_CHECKING:
     from social_core.storage import PartialMixin, UserProtocol
@@ -871,7 +871,7 @@ class GetKeyAndSecretBasicAuthTest(unittest.TestCase):
     def test_basic_auth_returns_bytes(self) -> None:
         """Test that method returns bytes with base64 encoding"""
         test_setting = {"KEY": "test_key", "SECRET": "test_secret"}
-        backend = BaseAuth(strategy=Mock())
+        backend = BaseAuth[Redirect](strategy=Mock())
         with patch("social_core.backends.base.BaseAuth.setting", new=test_setting.get):
             result = backend.get_key_and_secret_basic_auth()
             expected = b"Basic " + base64.b64encode(b"test_key:test_secret")
@@ -908,7 +908,7 @@ class IdKeyConfigurabilityTest(unittest.TestCase):
         """Test that id_key() returns class attribute when no setting is provided"""
         strategy = Mock()
         strategy.setting = Mock(return_value=None)
-        backend = BaseAuth(strategy=strategy)
+        backend = BaseAuth[Redirect](strategy=strategy)
         backend.ID_KEY = "default_id"
 
         result = backend.id_key()
@@ -922,7 +922,7 @@ class IdKeyConfigurabilityTest(unittest.TestCase):
         """Test that id_key() returns setting value when provided"""
         strategy = Mock()
         strategy.setting = Mock(return_value="custom_id")
-        backend = BaseAuth(strategy=strategy)
+        backend = BaseAuth[Redirect](strategy=strategy)
         backend.ID_KEY = "default_id"
 
         result = backend.id_key()
@@ -936,7 +936,7 @@ class IdKeyConfigurabilityTest(unittest.TestCase):
         """Test that get_user_id() uses the configurable id_key()"""
         strategy = Mock()
         strategy.setting = Mock(return_value="custom_user_id")
-        backend = BaseAuth(strategy=strategy)
+        backend = BaseAuth[Redirect](strategy=strategy)
         backend.ID_KEY = "default_id"
 
         response = {"custom_user_id": "12345", "default_id": "67890"}
@@ -952,7 +952,7 @@ class IdKeyConfigurabilityTest(unittest.TestCase):
         ):
             strategy = Mock()
             strategy.setting = Mock(return_value=configured_id_key)
-            backend = BaseAuth(strategy=strategy)
+            backend = BaseAuth[Redirect](strategy=strategy)
             backend.ID_KEY = "missing_id"
             backend.REQUIRES_USER_ID = requires_user_id
 

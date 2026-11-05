@@ -6,10 +6,11 @@ from urllib.parse import urlsplit
 
 from openid.extensions import ax
 
+from .base import ResponseT_co
 from .open_id import OpenIdAuth
 
 
-class OpenInfraOpenId(OpenIdAuth):
+class OpenInfraOpenId(OpenIdAuth[ResponseT_co]):
     name = "openinfra"
     title = "OpenInfraID"
     URL = "https://id.openinfra.dev"

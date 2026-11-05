@@ -3,11 +3,12 @@ Fedora OpenId backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/fedora.html
 """
 
+from .base import ResponseT_co
 from .open_id import OpenIdAuth
 from .open_id_connect import OpenIdConnectAuth
 
 
-class FedoraOpenIdConnect(OpenIdConnectAuth):
+class FedoraOpenIdConnect(OpenIdConnectAuth[ResponseT_co]):
     """
     Fedora OpenID Connect backend.
 
@@ -30,7 +31,7 @@ class FedoraOpenIdConnect(OpenIdConnectAuth):
     ]
 
 
-class FedoraOpenId(OpenIdAuth):
+class FedoraOpenId(OpenIdAuth[ResponseT_co]):
     """
     Fedora OpenID backend. DEPRECATED, please use the OpenID Connect backend.
     """

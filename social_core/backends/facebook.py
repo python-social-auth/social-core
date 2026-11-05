@@ -24,6 +24,7 @@ from social_core.exceptions import (
 )
 from social_core.utils import constant_time_compare, handle_http_errors, parse_qs
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 if TYPE_CHECKING:
@@ -32,7 +33,7 @@ if TYPE_CHECKING:
 API_VERSION = 24.0
 
 
-class FacebookOAuth2(BaseOAuth2):
+class FacebookOAuth2(BaseOAuth2[ResponseT_co]):
     """Facebook OAuth2 authentication backend"""
 
     name = "facebook"
@@ -231,7 +232,7 @@ class FacebookOAuth2(BaseOAuth2):
         )
 
 
-class FacebookAppOAuth2(FacebookOAuth2):
+class FacebookAppOAuth2(FacebookOAuth2[ResponseT_co]):
     """Facebook Application Authentication support"""
 
     name = "facebook-app"

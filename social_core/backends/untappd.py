@@ -5,10 +5,11 @@ import requests
 from social_core.exceptions import AuthProviderError, AuthResponseError, ErrorStage
 from social_core.utils import handle_http_errors
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 
-class UntappdOAuth2(BaseOAuth2):
+class UntappdOAuth2(BaseOAuth2[ResponseT_co]):
     """Untappd OAuth2 authentication backend"""
 
     name = "untappd"

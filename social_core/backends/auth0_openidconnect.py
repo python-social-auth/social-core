@@ -3,8 +3,10 @@ from urllib.parse import urlparse
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 from social_core.exceptions import AuthConfigurationError
 
+from .base import ResponseT_co
 
-class Auth0OpenIdConnectAuth(OpenIdConnectAuth):
+
+class Auth0OpenIdConnectAuth(OpenIdConnectAuth[ResponseT_co]):
     """
     Auth0 OpenID Connect authentication backend.
 

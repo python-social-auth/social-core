@@ -9,10 +9,11 @@ from social_core.backends.utils import jwt_error
 from social_core.exceptions import AuthResponseError
 from social_core.utils import cache
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 
-class Auth0OAuth2(BaseOAuth2):
+class Auth0OAuth2(BaseOAuth2[ResponseT_co]):
     """Auth0 OAuth authentication backend"""
 
     name = "auth0"

@@ -7,10 +7,11 @@ from typing import Any
 
 from social_core.exceptions import AuthCanceled, ErrorStage
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth1
 
 
-class TwitterOAuth(BaseOAuth1):
+class TwitterOAuth(BaseOAuth1[ResponseT_co]):
     """Twitter OAuth authentication backend"""
 
     name = "twitter"

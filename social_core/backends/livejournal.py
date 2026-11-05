@@ -7,10 +7,11 @@ from urllib.parse import urlsplit
 
 from social_core.exceptions import AuthInputError
 
+from .base import ResponseT_co
 from .open_id import OpenIdAuth
 
 
-class LiveJournalOpenId(OpenIdAuth):
+class LiveJournalOpenId(OpenIdAuth[ResponseT_co]):
     """LiveJournal OpenID authentication backend"""
 
     name = "livejournal"

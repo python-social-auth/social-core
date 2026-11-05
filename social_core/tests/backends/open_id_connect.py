@@ -20,6 +20,7 @@ from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 
 if TYPE_CHECKING:
     from social_core.storage import PartialMixin
+    from social_core.tests.strategy import Redirect
 
 JWK_KEY = {
     "kty": "RSA",
@@ -44,7 +45,7 @@ JWK_KEY = {
 JWK_PUBLIC_KEY = {key: value for key, value in JWK_KEY.items() if key != "d"}
 STORED_ID_TOKEN_CONTEXT_KEY = "_oidc_id_token_context"
 PARTIAL_ID_TOKEN_KEY = "_oidc_validated_id_token"
-OpenIdConnectAuthT = TypeVar("OpenIdConnectAuthT", bound=OpenIdConnectAuth)
+OpenIdConnectAuthT = TypeVar("OpenIdConnectAuthT", bound="OpenIdConnectAuth[Redirect]")
 
 
 class OpenIdConnectTest(

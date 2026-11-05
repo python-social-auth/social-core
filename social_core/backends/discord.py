@@ -5,10 +5,11 @@ Discord Auth OAuth2 backend, docs at:
 
 from typing import Any
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 
-class DiscordOAuth2(BaseOAuth2):
+class DiscordOAuth2(BaseOAuth2[ResponseT_co]):
     name = "discord"
     title = "Discord"
     HOSTNAME = "discord.com"

@@ -5,8 +5,10 @@ https://www.e-infra.cz
 
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 
+from .base import ResponseT_co
 
-class EInfraCZOpenIdConnect(OpenIdConnectAuth):
+
+class EInfraCZOpenIdConnect(OpenIdConnectAuth[ResponseT_co]):
     name = "e-infra_cz"
     title = "e-INFRA CZ"
     OIDC_ENDPOINT = "https://login.e-infra.cz/oidc"

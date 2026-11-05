@@ -2,10 +2,11 @@ from typing import Any
 
 from social_core.exceptions import SocialAuthBaseException
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 
-class CILogonOAuth2(BaseOAuth2):
+class CILogonOAuth2(BaseOAuth2[ResponseT_co]):
     """
     CI Logon Authentication Backend
 

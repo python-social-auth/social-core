@@ -15,10 +15,11 @@ from social_core.exceptions import (
     SocialAuthBaseException,
 )
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 
-class BitbucketOAuth2(BaseOAuth2):
+class BitbucketOAuth2(BaseOAuth2[ResponseT_co]):
     name = "bitbucket-oauth2"
     title = "Bitbucket"
     icon = "bitbucket.svg"

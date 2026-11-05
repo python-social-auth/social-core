@@ -13,7 +13,7 @@ from __future__ import annotations
 import json
 from html import escape
 from secrets import token_urlsafe
-from typing import TYPE_CHECKING, Any, cast
+from typing import Any, cast
 
 # lxml exposes this exception from its C extension.
 # pylint: disable-next=no-name-in-module
@@ -37,10 +37,7 @@ from social_core.exceptions import (
 from social_core.groups import read_groups
 from social_core.utils import constant_time_compare, user_is_authenticated
 
-from .base import BaseAuth
-
-if TYPE_CHECKING:
-    from social_core.strategy import HttpResponseProtocol
+from .base import BaseAuth, ResponseT_co
 
 # Helpful constants:
 OID_COMMON_NAME = "urn:oid:2.5.4.3"
@@ -114,9 +111,9 @@ SAML_RESPONSE_ERRORS = (
 class SAMLIdentityProvider:
     """Wrapper around configuration for a SAML Identity provider"""
 
-    def __init__(self, backend: BaseAuth, name: str, **kwargs) -> None:
+    def __init__(self, backend: BaseAuth[object], name: str, **kwargs) -> None:
         """Load and parse configuration"""
-        self.backend: BaseAuth = backend
+        self.backend: BaseAuth[object] = backend
         self.name: str = name
         # name should be a slug and must not contain a colon, which
         # could conflict with uid prefixing:
@@ -268,7 +265,7 @@ class SAMLIdentityProvider:
         )
 
 
-class SAMLAuth(BaseAuth):
+class SAMLAuth(BaseAuth[ResponseT_co]):
     """
     PSA Backend that implements SAML 2.0 Service Provider (SP) functionality.
 
@@ -317,9 +314,7 @@ class SAMLAuth(BaseAuth):
     EXTRA_DATA = []
     BROWSER_RETURN_FIELD = "psa_saml_browser_return"
 
-    def _browser_return(
-        self, saml_response: Any, relay_state: Any
-    ) -> HttpResponseProtocol:
+    def _browser_return(self, saml_response: Any, relay_state: Any) -> ResponseT_co:
         if not isinstance(saml_response, str):
             raise AuthInputError(
                 self,

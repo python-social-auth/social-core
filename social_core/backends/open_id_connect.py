@@ -31,6 +31,8 @@ from social_core.exceptions import (
 from social_core.groups import check_group_overage, configured_group_key, read_groups
 from social_core.utils import cache, constant_time_compare
 
+from .base import ResponseT_co
+
 _ID_TOKEN_CONTEXT_KEY = "_oidc_id_token_context"
 _VALIDATED_ID_TOKEN_KEY = "_oidc_validated_id_token"
 
@@ -41,7 +43,7 @@ if TYPE_CHECKING:
     from requests.auth import AuthBase
 
     from social_core.storage import PartialMixin, UserProtocol
-    from social_core.strategy import BaseStrategy, HttpResponseProtocol
+    from social_core.strategy import BaseStrategy
 
 
 class OpenIdConnectAssociation:
@@ -55,7 +57,7 @@ class OpenIdConnectAssociation:
         self.assoc_type = assoc_type  # as state
 
 
-class OpenIdConnectAuth(OIDCDiscoveryMixin, BaseOAuth2PKCE):
+class OpenIdConnectAuth(OIDCDiscoveryMixin[ResponseT_co], BaseOAuth2PKCE[ResponseT_co]):
     """
     Base class for Open ID Connect backends.
     Currently only the code response type is supported.
@@ -111,7 +113,9 @@ class OpenIdConnectAuth(OIDCDiscoveryMixin, BaseOAuth2PKCE):
     DEFAULT_USE_PKCE = False
 
     def __init__(
-        self, strategy: BaseStrategy | None = None, redirect_uri: str | None = None
+        self,
+        strategy: BaseStrategy[ResponseT_co] | None = None,
+        redirect_uri: str | None = None,
     ) -> None:
         super().__init__(strategy, redirect_uri=redirect_uri)
         self.id_token: dict[str, Any] | None = None
@@ -130,7 +134,7 @@ class OpenIdConnectAuth(OIDCDiscoveryMixin, BaseOAuth2PKCE):
 
     def pipeline(
         self, pipeline, pipeline_index: int = 0, *args, **kwargs
-    ) -> UserProtocol | HttpResponseProtocol | None:
+    ) -> UserProtocol | ResponseT_co | None:
         # Only persist claims validated by this backend, never caller-supplied
         # pipeline arguments. Partial storage will carry them across requests.
         # Read the claims from the instance the pipeline steps receive, in case
@@ -145,7 +149,7 @@ class OpenIdConnectAuth(OIDCDiscoveryMixin, BaseOAuth2PKCE):
 
     def continue_pipeline(
         self, partial: PartialMixin
-    ) -> UserProtocol | HttpResponseProtocol | None:
+    ) -> UserProtocol | ResponseT_co | None:
         # Login already consumed the nonce. Restore the validated claims from
         # trusted partial storage rather than validating the token again.
         claims = partial.kwargs.get(_VALIDATED_ID_TOKEN_KEY)
@@ -824,7 +828,9 @@ class OpenIdConnectAuth(OIDCDiscoveryMixin, BaseOAuth2PKCE):
             else super().get_stored_user_id_keys(id_key)
         )
 
-    def get_user_id(self, details, response):
+    def get_user_id(
+        self, details: Mapping[str, Any] | None, response: Mapping[str, Any] | None
+    ) -> object:
         id_key = self.id_key()
         if id_key == "sub":
             return self.get_user_id_from_sources(

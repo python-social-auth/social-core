@@ -11,10 +11,11 @@ from requests import Response
 from social_core.exceptions import AuthProviderError, ErrorStage
 from social_core.utils import handle_http_errors
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 
-class LineOAuth2(BaseOAuth2):
+class LineOAuth2(BaseOAuth2[ResponseT_co]):
     name = "line"
     title = "LINE"
     AUTHORIZATION_URL = "https://access.line.me/oauth2/v2.1/authorize"

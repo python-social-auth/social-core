@@ -5,8 +5,10 @@ https://www.elixir-europe.org/services/compute/aai
 
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 
+from .base import ResponseT_co
 
-class ElixirOpenIdConnect(OpenIdConnectAuth):
+
+class ElixirOpenIdConnect(OpenIdConnectAuth[ResponseT_co]):
     name = "elixir"
     title = "ELIXIR AAI"
     OIDC_ENDPOINT = "https://login.elixir-czech.org/oidc"

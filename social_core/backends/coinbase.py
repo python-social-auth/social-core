@@ -5,12 +5,13 @@ Coinbase OAuth2 backend, docs at:
 
 from typing import Any, cast
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 API_VERSION = "2022-01-06"
 
 
-class CoinbaseOAuth2(BaseOAuth2):
+class CoinbaseOAuth2(BaseOAuth2[ResponseT_co]):
     name = "coinbase"
     title = "Coinbase"
     SCOPE_SEPARATOR = ","

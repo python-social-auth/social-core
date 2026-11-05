@@ -1,17 +1,30 @@
+from __future__ import annotations
+
 import unittest
+from typing import TYPE_CHECKING
 from unittest.mock import patch
 
 from social_core.actions import do_auth
 from social_core.backends.base import BaseAuth
 from social_core.tests.models import TestStorage, User
-from social_core.tests.strategy import TestStrategy
+from social_core.tests.strategy import Redirect, TestStrategy
+
+if TYPE_CHECKING:
+    from typing import Never, assert_type
+
+    from social_core.registry import REGISTRY
+    from social_core.strategy import BaseStrategy
 
 
-class InitiationBackend(BaseAuth):
+class InitiationBackend(BaseAuth[Redirect]):
     name = "initiation"
 
     def auth_url(self) -> str:
         return "/auth"
+
+
+def accept_any_backend(backend: BaseAuth[object]) -> None:
+    """Accept a backend of any response type."""
 
 
 class AuthActionTest(unittest.TestCase):
@@ -37,6 +50,23 @@ class AuthActionTest(unittest.TestCase):
 
         prepare_auth.assert_called_once_with(user=None)
         self.assertEqual(response.url, "/auth")
+
+    def test_response_type_follows_strategy(self) -> None:
+        response = do_auth(self.backend)
+
+        if TYPE_CHECKING:
+            # The strategy's response type flows through the backend.
+            assert_type(self.backend.strategy.redirect("/auth"), Redirect)
+            assert_type(self.backend.start(), Redirect)
+            assert_type(response, Redirect)
+            assert_type(self.strategy.get_backend("initiation"), BaseAuth[Redirect])
+            # Backends are covariant, so BaseAuth[object] accepts any backend.
+            accept_any_backend(self.backend)
+            # The default strategy produces no responses, so it works for a
+            # backend of any response type, even one pinned to a single type.
+            assert_type(REGISTRY.default_strategy, BaseStrategy[Never])
+            assert_type(InitiationBackend().start(), Redirect)
+        self.assertIsInstance(response, Redirect)
 
     def test_hook_runs_after_session_handling_and_before_start(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_FIELDS_STORED_IN_SESSION": ["extra"]})

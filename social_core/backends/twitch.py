@@ -7,11 +7,12 @@ from typing import Any
 
 from social_core.exceptions import AuthResponseError
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 from .open_id_connect import OpenIdConnectAuth
 
 
-class TwitchOpenIdConnect(OpenIdConnectAuth):
+class TwitchOpenIdConnect(OpenIdConnectAuth[ResponseT_co]):
     """Twitch OpenID Connect authentication backend"""
 
     name = "twitch"
@@ -45,7 +46,7 @@ class TwitchOpenIdConnect(OpenIdConnectAuth):
         }
 
 
-class TwitchOAuth2(BaseOAuth2):
+class TwitchOAuth2(BaseOAuth2[ResponseT_co]):
     """Twitch OAuth authentication backend"""
 
     name = "twitch"

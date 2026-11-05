@@ -9,10 +9,11 @@ from typing import Any, cast
 
 from social_core.exceptions import AuthAssociationError, AuthResponseError
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 
-class EVEOnlineOAuth2(BaseOAuth2):
+class EVEOnlineOAuth2(BaseOAuth2[ResponseT_co]):
     """EVE Online OAuth authentication backend"""
 
     name = "eveonline"

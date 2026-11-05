@@ -5,11 +5,12 @@ Okta OAuth2 and OpenIdConnect:
 
 from typing import Any
 
+from .base import ResponseT_co
 from .okta import OktaOAuth2
 from .open_id_connect import OpenIdConnectAuth
 
 
-class OktaOpenIdConnect(OktaOAuth2, OpenIdConnectAuth):
+class OktaOpenIdConnect(OktaOAuth2[ResponseT_co], OpenIdConnectAuth[ResponseT_co]):
     """Okta OpenID-Connect authentication backend"""
 
     name = "okta-openidconnect"

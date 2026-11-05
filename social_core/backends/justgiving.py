@@ -4,10 +4,11 @@ from requests.auth import HTTPBasicAuth
 
 from social_core.utils import handle_http_errors
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 
-class JustGivingOAuth2(BaseOAuth2):
+class JustGivingOAuth2(BaseOAuth2[ResponseT_co]):
     """Just Giving OAuth authentication backend"""
 
     name = "justgiving"

@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import unittest
 from datetime import UTC, datetime, timedelta, timezone
-from typing import Protocol, cast
+from typing import TYPE_CHECKING, cast
 from unittest.mock import Mock, patch
 from zoneinfo import ZoneInfo
 
@@ -12,6 +14,10 @@ from social_core.utils import (
 
 from .models import TestCode, TestPartial, TestStorage
 from .strategy import Redirect, TestStrategy
+
+if TYPE_CHECKING:
+    from social_core.backends.base import BaseAuth
+    from social_core.pipeline.partial import PartialStep
 
 
 class EmailCodeExpiryTest(unittest.TestCase):
@@ -114,21 +120,10 @@ class EmailCodeExpiryTest(unittest.TestCase):
         self.assertFalse(self.strategy.validate_email(self.code.email, self.code.code))
 
 
-class PartialStepWrapper(Protocol):
-    def __call__(
-        self,
-        strategy: TestStrategy,
-        backend: object,
-        pipeline_index: int,
-        *args: object,
-        **kwargs: object,
-    ) -> object: ...
-
-
 def call_partial_step(
-    step: PartialStepWrapper,
+    step: PartialStep[object],
     strategy: TestStrategy,
-    backend: object,
+    backend: BaseAuth[object],
     pipeline_index: int,
     **kwargs: object,
 ) -> object:
@@ -142,7 +137,6 @@ class MailValidationTest(unittest.TestCase):
     def test_mail_validation_partial_allows_external_resume(self) -> None:
         strategy = TestStrategy(TestStorage)
         strategy.set_settings({"SOCIAL_AUTH_EMAIL_VALIDATION_URL": "/validate"})
-        mail_validation_wrapper = cast("PartialStepWrapper", mail_validation)
         backend = Mock()
         backend.name = "email"
         backend.strategy = strategy
@@ -150,7 +144,7 @@ class MailValidationTest(unittest.TestCase):
 
         with patch.object(strategy, "send_email_validation") as send_email_validation:
             response = call_partial_step(
-                mail_validation_wrapper,
+                mail_validation,
                 strategy,
                 backend,
                 0,
@@ -169,7 +163,6 @@ class MailValidationTest(unittest.TestCase):
 
     def test_mail_validation_uses_partial_request_data(self) -> None:
         strategy = TestStrategy(TestStorage)
-        mail_validation_wrapper = cast("PartialStepWrapper", mail_validation)
         backend = Mock()
         backend.name = "email"
         backend.strategy = strategy
@@ -180,7 +173,7 @@ class MailValidationTest(unittest.TestCase):
             patch.object(strategy, "validate_email", return_value=True) as validate,
         ):
             response = call_partial_step(
-                mail_validation_wrapper,
+                mail_validation,
                 strategy,
                 backend,
                 0,

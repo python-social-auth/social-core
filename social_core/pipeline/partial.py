@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import wraps
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Never, Protocol, TypeVar
 
 from social_core.utils import (
     PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME,
@@ -13,16 +13,46 @@ from .utils import partial_prepare
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+    from typing_extensions import TypeVar as DefaultTypeVar
+
     from social_core.backends.base import BaseAuth
-    from social_core.strategy import BaseStrategy, HttpResponseProtocol
+    from social_core.strategy import BaseStrategy
+
+    # The framework response type returned by a step to halt the pipeline. A
+    # step that never returns a response has none to infer, so it is Never.
+    _ResponseT = DefaultTypeVar("_ResponseT", default=Never)
+
+_ResponseT_co = TypeVar("_ResponseT_co", covariant=True)
+
+
+class PartialStep(Protocol[_ResponseT_co]):
+    """A partial pipeline step, as the pipeline calls it.
+
+    The other arguments are the pipeline's data, which the step receives by
+    name, so their types aren't known statically.
+    """
+
+    def __call__(
+        self,
+        strategy: BaseStrategy[object],
+        backend: BaseAuth[object],
+        pipeline_index: int,
+        *args: Any,
+        **kwargs: Any,
+    ) -> dict[str, Any] | _ResponseT_co: ...
+
+
+class PartialStepDecorator(Protocol):
+    """Decorate a pipeline step, keeping the type of responses it returns."""
+
+    def __call__(
+        self, func: Callable[..., dict[str, Any] | _ResponseT | None]
+    ) -> PartialStep[_ResponseT]: ...
 
 
 def partial_step(
     save_to_session: bool, allow_external_resume: bool = False
-) -> Callable[
-    [Callable[..., dict[str, Any] | HttpResponseProtocol | None]],
-    Callable[..., dict[str, Any] | HttpResponseProtocol],
-]:
+) -> PartialStepDecorator:
     """Wraps func to behave like a partial pipeline step, any output
     that's not None or {} will be considered a response object and
     will be returned to user.
@@ -46,16 +76,16 @@ def partial_step(
     # Step signatures vary, and the wrapper injects current_partial and other
     # keyword arguments, so input and output callables have different signatures.
     def decorator(
-        func: Callable[..., dict[str, Any] | HttpResponseProtocol | None],
-    ) -> Callable[..., dict[str, Any] | HttpResponseProtocol]:
+        func: Callable[..., dict[str, Any] | _ResponseT | None],
+    ) -> PartialStep[_ResponseT]:
         @wraps(func)
         def wrapper(
-            strategy: BaseStrategy,
-            backend: BaseAuth,
+            strategy: BaseStrategy[object],
+            backend: BaseAuth[object],
             pipeline_index: int,
             *args: Any,
             **kwargs: Any,
-        ) -> dict[str, Any] | HttpResponseProtocol:
+        ) -> dict[str, Any] | _ResponseT:
             current_partial = partial_prepare(
                 strategy, backend, pipeline_index, *args, **kwargs
             )

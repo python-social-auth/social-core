@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 
 def allowed_to_disconnect(
-    strategy: BaseStrategy,
+    strategy: BaseStrategy[object],
     user: UserProtocol | None,
     name,
     user_storage,
@@ -23,7 +23,7 @@ def allowed_to_disconnect(
 
 
 def get_entries(
-    strategy: BaseStrategy,
+    strategy: BaseStrategy[object],
     user: UserProtocol | None,
     name,
     user_storage,
@@ -45,6 +45,8 @@ def revoke_tokens(strategy, entries, *args, **kwargs) -> None:
                 backend.revoke_token(entry.extra_data["access_token"], entry.uid)
 
 
-def disconnect(strategy: BaseStrategy, entries, user_storage, *args, **kwargs) -> None:
+def disconnect(
+    strategy: BaseStrategy[object], entries, user_storage, *args, **kwargs
+) -> None:
     for entry in entries:
         user_storage.disconnect(entry)

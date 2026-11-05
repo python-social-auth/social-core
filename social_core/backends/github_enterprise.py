@@ -5,7 +5,7 @@ Github Enterprise OAuth2 backend, docs at:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import cast
 from urllib.parse import urljoin
 
 from social_core.exceptions import (
@@ -14,18 +14,17 @@ from social_core.exceptions import (
 )
 from social_core.utils import append_slash
 
+from .base import ResponseT_co
 from .github import GithubOAuth2, GithubOrganizationOAuth2, GithubTeamOAuth2
-
-if TYPE_CHECKING:
-    from .base import BaseAuth
 
 
 class GithubEnterpriseMixin:
     def _required_setting(self, name: str, *, stage: ErrorStage) -> str:
-        value = cast("GithubOAuth2", self).setting(name)
+        backend = cast("GithubOAuth2[object]", self)
+        value = backend.setting(name)
         if not value:
             raise AuthConfigurationError(
-                cast("BaseAuth", self),
+                backend,
                 parameter=name,
                 code="missing_setting",
                 stage=stage,
@@ -45,7 +44,7 @@ class GithubEnterpriseMixin:
         return urljoin(append_slash(self._required_setting("URL", stage=stage)), path)
 
 
-class GithubEnterpriseOAuth2(GithubEnterpriseMixin, GithubOAuth2):
+class GithubEnterpriseOAuth2(GithubEnterpriseMixin, GithubOAuth2[ResponseT_co]):
     """Github Enterprise OAuth authentication backend"""
 
     name = "github-enterprise"
@@ -54,7 +53,7 @@ class GithubEnterpriseOAuth2(GithubEnterpriseMixin, GithubOAuth2):
 
 
 class GithubEnterpriseOrganizationOAuth2(
-    GithubEnterpriseMixin, GithubOrganizationOAuth2
+    GithubEnterpriseMixin, GithubOrganizationOAuth2[ResponseT_co]
 ):
     """Github Enterprise OAuth2 authentication backend for
     organizations"""
@@ -65,7 +64,7 @@ class GithubEnterpriseOrganizationOAuth2(
     DEFAULT_SCOPE = ["read:org"]
 
 
-class GithubEnterpriseTeamOAuth2(GithubEnterpriseMixin, GithubTeamOAuth2):
+class GithubEnterpriseTeamOAuth2(GithubEnterpriseMixin, GithubTeamOAuth2[ResponseT_co]):
     """Github Enterprise OAuth2 authentication backend for teams"""
 
     name = "github-enterprise-team"

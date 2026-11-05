@@ -12,10 +12,11 @@ import shopify
 from social_core.exceptions import AuthInputError, AuthResponseError
 from social_core.utils import handle_http_errors
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 
-class ShopifyOAuth2(BaseOAuth2):
+class ShopifyOAuth2(BaseOAuth2[ResponseT_co]):
     """Shopify OAuth2 authentication backend"""
 
     name = "shopify"
