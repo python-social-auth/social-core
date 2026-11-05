@@ -34,11 +34,10 @@ class WeblateOpenIdConnect(OpenIdConnectAuth[ResponseT_co]):
 
     @classmethod
     def get_title(cls, strategy: BaseStrategy[object]) -> str:
-        """Get the title from strategy settings; this method emits no response."""
-        endpoint = cast(
-            "str",
-            strategy.setting(f"{cls.name}_OIDC_ENDPOINT", cls.OIDC_ENDPOINT),
-        )
+        """Get the title from the configured endpoint, honoring backend overrides."""
+        endpoint = cls(
+            strategy=cast("BaseStrategy[ResponseT_co]", strategy)
+        ).oidc_endpoint()
         if urlsplit(endpoint).hostname == "hosted.weblate.org":
             return "Hosted Weblate"
         return "Weblate"

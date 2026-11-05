@@ -10,7 +10,7 @@ from social_core.backends.base import BaseAuth
 from social_core.backends.github import GithubOAuth2
 from social_core.pipeline.partial import partial, partial_step
 from social_core.registry import REGISTRY
-from social_core.storage import UserProtocol
+from social_core.storage import UserMixin, UserProtocol
 from social_core.strategy import BaseStrategy, HttpResponseProtocol
 from social_core.utils import PartialPipelineResult, partial_pipeline_result
 
@@ -162,3 +162,10 @@ def verify_registry_accepts_any_strategy_response_type(
     strategy: HtmlStrategy,
 ) -> None:  # pragma: no cover
     REGISTRY.default_strategy = strategy
+
+
+def verify_user_backend_factory_preserves_response_type(
+    user: UserMixin, strategy: HtmlStrategy
+) -> None:  # pragma: no cover
+    assert_type(user.get_backend(strategy), type[BaseAuth[HtmlResponse]])
+    assert_type(user.get_backend_instance(strategy), BaseAuth[HtmlResponse] | None)

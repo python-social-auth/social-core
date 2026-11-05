@@ -772,6 +772,7 @@ def handle_http_errors(
     @functools.wraps(func)
     def wrapper(
         backend: _WrappedBackend,
+        /,
         *args: _WrappedParams.args,
         **kwargs: _WrappedParams.kwargs,
     ) -> _WrappedResult:
