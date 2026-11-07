@@ -24,7 +24,7 @@ types = [
   "ty==0.0.99",
   "types-defusedxml==0.7.0.20260504",
   "types-lxml==2026.2.16",
-  "types-oauthlib==4.0.0.20261102",
+  "types-oauthlib==4.0.0.20261107",
   "types-requests-oauthlib==2.0.0.20261006",
   "types-requests==2.33.0.20261030"
 ]
@@ -91,7 +91,7 @@ dev = [
   "ty==0.0.99",
   "types-defusedxml==0.7.0.20260504",
   "types-lxml==2026.2.16",
-  "types-oauthlib==4.0.0.20261102",
+  "types-oauthlib==4.0.0.20261107",
   "types-requests-oauthlib==2.0.0.20261006",
   "types-requests==2.33.0.20261030"
 ]
