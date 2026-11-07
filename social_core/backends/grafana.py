@@ -1,9 +1,10 @@
 from typing import Any
 
+from social_core.backends.base import ResponseT_co
 from social_core.backends.oauth import BaseOAuth2
 
 
-class GrafanaOAuth2(BaseOAuth2):
+class GrafanaOAuth2(BaseOAuth2[ResponseT_co]):
     """Grafana OAuth authentication backend"""
 
     name = "grafana"

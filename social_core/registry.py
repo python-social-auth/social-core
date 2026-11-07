@@ -1,30 +1,37 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from .exceptions import AuthConfigurationError
 
 if TYPE_CHECKING:
+    from typing import Never
+
     from .strategy import BaseStrategy
 
 
 class Registry:
     def __init__(self) -> None:
-        self._default_strategy: BaseStrategy | None = None
+        self._default_strategy: BaseStrategy[object] | None = None
 
     def reset(self) -> None:
         self._default_strategy = None
 
     @property
-    def default_strategy(self) -> BaseStrategy:
+    def default_strategy(self) -> BaseStrategy[Never]:
+        """The strategy for backends created without one.
+
+        Such backends may have any response type, so the default strategy must
+        not be used to produce responses. Type checkers see it producing none.
+        """
         if self._default_strategy is None:
             raise AuthConfigurationError(
                 code="missing_setting", parameter="default_strategy"
             )
-        return self._default_strategy
+        return cast("BaseStrategy[Never]", self._default_strategy)
 
     @default_strategy.setter
-    def default_strategy(self, strategy: BaseStrategy) -> None:
+    def default_strategy(self, strategy: BaseStrategy[object]) -> None:
         self._default_strategy = strategy
 
 

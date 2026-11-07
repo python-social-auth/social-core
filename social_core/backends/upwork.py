@@ -4,10 +4,12 @@ Upwork OAuth1 backend
 
 from typing import Any
 
+from social_core.backends.base import ResponseT_co
+
 from .oauth import BaseOAuth1
 
 
-class UpworkOAuth(BaseOAuth1):
+class UpworkOAuth(BaseOAuth1[ResponseT_co]):
     """Upwork OAuth authentication backend"""
 
     name = "upwork"

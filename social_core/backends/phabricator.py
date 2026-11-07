@@ -5,10 +5,12 @@ Phabricator OAuth2 backend, docs at:
 
 from typing import Any
 
+from social_core.backends.base import ResponseT_co
+
 from .oauth import BaseOAuth2
 
 
-class PhabricatorOAuth2(BaseOAuth2):
+class PhabricatorOAuth2(BaseOAuth2[ResponseT_co]):
     """Phabricator OAuth authentication backend"""
 
     name = "phabricator"

@@ -101,6 +101,21 @@ class WeblateOpenIdConnectTest(OpenIdConnectTest[WeblateOpenIdConnect]):
         self.strategy.set_settings({"SOCIAL_AUTH_WEBLATE_OIDC_ENDPOINT": self.issuer})
         self.assertEqual(self.backend.get_title(self.strategy), "Hosted Weblate")
 
+    def test_title_uses_subclass_endpoint_override(self) -> None:
+        class CustomWeblateOpenIdConnect(WeblateOpenIdConnect):
+            def oidc_endpoint(self) -> str:
+                return "https://hosted.weblate.org/oidc"
+
+        self.strategy.set_settings(
+            {
+                "SOCIAL_AUTH_OIDC_ENDPOINT": "https://global.example.com/oidc",
+                "SOCIAL_AUTH_WEBLATE_OIDC_ENDPOINT": "https://other.example.com/oidc",
+            }
+        )
+        self.assertEqual(
+            CustomWeblateOpenIdConnect.get_title(self.strategy), "Hosted Weblate"
+        )
+
     def test_custom_discovery(self) -> None:
         endpoint = "https://weblate.example.com/prefix/oidc"
         self.strategy.set_settings(

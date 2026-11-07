@@ -35,12 +35,13 @@ from __future__ import annotations
 from typing import Any, cast
 from uuid import UUID
 
+from social_core.backends.base import ResponseT_co
 from social_core.exceptions import AuthResponseError
 
 from .azuread import AzureADOAuth2
 
 
-class AzureADTenantOAuth2(AzureADOAuth2):
+class AzureADTenantOAuth2(AzureADOAuth2[ResponseT_co]):
     name = "azuread-tenant-oauth2"
     title = "Microsoft"
     icon = "microsoft.svg"
@@ -96,7 +97,7 @@ class AzureADTenantOAuth2(AzureADOAuth2):
             )
 
 
-class AzureADV2TenantOAuth2(AzureADTenantOAuth2):
+class AzureADV2TenantOAuth2(AzureADTenantOAuth2[ResponseT_co]):
     name = "azuread-v2-tenant-oauth2"
     title = "Microsoft"
     icon = "microsoft.svg"

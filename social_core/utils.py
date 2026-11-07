@@ -13,6 +13,7 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Concatenate,
+    Generic,
     ParamSpec,
     Protocol,
     TypeVar,
@@ -41,7 +42,7 @@ if TYPE_CHECKING:
 
     from .backends.base import BaseAuth
     from .storage import PartialMixin, UserProtocol
-    from .strategy import BaseStrategy, HttpResponseProtocol
+    from .strategy import BaseStrategy
 
 SETTING_PREFIX = "SOCIAL_AUTH"
 
@@ -55,14 +56,16 @@ PARTIAL_TOKEN_PENDING_CONFIRMATION_SESSION_NAME = (
 )
 PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME = "allow_external_resume"
 
+ResponseT = TypeVar("ResponseT")
+
 
 social_logger = logging.getLogger("social")
 
 
 @dataclass
-class PartialPipelineResult:
+class PartialPipelineResult(Generic[ResponseT]):
     partial: PartialMixin | None = None
-    response: HttpResponseProtocol | None = None
+    response: ResponseT | None = None
     halt: bool = False
 
 
@@ -257,7 +260,7 @@ def drop_lists(value):
 
 
 def _partial_pipeline_matches_request(
-    backend: BaseAuth,
+    backend: BaseAuth[object],
     partial: PartialMixin | None,
     request_data: dict[str, Any],
     pipeline_type: str,
@@ -344,7 +347,7 @@ def _partial_pipeline_requires_confirmation(
 
 
 def _confirmed_partial_pipeline_request_data(
-    backend: BaseAuth,
+    backend: BaseAuth[object],
     request_data: dict[str, Any],
 ) -> dict[str, Any] | None:
     if not backend.strategy.partial_pipeline_external_resume_confirmed(
@@ -360,11 +363,11 @@ def _confirmed_partial_pipeline_request_data(
 
 
 def _external_partial_pipeline_result(
-    backend: BaseAuth,
+    backend: BaseAuth[ResponseT],
     partial: PartialMixin,
     selected_token: str,
     request_data: dict[str, Any],
-) -> PartialPipelineResult:
+) -> PartialPipelineResult[ResponseT]:
     response = backend.strategy.partial_pipeline_external_resume_confirmation(
         backend, partial, request_data
     )
@@ -378,17 +381,17 @@ def _external_partial_pipeline_result(
             to_plain_dict(request_data) if is_dict_type(request_data) else request_data
         ),
     )
-    return PartialPipelineResult(response=response)
+    return PartialPipelineResult[ResponseT](response=response)
 
 
 def partial_pipeline_result(
-    backend: BaseAuth,
+    backend: BaseAuth[ResponseT],
     user: UserProtocol | None = None,
     partial_token: str | None = None,
     *args,
     pipeline_type: str = "authentication",
     **kwargs,
-) -> PartialPipelineResult:
+) -> PartialPipelineResult[ResponseT]:
     request_data = backend.strategy.get_request_data()
 
     partial_argument_name = cast(
@@ -419,7 +422,9 @@ def partial_pipeline_result(
     if not selection.token:
         return PartialPipelineResult()
 
-    result = PartialPipelineResult(halt=bool(request_token or confirmation_requested))
+    result: PartialPipelineResult[ResponseT] = PartialPipelineResult(
+        halt=bool(request_token or confirmation_requested)
+    )
     effective_request_data = request_data
     if selection.pending_resume:
         confirmed_request_data = _confirmed_partial_pipeline_request_data(
@@ -479,7 +484,7 @@ def partial_pipeline_result(
 
 
 def partial_pipeline_data(
-    backend: BaseAuth,
+    backend: BaseAuth[object],
     user: UserProtocol | None = None,
     partial_token: str | None = None,
     *args,
@@ -509,7 +514,7 @@ def constant_time_compare(val1: str | bytes, val2: str | bytes) -> bool:
     return hmac.compare_digest(val1, val2)
 
 
-def get_allowed_redirect_schemes(backend: BaseAuth) -> set[str]:
+def get_allowed_redirect_schemes(backend: BaseAuth[object]) -> set[str]:
     return normalize_redirect_schemes(
         cast(
             "Collection[str]",
@@ -549,7 +554,7 @@ def is_url(value: str | None, allowed_schemes: Collection[str] | None = None) ->
     return is_private_use_redirect(value, allowed_schemes)
 
 
-def setting_url(backend: BaseAuth, *names: str | None) -> str | None:
+def setting_url(backend: BaseAuth[object], *names: str | None) -> str | None:
     allowed_schemes = get_allowed_redirect_schemes(backend)
     for name in names:
         # Name can actually None, value or setting name
@@ -564,7 +569,7 @@ def setting_url(backend: BaseAuth, *names: str | None) -> str | None:
 
 
 def provider_error(
-    backend: BaseAuth,
+    backend: BaseAuth[object],
     data: object,
     *,
     stage: ErrorStage = "callback",
@@ -722,7 +727,10 @@ def redact_request_error(
 
 
 def http_error(
-    backend: BaseAuth, error: requests.HTTPError, *, stage: ErrorStage = "user_info"
+    backend: BaseAuth[object],
+    error: requests.HTTPError,
+    *,
+    stage: ErrorStage = "user_info",
 ) -> SocialAuthBaseException:
     """Normalize a Requests HTTP failure, including errors without responses."""
     redact_request_error(error)
@@ -751,21 +759,35 @@ def http_error(
     )
 
 
-def handle_http_errors(func):
-    """Normalize raw HTTP errors from integrations outside BaseAuth.request."""
+_WrappedBackend = TypeVar("_WrappedBackend", bound="BaseAuth[object]")
+_WrappedParams = ParamSpec("_WrappedParams")
+_WrappedResult = TypeVar("_WrappedResult")
+
+
+def handle_http_errors(
+    func: Callable[Concatenate[_WrappedBackend, _WrappedParams], _WrappedResult],
+) -> Callable[Concatenate[_WrappedBackend, _WrappedParams], _WrappedResult]:
+    """Normalize raw HTTP errors while preserving a method's signature."""
 
     @functools.wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(
+        backend: _WrappedBackend,
+        /,
+        *args: _WrappedParams.args,
+        **kwargs: _WrappedParams.kwargs,
+    ) -> _WrappedResult:
         try:
-            return func(*args, **kwargs)
+            return func(backend, *args, **kwargs)
         except requests.HTTPError as error:
-            raise http_error(args[0], error, stage="callback") from error
+            raise http_error(backend, error, stage="callback") from error
 
     return wrapper
 
 
 @contextlib.contextmanager
-def wrap_access_token_error(backend: BaseAuth, *, stage: ErrorStage = "token_exchange"):
+def wrap_access_token_error(
+    backend: BaseAuth[object], *, stage: ErrorStage = "token_exchange"
+):
     """Normalize token request HTTP errors without guessing their cause."""
     try:
         yield
@@ -784,7 +806,7 @@ def append_slash(url: str) -> str:
     return url
 
 
-def get_strategy(strategy: str, storage: str, *args, **kwargs) -> BaseStrategy:
+def get_strategy(strategy: str, storage: str, *args, **kwargs) -> BaseStrategy[object]:
     Strategy = module_member(strategy)
     Storage = module_member(storage)
     return Strategy(Storage, *args, **kwargs)

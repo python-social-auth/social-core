@@ -25,7 +25,7 @@ class PipelineRequestDataTest(unittest.TestCase):
     def setUp(self) -> None:
         TestPartial.reset_cache()
         self.strategy = SameInstanceStrategy(TestStorage)
-        self.backend = BaseAuth(self.strategy)
+        self.backend: BaseAuth[object] = BaseAuth(self.strategy)
         self.strategy.set_request_data({"field": "current"}, self.backend)
 
     def test_nested_context_and_empty_data(self) -> None:

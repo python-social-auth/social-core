@@ -5,12 +5,13 @@ Soundcloud OAuth2 backend, docs at:
 
 from typing import Any
 
+from social_core.backends.base import ResponseT_co
 from social_core.utils import url_add_parameters
 
 from .oauth import BaseOAuth2
 
 
-class SoundcloudOAuth2(BaseOAuth2):
+class SoundcloudOAuth2(BaseOAuth2[ResponseT_co]):
     """Soundcloud OAuth authentication backend"""
 
     name = "soundcloud"

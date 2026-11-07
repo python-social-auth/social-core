@@ -8,6 +8,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, cast
 from urllib.parse import urljoin
 
+from social_core.backends.base import ResponseT_co
 from social_core.exceptions import (
     AuthConfigurationError,
     ErrorStage,
@@ -25,7 +26,7 @@ class GithubEnterpriseMixin:
         value = cast("GithubOAuth2", self).setting(name)
         if not value:
             raise AuthConfigurationError(
-                cast("BaseAuth", self),
+                cast("BaseAuth[object]", self),
                 parameter=name,
                 code="missing_setting",
                 stage=stage,
@@ -45,7 +46,7 @@ class GithubEnterpriseMixin:
         return urljoin(append_slash(self._required_setting("URL", stage=stage)), path)
 
 
-class GithubEnterpriseOAuth2(GithubEnterpriseMixin, GithubOAuth2):
+class GithubEnterpriseOAuth2(GithubEnterpriseMixin, GithubOAuth2[ResponseT_co]):
     """Github Enterprise OAuth authentication backend"""
 
     name = "github-enterprise"
@@ -54,7 +55,7 @@ class GithubEnterpriseOAuth2(GithubEnterpriseMixin, GithubOAuth2):
 
 
 class GithubEnterpriseOrganizationOAuth2(
-    GithubEnterpriseMixin, GithubOrganizationOAuth2
+    GithubEnterpriseMixin, GithubOrganizationOAuth2[ResponseT_co]
 ):
     """Github Enterprise OAuth2 authentication backend for
     organizations"""
@@ -65,7 +66,7 @@ class GithubEnterpriseOrganizationOAuth2(
     DEFAULT_SCOPE = ["read:org"]
 
 
-class GithubEnterpriseTeamOAuth2(GithubEnterpriseMixin, GithubTeamOAuth2):
+class GithubEnterpriseTeamOAuth2(GithubEnterpriseMixin, GithubTeamOAuth2[ResponseT_co]):
     """Github Enterprise OAuth2 authentication backend for teams"""
 
     name = "github-enterprise-team"

@@ -1,9 +1,11 @@
 from typing import Any, cast
 
+from social_core.backends.base import ResponseT_co
+
 from .oauth import BaseOAuth2
 
 
-class MineIDOAuth2(BaseOAuth2):
+class MineIDOAuth2(BaseOAuth2[ResponseT_co]):
     """MineID OAuth2 authentication backend"""
 
     name = "mineid"

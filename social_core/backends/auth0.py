@@ -5,6 +5,7 @@ https://auth0.com/docs/quickstart/webapp/django/01-login
 
 import jwt
 
+from social_core.backends.base import ResponseT_co
 from social_core.backends.utils import jwt_error
 from social_core.exceptions import AuthResponseError
 from social_core.utils import cache
@@ -12,7 +13,7 @@ from social_core.utils import cache
 from .oauth import BaseOAuth2
 
 
-class Auth0OAuth2(BaseOAuth2):
+class Auth0OAuth2(BaseOAuth2[ResponseT_co]):
     """Auth0 OAuth authentication backend"""
 
     name = "auth0"

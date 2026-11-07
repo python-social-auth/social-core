@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Literal
 
-from social_core.backends.base import BaseAuth
+from social_core.backends.base import BaseAuth, ResponseT_co
 from social_core.exceptions import AuthResponseError
 
 from .oauth import BaseOAuth1, BaseOAuth2
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
 
-class BaseGoogleAuth(BaseAuth):
+class BaseGoogleAuth(BaseAuth[ResponseT_co]):
     LEGACY_ID_KEYS = ("email",)
     MUTABLE_ID_KEYS = ("email",)
 
@@ -65,7 +65,7 @@ class BaseGoogleAuth(BaseAuth):
         }
 
 
-class BaseGoogleOAuth2API(BaseGoogleAuth):
+class BaseGoogleOAuth2API(BaseGoogleAuth[ResponseT_co]):
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Return user data from Google API"""
         response = self.get_json(
@@ -84,7 +84,7 @@ class BaseGoogleOAuth2API(BaseGoogleAuth):
         return {"Content-type": "application/json"}
 
 
-class GoogleOAuth2(BaseGoogleOAuth2API, BaseOAuth2):
+class GoogleOAuth2(BaseGoogleOAuth2API[ResponseT_co], BaseOAuth2[ResponseT_co]):
     """Google OAuth2 authentication backend"""
 
     name = "google-oauth2"
@@ -106,7 +106,7 @@ class GoogleOAuth2(BaseGoogleOAuth2API, BaseOAuth2):
     ]
 
 
-class GoogleOAuth(BaseGoogleAuth, BaseOAuth1):
+class GoogleOAuth(BaseGoogleAuth[ResponseT_co], BaseOAuth1[ResponseT_co]):
     """Google OAuth authorization mechanism"""
 
     name = "google-oauth"

@@ -22,9 +22,9 @@ def sync_groups(strategy, backend, response, user=None, groups=None, **kwargs) -
 
 
 def get_username(
-    strategy: BaseStrategy,
+    strategy: BaseStrategy[object],
     details,
-    backend: BaseAuth,
+    backend: BaseAuth[object],
     user: UserProtocol | None = None,
     *args,
     **kwargs,
@@ -83,9 +83,9 @@ def get_username(
 
 
 def create_user(
-    strategy: BaseStrategy,
+    strategy: BaseStrategy[object],
     details,
-    backend: BaseAuth,
+    backend: BaseAuth[object],
     user: UserProtocol | None = None,
     *args,
     **kwargs,
@@ -116,9 +116,9 @@ def create_user(
 
 
 def user_details(
-    strategy: BaseStrategy,
+    strategy: BaseStrategy[object],
     details,
-    backend: BaseAuth | None,
+    backend: BaseAuth[object] | None,
     user: UserProtocol | None = None,
     *args,
     **kwargs,

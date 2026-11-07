@@ -7,10 +7,12 @@ from __future__ import annotations
 
 from typing import Any
 
+from social_core.backends.base import ResponseT_co
+
 from .oauth import BaseOAuth1
 
 
-class EvernoteOAuth(BaseOAuth1):
+class EvernoteOAuth(BaseOAuth1[ResponseT_co]):
     """
     Evernote OAuth authentication backend.
 

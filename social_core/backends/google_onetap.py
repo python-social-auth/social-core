@@ -1,7 +1,7 @@
 from google.auth.transport import requests as transport_requests
 from google.oauth2 import id_token
 
-from social_core.backends.base import BaseAuth
+from social_core.backends.base import BaseAuth, ResponseT_co
 from social_core.backends.google import BaseGoogleAuth
 from social_core.exceptions import (
     AuthConfigurationError,
@@ -11,7 +11,7 @@ from social_core.exceptions import (
 from social_core.utils import constant_time_compare
 
 
-class GoogleOneTap(BaseGoogleAuth, BaseAuth):
+class GoogleOneTap(BaseGoogleAuth[ResponseT_co], BaseAuth[ResponseT_co]):
     name = "google-onetap"
     title = "Google"
     icon = "google.svg"

@@ -7,10 +7,12 @@ from __future__ import annotations
 
 from typing import Any
 
+from social_core.backends.base import ResponseT_co
+
 from .oauth import BaseOAuth2
 
 
-class DisqusOAuth2(BaseOAuth2):
+class DisqusOAuth2(BaseOAuth2[ResponseT_co]):
     name = "disqus"
     title = "Disqus"
     AUTHORIZATION_URL = "https://disqus.com/api/oauth/2.0/authorize/"

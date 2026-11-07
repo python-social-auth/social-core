@@ -3,10 +3,11 @@ Backend for Hashicorp Vault OIDC Identity Provider in Vault 1.9+
 https://www.vaultproject.io/docs/secrets/identity/oidc-provider
 """
 
+from social_core.backends.base import ResponseT_co
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 
 
-class VaultOpenIdConnect(OpenIdConnectAuth):
+class VaultOpenIdConnect(OpenIdConnectAuth[ResponseT_co]):
     """
     Vault OIDC authentication backend
 

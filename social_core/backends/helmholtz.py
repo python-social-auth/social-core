@@ -3,10 +3,11 @@ Backend for HelmholtzID Connect OPs of the HIFIS project
 https://hifis.net/aai/
 """
 
+from social_core.backends.base import ResponseT_co
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 
 
-class HelmholtzOpenIdConnect(OpenIdConnectAuth):
+class HelmholtzOpenIdConnect(OpenIdConnectAuth[ResponseT_co]):
     name = "helmholtz"
     title = "Helmholtz AAI"
     OIDC_ENDPOINT = "https://login.helmholtz.de/oauth2"

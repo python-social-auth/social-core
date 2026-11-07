@@ -7,13 +7,14 @@ from __future__ import annotations
 
 from urllib.parse import urlencode
 
+from social_core.backends.base import ResponseT_co
 from social_core.exceptions import AuthResponseError
 from social_core.utils import url_add_parameters
 
 from .base import BaseAuth
 
 
-class TwilioAuth(BaseAuth):
+class TwilioAuth(BaseAuth[ResponseT_co]):
     """Associate Twilio Connect access with an authenticated local user."""
 
     name = "twilio"

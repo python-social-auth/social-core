@@ -1,5 +1,9 @@
-import hashlib
+from __future__ import annotations
 
+import hashlib
+from typing import TYPE_CHECKING
+
+from social_core.backends.base import ResponseT_co
 from social_core.exceptions import (
     AuthInputError,
     AuthProviderError,
@@ -12,8 +16,11 @@ from social_core.utils import (
 
 from .base import BaseAuth
 
+if TYPE_CHECKING:
+    from social_core.storage import UserProtocol
 
-class LastFmAuth(BaseAuth):
+
+class LastFmAuth(BaseAuth[ResponseT_co]):
     """
     Last.Fm authentication backend. Requires two settings:
         SOCIAL_AUTH_LASTFM_KEY
@@ -66,7 +73,7 @@ class LastFmAuth(BaseAuth):
         return uri
 
     @handle_http_errors
-    def auth_complete(self, *args, **kwargs):
+    def auth_complete(self, *args, **kwargs) -> UserProtocol | ResponseT_co | None:
         """Completes login process, must return user instance"""
         self.validate_state(kwargs.get("user"))
         key, secret = self.get_key_and_secret()

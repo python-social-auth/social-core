@@ -5,8 +5,10 @@ Weblate OpenID Connect backend, docs at:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 from urllib.parse import urlsplit
+
+from social_core.backends.base import ResponseT_co
 
 from .open_id_connect import OpenIdConnectAuth
 
@@ -14,7 +16,7 @@ if TYPE_CHECKING:
     from social_core.strategy import BaseStrategy
 
 
-class WeblateOpenIdConnect(OpenIdConnectAuth):
+class WeblateOpenIdConnect(OpenIdConnectAuth[ResponseT_co]):
     """Authenticate against Hosted Weblate or another Weblate installation."""
 
     name = "weblate"
@@ -31,8 +33,11 @@ class WeblateOpenIdConnect(OpenIdConnectAuth):
         return super().oidc_endpoint().rstrip("/")
 
     @classmethod
-    def get_title(cls, strategy: BaseStrategy) -> str:
-        endpoint = cls(strategy=strategy).oidc_endpoint()
+    def get_title(cls, strategy: BaseStrategy[object]) -> str:
+        """Get the title from the configured endpoint, honoring backend overrides."""
+        endpoint = cls(
+            strategy=cast("BaseStrategy[ResponseT_co]", strategy)
+        ).oidc_endpoint()
         if urlsplit(endpoint).hostname == "hosted.weblate.org":
             return "Hosted Weblate"
         return "Weblate"

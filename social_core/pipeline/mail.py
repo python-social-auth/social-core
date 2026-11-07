@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, TypeVar, cast
 
 from social_core.exceptions import AuthCredentialError
 
@@ -8,13 +8,14 @@ from .partial import partial_step
 
 if TYPE_CHECKING:
     from social_core.backends.base import BaseAuth
-    from social_core.strategy import HttpResponseProtocol
+
+ResponseT = TypeVar("ResponseT")
 
 
 @partial_step(save_to_session=True, allow_external_resume=True)
 def mail_validation(
-    backend: BaseAuth, details, is_new=False, *args, **kwargs
-) -> HttpResponseProtocol | None:
+    backend: BaseAuth[ResponseT], details, is_new=False, *args, **kwargs
+) -> ResponseT | None:
     requires_validation = backend.REQUIRES_EMAIL_VALIDATION or backend.setting(
         "FORCE_EMAIL_VALIDATION", False
     )

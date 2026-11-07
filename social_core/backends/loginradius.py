@@ -7,6 +7,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Literal
 
+from social_core.backends.base import ResponseT_co
+
 from .oauth import BaseOAuth2
 
 if TYPE_CHECKING:
@@ -17,7 +19,7 @@ if TYPE_CHECKING:
     from social_core.exceptions import ErrorStage
 
 
-class LoginRadiusAuth(BaseOAuth2):
+class LoginRadiusAuth(BaseOAuth2[ResponseT_co]):
     """LoginRadius BaseOAuth2 authentication backend."""
 
     name = "loginradius"

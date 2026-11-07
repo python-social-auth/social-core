@@ -5,10 +5,12 @@ https://python-social-auth.readthedocs.io/en/latest/backends/orcid.html
 
 from typing import Any, cast
 
+from social_core.backends.base import ResponseT_co
+
 from .oauth import BaseOAuth2
 
 
-class ORCIDOAuth2(BaseOAuth2):
+class ORCIDOAuth2(BaseOAuth2[ResponseT_co]):
     """ORCID OAuth2 authentication backend"""
 
     name = "orcid"
@@ -136,7 +138,7 @@ class ORCIDOAuth2(BaseOAuth2):
         )
 
 
-class ORCIDOAuth2Sandbox(ORCIDOAuth2):
+class ORCIDOAuth2Sandbox(ORCIDOAuth2[ResponseT_co]):
     """ORCID OAuth2 Sandbox authentication backend"""
 
     name = "orcid-sandbox"
@@ -147,14 +149,14 @@ class ORCIDOAuth2Sandbox(ORCIDOAuth2):
     USER_DATA_URL = "https://pub.sandbox.orcid.org/v2.0/{}"
 
 
-class ORCIDMemberOAuth2(ORCIDOAuth2):
+class ORCIDMemberOAuth2(ORCIDOAuth2[ResponseT_co]):
     """ORCID OAuth2 authentication backend that uses ORCID Member API"""
 
     USER_DATA_URL = "https://api.orcid.org/v2.0/{}"
     DEFAULT_SCOPE = ["/authenticate", "/read-limited"]
 
 
-class ORCIDMemberOAuth2Sandbox(ORCIDOAuth2Sandbox):
+class ORCIDMemberOAuth2Sandbox(ORCIDOAuth2Sandbox[ResponseT_co]):
     """ORCID OAuth2 Sandbox authentication backend that uses ORCID Member Sandbox API"""
 
     USER_DATA_URL = "https://api.sandbox.orcid.org/v2.0/{}"

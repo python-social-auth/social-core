@@ -30,7 +30,7 @@ from social_core.utils import (
 class RequestErrorRedactionTest(unittest.TestCase):
     def setUp(self) -> None:
         self.strategy = TestStrategy(TestStorage)
-        self.backend = BaseAuth(self.strategy)
+        self.backend: BaseAuth[object] = BaseAuth(self.strategy)
 
     def test_request_exception_branches(self) -> None:
         url = "https://provider.example/token?client_secret=SECRET_MARKER"

@@ -2,13 +2,14 @@ from __future__ import annotations
 
 from urllib.parse import urljoin
 
+from social_core.backends.base import ResponseT_co
 from social_core.exceptions import AuthConfigurationError
 from social_core.utils import append_slash
 
 from .open_id_connect import OpenIdConnectAuth
 
 
-class Fence(OpenIdConnectAuth):
+class Fence(OpenIdConnectAuth[ResponseT_co]):
     name = "fence"
     title = "Fence"
     OIDC_ENDPOINT = "https://nci-crdc.datacommons.io"

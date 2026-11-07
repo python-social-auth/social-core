@@ -3,10 +3,12 @@ Quizlet OAuth2 Sign-in backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/quizlet.html
 """
 
+from social_core.backends.base import ResponseT_co
+
 from .oauth import BaseOAuth2
 
 
-class QuizletOAuth2(BaseOAuth2):
+class QuizletOAuth2(BaseOAuth2[ResponseT_co]):
     """Quizlet OAuth2"""
 
     name = "quizlet"

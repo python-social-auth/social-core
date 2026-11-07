@@ -19,10 +19,10 @@ if TYPE_CHECKING:
 
     from .backends.base import BaseAuth
     from .storage import PartialMixin, PipelineUserProtocol, UserMixin, UserProtocol
-    from .strategy import HttpResponseProtocol
 
 
 _PartialResult = TypeVar("_PartialResult")
+ResponseT = TypeVar("ResponseT")
 
 
 def _get_social_user(user: PipelineUserProtocol) -> UserMixin:
@@ -33,7 +33,7 @@ def _get_social_user(user: PipelineUserProtocol) -> UserMixin:
 
 
 def _login_user(
-    backend: BaseAuth, login: Callable, authenticated_user: PipelineUserProtocol
+    backend: BaseAuth[object], login: Callable, authenticated_user: PipelineUserProtocol
 ) -> bool:
     social_user = _get_social_user(authenticated_user)
     is_new = authenticated_user.is_new
@@ -42,7 +42,7 @@ def _login_user(
     return is_new
 
 
-def _sanitize_redirect_url(backend: BaseAuth, url: str) -> str:
+def _sanitize_redirect_url(backend: BaseAuth[object], url: str) -> str:
     if backend.setting("SANITIZE_REDIRECTS", True):
         allowed_hosts = [
             *cast("list[str]", backend.setting("ALLOWED_REDIRECT_HOSTS", [])),
@@ -58,7 +58,7 @@ def _sanitize_redirect_url(backend: BaseAuth, url: str) -> str:
 
 
 def _handle_partial(
-    backend: BaseAuth,
+    backend: BaseAuth[ResponseT],
     user: UserProtocol | None,
     resume_partial: Callable[[PartialMixin], _PartialResult],
     halt_url_names: tuple[str, ...],
@@ -66,10 +66,7 @@ def _handle_partial(
     *args,
     pipeline_type: str = "authentication",
     **kwargs,
-) -> (
-    tuple[Literal[True], _PartialResult | HttpResponseProtocol]
-    | tuple[Literal[False], None]
-):
+) -> tuple[Literal[True], _PartialResult | ResponseT] | tuple[Literal[False], None]:
     partial = partial_pipeline_result(
         backend, user, *args, pipeline_type=pipeline_type, **kwargs
     )
@@ -89,11 +86,11 @@ def _handle_partial(
 
 
 def do_auth(
-    backend: BaseAuth,
+    backend: BaseAuth[ResponseT],
     redirect_name: str = "next",
     *,
     user: UserProtocol | None = None,
-) -> HttpResponseProtocol:
+) -> ResponseT:
     # Save any defined next value into session
     data = backend.strategy.request_data(merge=False)
 
@@ -125,18 +122,18 @@ def do_auth(
 
 
 def do_complete(
-    backend: BaseAuth,
+    backend: BaseAuth[ResponseT],
     login: Callable,
     user: UserProtocol | None = None,
     redirect_name: str = "next",
     *args,
     **kwargs,
-) -> HttpResponseProtocol:
+) -> ResponseT:
     data = backend.strategy.request_data()
 
     is_authenticated = user_is_authenticated(user)
     partial_user = user if is_authenticated else None
-    authenticated_user: UserProtocol | HttpResponseProtocol | None = partial_user
+    authenticated_user: UserProtocol | ResponseT | None = partial_user
 
     partial_result = _handle_partial(
         backend,
@@ -164,7 +161,7 @@ def do_complete(
     # return it to the client
     user_model = backend.strategy.storage.user.user_model()
     if authenticated_user and not isinstance(authenticated_user, user_model):
-        return cast("HttpResponseProtocol", authenticated_user)
+        return cast("ResponseT", authenticated_user)
 
     authenticated_user = cast("PipelineUserProtocol | None", authenticated_user)
     # A request value may be a redirect URL, but never a setting name.
@@ -224,18 +221,18 @@ def do_complete(
 
 
 def do_disconnect(
-    backend: BaseAuth,
+    backend: BaseAuth[ResponseT],
     user: UserProtocol,
     association_id=None,
     redirect_name: str = "next",
     *args,
     **kwargs,
-) -> HttpResponseProtocol:
-    response: dict[str, Any] | HttpResponseProtocol
+) -> ResponseT:
+    response: dict[str, Any] | ResponseT
 
     def resume_disconnect(
         partial: PartialMixin,
-    ) -> dict[str, Any] | HttpResponseProtocol:
+    ) -> dict[str, Any] | ResponseT:
         if association_id and not partial.kwargs.get("association_id"):
             partial.extend_kwargs({"association_id": association_id})
         return backend.continue_disconnect_pipeline(partial)

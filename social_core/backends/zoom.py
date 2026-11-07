@@ -1,9 +1,11 @@
 from typing import Any
 
+from social_core.backends.base import ResponseT_co
+
 from .oauth import BaseOAuth2
 
 
-class ZoomOAuth2(BaseOAuth2):
+class ZoomOAuth2(BaseOAuth2[ResponseT_co]):
     """
     Zoom OAuth2 authentication backend
     Doc Reference: https://marketplace.zoom.us/docs/guides/auth/oauth

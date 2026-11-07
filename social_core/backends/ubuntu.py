@@ -2,10 +2,12 @@
 Ubuntu One OpenId backend
 """
 
+from social_core.backends.base import ResponseT_co
+
 from .open_id import OpenIdAuth
 
 
-class UbuntuOpenId(OpenIdAuth):
+class UbuntuOpenId(OpenIdAuth[ResponseT_co]):
     name = "ubuntu"
     title = "Ubuntu"
     icon = "ubuntu.svg"

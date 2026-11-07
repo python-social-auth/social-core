@@ -11,10 +11,12 @@ More info: https://wiki.openstreetmap.org/wiki/OAuth
 
 from typing import Any
 
+from social_core.backends.base import ResponseT_co
+
 from .oauth import BaseOAuth2PKCE
 
 
-class OpenStreetMapOAuth2(BaseOAuth2PKCE):
+class OpenStreetMapOAuth2(BaseOAuth2PKCE[ResponseT_co]):
     """OpenStreetMap OAuth2 authentication backend"""
 
     name = "openstreetmap-oauth2"

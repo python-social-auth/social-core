@@ -15,14 +15,14 @@ if TYPE_CHECKING:
     from social_core.storage import UserProtocol
 
 
-def social_details(backend: BaseAuth, details, response, *args, **kwargs):
+def social_details(backend: BaseAuth[object], details, response, *args, **kwargs):
     return {
         "details": dict(backend.get_user_details(response), **details),
         "groups": backend.get_user_groups(response),
     }
 
 
-def social_names(backend: BaseAuth, details, *args, **kwargs):
+def social_names(backend: BaseAuth[object], details, *args, **kwargs):
     """Populate missing full or component names using provider details."""
     names = normalize_user_names(
         details.get("fullname"),
@@ -42,7 +42,7 @@ def social_names(backend: BaseAuth, details, *args, **kwargs):
     return {"details": normalized}
 
 
-def social_uid(backend: BaseAuth, details, response, *args, **kwargs):
+def social_uid(backend: BaseAuth[object], details, response, *args, **kwargs):
     raw_uid = backend.get_user_id(details, response)
     if raw_uid is None or raw_uid == "":
         raise AuthResponseError(
@@ -64,7 +64,7 @@ def social_uid(backend: BaseAuth, details, response, *args, **kwargs):
     }
 
 
-def auth_allowed(backend: BaseAuth, details, response, *args, **kwargs) -> None:
+def auth_allowed(backend: BaseAuth[object], details, response, *args, **kwargs) -> None:
     if not backend.auth_allowed(response, details):
         raise AuthPolicyError(
             backend, code="authentication_disallowed", stage="pipeline"
@@ -170,7 +170,7 @@ def _migrate_social_auth(backend, storage, social, uid, id_key, evidence_key):
 
 
 def social_user(
-    backend: BaseAuth,
+    backend: BaseAuth[object],
     uid,
     user: UserProtocol | None = None,
     *args,
@@ -221,7 +221,7 @@ def social_user(
 
 
 def associate_user(
-    backend: BaseAuth,
+    backend: BaseAuth[object],
     uid,
     user: UserProtocol | None = None,
     social=None,
@@ -263,7 +263,11 @@ def associate_user(
 
 
 def associate_by_email(
-    backend: BaseAuth, details, user: UserProtocol | None = None, *args, **kwargs
+    backend: BaseAuth[object],
+    details,
+    user: UserProtocol | None = None,
+    *args,
+    **kwargs,
 ):
     """
     Associate current auth with a user with the same email address in the DB.
@@ -297,7 +301,7 @@ def associate_by_email(
 
 
 def load_extra_data(
-    backend: BaseAuth,
+    backend: BaseAuth[object],
     details,
     response,
     uid,

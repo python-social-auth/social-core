@@ -5,10 +5,12 @@ Seznam OAuth2 backend, docs at:
 
 from typing import Any
 
+from social_core.backends.base import ResponseT_co
+
 from .oauth import BaseOAuth2
 
 
-class SeznamOAuth2(BaseOAuth2):
+class SeznamOAuth2(BaseOAuth2[ResponseT_co]):
     """Seznam OAuth authentication backend"""
 
     name = "seznam-oauth2"

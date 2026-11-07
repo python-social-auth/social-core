@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any
 
 from requests.auth import HTTPBasicAuth
 
+from social_core.backends.base import ResponseT_co
 from social_core.utils import handle_http_errors
 
 from .oauth import BaseOAuth2
@@ -16,8 +17,10 @@ from .oauth import BaseOAuth2
 if TYPE_CHECKING:
     from requests.auth import AuthBase
 
+    from social_core.storage import UserProtocol
 
-class YahooOAuth2(BaseOAuth2):
+
+class YahooOAuth2(BaseOAuth2[ResponseT_co]):
     """Yahoo OAuth2 authentication backend"""
 
     name = "yahoo-oauth2"
@@ -62,7 +65,7 @@ class YahooOAuth2(BaseOAuth2):
         )
 
     @handle_http_errors
-    def auth_complete(self, *args, **kwargs):
+    def auth_complete(self, *args, **kwargs) -> UserProtocol | ResponseT_co | None:
         """Completes login process, must return user instance"""
         self.process_error(self.data)
         response = self.request_access_token(

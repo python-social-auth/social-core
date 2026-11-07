@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING, Any, Literal, cast
 
 from requests import HTTPError
 
+from social_core.backends.base import ResponseT_co
 from social_core.exceptions import (
     AuthCanceled,
     AuthInputError,
@@ -29,10 +30,12 @@ from .oauth import BaseOAuth2
 if TYPE_CHECKING:
     from requests import Response
 
+    from social_core.storage import UserProtocol
+
 API_VERSION = 24.0
 
 
-class FacebookOAuth2(BaseOAuth2):
+class FacebookOAuth2(BaseOAuth2[ResponseT_co]):
     """Facebook OAuth2 authentication backend"""
 
     name = "facebook"
@@ -130,7 +133,7 @@ class FacebookOAuth2(BaseOAuth2):
             )
 
     @handle_http_errors
-    def auth_complete(self, *args, **kwargs):
+    def auth_complete(self, *args, **kwargs) -> UserProtocol | ResponseT_co | None:
         """Completes login process, must return user instance"""
         self.process_error(self.data)
         if not self.data.get("code"):
@@ -231,7 +234,7 @@ class FacebookOAuth2(BaseOAuth2):
         )
 
 
-class FacebookAppOAuth2(FacebookOAuth2):
+class FacebookAppOAuth2(FacebookOAuth2[ResponseT_co]):
     """Facebook Application Authentication support"""
 
     name = "facebook-app"
@@ -242,7 +245,7 @@ class FacebookAppOAuth2(FacebookOAuth2):
     def uses_redirect(self) -> bool:
         return False
 
-    def auth_complete(self, *args, **kwargs):
+    def auth_complete(self, *args, **kwargs) -> UserProtocol | ResponseT_co | None:
         access_token = self.data.get("access_token")
         response = {}
 
