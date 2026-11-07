@@ -4,10 +4,11 @@ Orbi OAuth2 backend
 
 from typing import Any
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 
-class OrbiOAuth2(BaseOAuth2):
+class OrbiOAuth2(BaseOAuth2[ResponseT_co]):
     """Orbi OAuth2 authentication backend"""
 
     name = "orbi"

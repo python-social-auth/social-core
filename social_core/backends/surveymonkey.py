@@ -5,10 +5,11 @@ SurveyMonkey OAuth2 backend, docs at:
 
 from typing import Any
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 
-class SurveyMonkeyOAuth2(BaseOAuth2):
+class SurveyMonkeyOAuth2(BaseOAuth2[ResponseT_co]):
     """SurveyMonkey OAuth2 authentication backend"""
 
     name = "surveymonkey"

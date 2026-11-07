@@ -10,10 +10,11 @@ from typing import Any, cast
 
 from social_core.exceptions import AuthPolicyError, AuthResponseError
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 
-class SlackOAuth2(BaseOAuth2):
+class SlackOAuth2(BaseOAuth2[ResponseT_co]):
     """Slack OAuth authentication backend"""
 
     name = "slack"

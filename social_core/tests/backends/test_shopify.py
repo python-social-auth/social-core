@@ -16,8 +16,8 @@ from social_core.utils import (
 from .base import BaseBackendTest
 
 if TYPE_CHECKING:
-    from social_core.strategy import HttpResponseProtocol
     from social_core.tests.models import User
+    from social_core.tests.strategy import Redirect
 
 SHOP = "example.myshopify.com"
 ACCESS_TOKEN = "shopify-access-token"
@@ -209,7 +209,7 @@ class ShopifyOAuth2Test(BaseBackendTest):
                 ("slug", "foo-bar", {"shop": "other.myshopify.com"}),
             ):
                 self.assertEqual(
-                    cast("HttpResponseProtocol", result).url,
+                    cast("Redirect", result).url,
                     self.strategy.build_absolute_uri(f"/{step}"),
                 )
                 token = self.strategy.session_pop(PARTIAL_TOKEN_SESSION_NAME)

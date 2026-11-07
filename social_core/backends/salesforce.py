@@ -3,10 +3,11 @@ from urllib.parse import urlencode
 
 from social_core.exceptions import SocialAuthBaseException
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 
-class SalesforceOAuth2(BaseOAuth2):
+class SalesforceOAuth2(BaseOAuth2[ResponseT_co]):
     """Salesforce OAuth2 authentication backend"""
 
     name = "salesforce-oauth2"
@@ -47,7 +48,7 @@ class SalesforceOAuth2(BaseOAuth2):
             return None
 
 
-class SalesforceOAuth2Sandbox(SalesforceOAuth2):
+class SalesforceOAuth2Sandbox(SalesforceOAuth2[ResponseT_co]):
     """Salesforce OAuth2 authentication testing backend"""
 
     name = "salesforce-oauth2-sandbox"

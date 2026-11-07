@@ -1,9 +1,10 @@
 from typing import Any
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 
-class PayPalOAuth2(BaseOAuth2):
+class PayPalOAuth2(BaseOAuth2[ResponseT_co]):
     """
     PayPal OAuth2 backend, docs at:
         https://developer.paypal.com/docs/connect-with-paypal/integrate/
@@ -62,7 +63,7 @@ class PayPalOAuth2(BaseOAuth2):
         return primary_or_first.get("value")
 
 
-class PayPalOAuth2Sandbox(PayPalOAuth2):
+class PayPalOAuth2Sandbox(PayPalOAuth2[ResponseT_co]):
     name = "paypal-oauth2-sandbox"
     title = "PayPal (Sandbox)"
     AUTHORIZATION_URL = "https://www.sandbox.paypal.com/connect"

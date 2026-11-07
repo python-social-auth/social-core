@@ -2,8 +2,10 @@ from typing import Any
 
 from social_core.backends.oauth import BaseOAuth2
 
+from .base import ResponseT_co
 
-class CognitoOAuth2(BaseOAuth2):
+
+class CognitoOAuth2(BaseOAuth2[ResponseT_co]):
     name = "cognito"
     title = "Amazon Cognito"
     ID_KEY = "sub"

@@ -39,6 +39,7 @@ from social_core.exceptions import (
 )
 
 from .azuread import AzureADOAuth2
+from .base import ResponseT_co
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -46,7 +47,7 @@ if TYPE_CHECKING:
     from requests.auth import AuthBase
 
 
-class AzureADB2COAuth2(AzureADOAuth2):
+class AzureADB2COAuth2(AzureADOAuth2[ResponseT_co]):
     name = "azuread-b2c-oauth2"
     title = "Azure AD B2C"
     icon = "microsoft.svg"

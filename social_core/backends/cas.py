@@ -11,10 +11,11 @@ from typing import Any, cast
 
 from social_core.groups import read_groups
 
+from .base import ResponseT_co
 from .open_id_connect import OpenIdConnectAuth
 
 
-class CASOpenIdConnectAuth(OpenIdConnectAuth):
+class CASOpenIdConnectAuth(OpenIdConnectAuth[ResponseT_co]):
     """
     Open ID Connect backends for use with Apereo CAS.
     Currently only the code response type is supported.

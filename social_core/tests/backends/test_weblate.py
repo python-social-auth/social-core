@@ -6,12 +6,13 @@ from urllib.parse import urlsplit
 import responses
 
 from social_core.backends.weblate import WeblateOpenIdConnect
+from social_core.tests.strategy import Redirect
 from social_core.utils import parse_qs
 
 from .open_id_connect import OpenIdConnectTest
 
 
-class WeblateOpenIdConnectTest(OpenIdConnectTest[WeblateOpenIdConnect]):
+class WeblateOpenIdConnectTest(OpenIdConnectTest[WeblateOpenIdConnect[Redirect]]):
     backend_path = "social_core.backends.weblate.WeblateOpenIdConnect"
     issuer = "https://hosted.weblate.org/oidc"
     user_data_url = f"{issuer}/userinfo/"

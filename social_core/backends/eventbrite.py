@@ -1,10 +1,11 @@
 from operator import itemgetter
 from typing import Any
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 
-class EventbriteOAuth2(BaseOAuth2):
+class EventbriteOAuth2(BaseOAuth2[ResponseT_co]):
     """Eventbrite OAuth2 authentication backend"""
 
     name = "eventbrite"

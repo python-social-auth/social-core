@@ -5,10 +5,11 @@ Reddit OAuth2 backend, docs at:
 
 from typing import Any, cast
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 
-class RedditOAuth2(BaseOAuth2):
+class RedditOAuth2(BaseOAuth2[ResponseT_co]):
     """Reddit OAuth2 authentication backend"""
 
     name = "reddit"

@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Any, Literal
 
 from social_core.exceptions import AuthResponseError
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 if TYPE_CHECKING:
@@ -21,7 +22,7 @@ if TYPE_CHECKING:
     from social_core.exceptions import ErrorStage
 
 
-class QiitaOAuth2(BaseOAuth2):
+class QiitaOAuth2(BaseOAuth2[ResponseT_co]):
     """Qiita OAuth authentication backend"""
 
     name = "qiita"

@@ -9,13 +9,14 @@ from social_core.exceptions import (
 )
 from social_core.identifiers import identifier_matches
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 if TYPE_CHECKING:
     from social_core.storage import UserMixin, UserProtocol
 
 
-class MailChimpOAuth2(BaseOAuth2):
+class MailChimpOAuth2(BaseOAuth2[ResponseT_co]):
     """MailChimp OAuth2 authentication backend"""
 
     name = "mailchimp"

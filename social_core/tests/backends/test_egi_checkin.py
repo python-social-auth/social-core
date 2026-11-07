@@ -1,11 +1,12 @@
 from social_core.backends.egi_checkin import EGICheckinOpenIdConnect
+from social_core.tests.strategy import Redirect
 
 from .oauth import BaseAuthUrlTestMixin
 from .open_id_connect import OpenIdConnectTest
 
 
 class EGICheckinOpenIdConnectTest(
-    OpenIdConnectTest[EGICheckinOpenIdConnect], BaseAuthUrlTestMixin
+    OpenIdConnectTest[EGICheckinOpenIdConnect[Redirect]], BaseAuthUrlTestMixin
 ):
     backend_path = "social_core.backends.egi_checkin.EGICheckinOpenIdConnect"
     issuer = "https://aai.egi.eu/auth/realms/egi"

@@ -7,10 +7,11 @@ from urllib.parse import urljoin
 
 from social_core.utils import append_slash
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 
-class OpenshiftOAuth2(BaseOAuth2):
+class OpenshiftOAuth2(BaseOAuth2[ResponseT_co]):
     name = "openshift"
     title = "OpenShift"
     ID_KEY = "uid"

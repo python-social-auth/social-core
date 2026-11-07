@@ -8,13 +8,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from urllib.parse import urlsplit
 
+from .base import ResponseT_co
 from .open_id_connect import OpenIdConnectAuth
 
 if TYPE_CHECKING:
     from social_core.strategy import BaseStrategy
 
 
-class WeblateOpenIdConnect(OpenIdConnectAuth):
+class WeblateOpenIdConnect(OpenIdConnectAuth[ResponseT_co]):
     """Authenticate against Hosted Weblate or another Weblate installation."""
 
     name = "weblate"
@@ -31,7 +32,9 @@ class WeblateOpenIdConnect(OpenIdConnectAuth):
         return super().oidc_endpoint().rstrip("/")
 
     @classmethod
-    def get_title(cls, strategy: BaseStrategy) -> str:
+    def get_title(
+        cls: type[WeblateOpenIdConnect[object]], strategy: BaseStrategy[object]
+    ) -> str:
         endpoint = cls(strategy=strategy).oidc_endpoint()
         if urlsplit(endpoint).hostname == "hosted.weblate.org":
             return "Hosted Weblate"

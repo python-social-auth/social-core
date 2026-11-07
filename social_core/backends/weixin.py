@@ -8,10 +8,11 @@ from urllib.parse import urlencode
 
 from social_core.exceptions import AuthProviderError, AuthUnknownError, ErrorStage
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 
-class WeixinOAuth2(BaseOAuth2):
+class WeixinOAuth2(BaseOAuth2[ResponseT_co]):
     """Weixin OAuth authentication backend"""
 
     name = "weixin"
@@ -111,7 +112,7 @@ class WeixinOAuth2(BaseOAuth2):
         )
 
 
-class WeixinOAuth2APP(WeixinOAuth2):
+class WeixinOAuth2APP(WeixinOAuth2[ResponseT_co]):
     """
     Weixin OAuth authentication backend
 

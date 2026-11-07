@@ -26,6 +26,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   `AuthProviderError` or `AuthCanceled`.
 - Classify OAuth `invalid_request` failures as configuration errors and provide
   actionable log guidance for Azure AD PKCE requirement failures.
+- `BaseStrategy`, `BaseAuth`, and the bundled backends are now generic over the
+  framework response type, such as `BaseStrategy[HttpResponse]`, and covariant
+  in it, so `BaseAuth[object]` accepts a backend of any response type. Actions
+  preserve it, and `partial_step()` types decorated steps as a `PartialStep` of
+  the responses they return, so pipeline steps that return responses without a
+  `url`, such as rendered pages, type-check. `HttpResponseProtocol` is no longer
+  used in annotations and is deprecated.
 
 ### Added
 

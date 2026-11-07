@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import copy
 from types import SimpleNamespace
-from typing import TYPE_CHECKING, cast
+from typing import cast
 from unittest.mock import patch
 from urllib.parse import urlencode
 
@@ -34,13 +34,11 @@ from social_core.pipeline.social_auth import social_names
 from social_core.store import OpenIdSessionWrapper
 from social_core.tests.exception_helpers import assert_auth_error
 from social_core.tests.models import TestUserSocialAuth, User
+from social_core.tests.strategy import Redirect
 from social_core.utils import PARTIAL_TOKEN_SESSION_NAME
 
 from .base import BaseBackendTest
 from .open_id import OpenIdTest
-
-if TYPE_CHECKING:
-    from social_core.strategy import HttpResponseProtocol
 
 VERIFIED_RESPONSE_KEY = "_openid_verified_response"
 BACKEND_SESSION_KEY = "_social_auth_backend"
@@ -49,7 +47,7 @@ IDENTITY = "http://foobar.livejournal.com/"
 DEPARTMENT = "https://example.com/attributes/department"
 
 
-class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
+class OpenIdPartialTest(BaseBackendTest[OpenIdAuth[Redirect]]):
     backend_path = "social_core.backends.open_id.OpenIdAuth"
     expected_username = "user"
 
@@ -231,7 +229,7 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
     def finish_partial(self, result) -> User:
         for step, value in (("password", "foobar"), ("slug", "foo-bar")):
             self.assertEqual(
-                cast("HttpResponseProtocol", result).url,
+                cast("Redirect", result).url,
                 self.strategy.build_absolute_uri(f"/{step}"),
             )
             token = self.strategy.session_pop(PARTIAL_TOKEN_SESSION_NAME)

@@ -1,5 +1,6 @@
 from typing import Any
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 # This provides a backend for python-social-auth. This should not be confused
@@ -8,7 +9,7 @@ from .oauth import BaseOAuth2
 # owners. See http://us.battle.net/en/forum/topic/13979588015 for more details.
 
 
-class BattleNetOAuth2(BaseOAuth2):
+class BattleNetOAuth2(BaseOAuth2[ResponseT_co]):
     """battle.net Oauth2 backend"""
 
     name = "battlenet-oauth2"

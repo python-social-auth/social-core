@@ -4,8 +4,10 @@ Backend for OpenID Connect CESiD AAI - Czech Educational and Scientific Identifi
 
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 
+from .base import ResponseT_co
 
-class CesidOpenIdConnect(OpenIdConnectAuth):
+
+class CesidOpenIdConnect(OpenIdConnectAuth[ResponseT_co]):
     name = "cesid"
     title = "CESiD AAI"
     OIDC_ENDPOINT = "https://login.cesid.cesnet.cz/cas/oidc"

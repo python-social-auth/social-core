@@ -6,10 +6,11 @@ Weibo OAuth2 backend, docs at:
 
 from typing import Any
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth2
 
 
-class WeiboOAuth2(BaseOAuth2):
+class WeiboOAuth2(BaseOAuth2[ResponseT_co]):
     """Weibo (of sina) OAuth authentication backend"""
 
     name = "weibo"

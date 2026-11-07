@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 
 from social_core.exceptions import AuthResponseError
 
+from .base import ResponseT_co
 from .open_id import OpenIdAuth
 
 if TYPE_CHECKING:
@@ -17,7 +18,7 @@ if TYPE_CHECKING:
 USER_INFO = "https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?"
 
 
-class SteamOpenId(OpenIdAuth):
+class SteamOpenId(OpenIdAuth[ResponseT_co]):
     name = "steam"
     title = "Steam"
     URL = "https://steamcommunity.com/openid"

@@ -13,13 +13,14 @@ from social_core.exceptions import AuthConfigurationError, AuthCredentialError
 
 if TYPE_CHECKING:
     from social_core.backends.azuread import AzureADOAuth2
+    from social_core.tests.strategy import Redirect
 
     from .oauth import OAuth2Test
 
 
 class AzureOAuth2TestMixin:
     def test_invalid_authority_url(self) -> None:
-        case = cast("OAuth2Test[AzureADOAuth2]", self)
+        case = cast("OAuth2Test[AzureADOAuth2[Redirect]]", self)
         for authority in (
             "",
             42,
@@ -54,7 +55,7 @@ class AzureOAuth2TestMixin:
                     case.assertEqual(caught.exception.source, "configuration")
 
     def test_authority_host_fallback(self) -> None:
-        case = cast("OAuth2Test[AzureADOAuth2]", self)
+        case = cast("OAuth2Test[AzureADOAuth2[Redirect]]", self)
         original_base = case.backend.base_url
         original_host = case.backend.authority_host
         case.strategy.set_settings(
@@ -66,7 +67,7 @@ class AzureOAuth2TestMixin:
         )
 
     def test_login_with_pkce(self) -> None:
-        case = cast("OAuth2Test[AzureADOAuth2]", self)
+        case = cast("OAuth2Test[AzureADOAuth2[Redirect]]", self)
         case.strategy.set_settings({f"SOCIAL_AUTH_{case.name}_USE_PKCE": True})
         case.do_login()
         auth_request = next(
@@ -93,12 +94,12 @@ class AzureOAuth2TestMixin:
         case.assertEqual(query["code_challenge"], [challenge])
 
     def test_partial_pipeline_with_pkce(self) -> None:
-        case = cast("OAuth2Test[AzureADOAuth2]", self)
+        case = cast("OAuth2Test[AzureADOAuth2[Redirect]]", self)
         case.strategy.set_settings({f"SOCIAL_AUTH_{case.name}_USE_PKCE": True})
         case.do_partial_pipeline()
 
     def test_authority_url_controls_all_endpoints(self) -> None:
-        case = cast("OAuth2Test[AzureADOAuth2]", self)
+        case = cast("OAuth2Test[AzureADOAuth2[Redirect]]", self)
         original_base = case.backend.base_url
         endpoints = (
             case.backend.authorization_url(),
@@ -129,7 +130,7 @@ class AzureOAuth2TestMixin:
                 )
 
     def test_explicit_endpoint_overrides_with_authority(self) -> None:
-        case = cast("OAuth2Test[AzureADOAuth2]", self)
+        case = cast("OAuth2Test[AzureADOAuth2[Redirect]]", self)
         case.strategy.set_settings(
             {
                 f"SOCIAL_AUTH_{case.name}_AUTHORITY_URL": "https://login.example.com/organizations",
@@ -153,7 +154,7 @@ class AzureOAuth2TestMixin:
         )
 
     def test_login_with_authority_override(self) -> None:
-        case = cast("OAuth2Test[AzureADOAuth2]", self)
+        case = cast("OAuth2Test[AzureADOAuth2[Redirect]]", self)
         configuration = case.backend.openid_configuration()
         case.strategy.set_settings(
             {
@@ -166,7 +167,7 @@ class AzureOAuth2TestMixin:
         case.do_login()
 
     def test_get_auth_token_uses_real_refresh_token(self) -> None:
-        case = cast("OAuth2Test[AzureADOAuth2]", self)
+        case = cast("OAuth2Test[AzureADOAuth2[Redirect]]", self)
         user = case.do_login()
         social = user.social_user
         social.extra_data["refresh_token"] = "real-refresh-token"
@@ -190,7 +191,7 @@ class AzureOAuth2TestMixin:
         case.assertEqual(len(responses.calls), calls)
 
     def test_get_auth_token_without_refresh_token(self) -> None:
-        case = cast("OAuth2Test[AzureADOAuth2]", self)
+        case = cast("OAuth2Test[AzureADOAuth2[Redirect]]", self)
         user = case.do_login()
         social = user.social_user
         social.extra_data.pop("refresh_token", None)
@@ -204,7 +205,7 @@ class AzureOAuth2TestMixin:
         case.assertEqual(len(responses.calls), calls)
 
     def test_get_auth_token_keeps_valid_token(self) -> None:
-        case = cast("OAuth2Test[AzureADOAuth2]", self)
+        case = cast("OAuth2Test[AzureADOAuth2[Redirect]]", self)
         user = case.do_login()
         user.social_user.extra_data.pop("refresh_token", None)
         calls = len(responses.calls)

@@ -22,6 +22,7 @@ from social_core.exceptions import (
     AuthSessionError,
 )
 from social_core.tests.exception_helpers import assert_auth_error
+from social_core.tests.strategy import Redirect
 from social_core.utils import PARTIAL_TOKEN_SESSION_NAME, get_querystring
 
 from .base import BaseBackendTest
@@ -30,7 +31,6 @@ from .open_id_connect import PARTIAL_ID_TOKEN_KEY, OpenIdConnectTest
 
 if TYPE_CHECKING:
     from social_core.storage import PartialMixin
-    from social_core.strategy import HttpResponseProtocol
     from social_core.tests.models import User
 
 
@@ -347,7 +347,7 @@ class FacebookAppOAuth2Test(BaseBackendTest):
             self.backend.complete()
 
 
-class FacebookLimitedLoginTest(OpenIdConnectTest[FacebookLimitedLogin]):
+class FacebookLimitedLoginTest(OpenIdConnectTest[FacebookLimitedLogin[Redirect]]):
     backend_path = "social_core.backends.facebook_limited.FacebookLimitedLogin"
     issuer = "https://facebook.com"
     openid_config_body = """
@@ -414,7 +414,7 @@ class FacebookLimitedLoginTest(OpenIdConnectTest[FacebookLimitedLogin]):
         for step, value in (("password", "foobar"), ("slug", "foo-bar")):
             with self.subTest(step=step):
                 self.assertEqual(
-                    cast("HttpResponseProtocol", result).url,
+                    cast("Redirect", result).url,
                     self.strategy.build_absolute_uri(f"/{step}"),
                 )
                 token = self.strategy.session_pop(PARTIAL_TOKEN_SESSION_NAME)

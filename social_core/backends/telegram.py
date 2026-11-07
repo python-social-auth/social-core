@@ -12,14 +12,13 @@ from social_core.exceptions import (
 )
 from social_core.utils import constant_time_compare, handle_http_errors
 
-from .base import BaseAuth
+from .base import BaseAuth, ResponseT_co
 
 if TYPE_CHECKING:
     from social_core.storage import UserProtocol
-    from social_core.strategy import HttpResponseProtocol
 
 
-class TelegramAuth(BaseAuth):
+class TelegramAuth(BaseAuth[ResponseT_co]):
     name = "telegram"
     title = "Telegram"
     ID_KEY = "id"
@@ -108,9 +107,7 @@ class TelegramAuth(BaseAuth):
         }
 
     @handle_http_errors
-    def auth_complete(
-        self, *args, **kwargs
-    ) -> HttpResponseProtocol | UserProtocol | None:
+    def auth_complete(self, *args, **kwargs) -> ResponseT_co | UserProtocol | None:
         response = self.data
         self.verify_data(response)
         kwargs.update({"response": self.data, "backend": self})

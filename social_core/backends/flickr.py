@@ -5,10 +5,11 @@ Flickr OAuth1 backend, docs at:
 
 from typing import Any
 
+from .base import ResponseT_co
 from .oauth import BaseOAuth1
 
 
-class FlickrOAuth(BaseOAuth1):
+class FlickrOAuth(BaseOAuth1[ResponseT_co]):
     """Flickr OAuth authentication backend"""
 
     name = "flickr"

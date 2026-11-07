@@ -6,8 +6,10 @@ from social_core.backends.oauth import BaseOAuth2
 from social_core.backends.utils import jwt_error
 from social_core.groups import configured_group_key, read_groups
 
+from .base import ResponseT_co
 
-class KeycloakOAuth2(BaseOAuth2):  # pylint: disable=abstract-method
+
+class KeycloakOAuth2(BaseOAuth2[ResponseT_co]):  # pylint: disable=abstract-method
     """Keycloak OAuth2 authentication backend
 
     This backend has been tested working with a standard Keycloak installation,

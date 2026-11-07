@@ -16,8 +16,8 @@ from .test_azuread_b2c import RSA_PRIVATE_JWT_KEY, RSA_PUBLIC_JWT_KEY
 if TYPE_CHECKING:
     from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
 
-    from social_core.strategy import HttpResponseProtocol
     from social_core.tests.models import User
+    from social_core.tests.strategy import Redirect
 
 TEST_KEY = """
 -----BEGIN EC PRIVATE KEY-----
@@ -140,7 +140,7 @@ class AppleIdTest(OAuth2Test, BaseAuthUrlTestMixin):
             ),
         ):
             self.assertEqual(
-                cast("HttpResponseProtocol", result).url,
+                cast("Redirect", result).url,
                 self.strategy.build_absolute_uri(f"/{step}"),
             )
             token = self.strategy.session_pop(PARTIAL_TOKEN_SESSION_NAME)

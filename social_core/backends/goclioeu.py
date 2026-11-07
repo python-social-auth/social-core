@@ -1,9 +1,10 @@
 from typing import Any
 
+from .base import ResponseT_co
 from .goclio import GoClioOAuth2
 
 
-class GoClioEuOAuth2(GoClioOAuth2):
+class GoClioEuOAuth2(GoClioOAuth2[ResponseT_co]):
     name = "goclioeu"
     title = "Clio (Europe)"
     AUTHORIZATION_URL = "https://app.goclio.eu/oauth/authorize/"

@@ -35,13 +35,15 @@ from social_core.backends.oauth import BaseOAuth2
 from social_core.backends.utils import jwt_error
 from social_core.exceptions import AuthResponseError
 
+from .base import ResponseT_co
+
 _USER_NAME_KEY = "_apple_user_name"
 
 if TYPE_CHECKING:
     from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
 
 
-class AppleIdAuth(BaseOAuth2):
+class AppleIdAuth(BaseOAuth2[ResponseT_co]):
     name = "apple-id"
     title = "Apple"
     icon = "apple.svg"

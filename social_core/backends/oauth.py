@@ -26,7 +26,7 @@ from social_core.utils import (
     wrap_access_token_error,
 )
 
-from .base import BaseAuth
+from .base import BaseAuth, ResponseT_co
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -35,7 +35,7 @@ if TYPE_CHECKING:
     from requests.auth import AuthBase
 
 
-class OAuthAuth(BaseAuth):
+class OAuthAuth(BaseAuth[ResponseT_co]):
     """OAuth authentication backend base class.
 
     Settings will be inspected to get more values names that should be
@@ -202,7 +202,7 @@ class OAuthAuth(BaseAuth):
         return None
 
 
-class BaseOAuth1(OAuthAuth):
+class BaseOAuth1(OAuthAuth[ResponseT_co]):
     """Consumer based mechanism OAuth authentication, fill the needed
     parameters to communicate properly with authentication service.
 
@@ -422,7 +422,7 @@ class BaseOAuth1(OAuthAuth):
         return {}
 
 
-class BaseOAuth2(OAuthAuth):
+class BaseOAuth2(OAuthAuth[ResponseT_co]):
     """Base class for OAuth2 providers.
 
     OAuth2 details at:
@@ -779,7 +779,7 @@ class BaseOAuth2(OAuthAuth):
         return {}
 
 
-class BaseOAuth2PKCE(BaseOAuth2):
+class BaseOAuth2PKCE(BaseOAuth2[ResponseT_co]):
     """
     Base class for providers using OAuth2 with Proof Key for Code Exchange (PKCE).
 

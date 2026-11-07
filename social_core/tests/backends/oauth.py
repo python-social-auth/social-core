@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 import time
-from typing import Generic, TypeVar, cast
+from typing import TYPE_CHECKING, Generic, TypeVar, cast
 from unittest.mock import patch
 from urllib.parse import urlparse
 
 import requests
 import responses
 
-from social_core.backends.oauth import BaseOAuth1, BaseOAuth2, OAuthAuth
 from social_core.exceptions import (
     AuthConfigurationError,
     AuthInputError,
@@ -19,7 +18,11 @@ from social_core.utils import get_querystring, parse_qs, url_add_parameters
 
 from .base import BaseBackendTest
 
-OAuthBackendT = TypeVar("OAuthBackendT", bound=OAuthAuth)
+if TYPE_CHECKING:
+    from social_core.backends.oauth import BaseOAuth1, BaseOAuth2, OAuthAuth
+    from social_core.tests.strategy import Redirect
+
+OAuthBackendT = TypeVar("OAuthBackendT", bound="OAuthAuth[Redirect]")
 
 
 class BaseOAuthTest(BaseBackendTest[OAuthBackendT], Generic[OAuthBackendT]):
@@ -100,7 +103,7 @@ class BaseOAuthTest(BaseBackendTest[OAuthBackendT], Generic[OAuthBackendT]):
         return self.backend.complete()
 
 
-BaseOAuth1BackendT = TypeVar("BaseOAuth1BackendT", bound=BaseOAuth1)
+BaseOAuth1BackendT = TypeVar("BaseOAuth1BackendT", bound="BaseOAuth1[Redirect]")
 
 
 class OAuth1Test(BaseOAuthTest[BaseOAuth1BackendT], Generic[BaseOAuth1BackendT]):
@@ -121,7 +124,7 @@ class OAuth1Test(BaseOAuthTest[BaseOAuth1BackendT], Generic[BaseOAuth1BackendT])
         return super().do_start()
 
 
-BaseOAuth2BackendT = TypeVar("BaseOAuth2BackendT", bound=BaseOAuth2)
+BaseOAuth2BackendT = TypeVar("BaseOAuth2BackendT", bound="BaseOAuth2[Redirect]")
 
 
 class OAuth2Test(BaseOAuthTest[BaseOAuth2BackendT], Generic[BaseOAuth2BackendT]):
