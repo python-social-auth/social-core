@@ -5,7 +5,7 @@ Weblate OpenID Connect backend, docs at:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 from urllib.parse import urlsplit
 
 from social_core.backends.base import ResponseT_co
@@ -33,11 +33,11 @@ class WeblateOpenIdConnect(OpenIdConnectAuth[ResponseT_co]):
         return super().oidc_endpoint().rstrip("/")
 
     @classmethod
-    def get_title(cls, strategy: BaseStrategy[object]) -> str:
+    def get_title(
+        cls: type[WeblateOpenIdConnect[object]], strategy: BaseStrategy[object]
+    ) -> str:
         """Get the title from the configured endpoint, honoring backend overrides."""
-        endpoint = cls(
-            strategy=cast("BaseStrategy[ResponseT_co]", strategy)
-        ).oidc_endpoint()
+        endpoint = cls(strategy=strategy).oidc_endpoint()
         if urlsplit(endpoint).hostname == "hosted.weblate.org":
             return "Hosted Weblate"
         return "Weblate"

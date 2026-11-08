@@ -9,7 +9,7 @@ from abc import abstractmethod
 from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
 from time import time as _time
-from typing import TYPE_CHECKING, Any, Protocol, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Protocol, cast
 
 from openid.association import Association as OpenIdAssociation
 
@@ -18,12 +18,11 @@ from .exceptions import AuthConfigurationError, AuthCredentialError, AuthRespons
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from social_core.backends.base import BaseAuth
+    from social_core.backends.base import BaseAuth, ResponseT_co
     from social_core.strategy import BaseStrategy
 
 NO_ASCII_REGEX = re.compile(r"[^\x00-\x7F]+")
 NO_SPECIAL_REGEX = re.compile(r"[^\w.@+_-]+", re.UNICODE)
-_ResponseT = TypeVar("_ResponseT")
 
 
 class UserProtocol(Protocol):
@@ -56,13 +55,13 @@ class UserMixin:
     def save(self): ...
 
     def get_backend(
-        self, strategy: BaseStrategy[_ResponseT]
-    ) -> type[BaseAuth[_ResponseT]]:
+        self, strategy: BaseStrategy[ResponseT_co]
+    ) -> type[BaseAuth[ResponseT_co]]:
         return strategy.get_backend_class(self.provider)
 
     def get_backend_instance(
-        self, strategy: BaseStrategy[_ResponseT]
-    ) -> BaseAuth[_ResponseT] | None:
+        self, strategy: BaseStrategy[ResponseT_co]
+    ) -> BaseAuth[ResponseT_co] | None:
         try:
             return strategy.get_backend(self.provider)
         except AuthConfigurationError as error:
