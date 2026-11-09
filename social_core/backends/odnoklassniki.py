@@ -9,6 +9,7 @@ from hashlib import md5
 from typing import Any, cast
 from urllib.parse import unquote
 
+from social_core.backends.base import ResponseT_co
 from social_core.exceptions import AuthInputError, AuthResponseError
 from social_core.utils import constant_time_compare
 
@@ -26,7 +27,7 @@ def odnoklassniki_sig(payload: str) -> str:
     return md5(payload.encode("utf-8")).hexdigest()  # ruff: ignore[hashlib-insecure-hash-function]
 
 
-class OdnoklassnikiOAuth2(BaseOAuth2):
+class OdnoklassnikiOAuth2(BaseOAuth2[ResponseT_co]):
     """Odnoklassniki authentication backend"""
 
     name = "odnoklassniki-oauth2"
@@ -60,7 +61,7 @@ class OdnoklassnikiOAuth2(BaseOAuth2):
         )
 
 
-class OdnoklassnikiApp(BaseAuth):
+class OdnoklassnikiApp(BaseAuth[ResponseT_co]):
     """Odnoklassniki iframe app authentication backend"""
 
     name = "odnoklassniki-app"

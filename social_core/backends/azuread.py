@@ -36,6 +36,7 @@ from urllib.parse import urlsplit
 
 import jwt
 
+from social_core.backends.base import ResponseT_co
 from social_core.backends.utils import jwt_error, load_oidc_config
 from social_core.exceptions import (
     AuthConfigurationError,
@@ -49,7 +50,7 @@ from social_core.utils import cache, social_logger
 from .oauth import BaseOAuth2PKCE
 
 
-class AzureADOAuth2(BaseOAuth2PKCE):
+class AzureADOAuth2(BaseOAuth2PKCE[ResponseT_co]):
     name = "azuread-oauth2"
     title = "Microsoft"
     icon = "microsoft.svg"
@@ -492,7 +493,7 @@ class AzureADOAuth2(BaseOAuth2PKCE):
         )
 
 
-class AzureADOAuth2V2(AzureADOAuth2):
+class AzureADOAuth2V2(AzureADOAuth2[ResponseT_co]):
     """Version of the AzureADOAuth2 backend that uses the v2.0 API endpoints,
     supporting users with personal Microsoft accounts, if the app settings
     allow them."""

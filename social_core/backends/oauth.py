@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any, Literal, cast
 from oauthlib.oauth1 import SIGNATURE_TYPE_AUTH_HEADER
 from requests_oauthlib import OAuth1
 
+from social_core.backends.base import ResponseT_co
 from social_core.exceptions import (
     AuthCanceled,
     AuthConfigurationError,
@@ -34,8 +35,10 @@ if TYPE_CHECKING:
     from requests import Response
     from requests.auth import AuthBase
 
+    from social_core.storage import UserProtocol
 
-class OAuthAuth(BaseAuth):
+
+class OAuthAuth(BaseAuth[ResponseT_co]):
     """OAuth authentication backend base class.
 
     Settings will be inspected to get more values names that should be
@@ -202,7 +205,7 @@ class OAuthAuth(BaseAuth):
         return None
 
 
-class BaseOAuth1(OAuthAuth):
+class BaseOAuth1(OAuthAuth[ResponseT_co]):
     """Consumer based mechanism OAuth authentication, fill the needed
     parameters to communicate properly with authentication service.
 
@@ -240,7 +243,7 @@ class BaseOAuth1(OAuthAuth):
             )
 
     @handle_http_errors
-    def auth_complete(self, *args, **kwargs):
+    def auth_complete(self, *args, **kwargs) -> UserProtocol | ResponseT_co | None:
         """Return user, might be logged in"""
         # Multiple unauthorized tokens are supported (see #521)
         self.process_error(self.data)
@@ -422,7 +425,7 @@ class BaseOAuth1(OAuthAuth):
         return {}
 
 
-class BaseOAuth2(OAuthAuth):
+class BaseOAuth2(OAuthAuth[ResponseT_co]):
     """Base class for OAuth2 providers.
 
     OAuth2 details at:
@@ -662,7 +665,7 @@ class BaseOAuth2(OAuthAuth):
             raise AuthCanceled(self, stage=stage)
 
     @handle_http_errors
-    def auth_complete(self, *args, **kwargs):
+    def auth_complete(self, *args, **kwargs) -> UserProtocol | ResponseT_co | None:
         """Completes login process, must return user instance"""
         state: str | None
         if self.ASSOCIATION_ONLY:
@@ -779,7 +782,7 @@ class BaseOAuth2(OAuthAuth):
         return {}
 
 
-class BaseOAuth2PKCE(BaseOAuth2):
+class BaseOAuth2PKCE(BaseOAuth2[ResponseT_co]):
     """
     Base class for providers using OAuth2 with Proof Key for Code Exchange (PKCE).
 

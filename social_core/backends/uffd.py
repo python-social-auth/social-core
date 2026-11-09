@@ -1,12 +1,13 @@
 from typing import Any, cast
 from urllib.parse import urlencode
 
+from social_core.backends.base import ResponseT_co
 from social_core.exceptions import SocialAuthBaseException
 
 from .oauth import BaseOAuth2
 
 
-class UffdOAuth2(BaseOAuth2):
+class UffdOAuth2(BaseOAuth2[ResponseT_co]):
     """Uffd OAuth2 authentication backend
 
     You need to set the following config:

@@ -10,13 +10,14 @@ His code was a great reference when working on this implementation.
 
 from typing import Any
 
+from social_core.backends.base import ResponseT_co
 from social_core.exceptions import AuthConfigurationError, AuthResponseError
 from social_core.groups import read_groups
 
 from .oauth import BaseOAuth2
 
 
-class GitLabOAuth2(BaseOAuth2):
+class GitLabOAuth2(BaseOAuth2[ResponseT_co]):
     """GitLab OAuth authentication backend"""
 
     name = "gitlab"

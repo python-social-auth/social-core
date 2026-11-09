@@ -32,6 +32,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Literal, cast
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
+from social_core.backends.base import ResponseT_co
 from social_core.exceptions import (
     AuthConfigurationError,
     AuthResponseError,
@@ -46,7 +47,7 @@ if TYPE_CHECKING:
     from requests.auth import AuthBase
 
 
-class AzureADB2COAuth2(AzureADOAuth2):
+class AzureADB2COAuth2(AzureADOAuth2[ResponseT_co]):
     name = "azuread-b2c-oauth2"
     title = "Azure AD B2C"
     icon = "microsoft.svg"

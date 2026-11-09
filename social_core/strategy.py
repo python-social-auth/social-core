@@ -3,13 +3,17 @@ from __future__ import annotations
 import secrets
 from contextlib import contextmanager
 from contextvars import ContextVar
-from typing import TYPE_CHECKING, Any, Protocol, cast
+from typing import TYPE_CHECKING, Any, Generic, TypeAlias, TypeVar, cast
 
+from .backends.base import ResponseT_co
+
+# Preserve the historical import path for integrations and tests.
 from .backends.utils import get_backend
 from .exceptions import AuthConfigurationError, ErrorStage
 from .groups import validate_group_mapping
 from .pipeline import DEFAULT_AUTH_PIPELINE, DEFAULT_DISCONNECT_PIPELINE
 from .pipeline.utils import partial_load, to_plain_dict
+from .response_types import HttpResponseProtocol as _HttpResponseProtocol
 from .store import OpenIdSessionWrapper, OpenIdStore
 from .utils import (
     PARTIAL_TOKEN_PENDING_CONFIRMATION_SESSION_NAME,
@@ -20,6 +24,9 @@ from .utils import (
     setting_name,
 )
 
+HttpResponseProtocol: TypeAlias = _HttpResponseProtocol
+
+
 if TYPE_CHECKING:
     from collections.abc import Generator, Mapping
 
@@ -27,9 +34,7 @@ if TYPE_CHECKING:
     from .storage import BaseStorage, CodeMixin, PartialMixin, UserProtocol
 
 
-class HttpResponseProtocol(Protocol):
-    @property
-    def url(self) -> str: ...
+_BackendResponseT = TypeVar("_BackendResponseT")
 
 
 class BaseTemplateStrategy:
@@ -56,7 +61,7 @@ class BaseTemplateStrategy:
         raise NotImplementedError("Implement in subclass")
 
 
-class BaseStrategy:
+class BaseStrategy(Generic[ResponseT_co]):
     ALLOWED_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     DEFAULT_TEMPLATE_STRATEGY = BaseTemplateStrategy
 
@@ -90,7 +95,7 @@ class BaseStrategy:
             )
         return storage
 
-    def setting(self, name: str, default=None, backend: BaseAuth | None = None):
+    def setting(self, name: str, default=None, backend: BaseAuth[object] | None = None):
         names = [setting_name(name), name]
         if backend:
             names.insert(0, setting_name(backend.name, name))
@@ -108,7 +113,13 @@ class BaseStrategy:
         return self.storage.user.get_user(*args, **kwargs)
 
     def sync_user_groups(
-        self, user, groups: list[str] | None, *, backend: BaseAuth, response, **kwargs
+        self,
+        user,
+        groups: list[str] | None,
+        *,
+        backend: BaseAuth[object],
+        response,
+        **kwargs,
     ) -> None:
         """Override to apply configured external memberships to local groups."""
         if validate_group_mapping(
@@ -156,15 +167,15 @@ class BaseStrategy:
 
     def partial_pipeline_external_resume_confirmation(
         self,
-        backend: BaseAuth,
+        backend: BaseAuth[object],
         partial: PartialMixin,
         request_data: dict[str, Any],
-    ) -> HttpResponseProtocol | None:
+    ) -> ResponseT_co | None:
         return None
 
     def partial_pipeline_external_resume_confirmed(
         self,
-        backend: BaseAuth,
+        backend: BaseAuth[object],
         request_data: dict[str, Any],
     ) -> bool:
         return False
@@ -172,12 +183,14 @@ class BaseStrategy:
     def openid_store(self) -> OpenIdStore:
         return OpenIdStore(self)
 
-    def get_pipeline(self, backend: BaseAuth | None = None) -> list[str]:
+    def get_pipeline(self, backend: BaseAuth[object] | None = None) -> list[str]:
         return cast(
             "list[str]", self.setting("PIPELINE", DEFAULT_AUTH_PIPELINE, backend)
         )
 
-    def get_disconnect_pipeline(self, backend: BaseAuth | None = None) -> list[str]:
+    def get_disconnect_pipeline(
+        self, backend: BaseAuth[object] | None = None
+    ) -> list[str]:
         return cast(
             "list[str]",
             self.setting("DISCONNECT_PIPELINE", DEFAULT_DISCONNECT_PIPELINE, backend),
@@ -197,7 +210,7 @@ class BaseStrategy:
         return ""
 
     def send_email_validation(
-        self, backend: BaseAuth, email: str, partial_token: str | None = None
+        self, backend: BaseAuth[object], email: str, partial_token: str | None = None
     ) -> CodeMixin:
         email_validation = self.setting("EMAIL_VALIDATION_FUNCTION")
         if not email_validation:
@@ -236,10 +249,9 @@ class BaseStrategy:
         return self.tpl.render(tpl, html, context)
 
     def authenticate(
-        self, backend: BaseAuth, *args, **kwargs
-    ) -> UserProtocol | HttpResponseProtocol | None:
-        """Trigger the authentication mechanism tied to the current
-        framework"""
+        self, backend: BaseAuth[_BackendResponseT], *args, **kwargs
+    ) -> UserProtocol | _BackendResponseT | None:
+        """Trigger authentication using a backend created by this strategy."""
         kwargs["strategy"] = self
         kwargs["storage"] = self.storage
         kwargs["backend"] = backend
@@ -255,13 +267,13 @@ class BaseStrategy:
         """Return configured backends"""
         return cast("list[str]", self.setting("AUTHENTICATION_BACKENDS", []))
 
-    def get_backend_class(self, name: str) -> type[BaseAuth]:
+    def get_backend_class(self, name: str) -> type[BaseAuth[ResponseT_co]]:
         """Return a configured backend class"""
         return get_backend(self.get_backends(), name)
 
     def get_backend(
         self, name: str, redirect_uri: str | None = None, **kwargs
-    ) -> BaseAuth:
+    ) -> BaseAuth[ResponseT_co]:
         """Return a configured backend instance"""
         backend_class = self.get_backend_class(name)
         kwargs["redirect_uri"] = redirect_uri
@@ -269,7 +281,7 @@ class BaseStrategy:
 
     # Implement the following methods on strategies sub-classes
 
-    def redirect(self, url: str) -> HttpResponseProtocol:
+    def redirect(self, url: str) -> ResponseT_co:
         """Return a response redirect to the given URL"""
         raise NotImplementedError("Implement in subclass")
 
@@ -277,13 +289,13 @@ class BaseStrategy:
         """Return value for given setting name"""
         raise NotImplementedError("Implement in subclass")
 
-    def html(self, content: str) -> HttpResponseProtocol:
+    def html(self, content: str) -> ResponseT_co:
         """Return HTTP response with given content"""
         raise NotImplementedError("Implement in subclass")
 
     def html_with_headers(
         self, content: str, headers: Mapping[str, str]
-    ) -> HttpResponseProtocol:
+    ) -> ResponseT_co:
         """Return HTML with required headers; integrations must implement this."""
         raise AuthConfigurationError(
             None,

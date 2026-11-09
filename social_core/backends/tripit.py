@@ -9,13 +9,15 @@ from typing import TYPE_CHECKING, Any, cast
 
 from defusedxml import minidom
 
+from social_core.backends.base import ResponseT_co
+
 from .oauth import BaseOAuth1
 
 if TYPE_CHECKING:
     from xml.dom.minidom import Element
 
 
-class TripItOAuth(BaseOAuth1):
+class TripItOAuth(BaseOAuth1[ResponseT_co]):
     """TripIt OAuth authentication backend"""
 
     name = "tripit"

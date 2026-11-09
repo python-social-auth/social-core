@@ -13,12 +13,13 @@ from jwt import (
 )
 from jwt.utils import base64url_decode
 
+from social_core.backends.base import ResponseT_co
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 from social_core.backends.utils import jwt_error
 from social_core.exceptions import AuthResponseError
 
 
-class PingOpenIdConnect(OpenIdConnectAuth):
+class PingOpenIdConnect(OpenIdConnectAuth[ResponseT_co]):
     name = "ping"
     title = "Ping Identity"
     # OIDC_ENDPOINT has the form 'https://auth.pingone.com/<APP ID>/as'

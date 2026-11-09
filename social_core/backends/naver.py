@@ -1,9 +1,11 @@
 from typing import Any
 
+from social_core.backends.base import ResponseT_co
+
 from .oauth import BaseOAuth2
 
 
-class NaverOAuth2(BaseOAuth2):
+class NaverOAuth2(BaseOAuth2[ResponseT_co]):
     """Naver OAuth authentication backend"""
 
     name = "naver"

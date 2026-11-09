@@ -1,11 +1,12 @@
 from typing import cast
 
+from social_core.backends.base import ResponseT_co
 from social_core.exceptions import AuthInputError
 
 from .base import BaseAuth
 
 
-class LegacyAuth(BaseAuth):
+class LegacyAuth(BaseAuth[ResponseT_co]):
     def auth_url(self) -> str:
         return cast("str", self.setting("FORM_URL"))
 

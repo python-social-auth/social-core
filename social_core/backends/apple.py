@@ -31,6 +31,7 @@ import jwt
 from jwt.algorithms import RSAAlgorithm
 from jwt.exceptions import PyJWTError
 
+from social_core.backends.base import ResponseT_co
 from social_core.backends.oauth import BaseOAuth2
 from social_core.backends.utils import jwt_error
 from social_core.exceptions import AuthResponseError
@@ -41,7 +42,7 @@ if TYPE_CHECKING:
     from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
 
 
-class AppleIdAuth(BaseOAuth2):
+class AppleIdAuth(BaseOAuth2[ResponseT_co]):
     name = "apple-id"
     title = "Apple"
     icon = "apple.svg"

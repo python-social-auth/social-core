@@ -6,6 +6,7 @@ Okta OAuth2 and OpenIdConnect:
 from typing import Any, cast
 from urllib.parse import urljoin, urlparse, urlunparse
 
+from social_core.backends.base import ResponseT_co
 from social_core.groups import configured_group_key, read_groups
 from social_core.utils import append_slash
 
@@ -13,7 +14,7 @@ from .oauth import BaseOAuth2
 from .utils import OIDCDiscoveryMixin
 
 
-class OktaMixin(OIDCDiscoveryMixin, BaseOAuth2):
+class OktaMixin(OIDCDiscoveryMixin[ResponseT_co], BaseOAuth2[ResponseT_co]):
     def api_url(self) -> str:
         return append_slash(cast("str", self.setting("API_URL")))
 
@@ -42,7 +43,7 @@ class OktaMixin(OIDCDiscoveryMixin, BaseOAuth2):
         )
 
 
-class OktaOAuth2(OktaMixin, BaseOAuth2):
+class OktaOAuth2(OktaMixin[ResponseT_co], BaseOAuth2[ResponseT_co]):
     """Okta OAuth authentication backend"""
 
     name = "okta-oauth2"

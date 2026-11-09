@@ -3,18 +3,24 @@ LINE Login OAuth2 backend, docs at:
     https://developers.line.me/en/docs/line-login/
 """
 
-from typing import Any
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
 
 import requests
 from requests import Response
 
+from social_core.backends.base import ResponseT_co
 from social_core.exceptions import AuthProviderError, ErrorStage
 from social_core.utils import handle_http_errors
 
 from .oauth import BaseOAuth2
 
+if TYPE_CHECKING:
+    from social_core.storage import UserProtocol
 
-class LineOAuth2(BaseOAuth2):
+
+class LineOAuth2(BaseOAuth2[ResponseT_co]):
     name = "line"
     title = "LINE"
     AUTHORIZATION_URL = "https://access.line.me/oauth2/v2.1/authorize"
@@ -79,7 +85,7 @@ class LineOAuth2(BaseOAuth2):
             raise
 
     @handle_http_errors
-    def auth_complete(self, *args, **kwargs):
+    def auth_complete(self, *args, **kwargs) -> UserProtocol | ResponseT_co | None:
         """Completes login process, must return user instance"""
         self.process_error(self.data)
         self.validate_state()

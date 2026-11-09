@@ -1,9 +1,11 @@
 from typing import Any
 
+from social_core.backends.base import ResponseT_co
+
 from .oauth import BaseOAuth2
 
 
-class UniverseOAuth2(BaseOAuth2):
+class UniverseOAuth2(BaseOAuth2[ResponseT_co]):
     """Universe Ticketing OAuth2 authentication backend"""
 
     name = "universe"

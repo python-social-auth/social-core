@@ -5,6 +5,7 @@ https://doc.nfdi-aai.de/
 This is conceptually based on the egi_checkin backend
 """
 
+from social_core.backends.base import ResponseT_co
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 
 NFDI_ENDPOINTS = {
@@ -50,7 +51,7 @@ NFDI_ENDPOINTS = {
 }
 
 
-class NFDIOpenIdConnect(OpenIdConnectAuth):
+class NFDIOpenIdConnect(OpenIdConnectAuth[ResponseT_co]):
     name = "helmholtz"
     title = "NFDI"
     OIDC_ENDPOINT = "https://login.helmholtz.de/oauth2"
@@ -111,32 +112,32 @@ class NFDIOpenIdConnect(OpenIdConnectAuth):
 
 
 # AcademicID
-class XcsOpenIdConnect(NFDIOpenIdConnect):
+class XcsOpenIdConnect(NFDIOpenIdConnect[ResponseT_co]):
     name = "xcs"
     title = "NFDI cross-domain services"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
-class TextplusOpenIdConnect(NFDIOpenIdConnect):
+class TextplusOpenIdConnect(NFDIOpenIdConnect[ResponseT_co]):
     name = "textplus"
     title = "Text+"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
 # didmos
-class MardiOpenIdConnect(NFDIOpenIdConnect):
+class MardiOpenIdConnect(NFDIOpenIdConnect[ResponseT_co]):
     name = "mardi"
     title = "MaRDI"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
-class ObjectsOpenIdConnect(NFDIOpenIdConnect):
+class ObjectsOpenIdConnect(NFDIOpenIdConnect[ResponseT_co]):
     name = "objects"
     title = "NFDI4Objects"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
-class CultureOpenIdConnect(NFDIOpenIdConnect):
+class CultureOpenIdConnect(NFDIOpenIdConnect[ResponseT_co]):
     name = "culture"
     title = "NFDI4Culture"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
@@ -144,94 +145,94 @@ class CultureOpenIdConnect(NFDIOpenIdConnect):
     # regapp
 
 
-class CatOpenIdConnect(NFDIOpenIdConnect):
+class CatOpenIdConnect(NFDIOpenIdConnect[ResponseT_co]):
     name = "cat"
     title = "NFDI4Cat"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
-class ChemOpenIdConnect(NFDIOpenIdConnect):
+class ChemOpenIdConnect(NFDIOpenIdConnect[ResponseT_co]):
     name = "chem"
     title = "NFDI4Chem"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
-class DatascienceOpenIdConnect(NFDIOpenIdConnect):
+class DatascienceOpenIdConnect(NFDIOpenIdConnect[ResponseT_co]):
     name = "datascience"
     title = "NFDI4DataScience"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
-class EnergyOpenIdConnect(NFDIOpenIdConnect):
+class EnergyOpenIdConnect(NFDIOpenIdConnect[ResponseT_co]):
     name = "energy"
     title = "NFDI4Energy"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
-class IngOpenIdConnect(NFDIOpenIdConnect):
+class IngOpenIdConnect(NFDIOpenIdConnect[ResponseT_co]):
     name = "ing"
     title = "NFDI4Ing"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
-class MatWerkOpenIdConnect(NFDIOpenIdConnect):
+class MatWerkOpenIdConnect(NFDIOpenIdConnect[ResponseT_co]):
     name = "matWerk"
     title = "NFDI-MatWerk"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
 # unity
-class DaphneOpenIdConnect(NFDIOpenIdConnect):
+class DaphneOpenIdConnect(NFDIOpenIdConnect[ResponseT_co]):
     name = "daphne"
     title = "DAPHNE4NFDI"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
-class FairmatOpenIdConnect(NFDIOpenIdConnect):
+class FairmatOpenIdConnect(NFDIOpenIdConnect[ResponseT_co]):
     name = "fairmat"
     title = "FAIRmat"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
-class ImmunoOpenIdConnect(NFDIOpenIdConnect):
+class ImmunoOpenIdConnect(NFDIOpenIdConnect[ResponseT_co]):
     name = "immuno"
     title = "NFDI4Immuno"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
-class PunchOpenIdConnect(NFDIOpenIdConnect):
+class PunchOpenIdConnect(NFDIOpenIdConnect[ResponseT_co]):
     name = "punch"
     title = "PUNCH4NFDI"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
-class HelmholtzOpenIdConnect(NFDIOpenIdConnect):
+class HelmholtzOpenIdConnect(NFDIOpenIdConnect[ResponseT_co]):
     name = "helmholtz"
     title = "Helmholtz AAI"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
 # infraproxy
-class InfraproxyStagingOpenIdConnect(NFDIOpenIdConnect):
+class InfraproxyStagingOpenIdConnect(NFDIOpenIdConnect[ResponseT_co]):
     name = "infraproxy-staging"
     title = "NFDI Infrastructure Proxy (Staging)"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
-class InfraproxyOpenIdConnect(NFDIOpenIdConnect):
+class InfraproxyOpenIdConnect(NFDIOpenIdConnect[ResponseT_co]):
     name = "infraproxy"
     title = "NFDI Infrastructure Proxy"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
 # eduid
-class EduidOpenIdConnect(NFDIOpenIdConnect):
+class EduidOpenIdConnect(NFDIOpenIdConnect[ResponseT_co]):
     name = "eduid"
     title = "edu-ID"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]
 
 
-class EduidStagingOpenIdConnect(NFDIOpenIdConnect):
+class EduidStagingOpenIdConnect(NFDIOpenIdConnect[ResponseT_co]):
     name = "eduid-staging"
     title = "edu-ID (Staging)"
     OIDC_ENDPOINT = NFDI_ENDPOINTS[name]

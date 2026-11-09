@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Literal, cast
 
+from social_core.backends.base import ResponseT_co
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 from social_core.exceptions import AuthProviderError, ErrorStage
 
@@ -18,7 +19,7 @@ if TYPE_CHECKING:
     from requests.auth import AuthBase
 
 
-class LinkedinOpenIdConnect(OpenIdConnectAuth):
+class LinkedinOpenIdConnect(OpenIdConnectAuth[ResponseT_co]):
     """
     Linkedin OpenID Connect backend. Oauth2 has been deprecated as of August 1, 2023.
     https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2?context=linkedin/consumer/context
@@ -42,7 +43,7 @@ class LinkedinOpenIdConnect(OpenIdConnectAuth):
         # https://stackoverflow.com/questions/76889585/issues-with-sign-in-with-linkedin-using-openid-connect
 
 
-class LinkedinOAuth2(BaseOAuth2):
+class LinkedinOAuth2(BaseOAuth2[ResponseT_co]):
     name = "linkedin-oauth2"
     title = "LinkedIn"
     AUTHORIZATION_URL = "https://www.linkedin.com/oauth/v2/authorization"
@@ -191,7 +192,7 @@ class LinkedinOAuth2(BaseOAuth2):
             )
 
 
-class LinkedinMobileOAuth2(LinkedinOAuth2):
+class LinkedinMobileOAuth2(LinkedinOAuth2[ResponseT_co]):
     name = "linkedin-mobile-oauth2"
     title = "LinkedIn"
 

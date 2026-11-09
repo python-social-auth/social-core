@@ -38,7 +38,7 @@ from social_core.utils import http_error, module_member, provider_error
 
 class ProviderErrorTest(unittest.TestCase):
     def setUp(self):
-        self.backend = BaseAuth(TestStrategy(TestStorage))
+        self.backend: BaseAuth[object] = BaseAuth(TestStrategy(TestStorage))
 
     def response(self, status, data=None):
         response = Mock(spec=requests.Response, status_code=status, headers={})

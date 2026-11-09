@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Literal
 from urllib.parse import parse_qsl
 
+from social_core.backends.base import ResponseT_co
 from social_core.utils import wrap_access_token_error
 
 from .oauth import BaseOAuth2
@@ -21,7 +22,7 @@ if TYPE_CHECKING:
     from social_core.exceptions import ErrorStage
 
 
-class DeezerOAuth2(BaseOAuth2):
+class DeezerOAuth2(BaseOAuth2[ResponseT_co]):
     """Deezer OAuth2 authentication backend"""
 
     name = "deezer"

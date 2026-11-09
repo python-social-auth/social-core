@@ -1,9 +1,11 @@
 import base64
 
+from social_core.backends.base import ResponseT_co
+
 from .oauth import BaseOAuth2
 
 
-class PushbulletOAuth2(BaseOAuth2):
+class PushbulletOAuth2(BaseOAuth2[ResponseT_co]):
     """pushbullet OAuth authentication backend"""
 
     name = "pushbullet"

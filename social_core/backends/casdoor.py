@@ -3,10 +3,12 @@ Casdoor OpenID Connect backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/casdoor.html
 """
 
+from social_core.backends.base import ResponseT_co
+
 from .open_id_connect import OpenIdConnectAuth
 
 
-class CasdoorOpenIdConnect(OpenIdConnectAuth):
+class CasdoorOpenIdConnect(OpenIdConnectAuth[ResponseT_co]):
     """
     Casdoor OIDC authentication backend
 

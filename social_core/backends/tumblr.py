@@ -6,12 +6,13 @@ Tumblr OAuth1 backend, docs at:
 from operator import itemgetter
 from typing import Any
 
+from social_core.backends.base import ResponseT_co
 from social_core.utils import first
 
 from .oauth import BaseOAuth1
 
 
-class TumblrOAuth(BaseOAuth1):
+class TumblrOAuth(BaseOAuth1[ResponseT_co]):
     name = "tumblr"
     title = "Tumblr"
     ID_KEY = "uuid"

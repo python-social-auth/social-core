@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Literal
 
+from social_core.backends.base import ResponseT_co
 from social_core.utils import parse_qs, wrap_access_token_error
 
 from .oauth import BaseOAuth2
@@ -19,7 +20,7 @@ if TYPE_CHECKING:
     from social_core.exceptions import ErrorStage
 
 
-class StackoverflowOAuth2(BaseOAuth2):
+class StackoverflowOAuth2(BaseOAuth2[ResponseT_co]):
     """Stackoverflow OAuth2 authentication backend"""
 
     name = "stackoverflow"

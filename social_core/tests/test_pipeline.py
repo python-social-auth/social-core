@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 class PipelineResultTest(unittest.TestCase):
     def setUp(self) -> None:
         self.strategy = TestStrategy(TestStorage)
-        self.backend = BaseAuth(self.strategy)
+        self.backend: BaseAuth[object] = BaseAuth(self.strategy)
 
     def test_response_stops_pipeline(self) -> None:
         response = Redirect("/pause")
@@ -307,7 +307,7 @@ class UserPersistsInPartialPipeline(BaseActionTest):
 class UserCreationTest(unittest.TestCase):
     def setUp(self) -> None:
         self.strategy = TestStrategy(TestStorage)
-        self.backend = BaseAuth(self.strategy)
+        self.backend: BaseAuth[object] = BaseAuth(self.strategy)
         self.strategy.set_settings(
             {
                 "SOCIAL_AUTH_USER_FIELDS": [

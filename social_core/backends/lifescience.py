@@ -3,10 +3,11 @@ Backend for OpenID Connect Life Science AAI
 https://lifescience-ri.eu/ls-login.html
 """
 
+from social_core.backends.base import ResponseT_co
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 
 
-class LifeScienceOpenIdConnect(OpenIdConnectAuth):
+class LifeScienceOpenIdConnect(OpenIdConnectAuth[ResponseT_co]):
     name = "life_science"
     title = "Life Science Login"
     OIDC_ENDPOINT = "https://login.aai.lifescience-ri.eu/oidc"

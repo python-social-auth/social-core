@@ -5,10 +5,12 @@ Fitbit OAuth backend, docs at:
 
 from typing import Any
 
+from social_core.backends.base import ResponseT_co
+
 from .oauth import BaseOAuth1, BaseOAuth2
 
 
-class FitbitOAuth1(BaseOAuth1):
+class FitbitOAuth1(BaseOAuth1[ResponseT_co]):
     """Fitbit OAuth1 authentication backend"""
 
     name = "fitbit"
@@ -31,7 +33,7 @@ class FitbitOAuth1(BaseOAuth1):
         )["user"]
 
 
-class FitbitOAuth2(BaseOAuth2):
+class FitbitOAuth2(BaseOAuth2[ResponseT_co]):
     """Fitbit OAuth2 authentication backend"""
 
     name = "fitbit"

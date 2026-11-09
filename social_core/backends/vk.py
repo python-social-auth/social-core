@@ -10,6 +10,7 @@ from hashlib import md5
 from time import time
 from typing import Any, cast
 
+from social_core.backends.base import ResponseT_co
 from social_core.exceptions import (
     AuthConfigurationError,
     AuthCredentialError,
@@ -34,7 +35,7 @@ def vk_sig(payload: str) -> str:
     return md5(payload.encode("utf-8")).hexdigest()  # ruff: ignore[hashlib-insecure-hash-function]
 
 
-class VKontakteOpenAPI(BaseAuth):
+class VKontakteOpenAPI(BaseAuth[ResponseT_co]):
     """VK.COM OpenAPI authentication backend"""
 
     name = "vk-openapi"
@@ -136,7 +137,7 @@ class VKontakteOpenAPI(BaseAuth):
         return False
 
 
-class VKOAuth2(BaseOAuth2):
+class VKOAuth2(BaseOAuth2[ResponseT_co]):
     """VKOAuth2 authentication backend"""
 
     name = "vk-oauth2"
@@ -255,7 +256,7 @@ class VKOAuth2(BaseOAuth2):
         return self.get_json(url, params=data)
 
 
-class VKIDOAuth2(BaseOAuth2PKCE):
+class VKIDOAuth2(BaseOAuth2PKCE[ResponseT_co]):
     """VK ID authentication using mandatory PKCE and device-bound tokens."""
 
     name = "vk-id"
@@ -495,7 +496,7 @@ class VKIDOAuth2(BaseOAuth2PKCE):
         return response
 
 
-class VKAppOAuth2(VKOAuth2):
+class VKAppOAuth2(VKOAuth2[ResponseT_co]):
     """VK.com Application Authentication support"""
 
     name = "vk-app"

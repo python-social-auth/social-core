@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
 
-def configured_group_key(backend: BaseAuth) -> str | None:
+def configured_group_key(backend: BaseAuth[object]) -> str | None:
     """Validate the configured literal claim name before accessing claims."""
     key = backend.setting("GROUPS_KEY")
     if key is not None and (not isinstance(key, str) or not key):
@@ -23,7 +23,7 @@ def configured_group_key(backend: BaseAuth) -> str | None:
 
 
 def check_group_overage(
-    backend: BaseAuth, response: Mapping[str, Any], key: str
+    backend: BaseAuth[object], response: Mapping[str, Any], key: str
 ) -> None:
     """Never use an incomplete Entra group claim as an authoritative list."""
     if key != "groups":
@@ -44,7 +44,7 @@ def check_group_overage(
 
 
 def read_groups(
-    backend: BaseAuth,
+    backend: BaseAuth[object],
     response: Mapping[str, Any],
     key: str,
     *,
@@ -83,7 +83,7 @@ def read_groups(
 
 
 def validate_group_mapping(
-    backend: BaseAuth, mapping: Any
+    backend: BaseAuth[object], mapping: Any
 ) -> dict[str, list[str | int]]:
     """Validate portable mapping syntax; strategies validate local target types."""
     if not isinstance(mapping, dict) or any(
@@ -105,7 +105,7 @@ def validate_group_mapping(
 
 
 def group_sync_targets(
-    backend: BaseAuth, groups: list[str] | None, response: dict[str, Any]
+    backend: BaseAuth[object], groups: list[str] | None, response: dict[str, Any]
 ) -> tuple[set[str | int], set[str | int]]:
     """Resolve managed/desired targets and reject competing provider ownership."""
     mapping = validate_group_mapping(

@@ -8,12 +8,13 @@ from typing import Any
 from oauthlib.oauth1 import SIGNATURE_TYPE_AUTH_HEADER
 from requests_oauthlib import OAuth1
 
+from social_core.backends.base import ResponseT_co
 from social_core.exceptions import AuthResponseError
 
 from .oauth import BaseOAuth1
 
 
-class XingOAuth(BaseOAuth1):
+class XingOAuth(BaseOAuth1[ResponseT_co]):
     """Xing OAuth authentication backend"""
 
     name = "xing"

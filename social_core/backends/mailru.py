@@ -7,10 +7,12 @@ from hashlib import md5
 from typing import Any
 from urllib.parse import unquote
 
+from social_core.backends.base import ResponseT_co
+
 from .oauth import BaseOAuth2
 
 
-class MailruOAuth2(BaseOAuth2):
+class MailruOAuth2(BaseOAuth2[ResponseT_co]):
     """Mail.ru authentication backend"""
 
     name = "mailru-oauth2"
@@ -48,7 +50,7 @@ class MailruOAuth2(BaseOAuth2):
         return self.get_json("https://www.appsmail.ru/platform/api", params=data)[0]
 
 
-class MRGOAuth2(BaseOAuth2):
+class MRGOAuth2(BaseOAuth2[ResponseT_co]):
     name = "mailru"
     title = "Mail.ru"
     ID_KEY = "id"

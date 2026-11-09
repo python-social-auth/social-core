@@ -5,17 +5,21 @@ Shopify OAuth2 backend, docs at:
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import shopify
 
+from social_core.backends.base import ResponseT_co
 from social_core.exceptions import AuthInputError, AuthResponseError
 from social_core.utils import handle_http_errors
 
 from .oauth import BaseOAuth2
 
+if TYPE_CHECKING:
+    from social_core.storage import UserProtocol
 
-class ShopifyOAuth2(BaseOAuth2):
+
+class ShopifyOAuth2(BaseOAuth2[ResponseT_co]):
     """Shopify OAuth2 authentication backend"""
 
     name = "shopify"
@@ -76,7 +80,7 @@ class ShopifyOAuth2(BaseOAuth2):
         )
 
     @handle_http_errors
-    def auth_complete(self, *args, **kwargs):
+    def auth_complete(self, *args, **kwargs) -> UserProtocol | ResponseT_co | None:
         """Completes login process, must return user instance"""
         self.process_error(self.data)
         self.validate_state()

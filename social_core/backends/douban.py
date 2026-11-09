@@ -2,10 +2,12 @@
 
 from typing import Any
 
+from social_core.backends.base import ResponseT_co
+
 from .oauth import BaseOAuth2
 
 
-class DoubanOAuth2(BaseOAuth2):
+class DoubanOAuth2(BaseOAuth2[ResponseT_co]):
     """Douban OAuth authentication backend"""
 
     name = "douban-oauth2"

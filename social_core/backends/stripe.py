@@ -5,10 +5,12 @@ Stripe OAuth2 backend, docs at:
 
 from typing import Any
 
+from social_core.backends.base import ResponseT_co
+
 from .oauth import BaseOAuth2
 
 
-class StripeOAuth2(BaseOAuth2):
+class StripeOAuth2(BaseOAuth2[ResponseT_co]):
     """Stripe OAuth2 authentication backend"""
 
     name = "stripe"

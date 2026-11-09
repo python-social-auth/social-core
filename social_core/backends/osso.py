@@ -1,10 +1,12 @@
 from typing import Any, cast
 from urllib.parse import urlencode
 
+from social_core.backends.base import ResponseT_co
+
 from .oauth import BaseOAuth2
 
 
-class OssoOAuth2(BaseOAuth2):
+class OssoOAuth2(BaseOAuth2[ResponseT_co]):
     """Osso OAuth authentication backend"""
 
     name = "osso"

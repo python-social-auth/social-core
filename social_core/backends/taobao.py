@@ -1,11 +1,12 @@
 from typing import Any
 
+from social_core.backends.base import ResponseT_co
 from social_core.exceptions import SocialAuthBaseException
 
 from .oauth import BaseOAuth2
 
 
-class TAOBAOAuth(BaseOAuth2):
+class TAOBAOAuth(BaseOAuth2[ResponseT_co]):
     """Taobao OAuth authentication mechanism"""
 
     name = "taobao"

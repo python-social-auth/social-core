@@ -6,10 +6,12 @@ Bitbucket Data Center OAuth2 backend, docs at:
 
 from typing import Any
 
+from social_core.backends.base import ResponseT_co
+
 from .oauth import BaseOAuth2PKCE
 
 
-class BitbucketDataCenterOAuth2(BaseOAuth2PKCE):
+class BitbucketDataCenterOAuth2(BaseOAuth2PKCE[ResponseT_co]):
     """
     Implements client for Bitbucket Data Center OAuth 2.0 provider API.
     ref: https://confluence.atlassian.com/bitbucketserver/bitbucket-oauth-2-0-provider-api-1108483661.html

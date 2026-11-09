@@ -5,12 +5,13 @@ Twitter OAuth1 backend, docs at:
 
 from typing import Any
 
+from social_core.backends.base import ResponseT_co
 from social_core.exceptions import AuthCanceled, ErrorStage
 
 from .oauth import BaseOAuth1
 
 
-class TwitterOAuth(BaseOAuth1):
+class TwitterOAuth(BaseOAuth1[ResponseT_co]):
     """Twitter OAuth authentication backend"""
 
     name = "twitter"
