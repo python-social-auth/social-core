@@ -7,18 +7,40 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [7.0.0](https://github.com/python-social-auth/social-core/releases/tag/7.0.0) - 2026-11-09
+
+### Security
+
+- Bind SAML responses to the initiating browser's pending AuthnRequest instead
+  of restoring a session selected through RelayState. A same-origin return page
+  supports SameSite=Lax cookies across framework integrations. IdP-initiated
+  login is now disabled by default and requires explicit opt-in. In-progress
+  SAML logins must restart after upgrading.
+- Bind OpenID assertions to the initiating browser session instead of restoring
+  a session selected by the assertion's signed return URL. In-progress OpenID
+  logins must restart after upgrading.
+
+### Added
+
+- Add a `BaseAuth.get_provider_error()` hook for classifying provider errors in
+  callbacks and HTTP responses.
+- Add a Casdoor OpenID Connect backend for self-hosted Casdoor servers, with
+  PKCE enabled by default.
+
 ### Changed
 
-- When a framework's authentication API calls `BaseAuth.authenticate()` on a
-  backend instance it created itself, as Django's does, the pipeline now runs
-  on the backend passed in `backend` using the new `run_authentication()`, as
-  it already did for other integrations, instead of adopting the caller's
-  strategy. Authenticating a backend with a different strategy than it was
-  created with now raises `AuthConfigurationError`. Type checkers now treat
-  `BaseAuth.strategy` as read-only, and assigning it is deprecated. In both
-  cases, create the backend with the intended strategy instead.
-- Make strategy-generated response types generic so framework-specific HTML
-  responses can be returned from decorated partial pipeline steps.
+- `BaseAuth.authenticate()` now runs the pipeline on the backend passed in the
+  `backend` keyword argument through its new `run_authentication()` method.
+  This preserves the original backend's state when a framework such as Django
+  calls `authenticate()` on a separate backend instance. Passing a `strategy`
+  different from the supplied backend's strategy now raises
+  `AuthConfigurationError`; create the backend with the intended strategy.
+- Assigning `BaseAuth.strategy` is deprecated and emits a `DeprecationWarning`.
+  Type checkers now treat it as read-only. Create the backend with the intended
+  strategy instead.
+- Make backends and strategies generic in their framework response type,
+  preserving that type through authentication actions and decorated partial
+  pipeline steps, including steps returning HTML responses.
 
 ### Fixed
 
@@ -26,29 +48,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   of a deactivated user's refresh token (401 `User is inactive`) now raises
   `AuthCredentialError` with `reauthentication_required` instead of
   `AuthProviderError` or `AuthCanceled`.
-- Classify OAuth `invalid_request` failures as configuration errors and provide
-  actionable log guidance for Azure AD PKCE requirement failures.
-
-### Added
-
-- Add a `get_provider_error()` backend hook for callback and HTTP error classification.
-- Add a Casdoor OpenID Connect backend for self-hosted Casdoor servers, with PKCE enabled by default.
-
-### Security
-
-- Bind SAML responses to the browser's pending AuthnRequest instead of a session
-  selected through RelayState. A same-origin return page supports SameSite=Lax
-  cookies across framework integrations. IdP-initiated login now requires an
-  explicit opt-in; in-progress SAML logins must restart after upgrading.
-- Bind OpenID assertions to the initiating browser session instead of restoring
-  a session selected by the assertion's signed return URL. In-progress OpenID
-  logins must restart after upgrading.
+- Classify OAuth `invalid_request` failures as `AuthConfigurationError`.
+- Log configuration guidance when Azure AD returns `AADSTS9002325`, explaining
+  that server-side callbacks must use the Web platform in the app registration.
 
 ### Removed
 
-- Remove the unused strategy session-restoration methods and session identifier
-  constant. Custom strategies and backends using them must migrate to
-  browser-bound callback correlation.
+- Drop support for Python 3.10. Python 3.11 or newer is now required.
+- Remove `BaseStrategy.get_session_id()`, `BaseStrategy.restore_session()`, and
+  `BaseStrategy.SESSION_SAVE_KEY`. Custom strategies and backends using them
+  must migrate to browser-bound callback correlation.
 
 ## [6.2.0](https://github.com/python-social-auth/social-core/releases/tag/6.2.0) - 2026-10-20
 
