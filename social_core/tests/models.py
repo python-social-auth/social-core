@@ -22,6 +22,12 @@ if TYPE_CHECKING:
 ModelT = TypeVar("ModelT", bound="BaseModel")
 
 
+class AnonymousUser:
+    """A truthy framework user that has not authenticated."""
+
+    is_authenticated = False
+
+
 class BaseModel:
     NEXT_ID: int = 1
     cache: dict[Any, Any] = {}
@@ -47,6 +53,8 @@ class User(BaseModel):
     password: str | None
     slug: str | None
     social: list[TestUserSocialAuth]
+    social_user: TestUserSocialAuth | None
+    is_new: bool
     extra_data: dict[str, str]
     extra_user_fields: dict[str, str]
 

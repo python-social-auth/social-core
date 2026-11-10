@@ -1,10 +1,18 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, cast
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from social_core.actions import do_complete
 from social_core.backends.base import BaseAuth
 from social_core.backends.oauth import BaseOAuth2
-from social_core.tests.models import TestPartial, TestUserSocialAuth, User
+from social_core.pipeline.utils import partial_prepare
+from social_core.tests.models import (
+    AnonymousUser,
+    TestPartial,
+    TestUserSocialAuth,
+    User,
+)
 from social_core.utils import (
     PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME,
     PARTIAL_TOKEN_PENDING_SESSION_NAME,
@@ -54,9 +62,53 @@ class PartialTokenBackend(BaseAuth):
 class LoginActionTest(BaseActionTest):
     def test_login(self) -> None:
         self.do_login()
+        self.assert_logged_in_user()
 
     def test_login_with_partial_pipeline(self) -> None:
         self.do_login_with_partial_pipeline()
+        self.assert_logged_in_user()
+
+    def assert_logged_in_user(self) -> User:
+        social = TestUserSocialAuth.get_social_auth("github", "1")
+        assert social is not None
+        self.login.assert_called_once_with(self.backend, social.user, social)
+        self.assertIs(self.login.call_args.args[1], social.user)
+        self.assertIs(self.login.call_args.args[2], social)
+        self.assertEqual(
+            self.strategy.session_get("social_auth_last_login_backend"), "github"
+        )
+        assert isinstance(social.user, User)
+        return social.user
+
+    def test_login_with_anonymous_user(self) -> None:
+        self.user = cast("User", AnonymousUser())
+        with patch.object(
+            self.backend, "complete", wraps=self.backend.complete
+        ) as complete:
+            self.do_login()
+        self.assertIsNone(complete.call_args.kwargs["user"])
+        self.assertIsNot(self.assert_logged_in_user(), self.user)
+
+    def test_partial_resume_with_anonymous_user_preserves_pipeline_user(self) -> None:
+        self.user = cast("User", AnonymousUser())
+        saved_users: list[User] = []
+
+        def before_complete() -> None:
+            token = self.strategy.session_get(PARTIAL_TOKEN_SESSION_NAME)
+            assert isinstance(token, str)
+            partial = TestPartial.load(token)
+            assert partial is not None
+            saved_user = TestUserSocialAuth.get_user(partial.kwargs["user"])
+            assert saved_user is not None
+            saved_users.append(saved_user)
+
+        TestPartial.reset_cache()
+        self.addCleanup(TestPartial.reset_cache)
+        self.do_login_with_partial_pipeline(before_complete, pause_after_user=True)
+
+        self.assertIs(self.assert_logged_in_user(), saved_users[0])
+        self.assertFalse(TestPartial.cache)
+        self.assertIsNone(self.strategy.session_get(PARTIAL_TOKEN_SESSION_NAME))
 
     def test_fields_stored_in_session(self) -> None:
         self.strategy.set_settings(
@@ -226,12 +278,32 @@ class LoginActionTest(BaseActionTest):
         User.set_active(False)
         redirect = self.do_login(after_complete_checks=False)
         self.assertEqual(redirect.url, "/inactive")
+        self.login.assert_not_called()
+        self.assertIsNone(self.strategy.session_get("social_auth_last_login_backend"))
 
     def test_inactive_user_allowed(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_ALLOW_INACTIVE_USERS_LOGIN": True})
         User.set_active(False)
         redirect = self.do_login(after_complete_checks=False)
         self.assertEqual(redirect.url, "/success")
+        self.assert_logged_in_user()
+
+    def test_inactive_user_login_callback(self) -> None:
+        self.strategy.set_settings(
+            {
+                "SOCIAL_AUTH_INACTIVE_USER_LOGIN": True,
+                "SOCIAL_AUTH_INACTIVE_USER_URL": "/inactive",
+            }
+        )
+        User.set_active(False)
+
+        redirect = self.do_login(after_complete_checks=False)
+
+        social = TestUserSocialAuth.get_social_auth("github", "1")
+        assert social is not None
+        self.login.assert_called_once_with(self.backend, social.user, social)
+        self.assertEqual(redirect.url, "/inactive")
+        self.assertIsNone(self.strategy.session_get("social_auth_last_login_backend"))
 
     def test_invalid_user(self) -> None:
         self.strategy.set_settings(
@@ -253,3 +325,72 @@ class LoginActionTest(BaseActionTest):
         )
         redirect = self.do_login(after_complete_checks=False)
         self.assertEqual(redirect.url, "/error")
+
+
+class CompletionResultTest(BaseActionTest):
+    def test_completion_results(self) -> None:
+        user = User("pipeline-user")
+        social = TestUserSocialAuth(user, "github", "1")
+        user.social_user = social
+        user.is_new = False
+        response = self.strategy.html("<form></form>")
+        self.strategy.set_settings(
+            {
+                "SOCIAL_AUTH_LOGIN_REDIRECT_URL": "/success",
+                "SOCIAL_AUTH_LOGIN_ERROR_URL": "/error",
+            }
+        )
+        TestPartial.reset_cache()
+        self.addCleanup(TestPartial.reset_cache)
+
+        for resume in (False, True):
+            for result in (user, response, None):
+                with self.subTest(resume=resume, result=result):
+                    self.strategy.session_pop("social_auth_last_login_backend")
+                    partial = None
+                    if resume:
+                        partial = partial_prepare(self.strategy, self.backend, 0)
+                        TestPartial.store(partial)
+                        self.strategy.session_set(
+                            PARTIAL_TOKEN_SESSION_NAME, partial.token
+                        )
+                    login = Mock()
+                    with (
+                        patch.object(
+                            self.backend, "complete", return_value=result
+                        ) as complete,
+                        patch.object(
+                            self.backend, "continue_pipeline", return_value=result
+                        ) as continued,
+                    ):
+                        actual = do_complete(self.backend, login)
+
+                    if resume:
+                        complete.assert_not_called()
+                        continued.assert_called_once()
+                        assert partial is not None
+                        self.assertIsNone(TestPartial.load(partial.token))
+                        self.assertIsNone(
+                            self.strategy.session_get(PARTIAL_TOKEN_SESSION_NAME)
+                        )
+                    else:
+                        complete.assert_called_once()
+                        continued.assert_not_called()
+                    if result is user:
+                        login.assert_called_once_with(self.backend, user, social)
+                        self.assertIs(login.call_args.args[1], user)
+                        self.assertIs(login.call_args.args[2], social)
+                        self.assertEqual(actual.url, "/success")
+                        self.assertEqual(
+                            self.strategy.session_get("social_auth_last_login_backend"),
+                            "github",
+                        )
+                    else:
+                        login.assert_not_called()
+                        self.assertIsNone(
+                            self.strategy.session_get("social_auth_last_login_backend")
+                        )
+                        if result is response:
+                            self.assertIs(actual, response)
+                        else:
+                            self.assertEqual(actual.url, "/error")
