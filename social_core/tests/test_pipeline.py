@@ -23,6 +23,30 @@ class PipelineResultTest(unittest.TestCase):
         self.strategy = TestStrategy(TestStorage)
         self.backend: BaseAuth[object] = BaseAuth(self.strategy)
 
+    def test_pipeline_returns_final_user_with_social_metadata(self) -> None:
+        User.reset_cache()
+        TestUserSocialAuth.reset_cache()
+        self.addCleanup(User.reset_cache)
+        self.addCleanup(TestUserSocialAuth.reset_cache)
+        initial = User("initial")
+        replacement = User("replacement")
+        social = TestUserSocialAuth(replacement, "github", "1")
+        for user in (initial, replacement):
+            for is_new in (False, True):
+                with self.subTest(replaced=user is replacement, is_new=is_new):
+                    step = Mock(
+                        return_value={"user": user, "social": social, "is_new": is_new}
+                    )
+                    with patch(
+                        "social_core.backends.base.module_member", return_value=step
+                    ):
+                        result = self.backend.pipeline(["select_user"], user=initial)
+
+                    self.assertIs(result, user)
+                    self.assertIs(user.social_user, social)
+                    self.assertIs(user.is_new, is_new)
+                    self.assertIs(step.call_args.kwargs["user"], initial)
+
     def test_response_stops_pipeline(self) -> None:
         response = Redirect("/pause")
         step = Mock(return_value=response)

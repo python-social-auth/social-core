@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import unittest
 from typing import TYPE_CHECKING
+from unittest.mock import Mock
 from urllib.parse import urlparse
 
 import requests
@@ -69,6 +70,7 @@ class BaseActionTest(unittest.TestCase):
 
     def setUp(self) -> None:
         responses.start()
+        self.login = Mock()
         User.reset_cache()
         TestUserSocialAuth.reset_cache()
         TestNonce.reset_cache()
@@ -148,7 +150,8 @@ class BaseActionTest(unittest.TestCase):
             if user_email:
                 backend.strategy.session_set("email", user_email)
 
-        redirect = do_complete(self.backend, user=self.user, login=_login)
+        self.login = Mock(wraps=_login)
+        redirect = do_complete(self.backend, user=self.user, login=self.login)
 
         if after_complete_checks:
             self.assertEqual(
@@ -158,7 +161,9 @@ class BaseActionTest(unittest.TestCase):
             self.assertEqual(redirect.url, self.login_redirect_url)
         return redirect
 
-    def do_login_with_partial_pipeline(self, before_complete=None) -> None:
+    def do_login_with_partial_pipeline(
+        self, before_complete=None, *, pause_after_user: bool = False
+    ) -> None:
         self.strategy.set_settings(
             {
                 "SOCIAL_AUTH_GITHUB_KEY": "a-key",
@@ -182,6 +187,14 @@ class BaseActionTest(unittest.TestCase):
                 ),
             }
         )
+        if pause_after_user:
+            pipeline = list(self.strategy.get_pipeline(self.backend))
+            pipeline.remove("social_core.tests.pipeline.ask_for_password")
+            pipeline.insert(
+                pipeline.index("social_core.pipeline.social_auth.associate_user"),
+                "social_core.tests.pipeline.ask_for_password",
+            )
+            self.strategy.set_settings({"SOCIAL_AUTH_PIPELINE": pipeline})
         start_url = do_auth(self.backend).url
         target_url = self.strategy.build_absolute_uri("/complete/github/?code=foobar")
 
@@ -224,7 +237,9 @@ class BaseActionTest(unittest.TestCase):
             if user_email:
                 backend.strategy.session_set("email", user_email)
 
-        redirect = do_complete(self.backend, user=self.user, login=_login)
+        self.login = Mock(wraps=_login)
+        redirect = do_complete(self.backend, user=self.user, login=self.login)
+        self.login.assert_not_called()
         url = self.strategy.build_absolute_uri("/password")
         self.assertEqual(redirect.url, url)
         responses.add(responses.GET, redirect.url, status=200, body="foobar")
@@ -239,7 +254,7 @@ class BaseActionTest(unittest.TestCase):
 
         if before_complete:
             before_complete()
-        redirect = do_complete(self.backend, user=self.user, login=_login)
+        redirect = do_complete(self.backend, user=self.user, login=self.login)
         self.assertEqual(self.strategy.session_get("username"), self.expected_username)
         self.assertEqual(redirect.url, self.login_redirect_url)
 

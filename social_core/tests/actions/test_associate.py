@@ -23,12 +23,17 @@ class AssociateActionTest(BaseActionTest):
         assert self.user is not None
         self.assertEqual(len(self.user.social), 1)
         self.assertEqual(self.user.social[0].provider, "github")
+        self.assertIs(self.user.social[0].user, self.user)
+        self.login.assert_not_called()
+        self.assertIsNone(self.strategy.session_get("social_auth_last_login_backend"))
 
     def test_associate_with_partial_pipeline(self) -> None:
         self.do_login_with_partial_pipeline()
         assert self.user is not None
         self.assertEqual(len(self.user.social), 1)
         self.assertEqual(self.user.social[0].provider, "github")
+        self.assertIs(self.user.social[0].user, self.user)
+        self.login.assert_not_called()
 
 
 class MultipleAccountsTest(AssociateActionTest):

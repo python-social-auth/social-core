@@ -335,6 +335,19 @@ class IsUrlTest(unittest.TestCase):
 
 
 class UserIsAuthenticatedTest(unittest.TestCase):
+    def test_user_is_anonymous(self) -> None:
+        class User:
+            is_authenticated = False
+
+        self.assertFalse(user_is_authenticated(cast("UserProtocol", User())))
+
+    def test_user_is_anonymous_callable(self) -> None:
+        class User:
+            def is_authenticated(self) -> bool:
+                return False
+
+        self.assertFalse(user_is_authenticated(cast("UserProtocol", User())))
+
     def test_user_is_none(self) -> None:
         self.assertEqual(user_is_authenticated(None), False)
 
