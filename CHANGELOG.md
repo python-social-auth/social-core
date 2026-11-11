@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Require oauthlib 4.0.1 or newer to exclude versions with known vulnerabilities.
 - Require pyasn1 0.6.5 or newer in the `google-onetap` extra to exclude
   versions with known ASN.1 decoder denial-of-service vulnerabilities.
+- Discard a session-held partial pipeline if its saved user differs from the
+  currently authenticated user, including flows started anonymously.
 
 ## [7.0.0](https://github.com/python-social-auth/social-core/releases/tag/7.0.0) - 2026-11-09
 

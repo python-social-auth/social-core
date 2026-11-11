@@ -26,7 +26,11 @@ from urllib.parse import unquote, urlencode, urlparse, urlunparse
 import requests
 
 import social_core
-from social_core.pipeline.utils import is_dict_type, to_plain_dict
+from social_core.pipeline.utils import (
+    PARTIAL_PIPELINE_INITIATING_USER_ID,
+    is_dict_type,
+    to_plain_dict,
+)
 
 from .exceptions import (
     AuthCanceled,
@@ -305,6 +309,8 @@ def _external_partial_pipeline_user_matches(
     """Keep authenticated external resumes bound to their initiating user."""
     if user is None:
         return True
+    if PARTIAL_PIPELINE_INITIATING_USER_ID in partial.data:
+        return partial.data[PARTIAL_PIPELINE_INITIATING_USER_ID] == str(user.id)
     partial_user = partial.kwargs.get("user")
     return partial_user is not None and partial_user.id == user.id
 
@@ -439,6 +445,14 @@ def partial_pipeline_result(
         backend, partial, effective_request_data, pipeline_type
     )
     if partial and partial_matches:
+        if (
+            user is not None
+            and partial.kwargs.get("user") is None
+            and partial.data.get(PARTIAL_PIPELINE_INITIATING_USER_ID) == str(user.id)
+        ):
+            # Non-primitive IDs (for example UUIDs) are not serialized into
+            # kwargs. Restore the authenticated initiator for the pipeline.
+            partial.kwargs["user"] = user
         backend.validate_partial_pipeline(partial, user)
         requires_confirmation = _partial_pipeline_requires_confirmation(
             partial,
@@ -454,7 +468,19 @@ def partial_pipeline_result(
                 and partial.data.get(PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME)
             )
         )
-        if external_resume and not _external_partial_pipeline_user_matches(
+        if (
+            selection.owns_token
+            and user is not None
+            and not backend.ASSOCIATION_ONLY
+            and not _external_partial_pipeline_user_matches(partial, user)
+        ):
+            # A flow started anonymously or by another account cannot become
+            # an account link merely because its browser later signed in.
+            # Association-only backends already validate their saved user ID
+            # above and may have no deserialized user in partial.kwargs.
+            backend.strategy.clean_partial_pipeline(selection.token)
+            result = PartialPipelineResult(halt=True)
+        elif external_resume and not _external_partial_pipeline_user_matches(
             partial, user
         ):
             result = PartialPipelineResult(halt=True)
