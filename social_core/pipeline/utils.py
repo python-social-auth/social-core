@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from social_core.strategy import BaseStrategy
 
 SERIALIZABLE_TYPES = (dict, list, tuple, set, bool, type(None), int, str, bytes)
+PARTIAL_PIPELINE_INITIATING_USER_ID = "initiating_user_id"
 
 
 def is_dict_type(value):
@@ -73,6 +74,7 @@ def partial_prepare(
             "kwargs": clean_kwargs,
             "request_data": strategy.to_session_value(to_plain_dict(request_data)),
             "pipeline_type": backend.pipeline_type,
+            PARTIAL_PIPELINE_INITIATING_USER_ID: None if user is None else str(user.id),
         },
     )
 
