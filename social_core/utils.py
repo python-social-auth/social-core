@@ -445,6 +445,14 @@ def partial_pipeline_result(
         backend, partial, effective_request_data, pipeline_type
     )
     if partial and partial_matches:
+        if (
+            user is not None
+            and partial.kwargs.get("user") is None
+            and partial.data.get(PARTIAL_PIPELINE_INITIATING_USER_ID) == str(user.id)
+        ):
+            # Non-primitive IDs (for example UUIDs) are not serialized into
+            # kwargs. Restore the authenticated initiator for the pipeline.
+            partial.kwargs["user"] = user
         backend.validate_partial_pipeline(partial, user)
         requires_confirmation = _partial_pipeline_requires_confirmation(
             partial,

@@ -849,6 +849,29 @@ class PartialPipelineData(unittest.TestCase):
         self.assertEqual(partial.kwargs["user"], user)
         backend.strategy.clean_partial_pipeline.assert_not_called()
 
+    def test_confirmed_external_resume_restores_uuid_initiator(self) -> None:
+        user = Mock(id=uuid4())
+        backend = self._backend(
+            session_kwargs={},
+            request_data={"partial_pipeline_confirm": "1"},
+            session_id=None,
+            pending_resume={
+                "token": "external-token",
+                "request": {"partial_token": "external-token"},
+            },
+            partial_id="external-token",
+            partial_data={
+                PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME: True,
+                PARTIAL_PIPELINE_INITIATING_USER_ID: str(user.id),
+            },
+        )
+
+        result = partial_pipeline_result(backend, user=user)
+
+        self.assertIsNotNone(result.partial)
+        assert result.partial is not None
+        self.assertIs(result.partial.kwargs["user"], user)
+
     def test_session_partial_rejects_different_uuid_user(self) -> None:
         user = Mock(id=uuid4())
         backend = self._backend(
