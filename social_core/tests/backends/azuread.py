@@ -9,7 +9,12 @@ from urllib.parse import parse_qs, urlsplit
 
 import responses
 
-from social_core.exceptions import AuthConfigurationError, AuthCredentialError
+from social_core.exceptions import (
+    AuthConfigurationError,
+    AuthCredentialError,
+    AuthSessionError,
+)
+from social_core.utils import get_querystring
 
 if TYPE_CHECKING:
     from social_core.backends.azuread import AzureADOAuth2
@@ -69,6 +74,10 @@ class AzureOAuth2TestMixin:
         case = cast("OAuth2Test[AzureADOAuth2]", self)
         case.strategy.set_settings({f"SOCIAL_AUTH_{case.name}_USE_PKCE": True})
         case.do_login()
+        self.assert_pkce_requests()
+
+    def assert_pkce_requests(self) -> None:
+        case = cast("OAuth2Test[AzureADOAuth2]", self)
         auth_request = next(
             call.request
             for call in responses.calls
@@ -91,6 +100,62 @@ class AzureOAuth2TestMixin:
         )
         case.assertEqual(query["code_challenge_method"], ["S256"])
         case.assertEqual(query["code_challenge"], [challenge])
+
+    def test_login_without_pkce(self) -> None:
+        case = cast("OAuth2Test[AzureADOAuth2]", self)
+        case.strategy.set_settings({f"SOCIAL_AUTH_{case.name}_USE_PKCE": False})
+        case.do_login()
+        auth_request = next(
+            call.request
+            for call in responses.calls
+            if cast("str", call.request.url).startswith(
+                case.backend.authorization_url()
+            )
+        )
+        token_request = next(
+            call.request
+            for call in responses.calls
+            if call.request.url == case.backend.access_token_url()
+        )
+        query = parse_qs(urlsplit(cast("str", auth_request.url)).query)
+        body = parse_qs(cast("str", token_request.body))
+        case.assertNotIn("code_challenge", query)
+        case.assertNotIn("code_challenge_method", query)
+        case.assertNotIn("code_verifier", body)
+
+    def test_two_tabs_keep_their_own_pkce_verifiers(self) -> None:
+        case = cast("OAuth2Test[AzureADOAuth2]", self)
+        transactions = [get_querystring(case.backend.auth_url()) for _ in range(2)]
+        case.assertNotEqual(transactions[0]["state"], transactions[1]["state"])
+        case.assertNotEqual(
+            transactions[0]["code_challenge"], transactions[1]["code_challenge"]
+        )
+        for transaction in reversed(transactions):
+            case.strategy.set_request_data(
+                {"code": "foobar", "state": transaction["state"]}, case.backend
+            )
+            state = case.backend.validate_state()
+            params = case.backend.auth_complete_params(state)
+            case.assertEqual(
+                case.backend.generate_code_challenge(params["code_verifier"], "S256"),
+                transaction["code_challenge"],
+            )
+
+    def test_missing_pkce_verifier_rejects_before_token_exchange(self) -> None:
+        case = cast("OAuth2Test[AzureADOAuth2]", self)
+        params = get_querystring(case.backend.auth_url())
+        key = case.backend.transaction_key(params["state"])
+        transaction = case.strategy.session_get(key).copy()
+        transaction.pop("code_verifier")
+        case.strategy.session_set(key, transaction)
+        case.strategy.set_request_data(
+            {"code": "foobar", "state": params["state"]}, case.backend
+        )
+        with case.assertRaises(AuthSessionError) as caught:
+            case.backend.complete()
+        case.assertEqual(caught.exception.code, "session_context_missing")
+        case.assertEqual(caught.exception.stage, "callback")
+        case.assertEqual(len(responses.calls), 0)
 
     def test_partial_pipeline_with_pkce(self) -> None:
         case = cast("OAuth2Test[AzureADOAuth2]", self)

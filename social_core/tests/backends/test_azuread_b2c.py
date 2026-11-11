@@ -202,16 +202,7 @@ class AzureADB2COAuth2Test(OAuth2Test, BaseAuthUrlTestMixin, AzureOAuth2TestMixi
 
     def test_login(self) -> None:
         self.do_login()
-        query = parse_qs(urlsplit(cast("str", responses.calls[0].request.url)).query)
-        self.assertNotIn("code_challenge", query)
-        token_call = next(
-            call
-            for call in responses.calls
-            if call.request.url == self.backend.access_token_url()
-        )
-        self.assertNotIn(
-            "code_verifier", parse_qs(cast("str", token_call.request.body))
-        )
+        self.assert_pkce_requests()
 
     def test_logout_url_preserves_policy_and_encodes_parameters(self) -> None:
         endpoint = "https://custom.example.com/footenant.onmicrosoft.com/oauth2/v2.0/logout?p=b2c_1_signin&extra=one&extra=two&empty=&state=old"

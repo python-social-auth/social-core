@@ -373,9 +373,15 @@ class AuthenticationFailureBoundaryTest(unittest.TestCase):
             self.assertEqual(caught.exception.recovery, "restart_login")
             self.assertEqual(caught.exception.stage, "callback")
 
-    def test_azure_assertion_configuration_failures_preserve_operation_stage(self):
+    def test_azure_assertion_configuration_failures_preserve_operation_stage(
+        self,
+    ) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_SECRET": None})
         backend = AzureADOAuth2(self.strategy)
+        state = backend.get_or_create_state()
+        backend.auth_params(state)
+        self.strategy.set_request_data({"state": state}, backend)
+        backend.validate_state()
         for path, file_error, content in (
             (None, None, "unused"),
             ("/assertion", FileNotFoundError("private diagnostic"), "unused"),
@@ -384,7 +390,7 @@ class AuthenticationFailureBoundaryTest(unittest.TestCase):
         ):
             self.strategy.set_settings({"SOCIAL_AUTH_FEDERATED_TOKEN_FILE": path})
             for operation, stage in (
-                (partial(backend.auth_complete_params, "state"), "token_exchange"),
+                (partial(backend.auth_complete_params, state), "token_exchange"),
                 (partial(backend.refresh_token_params, "refresh"), "refresh"),
             ):
                 with (

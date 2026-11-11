@@ -157,18 +157,7 @@ class AzureADOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin, AzureOAuth2TestMixin):
 
     def test_login(self) -> None:
         self.do_login()
-        auth_query = parse_qs(
-            cast("str", responses.calls[0].request.url).split("?", 1)[1]
-        )
-        self.assertNotIn("code_challenge", auth_query)
-        token_call = next(
-            call
-            for call in responses.calls
-            if call.request.url == self.backend.access_token_url()
-        )
-        self.assertNotIn(
-            "code_verifier", parse_qs(cast("str", token_call.request.body))
-        )
+        self.assert_pkce_requests()
 
     def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
@@ -461,6 +450,14 @@ class AzureADOAuth2FederatedIdentityCredentialFromFileTest(
 
 
 class AzureADOAuth2MissingCredentialsTest(AzureADOAuth2Test):
+    def test_login_without_pkce(self) -> None:
+        with self.assertRaises(AuthConfigurationError):
+            super().test_login_without_pkce()
+
+    def test_two_tabs_keep_their_own_pkce_verifiers(self) -> None:
+        with self.assertRaises(AuthConfigurationError):
+            super().test_two_tabs_keep_their_own_pkce_verifiers()
+
     def test_login_with_pkce(self) -> None:
         with self.assertRaises(AuthConfigurationError):
             super().test_login_with_pkce()

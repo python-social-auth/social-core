@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Security
 
+- Enable PKCE by default for all Azure AD and Azure AD B2C backends, binding
+  authorization codes to the initiating login transaction. In-progress Azure
+  logins must restart after upgrading.
 - Require oauthlib 4.0.1 or newer to exclude versions with known vulnerabilities.
 - Require pyasn1 0.6.5 or newer in the `google-onetap` extra to exclude
   versions with known ASN.1 decoder denial-of-service vulnerabilities.
