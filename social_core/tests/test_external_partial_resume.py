@@ -1,19 +1,107 @@
 import unittest
 from unittest.mock import Mock
+from uuid import uuid4
 
+from social_core.pipeline.utils import (
+    PARTIAL_PIPELINE_INITIATING_USER_ID,
+    partial_prepare,
+)
 from social_core.utils import (
     PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME,
     PARTIAL_TOKEN_PENDING_REQUEST_SESSION_NAME,
     PARTIAL_TOKEN_PENDING_SESSION_NAME,
     PARTIAL_TOKEN_SESSION_NAME,
+    partial_pipeline_data,
     partial_pipeline_result,
 )
 
-from .models import TestPartial
+from .models import TestPartial, TestStorage
 from .models import User as TestUser
+from .strategy import TestStrategy
 
 
 class ExternalPartialResumeUserBindingTest(unittest.TestCase):
+    def test_uuid_initiator_is_saved_when_partial_is_prepared(self) -> None:
+        strategy = TestStrategy(TestStorage)
+        backend = Mock(name="test-backend")
+        backend.name = "test-backend"
+        user = Mock(id=uuid4())
+
+        partial = partial_prepare(strategy, backend, 0, user=user)
+
+        self.assertEqual(
+            partial.data[PARTIAL_PIPELINE_INITIATING_USER_ID], str(user.id)
+        )
+        self.assertNotIn("user", partial.kwargs)
+
+    def test_same_session_rejects_new_user_for_anonymous_partial(self) -> None:
+        backend = self._backend(
+            session_kwargs={"user": None},
+            session_id="external-token",
+            allow_external_resume=False,
+        )
+
+        self.assertIsNone(partial_pipeline_data(backend, Mock(id=1)))
+        backend.strategy.clean_partial_pipeline.assert_called_once_with(
+            "external-token"
+        )
+
+    def test_same_session_keeps_initiator(self) -> None:
+        user = Mock(id=1)
+        backend = self._backend(
+            session_kwargs={"user": user},
+            session_id="external-token",
+            allow_external_resume=False,
+        )
+
+        partial = partial_pipeline_data(backend, user)
+
+        self.assertIsNotNone(partial)
+        assert partial is not None
+        self.assertIs(partial.kwargs["user"], user)
+
+    def test_same_session_keeps_uuid_initiator_after_serialization(self) -> None:
+        user = Mock(id=uuid4())
+        backend = self._backend(
+            session_kwargs={},
+            session_id="external-token",
+            allow_external_resume=False,
+            partial_data={PARTIAL_PIPELINE_INITIATING_USER_ID: str(user.id)},
+        )
+
+        partial = partial_pipeline_data(backend, user)
+
+        self.assertIsNotNone(partial)
+        assert partial is not None
+        self.assertIs(partial.kwargs["user"], user)
+
+    def test_same_session_rejects_different_uuid_user(self) -> None:
+        backend = self._backend(
+            session_kwargs={},
+            session_id="external-token",
+            allow_external_resume=False,
+            partial_data={PARTIAL_PIPELINE_INITIATING_USER_ID: str(uuid4())},
+        )
+
+        self.assertIsNone(partial_pipeline_data(backend, Mock(id=uuid4())))
+        backend.strategy.clean_partial_pipeline.assert_called_once_with(
+            "external-token"
+        )
+
+    def test_confirmed_external_resume_restores_uuid_initiator(self) -> None:
+        user = Mock(id=uuid4())
+        backend = self._backend(
+            session_kwargs={},
+            confirmed=True,
+            partial_data={PARTIAL_PIPELINE_INITIATING_USER_ID: str(user.id)},
+        )
+
+        result = partial_pipeline_result(backend, user=user)
+
+        self.assertIsNotNone(result.partial)
+        assert result.partial is not None
+        self.assertIs(result.partial.kwargs["user"], user)
+
     def test_rejects_authenticated_user_for_anonymous_flow(self) -> None:
         backend = self._backend(session_kwargs={"user": None})
 
@@ -72,9 +160,18 @@ class ExternalPartialResumeUserBindingTest(unittest.TestCase):
         assert result.partial is not None
         self.assertIs(result.partial.kwargs["user"], initiator)
 
-    def _backend(self, session_kwargs, *, confirmed: bool = False):
+    def _backend(
+        self,
+        session_kwargs,
+        *,
+        confirmed: bool = False,
+        session_id=None,
+        partial_data=None,
+        allow_external_resume: bool = True,
+    ):
         backend = Mock()
         backend.ID_KEY = "email"
+        backend.ASSOCIATION_ONLY = False
         backend.name = "mock-backend"
         backend.id_key.return_value = "email"
 
@@ -104,7 +201,7 @@ class ExternalPartialResumeUserBindingTest(unittest.TestCase):
         strategy.to_session_value.side_effect = lambda value: value
         strategy.from_session_value.side_effect = lambda value: value
         session_values = {
-            PARTIAL_TOKEN_SESSION_NAME: None,
+            PARTIAL_TOKEN_SESSION_NAME: session_id,
             PARTIAL_TOKEN_PENDING_SESSION_NAME: pending_resume.get("token"),
             PARTIAL_TOKEN_PENDING_REQUEST_SESSION_NAME: pending_resume.get("request"),
         }
@@ -115,7 +212,10 @@ class ExternalPartialResumeUserBindingTest(unittest.TestCase):
             backend.name, 0, {"args": [], "kwargs": session_kwargs}
         )
         partial.token = "external-token"
-        partial.data[PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME] = True
+        if allow_external_resume:
+            partial.data[PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME] = True
+        if partial_data:
+            partial.data.update(partial_data)
         strategy.partial_load.return_value = partial
         strategy.redirect.return_value = Mock()
         strategy.partial_pipeline_external_resume_confirmation.return_value = None

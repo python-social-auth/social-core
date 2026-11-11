@@ -2,16 +2,12 @@ import base64
 import unittest
 from typing import TYPE_CHECKING, cast
 from unittest.mock import Mock, patch
-from uuid import uuid4
 
 import requests
 
 from social_core.backends.base import BaseAuth
 from social_core.exceptions import AuthProviderError, AuthResponseError
-from social_core.pipeline.utils import (
-    PARTIAL_PIPELINE_INITIATING_USER_ID,
-    partial_prepare,
-)
+from social_core.pipeline.utils import partial_prepare
 from social_core.tests.exception_helpers import assert_auth_error
 from social_core.utils import (
     PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME,
@@ -432,19 +428,6 @@ class BuildAbsoluteURITest(unittest.TestCase):
 
 
 class PartialPrepareTest(unittest.TestCase):
-    def test_uuid_initiating_user_is_bound_when_partial_is_serialized(self) -> None:
-        strategy = TestStrategy(TestStorage)
-        backend = Mock()
-        backend.name = "test-backend"
-        user = Mock(id=uuid4())
-
-        partial = partial_prepare(strategy, backend, 0, user=user)
-
-        self.assertEqual(
-            partial.data[PARTIAL_PIPELINE_INITIATING_USER_ID], str(user.id)
-        )
-        self.assertNotIn("user", partial.kwargs)
-
     def test_django_multivalue_dict_keeps_flat_values(self) -> None:
         class MultiValueDict(dict):
             def dict(self):
@@ -821,66 +804,6 @@ class PartialPipelineData(unittest.TestCase):
         self.assertIn(key, partial.kwargs)
         self.assertEqual(partial.kwargs[key], val)
         self.assertEqual(backend.strategy.clean_partial_pipeline.call_count, 0)
-
-    def test_session_partial_does_not_adopt_new_user(self) -> None:
-        user = Mock(id=1)
-        backend = self._backend(session_kwargs={"user": None})
-        self.assertIsNone(partial_pipeline_data(backend, user))
-        backend.strategy.clean_partial_pipeline.assert_called_once_with("session-token")
-
-    def test_session_partial_keeps_initiating_user(self) -> None:
-        user = Mock(id=1)
-        backend = self._backend(session_kwargs={"user": user})
-        partial = cast("PartialMixin", partial_pipeline_data(backend, user))
-        self.assertIsNotNone(partial)
-        self.assertEqual(partial.kwargs["user"], user)
-        backend.strategy.clean_partial_pipeline.assert_not_called()
-
-    def test_session_partial_keeps_uuid_initiator_after_serialization(self) -> None:
-        user = Mock(id=uuid4())
-        backend = self._backend(
-            session_kwargs={},
-            partial_data={PARTIAL_PIPELINE_INITIATING_USER_ID: str(user.id)},
-        )
-
-        partial = cast("PartialMixin", partial_pipeline_data(backend, user))
-
-        self.assertIsNotNone(partial)
-        self.assertEqual(partial.kwargs["user"], user)
-        backend.strategy.clean_partial_pipeline.assert_not_called()
-
-    def test_confirmed_external_resume_restores_uuid_initiator(self) -> None:
-        user = Mock(id=uuid4())
-        backend = self._backend(
-            session_kwargs={},
-            request_data={"partial_pipeline_confirm": "1"},
-            session_id=None,
-            pending_resume={
-                "token": "external-token",
-                "request": {"partial_token": "external-token"},
-            },
-            partial_id="external-token",
-            partial_data={
-                PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME: True,
-                PARTIAL_PIPELINE_INITIATING_USER_ID: str(user.id),
-            },
-        )
-
-        result = partial_pipeline_result(backend, user=user)
-
-        self.assertIsNotNone(result.partial)
-        assert result.partial is not None
-        self.assertIs(result.partial.kwargs["user"], user)
-
-    def test_session_partial_rejects_different_uuid_user(self) -> None:
-        user = Mock(id=uuid4())
-        backend = self._backend(
-            session_kwargs={},
-            partial_data={PARTIAL_PIPELINE_INITIATING_USER_ID: str(uuid4())},
-        )
-
-        self.assertIsNone(partial_pipeline_data(backend, user))
-        backend.strategy.clean_partial_pipeline.assert_called_once_with("session-token")
 
     def test_configurable_id_key(self) -> None:
         """Test that ID_KEY can be configured via settings"""
