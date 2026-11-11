@@ -65,7 +65,7 @@ class AzureADOAuth2(BaseOAuth2PKCE[ResponseT_co]):
     REDIRECT_STATE = False
     DEFAULT_SCOPE = ["openid", "profile", "user_impersonation", "email"]
     JWT_ALGORITHMS = ["RS256"]
-    DEFAULT_USE_PKCE = False
+    DEFAULT_USE_PKCE = True
     EXTRA_DATA = [
         ("access_token", "access_token"),
         ("id_token", "id_token"),
