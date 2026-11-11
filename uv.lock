@@ -1935,11 +1935,13 @@ dependencies = [
 [package.optional-dependencies]
 all = [
     { name = "google-auth" },
+    { name = "pyasn1" },
     { name = "python3-saml" },
     { name = "shopifyapi" },
 ]
 allpy3 = [
     { name = "google-auth" },
+    { name = "pyasn1" },
     { name = "python3-saml" },
     { name = "shopifyapi" },
 ]
@@ -1963,6 +1965,7 @@ dev = [
 ]
 google-onetap = [
     { name = "google-auth" },
+    { name = "pyasn1" },
 ]
 saml = [
     { name = "python3-saml" },
@@ -2020,7 +2023,8 @@ requires-dist = [
     { name = "flake8", marker = "extra == 'dev'", specifier = "==7.5.0" },
     { name = "google-auth", marker = "extra == 'google-onetap'", specifier = ">=2.40.0,<2.63" },
     { name = "mypy", marker = "extra == 'dev'", specifier = "==2.4.1" },
-    { name = "oauthlib", specifier = ">=3.3.1" },
+    { name = "oauthlib", specifier = ">=4.0.1" },
+    { name = "pyasn1", marker = "extra == 'google-onetap'", specifier = ">=0.6.5" },
     { name = "pyjwt", extras = ["crypto"], specifier = ">=2.13.0" },
     { name = "pyright", marker = "extra == 'dev'", specifier = "==1.1.414" },
     { name = "pytest", marker = "extra == 'dev'", specifier = "==9.2.0" },
