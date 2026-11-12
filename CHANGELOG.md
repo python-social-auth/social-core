@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [7.2.0](https://github.com/python-social-auth/social-core/releases/tag/7.2.0) - 2026-11-12
+
 ### Added
 
 - Let strategies opt into backend-scoped partial pipeline expiry when loading a
