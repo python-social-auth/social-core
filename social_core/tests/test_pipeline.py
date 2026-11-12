@@ -9,7 +9,7 @@ from unittest.mock import Mock, patch
 from social_core.backends.base import BaseAuth
 from social_core.exceptions import AuthException
 from social_core.pipeline.user import create_user, user_details
-from social_core.utils import PARTIAL_TOKEN_SESSION_NAME
+from social_core.utils import PARTIAL_TOKEN_SESSION_NAME, partial_pipeline_result
 
 from .actions.actions import BaseActionTest
 from .models import TestPartial, TestStorage, TestUserSocialAuth, User
@@ -308,6 +308,16 @@ class PartialExpiryTest(unittest.TestCase):
         partial = self.make_partial(timedelta(days=8))
         with patch.object(TestPartial, "is_expired", None):
             self.assertIs(self.strategy.partial_load(partial.token), partial)
+
+    def test_session_owned_expired_partial_is_destroyed_once(self) -> None:
+        partial = self.make_partial(timedelta(days=8))
+        self.strategy.session_set(PARTIAL_TOKEN_SESSION_NAME, partial.token)
+
+        result = partial_pipeline_result(BaseAuth(self.strategy))
+
+        self.assertIsNone(result.partial)
+        self.assertIsNone(TestPartial.load(partial.token))
+        self.assertIsNone(self.strategy.session_get(PARTIAL_TOKEN_SESSION_NAME))
 
     def test_saved_backend_setting_takes_precedence(self) -> None:
         partial = self.make_partial(timedelta(seconds=90))
