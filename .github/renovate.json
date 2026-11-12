@@ -40,6 +40,13 @@
         "django-stubs-ext"
       ],
       "groupName": "django-stubs"
+    },
+    {
+      "matchPackageNames": [
+        "astral-sh/uv",
+        "ghcr.io/astral-sh/uv"
+      ],
+      "groupName": "uv"
     }
   ],
   "customManagers": [
