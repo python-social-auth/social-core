@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Removed
+
+- Remove the ELIXIR AAI (`elixir`) and Life Science EOSC (`life_science_eosc`)
+  OpenID Connect backends. Use LifeScienceOpenIdConnect instead (`life_science`).
+
 ## [7.2.0](https://github.com/python-social-auth/social-core/releases/tag/7.2.0) - 2026-11-12
 
 ### Added
