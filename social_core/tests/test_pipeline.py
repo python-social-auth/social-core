@@ -417,6 +417,26 @@ class UserCreationTest(unittest.TestCase):
 
 
 class TestUserDetails(BaseActionTest):
+    def test_user_details_reports_only_assigned_fields(self) -> None:
+        self.strategy.set_settings({})
+        user = User(username="foobar")
+        with patch.object(TestStorage.user, "changed_fields") as changed_fields:
+            user_details(
+                self.strategy,
+                {"first_name": "Test", "username": "ignored", "email": None},
+                None,
+                user,
+            )
+
+        changed_fields.assert_called_once_with(user, {"first_name"})
+
+    def test_changed_fields_keeps_legacy_storage_contract(self) -> None:
+        user = User(username="foobar")
+        with patch.object(TestStorage.user, "changed") as changed:
+            TestStorage.user.changed_fields(user, {"first_name"})
+
+        changed.assert_called_once_with(user)
+
     def test_user_details(self) -> None:
         self.strategy.set_settings({})
         details = {"first_name": "Test"}

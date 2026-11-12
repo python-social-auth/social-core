@@ -261,6 +261,15 @@ class UserMixin:
         raise NotImplementedError("Implement in subclass")
 
     @classmethod
+    def changed_fields(cls, user: UserProtocol, fields: set[str]) -> None:
+        """Save user attributes changed by the pipeline.
+
+        Storage implementations can use the field names to avoid writing
+        unrelated values. The default preserves the existing changed() contract.
+        """
+        cls.changed(user)
+
+    @classmethod
     def get_username(cls, user: UserProtocol) -> str:
         """Return the username for given user"""
         raise NotImplementedError("Implement in subclass")

@@ -128,7 +128,7 @@ def user_details(
     if not user or (backend is not None and backend.ASSOCIATION_ONLY):
         return
 
-    changed = False  # flag to track changes
+    changed_fields: set[str] = set()
 
     # Default protected user fields (username, id, pk and email) can be ignored
     # by setting the SOCIAL_AUTH_NO_DEFAULT_PROTECTED_USER_FIELDS to True
@@ -177,8 +177,8 @@ def user_details(
         if name in immutable_fields and current_value:
             continue
 
-        changed = True
+        changed_fields.add(name)
         setattr(user, name, value)
 
-    if changed:
-        storage.user.changed(user)
+    if changed_fields:
+        storage.user.changed_fields(user, changed_fields)
