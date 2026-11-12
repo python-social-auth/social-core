@@ -63,7 +63,7 @@ class DripOAuthTest(OAuth2Test, BaseAuthUrlTestMixin):
                 "SOCIAL_AUTH_PIPELINE": (
                     "social_core.pipeline.social_auth.social_details",
                     "social_core.pipeline.social_auth.social_uid",
-                    "social_core.tests.pipeline.ask_for_password",
+                    "social_core.tests.pipeline.ask_for_slug",
                     "social_core.pipeline.social_auth.social_user",
                     "social_core.pipeline.user.create_user",
                     "social_core.pipeline.social_auth.associate_user",
@@ -74,7 +74,7 @@ class DripOAuthTest(OAuth2Test, BaseAuthUrlTestMixin):
         )
         self.prepare_callback(user)
         response = do_complete(self.backend, login=Mock(), user=user)
-        self.assertEqual(response.url, self.strategy.build_absolute_uri("/password"))
+        self.assertEqual(response.url, self.strategy.build_absolute_uri("/slug"))
         token = cast("str", self.strategy.session_get(PARTIAL_TOKEN_SESSION_NAME))
         partial = TestPartial.load(token)
         self.assertIsNotNone(partial)
@@ -295,7 +295,7 @@ class DripOAuthTest(OAuth2Test, BaseAuthUrlTestMixin):
                 # Round-trip stored data before the framework deserializes it.
                 partial.data = json.loads(json.dumps(partial.data))
                 self.backend = DripOAuth(self.strategy, redirect_uri=self.complete_url)
-                self.strategy.session_set("password", "secret")
+                self.strategy.session_set("slug", "drip-user")
                 calls = len(responses.calls)
                 response = do_complete(self.backend, login=Mock(), user=user)
                 self.assertEqual(response.url, "/done")
@@ -305,7 +305,7 @@ class DripOAuthTest(OAuth2Test, BaseAuthUrlTestMixin):
                 self.user_data_body = json.dumps(
                     {"users": [{"email": "uuid@example.com", "name": None}]}
                 )
-                self.strategy.session_pop("password")
+                self.strategy.session_pop("slug")
 
     def test_partial_rejects_logged_out_or_different_user(self) -> None:
         user = User("existing")
@@ -331,7 +331,7 @@ class DripOAuthTest(OAuth2Test, BaseAuthUrlTestMixin):
         self.strategy.set_settings(
             {
                 "SOCIAL_AUTH_DISCONNECT_PIPELINE": (
-                    "social_core.tests.pipeline.ask_for_password",
+                    "social_core.tests.pipeline.ask_for_slug",
                     "social_core.pipeline.disconnect.get_entries",
                     "social_core.pipeline.disconnect.disconnect",
                 )
@@ -342,7 +342,7 @@ class DripOAuthTest(OAuth2Test, BaseAuthUrlTestMixin):
             with self.subTest(user=current_user), self.assertRaises(AuthSessionError):
                 do_disconnect(self.backend, cast("User", current_user))
         self.assertIn(social, user.social)
-        self.strategy.session_set("password", "secret")
+        self.strategy.session_set("slug", "drip-user")
         self.backend = DripOAuth(self.strategy, redirect_uri=self.complete_url)
         do_disconnect(self.backend, user)
         self.assertEqual(user.social, [])
