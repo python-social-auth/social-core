@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import unittest
+from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, cast
 from unittest.mock import Mock, patch
 
@@ -11,7 +12,7 @@ from social_core.pipeline.user import create_user, user_details
 from social_core.utils import PARTIAL_TOKEN_SESSION_NAME
 
 from .actions.actions import BaseActionTest
-from .models import TestStorage, TestUserSocialAuth, User
+from .models import TestPartial, TestStorage, TestUserSocialAuth, User
 from .strategy import Redirect, TestStrategy
 
 if TYPE_CHECKING:
@@ -276,6 +277,65 @@ class MultipleAccountsWithSameEmailTest(BaseActionTest):
         user2.email = "foo@bar.com"
         with self.assertRaises(AuthException):
             self.do_login(after_complete_checks=False)
+
+
+class PartialExpiryTest(unittest.TestCase):
+    def setUp(self) -> None:
+        TestPartial.reset_cache()
+        self.addCleanup(TestPartial.reset_cache)
+
+        class ExpiringStrategy(TestStrategy):
+            EXPIRE_PARTIAL_PIPELINES_ON_LOAD = True
+
+        self.strategy = ExpiringStrategy(TestStorage)
+
+    @staticmethod
+    def make_partial(age: timedelta, *, backend: str = "facebook") -> TestPartial:
+        partial = cast(
+            "TestPartial", TestPartial.prepare(backend, 0, {"args": [], "kwargs": {}})
+        )
+        partial.timestamp = datetime.now(UTC) - age
+        partial.save()
+        return partial
+
+    def test_opt_in_preserves_other_strategies(self) -> None:
+        partial = self.make_partial(timedelta(days=8))
+        self.assertIs(TestStrategy(TestStorage).partial_load(partial.token), partial)
+        self.assertIsNone(self.strategy.partial_load(partial.token))
+        self.assertIsNone(TestPartial.load(partial.token))
+
+    def test_storage_without_expiry_hook_keeps_existing_behavior(self) -> None:
+        partial = self.make_partial(timedelta(days=8))
+        with patch.object(TestPartial, "is_expired", None):
+            self.assertIs(self.strategy.partial_load(partial.token), partial)
+
+    def test_saved_backend_setting_takes_precedence(self) -> None:
+        partial = self.make_partial(timedelta(seconds=90))
+        self.strategy.set_settings(
+            {
+                "SOCIAL_AUTH_EMAIL_VALIDATION_EXPIRED_THRESHOLD": 60,
+                "SOCIAL_AUTH_FACEBOOK_EMAIL_VALIDATION_EXPIRED_THRESHOLD": 120,
+            }
+        )
+        self.assertIs(self.strategy.partial_load(partial.token), partial)
+
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_FACEBOOK_PARTIAL_PIPELINE_EXPIRED_THRESHOLD": 30}
+        )
+        self.assertIsNone(self.strategy.partial_load(partial.token))
+
+    def test_disabled_expiry_and_missing_timestamp(self) -> None:
+        partial = self.make_partial(timedelta(days=30))
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_PARTIAL_PIPELINE_EXPIRED_THRESHOLD": None}
+        )
+        self.assertIs(self.strategy.partial_load(partial.token), partial)
+
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_PARTIAL_PIPELINE_EXPIRED_THRESHOLD": 60}
+        )
+        partial.timestamp = None
+        self.assertIsNone(self.strategy.partial_load(partial.token))
 
 
 class UserPersistsInPartialPipeline(BaseActionTest):

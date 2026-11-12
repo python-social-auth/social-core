@@ -64,6 +64,7 @@ class BaseTemplateStrategy:
 class BaseStrategy(Generic[ResponseT_co]):
     ALLOWED_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     DEFAULT_TEMPLATE_STRATEGY = BaseTemplateStrategy
+    EXPIRE_PARTIAL_PIPELINES_ON_LOAD = False
 
     def __init__(
         self,
@@ -95,10 +96,13 @@ class BaseStrategy(Generic[ResponseT_co]):
             )
         return storage
 
-    def setting(self, name: str, default=None, backend: BaseAuth[object] | None = None):
+    def setting(
+        self, name: str, default=None, backend: BaseAuth[object] | str | None = None
+    ):
         names = [setting_name(name), name]
         if backend:
-            names.insert(0, setting_name(backend.name, name))
+            backend_name = backend if isinstance(backend, str) else backend.name
+            names.insert(0, setting_name(backend_name, name))
         for value in names:
             try:
                 return self.get_setting(value)
@@ -152,7 +156,23 @@ class BaseStrategy(Generic[ResponseT_co]):
         return val
 
     def partial_load(self, token: str) -> PartialMixin | None:
-        return partial_load(self, token)
+        partial = partial_load(self, token)
+        if partial is None or not self.EXPIRE_PARTIAL_PIPELINES_ON_LOAD:
+            return partial
+        expiry = self.setting(
+            "PARTIAL_PIPELINE_EXPIRED_THRESHOLD",
+            self.setting(
+                "EMAIL_VALIDATION_EXPIRED_THRESHOLD",
+                7 * 24 * 60 * 60,
+                backend=partial.backend,
+            ),
+            backend=partial.backend,
+        )
+        is_expired = getattr(partial, "is_expired", None)
+        if expiry and is_expired is not None and is_expired(expiry):
+            self.clean_partial_pipeline(token)
+            return None
+        return partial
 
     def clean_partial_pipeline(self, token) -> None:
         self.storage.partial.destroy(token)
