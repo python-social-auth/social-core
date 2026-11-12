@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Let strategies opt into backend-scoped partial pipeline expiry when loading a
+  suspended flow; settings can resolve a saved backend by name.
 - Add a OneLogin OpenID Connect backend with S256 PKCE enabled by default.
 - Pass changed user field names from the default details pipeline to a storage
   hook, allowing integrations to avoid overwriting concurrent user changes.

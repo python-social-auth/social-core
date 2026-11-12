@@ -503,7 +503,13 @@ def partial_pipeline_result(
             )
         else:
             result = PartialPipelineResult(halt=True)
-    elif selection.owns_token:
+    elif selection.owns_token and (
+        backend.strategy.session_get(PARTIAL_TOKEN_SESSION_NAME) == selection.token
+        or backend.strategy.session_get(PARTIAL_TOKEN_PENDING_SESSION_NAME)
+        == selection.token
+    ):
+        # Loading an expired partial may already have removed its record and
+        # session token. Other missing partials still need cleanup here.
         backend.strategy.clean_partial_pipeline(selection.token)
 
     return result

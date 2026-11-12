@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import base64
+from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any, Self, TypeVar, cast
 
 from social_core.identifiers import identifier_matches
@@ -349,6 +350,12 @@ class TestPartial(PartialMixin, BaseModel):
 
     NEXT_ID = 1
     cache: dict[str, TestPartial] = {}
+    timestamp: datetime | None = None
+
+    def is_expired(self, seconds: int) -> bool:
+        if self.timestamp is None:
+            return True
+        return datetime.now(UTC) >= self.timestamp + timedelta(seconds=seconds)
 
     def save(self) -> None:
         TestPartial.cache[self.token] = self
