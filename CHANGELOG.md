@@ -14,8 +14,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- LifeScience backend now uses the new AAI stack. Registered clients will be contacted and migrated. 
-  More information about migration will be published https://www.lifescience-ri.eu/life-science-login/.
+- LifeScience backend now uses the new AAI stack. Registered clients will be contacted and migrated.
+  More information about migration will be published <https://www.lifescience-ri.eu/life-science-login/>.
 
 ## [7.1.0](https://github.com/python-social-auth/social-core/releases/tag/7.1.0) - 2026-11-11
 
