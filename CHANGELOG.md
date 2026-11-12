@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Add a OneLogin OpenID Connect backend with S256 PKCE enabled by default.
 - Pass changed user field names from the default details pipeline to a storage
   hook, allowing integrations to avoid overwriting concurrent user changes.
 
