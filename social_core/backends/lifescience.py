@@ -10,7 +10,7 @@ from social_core.backends.open_id_connect import OpenIdConnectAuth
 class LifeScienceOpenIdConnect(OpenIdConnectAuth[ResponseT_co]):
     name = "life_science"
     title = "Life Science Login"
-    OIDC_ENDPOINT = "https://login.aai.lifescience-ri.eu/oidc"
+    OIDC_ENDPOINT = "https://login.aai.lifescience-ri.eu/cas/oidc"
     EXTRA_DATA = [
         ("expires_in", "expires_in", True),
         ("refresh_token", "refresh_token", True),
@@ -25,13 +25,10 @@ class LifeScienceOpenIdConnect(OpenIdConnectAuth[ResponseT_co]):
 
     def get_user_details(self, response):
         username_key = self.setting("USERNAME_KEY", default=self.USERNAME_KEY)
-        fullname = response.get("name")
-        first_name = None
-        last_name = None
         return {
             "username": response.get(username_key),
             "email": response.get("email"),
-            "fullname": fullname,
-            "first_name": first_name,
-            "last_name": last_name,
+            "fullname": response.get("name"),
+            "first_name": response.get("given_name"),
+            "last_name": response.get("family_name"),
         }

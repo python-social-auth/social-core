@@ -26,6 +26,7 @@ from social_core.utils import module_member
             ("douban.DoubanOAuth2", {"name": " Mary Jane Watson "}),
             ("einfracz.EInfraCZOpenIdConnect", {"name": " Mary Jane Watson "}),
             ("elixir.ElixirOpenIdConnect", {"name": " Mary Jane Watson "}),
+            ("lifescience.LifeScienceOpenIdConnect", {"name": " Mary Jane Watson "}),
             ("globus.GlobusOpenIdConnect", {"name": " Mary Jane Watson "}),
             ("meetup.MeetupOAuth2", {"name": " Mary Jane Watson "}),
             (

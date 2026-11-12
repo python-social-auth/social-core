@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Pass changed user field names from the default details pipeline to a storage
   hook, allowing integrations to avoid overwriting concurrent user changes.
 
+### Changed
+
+- LifeScience backend now uses the new AAI stack. Registered clients will be contacted and migrated. 
+  More information about migration will be published https://www.lifescience-ri.eu/life-science-login/.
+
 ## [7.1.0](https://github.com/python-social-auth/social-core/releases/tag/7.1.0) - 2026-11-11
 
 ### Security
