@@ -23,7 +23,7 @@ package-lint = [
   "twine==7.0.0"
 ]
 pylint = [
-  "pylint==4.1.3"
+  "pylint==4.1.4"
 ]
 types = [
   "mypy==2.4.1",
