@@ -4,7 +4,6 @@ from typing import cast
 from unittest.mock import Mock, patch
 
 from social_core.backends.base import BaseAuth
-from social_core.backends.elixir import ElixirOpenIdConnect
 from social_core.backends.lifescience import LifeScienceOpenIdConnect
 from social_core.backends.oauth import BaseOAuth2
 from social_core.backends.open_id_connect import OpenIdConnectAuth
@@ -169,7 +168,6 @@ class UserMixinRefreshTokenTests(unittest.TestCase):
         for backend_class in (
             BaseOAuth2,
             OpenIdConnectAuth,
-            ElixirOpenIdConnect,
             LifeScienceOpenIdConnect,
         ):
             backend = backend_class(self.strategy)
