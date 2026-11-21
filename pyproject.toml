@@ -103,7 +103,7 @@ dev = [
   "types-requests==2.33.0.20261030"
 ]
 google-onetap = [
-  "google-auth>=2.40.0,<2.63",
+  "google-auth>=2.40.0,<2.64",
   # Require fixes for ASN.1 decoder denial of service in google-auth's dependency.
   "pyasn1>=0.6.5"
 ]
