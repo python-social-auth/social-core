@@ -2046,7 +2046,7 @@ requires-dist = [
     { name = "ty", marker = "extra == 'dev'", specifier = "==0.0.107" },
     { name = "types-defusedxml", marker = "extra == 'dev'", specifier = "==0.7.0.20260504" },
     { name = "types-lxml", marker = "extra == 'dev'", specifier = "==2026.2.16" },
-    { name = "types-oauthlib", marker = "extra == 'dev'", specifier = "==4.0.0.20261107" },
+    { name = "types-oauthlib", marker = "extra == 'dev'", specifier = "==4.0.0.20261122" },
     { name = "types-requests", marker = "extra == 'dev'", specifier = "==2.33.0.20261030" },
     { name = "types-requests-oauthlib", marker = "extra == 'dev'", specifier = "==2.0.0.20261006" },
 ]
@@ -2068,7 +2068,7 @@ dev = [
     { name = "ty", specifier = "==0.0.107" },
     { name = "types-defusedxml", specifier = "==0.7.0.20260504" },
     { name = "types-lxml", specifier = "==2026.2.16" },
-    { name = "types-oauthlib", specifier = "==4.0.0.20261107" },
+    { name = "types-oauthlib", specifier = "==4.0.0.20261122" },
     { name = "types-requests", specifier = "==2.33.0.20261030" },
     { name = "types-requests-oauthlib", specifier = "==2.0.0.20261006" },
 ]
@@ -2086,7 +2086,7 @@ types = [
     { name = "ty", specifier = "==0.0.107" },
     { name = "types-defusedxml", specifier = "==0.7.0.20260504" },
     { name = "types-lxml", specifier = "==2026.2.16" },
-    { name = "types-oauthlib", specifier = "==4.0.0.20261107" },
+    { name = "types-oauthlib", specifier = "==4.0.0.20261122" },
     { name = "types-requests", specifier = "==2.33.0.20261030" },
     { name = "types-requests-oauthlib", specifier = "==2.0.0.20261006" },
 ]
@@ -2219,11 +2219,11 @@ wheels = [
 
 [[package]]
 name = "types-oauthlib"
-version = "4.0.0.20261107"
+version = "4.0.0.20261122"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/a9/ad/ec101f9aa23b6ab7a54b0223ed1c9551c23710e7239aed229b32db79a4d3/types_oauthlib-4.0.0.20261107.tar.gz", hash = "sha256:24d4b41215e67bcc21f3e417e6018f19746e35c6566a2766f2d7b0e9c5225cd9", size = 26484, upload-time = "2026-11-07T07:55:22.544Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/99/92/5126a90188a58dc2ed7d91fb116fc7533f073abf9642f5271a5255a95295/types_oauthlib-4.0.0.20261122.tar.gz", hash = "sha256:3b18927be4a1b929ea8a6566d8b244b679a36deb234d1acd3d505decd3c40e19", size = 26515, upload-time = "2026-11-22T08:57:40.404Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/0a/99/a2e701b31a64576945e6a0ba67b048b27db4c3a8107ad5fee216a417d289/types_oauthlib-4.0.0.20261107-py3-none-any.whl", hash = "sha256:5c93a0d26c1ce5e451edf716b68267c549870de9b936b846896576beb3376d36", size = 48970, upload-time = "2026-11-07T07:55:21.362Z" },
+    { url = "https://files.pythonhosted.org/packages/d3/70/ee8da842da7b9351314a4b7af0e4ac0cbe621f647a2821d46e5bc803ff95/types_oauthlib-4.0.0.20261122-py3-none-any.whl", hash = "sha256:dc770c1abdeb4b789c80f239c41083b3bca450c664dfff668d0652f7b219f6c4", size = 48976, upload-time = "2026-11-22T08:57:39.55Z" },
 ]
 
 [[package]]
