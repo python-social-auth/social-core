@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64
 import datetime as dt
 from calendar import timegm
+from contextlib import suppress
 from json import loads
 from time import time as _time
 from typing import TYPE_CHECKING, Any, Literal, cast
@@ -16,6 +17,7 @@ from jwt import (
     InvalidTokenError,
     PyJWTError,
 )
+from jwt.algorithms import get_default_algorithms
 from jwt.utils import base64url_decode
 
 from social_core.backends.base import ResponseT_co
@@ -36,13 +38,19 @@ _ID_TOKEN_CONTEXT_KEY = "_oidc_id_token_context"
 _VALIDATED_ID_TOKEN_KEY = "_oidc_validated_id_token"
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
+    from collections.abc import Mapping, Sequence
 
     from jwt.types import Options
     from requests.auth import AuthBase
 
     from social_core.storage import PartialMixin, UserProtocol
     from social_core.strategy import BaseStrategy
+
+
+def _diagnostic_algorithm(algorithm: object) -> str:
+    if isinstance(algorithm, str) and algorithm in get_default_algorithms():
+        return algorithm
+    return "unknown"
 
 
 class OpenIdConnectAssociation:
@@ -469,8 +477,19 @@ class OpenIdConnectAuth(OIDCDiscoveryMixin[ResponseT_co], BaseOAuth2PKCE[Respons
                 stage="token_validation",
             )
 
+    def _load_signing_jwk(self, key: dict[str, Any]) -> jwt.PyJWK:
+        try:
+            return jwt.PyJWK(key)
+        except (PyJWTError, TypeError):
+            self.log_debug(
+                "Unable to load ID token signing JWK (algorithm=%s)",
+                _diagnostic_algorithm(key.get("alg")),
+            )
+            raise
+
     def find_valid_key(self, id_token):
-        kid = jwt.get_unverified_header(id_token).get("kid")
+        header = jwt.get_unverified_header(id_token)
+        kid = header.get("kid")
 
         keys = self.get_jwks_keys()
         if kid is not None:
@@ -482,20 +501,45 @@ class OpenIdConnectAuth(OIDCDiscoveryMixin[ResponseT_co], BaseOAuth2PKCE[Respons
                 self.get_jwks_keys_for_uri.invalidate(self, self.jwks_uri())
                 keys = self.get_jwks_keys()
 
+        candidate_found = False
         for key in keys:
             if kid is None or kid == key.get("kid"):
+                candidate_found = True
                 if "alg" not in key:
                     key["alg"] = cast(
                         "list[str]", self.setting("JWT_ALGORITHMS", self.JWT_ALGORITHMS)
                     )[0]
-                rsakey = jwt.PyJWK(key)
+                rsakey = self._load_signing_jwk(key)
                 message, encoded_sig = id_token.rsplit(".", 1)
                 decoded_sig = base64url_decode(encoded_sig.encode("utf-8"))
                 if rsakey.Algorithm.verify(
                     message.encode("utf-8"), rsakey.key, decoded_sig
                 ):
                     return key
+                self.log_debug(
+                    "ID token signature did not verify with candidate JWK (algorithm=%s)",
+                    _diagnostic_algorithm(rsakey.algorithm_name),
+                )
+        if not candidate_found:
+            self.log_debug(
+                "No ID token signing JWK available (algorithm=%s)"
+                if kid is None
+                else "No matching ID token signing JWK after cache refresh (algorithm=%s)",
+                _diagnostic_algorithm(header.get("alg")),
+            )
         return None
+
+    def _log_disallowed_signing_algorithm(
+        self, id_token: str, algorithms: Sequence[str]
+    ) -> None:
+        # Re-reading the header for logging must preserve the decode error.
+        with suppress(PyJWTError):
+            algorithm = jwt.get_unverified_header(id_token).get("alg")
+            if not algorithm or algorithm not in algorithms:
+                self.log_debug(
+                    "ID token signing algorithm rejected by allowlist (algorithm=%s)",
+                    _diagnostic_algorithm(algorithm),
+                )
 
     def decode_and_validate_id_token(self, id_token, access_token):
         """Validate an ID token's signature and self-contained claims."""
@@ -514,12 +558,16 @@ class OpenIdConnectAuth(OIDCDiscoveryMixin[ResponseT_co], BaseOAuth2PKCE[Respons
                 stage="token_validation",
             )
 
+        algorithms: list[str] | None = None
         try:
-            rsakey = jwt.PyJWK(key)
+            rsakey = self._load_signing_jwk(key)
+            algorithms = cast(
+                "list[str] | None", self.setting("JWT_ALGORITHMS", self.JWT_ALGORITHMS)
+            )
             claims = jwt.decode(
                 id_token,
                 rsakey.key,
-                algorithms=self.setting("JWT_ALGORITHMS", self.JWT_ALGORITHMS),
+                algorithms=algorithms,
                 audience=client_id,
                 issuer=self.id_token_issuer(),
                 options=cast(
@@ -545,6 +593,8 @@ class OpenIdConnectAuth(OIDCDiscoveryMixin[ResponseT_co], BaseOAuth2PKCE[Respons
                 stage="token_validation",
             ) from error
         except InvalidTokenError as error:
+            if isinstance(error, jwt.InvalidAlgorithmError) and algorithms is not None:
+                self._log_disallowed_signing_algorithm(id_token, algorithms)
             raise jwt_error(self, error) from error
         except PyJWTError as error:
             raise jwt_error(self, error) from error

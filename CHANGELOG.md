@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Add OpenID Connect debug diagnostics for missing or unreadable signing keys,
+  signature mismatches, and signing algorithms rejected by the allowlist.
+
 ## [7.2.0](https://github.com/python-social-auth/social-core/releases/tag/7.2.0) - 2026-11-12
 
 ### Added
