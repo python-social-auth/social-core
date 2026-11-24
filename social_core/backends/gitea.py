@@ -3,9 +3,16 @@ Gitea OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/gitea.html
 """
 
+from __future__ import annotations
+
 from typing import Any
 
 from social_core.backends.base import ResponseT_co
+from social_core.exceptions import (
+    AuthProviderError,
+    AuthResponseError,
+    SocialAuthBaseException,
+)
 
 from .oauth import BaseOAuth2
 
@@ -52,7 +59,31 @@ class GiteaOAuth2(BaseOAuth2[ResponseT_co]):
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
+        data = self._user_data(access_token)
+
+        try:
+            emails = self._user_data(access_token, "/emails")
+        except (AuthProviderError, AuthResponseError):
+            emails = []
+        except SocialAuthBaseException:
+            raise
+        except (ValueError, TypeError):
+            emails = []
+        else:
+            data["emails"] = emails
+
+        if emails:
+            email = emails[0]
+            primary_emails = [
+                e for e in emails if not isinstance(e, dict) or e.get("primary")
+            ]
+            if primary_emails:
+                email = primary_emails[0]
+            data["email"] = email["email"]
+        return data
+
+    def _user_data(self, access_token, path=None):
         return self.get_json(
-            self.api_url("/api/v1/user"),
+            self.api_url(f"/api/v1/user{path or ''}"),
             headers={"Authorization": f"Bearer {access_token}"},
         )
