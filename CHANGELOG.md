@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   exposes them in pipeline data, preferring the primary address. This covers
   Codeberg and other Gitea/Forgejo instances that set `SOCIAL_AUTH_GITEA_API_URL`.
 
+### Changed
+
+- Add OpenID Connect debug diagnostics for missing or unreadable signing keys,
+  signature mismatches, and signing algorithms rejected by the allowlist.
+
 ### Fixed
 
 - Gitea `get_user_details()` reads `full_name` from `/api/v1/user`, so the
