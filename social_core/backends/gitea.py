@@ -75,9 +75,10 @@ class GiteaOAuth2(BaseOAuth2[ResponseT_co]):
             data["emails"] = usable_emails
             primary = next(
                 (e for e in usable_emails if e.get("primary")),
-                usable_emails[0],
+                None,
             )
-            data["email"] = primary["email"]
+            if primary is not None:
+                data["email"] = primary["email"]
         return data
 
     def _user_data(self, access_token, path=None):

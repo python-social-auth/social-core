@@ -111,13 +111,21 @@ class GiteaOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
 class GiteaOAuth2EmailsTest(GiteaOAuth2Test):
     def test_login_email_denied(self) -> None:
         self.add_emails_response([], status=403)
+        self.capture_emails_in_pipeline()
+
         user = self.do_login()
+
+        self.assertIsNone(self.strategy.session_get("gitea_emails"))
         self.assertEqual(user.email, "foobar@example.com")
         self.assertNotIn("emails", user.social[0].extra_data)
 
     def test_login_with_empty_email_list(self) -> None:
         self.add_emails_response([])
+        self.capture_emails_in_pipeline()
+
         user = self.do_login()
+
+        self.assertIsNone(self.strategy.session_get("gitea_emails"))
         self.assertEqual(user.email, "foobar@example.com")
         self.assertNotIn("emails", user.social[0].extra_data)
 
@@ -153,6 +161,24 @@ class GiteaOAuth2EmailsTest(GiteaOAuth2Test):
 
         self.assertEqual(self.strategy.session_get("gitea_emails"), emails)
         self.assertEqual(user.email, "foo@bar.com")
+        self.assertNotIn("emails", user.social[0].extra_data)
+
+    def test_login_keeps_user_email_without_primary(self) -> None:
+        emails: list[dict[str, str | bool]] = [
+            {
+                "email": "unverified@example.com",
+                "primary": False,
+                "verified": False,
+            },
+            {"email": "other@example.com", "primary": False, "verified": True},
+        ]
+        self.add_emails_response(emails)
+        self.capture_emails_in_pipeline()
+
+        user = self.do_login()
+
+        self.assertEqual(self.strategy.session_get("gitea_emails"), emails)
+        self.assertEqual(user.email, "foobar@example.com")
         self.assertNotIn("emails", user.social[0].extra_data)
 
     def test_login_next_format(self) -> None:

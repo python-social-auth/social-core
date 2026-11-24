@@ -10,8 +10,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - Gitea backend now fetches secondary emails from `/api/v1/user/emails` and
-  exposes them in pipeline data, preferring the primary address. This covers
-  Codeberg and other Gitea/Forgejo instances that set `SOCIAL_AUTH_GITEA_API_URL`.
+  exposes them in pipeline data. The account email is replaced only when an
+  address is marked primary; otherwise the `/api/v1/user` email is kept. This
+  covers Codeberg and other Gitea/Forgejo instances that set
+  `SOCIAL_AUTH_GITEA_API_URL`.
 
 ### Changed
 
