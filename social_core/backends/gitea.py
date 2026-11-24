@@ -64,22 +64,20 @@ class GiteaOAuth2(BaseOAuth2[ResponseT_co]):
         try:
             emails = self._user_data(access_token, "/emails")
         except (AuthProviderError, AuthResponseError):
-            emails = []
+            emails = None
         except SocialAuthBaseException:
             raise
         except (ValueError, TypeError):
-            emails = []
-        else:
-            data["emails"] = emails
+            emails = None
 
-        if emails:
-            email = emails[0]
-            primary_emails = [
-                e for e in emails if not isinstance(e, dict) or e.get("primary")
-            ]
-            if primary_emails:
-                email = primary_emails[0]
-            data["email"] = email["email"]
+        usable_emails = self._usable_emails(emails)
+        if usable_emails:
+            data["emails"] = usable_emails
+            primary = next(
+                (e for e in usable_emails if e.get("primary")),
+                usable_emails[0],
+            )
+            data["email"] = primary["email"]
         return data
 
     def _user_data(self, access_token, path=None):
@@ -87,3 +85,15 @@ class GiteaOAuth2(BaseOAuth2[ResponseT_co]):
             self.api_url(f"/api/v1/user{path or ''}"),
             headers={"Authorization": f"Bearer {access_token}"},
         )
+
+    @staticmethod
+    def _usable_emails(emails: object) -> list[dict[str, Any]]:
+        if not isinstance(emails, list):
+            return []
+        usable: list[dict[str, Any]] = []
+        for entry in emails:
+            if isinstance(entry, dict):
+                email = entry.get("email")
+                if isinstance(email, str) and email:
+                    usable.append(entry)
+        return usable

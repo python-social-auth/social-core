@@ -67,9 +67,7 @@ class GiteaOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         }
     )
 
-    def add_emails_response(
-        self, emails: list[dict[str, str | bool]], status: int = 200
-    ) -> None:
+    def add_emails_response(self, emails: object, status: int = 200) -> None:
         responses.add(
             responses.GET,
             self.emails_url,
@@ -120,6 +118,26 @@ class GiteaOAuth2EmailsTest(GiteaOAuth2Test):
     def test_login_with_empty_email_list(self) -> None:
         self.add_emails_response([])
         user = self.do_login()
+        self.assertEqual(user.email, "foobar@example.com")
+        self.assertNotIn("emails", user.social[0].extra_data)
+
+    def test_login_with_malformed_emails_object(self) -> None:
+        self.add_emails_response({"message": "something went wrong"})
+        self.capture_emails_in_pipeline()
+
+        user = self.do_login()
+
+        self.assertIsNone(self.strategy.session_get("gitea_emails"))
+        self.assertEqual(user.email, "foobar@example.com")
+        self.assertNotIn("emails", user.social[0].extra_data)
+
+    def test_login_with_malformed_emails_list(self) -> None:
+        self.add_emails_response(["not-a-dict", {"primary": True}])
+        self.capture_emails_in_pipeline()
+
+        user = self.do_login()
+
+        self.assertIsNone(self.strategy.session_get("gitea_emails"))
         self.assertEqual(user.email, "foobar@example.com")
         self.assertNotIn("emails", user.social[0].extra_data)
 
@@ -188,9 +206,7 @@ class GiteaCustomDomainOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         settings["SOCIAL_AUTH_GITEA_API_URL"] = "https://example.com"
         return settings
 
-    def add_emails_response(
-        self, emails: list[dict[str, str | bool]], status: int = 200
-    ) -> None:
+    def add_emails_response(self, emails: object, status: int = 200) -> None:
         responses.add(
             responses.GET,
             self.emails_url,
