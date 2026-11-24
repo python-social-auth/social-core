@@ -3,9 +3,11 @@ from __future__ import annotations
 import json
 from typing import Any
 from unittest import TestCase
+from unittest.mock import patch
 
 import responses
 
+from social_core.backends.gitea import GiteaOAuth2
 from social_core.exceptions import AuthPolicyError
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
@@ -109,6 +111,34 @@ class GiteaOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
 
 
 class GiteaOAuth2EmailsTest(GiteaOAuth2Test):
+    @staticmethod
+    def emails_request_raises(error: Exception):
+        """Make only the `/emails` lookup raise, leaving `/user` untouched."""
+        original = GiteaOAuth2.get_json
+
+        def get_json(backend: GiteaOAuth2, url: str, *args, **kwargs):
+            if url.endswith("/emails"):
+                raise error
+            return original(backend, url, *args, **kwargs)
+
+        return patch.object(GiteaOAuth2, "get_json", get_json)
+
+    def test_login_email_error_is_not_swallowed(self) -> None:
+        with (
+            self.emails_request_raises(
+                AuthPolicyError(self.backend, code="membership_required")
+            ),
+            self.assertRaises(AuthPolicyError),
+        ):
+            self.do_login()
+
+    def test_login_email_unexpected_error_keeps_user_email(self) -> None:
+        with self.emails_request_raises(ValueError("unexpected")):
+            user = self.do_login()
+
+        self.assertEqual(user.email, "foobar@example.com")
+        self.assertNotIn("emails", user.social[0].extra_data)
+
     def test_login_email_denied(self) -> None:
         self.add_emails_response([], status=403)
         self.capture_emails_in_pipeline()
