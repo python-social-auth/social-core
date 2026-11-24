@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   exposes them in pipeline data, preferring the primary address. This covers
   Codeberg and other Gitea/Forgejo instances that set `SOCIAL_AUTH_GITEA_API_URL`.
 
+### Fixed
+
+- Gitea `get_user_details()` reads `full_name` from `/api/v1/user`, so the
+  account display name is passed to the pipeline.
+
 ## [7.2.0](https://github.com/python-social-auth/social-core/releases/tag/7.2.0) - 2026-11-12
 
 ### Added

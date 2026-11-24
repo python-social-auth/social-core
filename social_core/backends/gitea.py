@@ -46,7 +46,7 @@ class GiteaOAuth2(BaseOAuth2[ResponseT_co]):
 
     def get_user_details(self, response):
         """Return user details from Gitea account"""
-        fullname = response.get("fullname")
+        fullname = response.get("full_name")
         first_name = None
         last_name = None
         return {
