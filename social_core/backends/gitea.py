@@ -3,9 +3,16 @@ Gitea OAuth2 backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/gitea.html
 """
 
+from __future__ import annotations
+
 from typing import Any
 
 from social_core.backends.base import ResponseT_co
+from social_core.exceptions import (
+    AuthProviderError,
+    AuthResponseError,
+    SocialAuthBaseException,
+)
 
 from .oauth import BaseOAuth2
 
@@ -39,7 +46,7 @@ class GiteaOAuth2(BaseOAuth2[ResponseT_co]):
 
     def get_user_details(self, response):
         """Return user details from Gitea account"""
-        fullname = response.get("fullname")
+        fullname = response.get("full_name")
         first_name = None
         last_name = None
         return {
@@ -52,7 +59,42 @@ class GiteaOAuth2(BaseOAuth2[ResponseT_co]):
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
+        data = self._user_data(access_token)
+
+        try:
+            emails = self._user_data(access_token, "/emails")
+        except (AuthProviderError, AuthResponseError):
+            emails = None
+        except SocialAuthBaseException:
+            raise
+        except (ValueError, TypeError):
+            emails = None
+
+        usable_emails = self._usable_emails(emails)
+        if usable_emails:
+            data["emails"] = usable_emails
+            primary = next(
+                (e for e in usable_emails if e.get("primary")),
+                None,
+            )
+            if primary is not None:
+                data["email"] = primary["email"]
+        return data
+
+    def _user_data(self, access_token, path=None):
         return self.get_json(
-            self.api_url("/api/v1/user"),
+            self.api_url(f"/api/v1/user{path or ''}"),
             headers={"Authorization": f"Bearer {access_token}"},
         )
+
+    @staticmethod
+    def _usable_emails(emails: object) -> list[dict[str, Any]]:
+        if not isinstance(emails, list):
+            return []
+        usable: list[dict[str, Any]] = []
+        for entry in emails:
+            if isinstance(entry, dict):
+                email = entry.get("email")
+                if isinstance(email, str) and email:
+                    usable.append(entry)
+        return usable

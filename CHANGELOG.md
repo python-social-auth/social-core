@@ -7,10 +7,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Gitea backend now fetches secondary emails from `/api/v1/user/emails` and
+  exposes them in pipeline data. The account email is replaced only when an
+  address is marked primary; otherwise the `/api/v1/user` email is kept. This
+  covers Codeberg and other Gitea/Forgejo instances that set
+  `SOCIAL_AUTH_GITEA_API_URL`.
+
 ### Changed
 
 - Add OpenID Connect debug diagnostics for missing or unreadable signing keys,
   signature mismatches, and signing algorithms rejected by the allowlist.
+
+### Fixed
+
+- Gitea `get_user_details()` reads `full_name` from `/api/v1/user`, so the
+  account display name is passed to the pipeline.
 
 ## [7.2.0](https://github.com/python-social-auth/social-core/releases/tag/7.2.0) - 2026-11-12
 
