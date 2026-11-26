@@ -978,6 +978,10 @@ class SAMLAuth(BaseAuth[ResponseT_co]):
 
         return relay_state
 
+    def answers_pending_request(self, data: dict[str, Any]) -> bool:
+        # An IdP response is always a new assertion, never a pipeline resume.
+        return "SAMLResponse" in data
+
     def auth_complete(self, *args, **kwargs):
         """
         The user has been redirected back from the IdP and we should

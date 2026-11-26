@@ -530,6 +530,13 @@ class PartialMixin:
     def request_data(self, value: Mapping[str, Any]) -> None:
         self.data["request_data"] = value
 
+    def is_expired(self, seconds: int) -> bool:
+        """Return whether the pipeline has reached its lifetime, or has no timestamp."""
+        timestamp = self.kwargs.get("partial_pipeline_timestamp")
+        if not isinstance(timestamp, int):
+            return True
+        return int(_time()) >= timestamp + seconds
+
     @classmethod
     def generate_token(cls) -> str:
         return uuid.uuid4().hex
@@ -550,6 +557,11 @@ class PartialMixin:
         partial.backend = backend
         partial.next_step = next_step
         partial.data = data
+        # A resumed pipeline runs with the saved arguments, so a pipeline that
+        # halts again keeps the time of its first halt instead of renewing it.
+        partial.data.setdefault("kwargs", {}).setdefault(
+            "partial_pipeline_timestamp", int(_time())
+        )
         partial.token = cls.generate_token()
         return partial
 

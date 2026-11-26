@@ -95,6 +95,10 @@ class OdnoklassnikiApp(BaseAuth[ResponseT_co]):
             "last_name": last_name,
         }
 
+    def answers_pending_request(self, data: dict[str, Any]) -> bool:
+        # A signed launch is always a new sign-in, never a pipeline resume.
+        return "auth_sig" in data
+
     def auth_complete(self, *args, **kwargs):
         self.verify_auth_sig()
         response = self.get_response()

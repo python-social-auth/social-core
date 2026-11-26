@@ -88,6 +88,44 @@ class ExternalPartialResumeUserBindingTest(unittest.TestCase):
             "external-token"
         )
 
+    def test_anonymous_resume_restores_uuid_initiator(self) -> None:
+        # A paused login is resumed by a browser that is not signed in yet.
+        user = Mock(id=uuid4())
+        backend = self._backend(
+            session_kwargs={"is_new": False},
+            session_id="external-token",
+            allow_external_resume=False,
+            partial_data={PARTIAL_PIPELINE_INITIATING_USER_ID: str(user.id)},
+        )
+        backend.strategy.get_user.return_value = user
+
+        partial = partial_pipeline_data(backend)
+
+        self.assertIsNotNone(partial)
+        assert partial is not None
+        self.assertIs(partial.kwargs["user"], user)
+        backend.strategy.get_user.assert_called_once_with(str(user.id))
+
+    def test_anonymous_resume_rejects_unrestorable_initiator(self) -> None:
+        for session_kwargs in ({"is_new": False}, {"is_new": False, "user": None}):
+            with self.subTest(session_kwargs=session_kwargs):
+                backend = self._backend(
+                    session_kwargs=session_kwargs,
+                    session_id="external-token",
+                    allow_external_resume=False,
+                    partial_data={PARTIAL_PIPELINE_INITIATING_USER_ID: str(uuid4())},
+                )
+                backend.strategy.get_user.return_value = None
+
+                result = partial_pipeline_result(backend)
+
+                self.assertIsNone(result.partial)
+                self.assertIsNone(result.response)
+                self.assertTrue(result.halt)
+                backend.strategy.clean_partial_pipeline.assert_called_once_with(
+                    "external-token"
+                )
+
     def test_confirmed_external_resume_restores_uuid_initiator(self) -> None:
         user = Mock(id=uuid4())
         backend = self._backend(
@@ -172,6 +210,7 @@ class ExternalPartialResumeUserBindingTest(unittest.TestCase):
         backend = Mock()
         backend.ID_KEY = "email"
         backend.ASSOCIATION_ONLY = False
+        backend.answers_pending_request.return_value = False
         backend.name = "mock-backend"
         backend.id_key.return_value = "email"
 

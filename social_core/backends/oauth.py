@@ -108,11 +108,15 @@ class OAuthAuth(BaseAuth[ResponseT_co]):
             return self.get_association_state()
         return self.strategy.session_get(f"{self.name}_state")
 
-    def get_request_state(self):
-        request_state = self.data.get("state") or self.data.get("redirect_state")
+    @staticmethod
+    def _request_state(data: dict[str, Any]) -> Any:
+        request_state = data.get("state") or data.get("redirect_state")
         if request_state and isinstance(request_state, list):
             request_state = request_state[0]
         return request_state
+
+    def get_request_state(self) -> Any:
+        return self._request_state(self.data)
 
     def validate_state(self):
         """Validate state value. Raises exception on error, returns state
@@ -262,6 +266,18 @@ class BaseOAuth1(OAuthAuth[ResponseT_co]):
             data["access_token"] = access_token
         kwargs.update({"response": data, "backend": self})
         return self.strategy.authenticate(*args, **kwargs)
+
+    def answers_pending_request(self, data: dict[str, Any]) -> bool:
+        data_token = data.get(self.OAUTH_TOKEN_PARAMETER_NAME)
+        if not data_token:
+            return False
+        name = self.name + self.UNATHORIZED_TOKEN_SUFIX
+        for utoken in self.strategy.session_get(name, []) or []:
+            if not isinstance(utoken, dict):
+                utoken = parse_qs(utoken)
+            if utoken.get(self.OAUTH_TOKEN_PARAMETER_NAME) == data_token:
+                return True
+        return False
 
     def get_unauthorized_token(self):
         name = self.name + self.UNATHORIZED_TOKEN_SUFIX
@@ -498,6 +514,16 @@ class BaseOAuth2(OAuthAuth[ResponseT_co]):
                 self.strategy.session_set(self._transaction_index_key(), active)
                 return state
         raise AuthSessionError(self, code="session_context_missing", stage="begin")
+
+    def answers_pending_request(self, data: dict[str, Any]) -> bool:
+        state = self._request_state(data)
+        if not state or not isinstance(state, str):
+            return False
+        if self.ASSOCIATION_ONLY:
+            pending = self.strategy.session_get(f"{self.name}_state")
+        else:
+            pending = self.strategy.session_get(self.transaction_key(state))
+        return isinstance(pending, dict) and pending.get("state") == state
 
     def validate_state(self) -> str | None:
         if self.ASSOCIATION_ONLY:

@@ -1,3 +1,6 @@
+# Keep this shared module cohesive for protocol regression review.
+# Shared partial and redirect utilities retain their existing contract.
+# pylint: disable=too-many-lines
 from __future__ import annotations
 
 import contextlib
@@ -286,6 +289,15 @@ def _partial_pipeline_matches_request(
     ):
         return False
 
+    # A new provider response starts its own pipeline and must not resume one
+    # paused for another response, whether or not it also carries the ID_KEY.
+    # Most protocols do not return the ID_KEY in the callback, so the backend
+    # is asked to recognize its own response.
+    if pipeline_type == "authentication" and backend.answers_pending_request(
+        request_data
+    ):
+        return False
+
     # Normally when resuming a pipeline, request_data will be empty. We only
     # need to check for a uid match if new data was provided (i.e. if current
     # request specifies the ID_KEY).
@@ -323,6 +335,28 @@ def _external_partial_pipeline_user_matches(
         return partial.data[PARTIAL_PIPELINE_INITIATING_USER_ID] == str(user.id)
     partial_user = partial.kwargs.get("user")
     return partial_user is not None and partial_user.id == user.id
+
+
+def _restore_partial_pipeline_user(
+    backend: BaseAuth[object], partial: PartialMixin, user: UserProtocol | None
+) -> bool:
+    """Restore a saved user that is missing from the deserialized kwargs.
+
+    Non-primitive IDs (for example UUIDs) are not serialized into kwargs, only
+    their text form is saved with the partial. Returns False when the flow was
+    paused for a user that cannot be restored.
+    """
+    initiating_user_id = partial.data.get(PARTIAL_PIPELINE_INITIATING_USER_ID)
+    if initiating_user_id is None or partial.kwargs.get("user") is not None:
+        return True
+    if user is None:
+        # Nobody is authenticated while a login is paused, so the saved user
+        # has to come from the storage.
+        partial.kwargs["user"] = backend.strategy.get_user(initiating_user_id)
+        return partial.kwargs["user"] is not None
+    if initiating_user_id == str(user.id):
+        partial.kwargs["user"] = user
+    return True
 
 
 def _select_partial_pipeline_token(
@@ -455,14 +489,7 @@ def partial_pipeline_result(
         backend, partial, effective_request_data, pipeline_type
     )
     if partial and partial_matches:
-        if (
-            user is not None
-            and partial.kwargs.get("user") is None
-            and partial.data.get(PARTIAL_PIPELINE_INITIATING_USER_ID) == str(user.id)
-        ):
-            # Non-primitive IDs (for example UUIDs) are not serialized into
-            # kwargs. Restore the authenticated initiator for the pipeline.
-            partial.kwargs["user"] = user
+        user_restored = _restore_partial_pipeline_user(backend, partial, user)
         backend.validate_partial_pipeline(partial, user)
         requires_confirmation = _partial_pipeline_requires_confirmation(
             partial,
@@ -478,7 +505,14 @@ def partial_pipeline_result(
                 and partial.data.get(PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME)
             )
         )
-        if (
+        if not user_restored:
+            # The flow was paused for a user that can no longer be loaded.
+            # Without it the remaining steps would take a returning user's
+            # login for one that has no account yet.
+            if selection.owns_token:
+                backend.strategy.clean_partial_pipeline(selection.token)
+            result = PartialPipelineResult(halt=True)
+        elif (
             selection.owns_token
             and user is not None
             and not backend.ASSOCIATION_ONLY

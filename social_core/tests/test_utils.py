@@ -832,6 +832,14 @@ class PartialPipelineData(unittest.TestCase):
         self.assertIsNone(partial)
         self.assertEqual(backend.strategy.clean_partial_pipeline.call_count, 1)
 
+    def test_clean_pipeline_when_new_response_carries_matching_uid(self) -> None:
+        email = "foo@example.com"
+        backend = self._backend({"uid": email})
+        backend.answers_pending_request.return_value = True
+        backend.strategy.get_request_data.return_value = {backend.ID_KEY: email}
+        self.assertIsNone(partial_pipeline_data(backend))
+        self.assertEqual(backend.strategy.clean_partial_pipeline.call_count, 1)
+
     def test_kwargs_included_in_result(self) -> None:
         backend = self._backend()
         key, val = ("foo", "bar")
@@ -872,6 +880,7 @@ class PartialPipelineData(unittest.TestCase):
         backend = Mock()
         backend.ID_KEY = "email"
         backend.ASSOCIATION_ONLY = False
+        backend.answers_pending_request.return_value = False
         backend.name = "mock-backend"
         backend.id_key.return_value = "email"
         settings = settings or {}

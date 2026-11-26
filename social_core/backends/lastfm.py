@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import hashlib
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from social_core.backends.base import ResponseT_co
 from social_core.exceptions import (
@@ -57,9 +57,18 @@ class LastFmAuth(BaseAuth[ResponseT_co]):
 
     def get_request_state(self):
         request_state = self.data.get("redirect_state")
-        if request_state and isinstance(request_state, list):
-            request_state = request_state[0]
+        if isinstance(request_state, list):
+            request_state = request_state[0] if request_state else None
         return request_state
+
+    def answers_pending_request(self, data: dict[str, Any]) -> bool:
+        state = data.get("redirect_state")
+        if isinstance(state, list):
+            state = state[0] if state else None
+        pending = self.strategy.session_get(f"{self.name}_state")
+        return (
+            bool(state) and isinstance(pending, dict) and pending.get("state") == state
+        )
 
     def validate_state(self, user=None):
         """Validate that the callback belongs to the initiating session."""

@@ -1,11 +1,13 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Any, cast
 from unittest.mock import Mock, patch
+from uuid import uuid4
 
 from social_core.actions import do_complete
 from social_core.backends.base import BaseAuth
 from social_core.backends.oauth import BaseOAuth2
+from social_core.exceptions import AuthSessionError
 from social_core.pipeline.utils import partial_prepare
 from social_core.tests.models import (
     AnonymousUser,
@@ -109,6 +111,75 @@ class LoginActionTest(BaseActionTest):
         self.assertIs(self.assert_logged_in_user(), saved_users[0])
         self.assertFalse(TestPartial.cache)
         self.assertIsNone(self.strategy.session_get(PARTIAL_TOKEN_SESSION_NAME))
+
+    def test_partial_resume_with_anonymous_user_restores_uuid_pipeline_user(
+        self,
+    ) -> None:
+        self.user = cast("User", AnonymousUser())
+        created_users: list[User] = []
+
+        def create_user(username, email=None, **extra_user_fields) -> User:
+            user = User(username=username, email=email, **extra_user_fields)
+            cast(Any, user).id = uuid4()
+            created_users.append(user)
+            return user
+
+        def get_user(pk) -> User | None:
+            # Like a database UUID field, accept the text form of the key.
+            for user in User.cache.values():
+                if str(user.id) == str(pk):
+                    return user
+            return None
+
+        def before_complete() -> None:
+            token = self.strategy.session_get(PARTIAL_TOKEN_SESSION_NAME)
+            assert isinstance(token, str)
+            partial = TestPartial.load(token)
+            assert partial is not None
+            self.assertNotIn("user", partial.kwargs)
+
+        TestPartial.reset_cache()
+        self.addCleanup(TestPartial.reset_cache)
+        with (
+            patch.object(TestUserSocialAuth, "create_user", create_user),
+            patch.object(TestUserSocialAuth, "get_user", get_user),
+        ):
+            self.assertIsNone(get_user("missing-user"))
+            self.do_login_with_partial_pipeline(before_complete, pause_after_user=True)
+
+        self.assertEqual(len(created_users), 1)
+        self.assertIs(self.assert_logged_in_user(), created_users[0])
+        self.assertFalse(TestPartial.cache)
+
+    def test_direct_partial_with_user_rejects_anonymous_resume(self) -> None:
+        login = Mock()
+        TestPartial.reset_cache()
+        self.addCleanup(TestPartial.reset_cache)
+        backend = PartialTokenBackend(self.strategy)
+        self.strategy.set_settings({"SOCIAL_AUTH_LOGIN_ERROR_URL": "/error"})
+        for user_id in (None, uuid4()):
+            with self.subTest(user_id=user_id):
+                user = User("existing")
+                if user_id is not None:
+                    # The storage does not resolve the text form of this key.
+                    cast(Any, user).id = user_id
+                partial = TestPartial.store(
+                    partial_prepare(self.strategy, backend, 0, user=user)
+                )
+                self.assertEqual(
+                    partial.kwargs[backend.association_user_id_key("authentication")],
+                    str(user.id),
+                )
+                self.strategy.session_set(PARTIAL_TOKEN_SESSION_NAME, partial.token)
+                with (
+                    patch.object(backend, "continue_pipeline") as continued,
+                    self.assertRaises(AuthSessionError) as caught,
+                ):
+                    do_complete(backend, login=login)
+
+                continued.assert_not_called()
+                login.assert_not_called()
+                self.assertEqual(caught.exception.code, "user_mismatch")
 
     def test_fields_stored_in_session(self) -> None:
         self.strategy.set_settings(
@@ -231,7 +302,11 @@ class LoginActionTest(BaseActionTest):
         self.addCleanup(TestPartial.reset_cache)
         backend = PartialTokenBackend(self.strategy)
         self.strategy.set_settings({"SOCIAL_AUTH_LOGIN_ERROR_URL": "/error"})
-        partial = TestPartial.prepare(backend.name, 0, {"args": [], "kwargs": {}})
+        partial = TestPartial.prepare(
+            backend.name,
+            0,
+            {"args": [], "kwargs": {backend.association_user_id_key(): None}},
+        )
         partial.token = "attacker-token"
         partial.save()
         self.strategy.set_request_data({"partial_token": partial.token}, backend)
@@ -249,7 +324,11 @@ class LoginActionTest(BaseActionTest):
         TestPartial.reset_cache()
         self.addCleanup(TestPartial.reset_cache)
         backend = PartialTokenBackend(self.strategy)
-        partial = TestPartial.prepare(backend.name, 0, {"args": [], "kwargs": {}})
+        partial = TestPartial.prepare(
+            backend.name,
+            0,
+            {"args": [], "kwargs": {backend.association_user_id_key(): None}},
+        )
         partial.token = "external-token"
         partial.data[PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME] = True
         partial.save()
