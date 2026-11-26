@@ -50,4 +50,5 @@ class OpenInfraOpenId(OpenIdAuth[ResponseT_co]):
         )
 
         request.addExtension(fetch_request)
+        self.add_pape_request(request)
         return request

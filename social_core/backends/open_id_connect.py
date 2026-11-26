@@ -1,15 +1,17 @@
 # Keep this shared module cohesive for protocol regression review.
-# OIDC claim provenance remains in the shared backend contract.
+# OIDC claim provenance and freshness remain in the shared backend contract.
 # pylint: disable=too-many-lines
 from __future__ import annotations
 
 import base64
 import datetime as dt
+import math
 from calendar import timegm
 from contextlib import suppress
 from json import loads
 from time import time as _time
 from typing import TYPE_CHECKING, Any, Literal, cast
+from urllib.parse import parse_qs, urlsplit
 
 import jwt
 from cryptography.hazmat.backends import default_backend
@@ -130,6 +132,64 @@ class OpenIdConnectAuth(OIDCDiscoveryMixin[ResponseT_co], BaseOAuth2PKCE[Respons
         super().__init__(strategy, redirect_uri=redirect_uri)
         self.id_token: dict[str, Any] | None = None
         self._oidc_association_transaction: dict[str, Any] | None = None
+
+    def prepare_auth(self, user: UserProtocol | None = None) -> None:
+        super().prepare_auth(user)
+        if self.ASSOCIATION_ONLY:
+            key = f"{self.name}_state"
+            context = self.strategy.session_get(key)
+            if isinstance(context, dict):
+                self.strategy.session_set(
+                    key,
+                    {
+                        **context,
+                        "timestamp": timegm(dt.datetime.now(dt.UTC).timetuple()),
+                    },
+                )
+
+    def auth_url(self) -> str:
+        """Save the effective freshness policy sent in the authorization URL."""
+        url = super().auth_url()
+        parameters = parse_qs(urlsplit(url).query, keep_blank_values=True)
+        state = parameters.get("state", [None])[0]
+        key = (
+            f"{self.name}_state"
+            if self.ASSOCIATION_ONLY
+            else self.transaction_key(state)
+            if isinstance(state, str)
+            else None
+        )
+        transaction = self.strategy.session_get(key) if key is not None else None
+        if key is None or not isinstance(transaction, dict):
+            raise AuthSessionError(self, code="session_context_missing", stage="begin")
+        max_age = parameters.get("max_age", [None])[0]
+        acr_values = parameters.get("acr_values", [None])[0]
+        if max_age is not None:
+            try:
+                parsed_max_age = int(max_age)
+            except (TypeError, ValueError) as error:
+                raise AuthConfigurationError(
+                    self, code="invalid_setting", parameter="max_age", stage="begin"
+                ) from error
+            if parsed_max_age < 0:
+                raise AuthConfigurationError(
+                    self, code="invalid_setting", parameter="max_age", stage="begin"
+                )
+        else:
+            parsed_max_age = None
+        if acr_values is not None and not acr_values.split():
+            raise AuthConfigurationError(
+                self, code="invalid_setting", parameter="acr_values", stage="begin"
+            )
+        self.strategy.session_set(
+            key,
+            {
+                **transaction,
+                "oidc_requested_max_age": parsed_max_age,
+                "oidc_requested_acr_values": acr_values,
+            },
+        )
+        return url
 
     def validate_association_state(
         self, request_state: Any, user: UserProtocol | None = None
@@ -439,6 +499,83 @@ class OpenIdConnectAuth(OIDCDiscoveryMixin[ResponseT_co], BaseOAuth2PKCE[Respons
                 stage="token_validation",
             )
 
+    def validate_acr(self, id_token) -> None:
+        """
+        Require the authentication context class requested with ACR_VALUES.
+
+        The request parameter reaches the provider through the browser, which
+        can drop it, and the provider may not honor it, so the ID token has to
+        show it was met (OpenID Connect Core 3.1.3.7, step 12).
+        """
+        transaction = (
+            self._oidc_association_transaction
+            if self.ASSOCIATION_ONLY
+            else self._oauth2_transaction
+        )
+        if isinstance(transaction, dict) and "oidc_requested_acr_values" in transaction:
+            acr_values = transaction["oidc_requested_acr_values"]
+        else:
+            acr_values = self.setting("ACR_VALUES", default=self.ACR_VALUES)
+        if acr_values is not None and id_token.get("acr") not in acr_values.split():
+            raise AuthResponseError(
+                self,
+                "Incorrect id_token: acr",
+                claim="acr",
+                code="invalid_claim",
+                stage="token_validation",
+            )
+
+    def validate_max_age(self, id_token: dict[str, Any]) -> None:
+        """Check requested authentication freshness against validated claims."""
+        transaction = (
+            self._oidc_association_transaction
+            if self.ASSOCIATION_ONLY
+            else self._oauth2_transaction
+        )
+        if isinstance(transaction, dict) and "oidc_requested_max_age" in transaction:
+            max_age = transaction["oidc_requested_max_age"]
+        else:
+            max_age = self.setting("MAX_AGE", default=self.MAX_AGE)
+        if max_age is None:
+            return
+        transaction = (
+            self._oidc_association_transaction
+            if self.ASSOCIATION_ONLY
+            else self._oauth2_transaction
+        )
+        requested_at = (
+            transaction.get("timestamp") if isinstance(transaction, dict) else None
+        )
+        if not isinstance(requested_at, int) or isinstance(requested_at, bool):
+            raise AuthSessionError(
+                self, code="session_context_missing", stage="token_validation"
+            )
+        auth_time = id_token.get("auth_time")
+        if (
+            isinstance(auth_time, bool)
+            or not isinstance(auth_time, (int, float))
+            or (isinstance(auth_time, float) and not math.isfinite(auth_time))
+        ):
+            raise AuthResponseError(
+                self, claim="auth_time", code="missing_claim", stage="token_validation"
+            )
+        leeway = cast("float", self.setting("JWT_LEEWAY", self.JWT_LEEWAY))
+        now = timegm(dt.datetime.now(dt.UTC).timetuple())
+        if auth_time > now + leeway:
+            raise AuthResponseError(
+                self,
+                claim="auth_time",
+                code="response_not_yet_valid",
+                stage="token_validation",
+            )
+        if requested_at - auth_time > max_age + leeway:
+            raise AuthResponseError(
+                self,
+                claim="auth_time",
+                code="response_expired",
+                stage="token_validation",
+            )
+
     def validate_claims(self, id_token) -> None:
         self.validate_temporal_claims(id_token)
 
@@ -624,6 +761,8 @@ class OpenIdConnectAuth(OIDCDiscoveryMixin[ResponseT_co], BaseOAuth2PKCE[Respons
         claims = self.decode_and_validate_id_token(id_token, access_token)
         self.validate_required_id_token_claims(claims)
         self.validate_claims(claims)
+        self.validate_acr(claims)
+        self.validate_max_age(claims)
 
         return claims
 
