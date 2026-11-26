@@ -8,12 +8,15 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Literal
 
 from social_core.backends.base import BaseAuth, ResponseT_co
-from social_core.exceptions import AuthResponseError
+from social_core.exceptions import AuthConfigurationError, AuthResponseError
+from social_core.utils import constant_time_compare
 
 from .oauth import BaseOAuth1, BaseOAuth2
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
+
+    from social_core.storage import UserProtocol
 
 
 class BaseGoogleAuth(BaseAuth[ResponseT_co]):
@@ -87,6 +90,9 @@ class BaseGoogleOAuth2API(BaseGoogleAuth[ResponseT_co]):
 class GoogleOAuth2(BaseGoogleOAuth2API[ResponseT_co], BaseOAuth2[ResponseT_co]):
     """Google OAuth2 authentication backend"""
 
+    _code_exchange_active: bool = False
+    _exchanged_access_token: str | None = None
+
     name = "google-oauth2"
     title = "Google"
     icon = "google.svg"
@@ -104,6 +110,73 @@ class GoogleOAuth2(BaseGoogleOAuth2API[ResponseT_co], BaseOAuth2[ResponseT_co]):
         ("expires_in", "expires_in"),
         ("token_type", "token_type", True),
     ]
+
+    def get_audience(self) -> list[str]:
+        """Return the client IDs accepted for directly supplied access tokens."""
+        audience = self.setting("AUDIENCE", default=[self.setting("KEY")])
+        values = [audience] if isinstance(audience, str) else audience
+        if (
+            not isinstance(values, (list, tuple, set))
+            or not values
+            or any(not isinstance(value, str) or not value for value in values)
+        ):
+            raise AuthConfigurationError(
+                self,
+                parameter="AUDIENCE",
+                code="invalid_setting",
+                stage="token_validation",
+            )
+        return list(values)
+
+    def validate_token_audience(self, access_token: str) -> None:
+        """Require Google to have issued the access token to an accepted client."""
+        accepted_audiences = self.get_audience()
+        token_info = self.get_json(
+            "https://oauth2.googleapis.com/tokeninfo",
+            params={"access_token": access_token},
+            stage="token_validation",
+        )
+        audience = token_info.get("aud") if isinstance(token_info, dict) else None
+        if not isinstance(audience, str) or audience not in accepted_audiences:
+            raise AuthResponseError(
+                self,
+                "Google access token was not issued to an accepted client.",
+                code="missing_claim" if audience is None else "invalid_claim",
+                claim="aud",
+                stage="token_validation",
+            )
+
+    def do_auth(
+        self, access_token: str, *args: Any, **kwargs: Any
+    ) -> UserProtocol | ResponseT_co | None:
+        """Finish the auth process once the access_token was retrieved"""
+        exchanged_token = getattr(self, "_exchanged_access_token", None)
+        self._exchanged_access_token = None
+        if not (
+            getattr(self, "_code_exchange_active", False)
+            and isinstance(exchanged_token, str)
+            and constant_time_compare(access_token, exchanged_token)
+        ):
+            # A caller can supply ``response`` as well as the access token;
+            # only this backend's own code exchange establishes provenance.
+            self.validate_token_audience(access_token)
+        return super().do_auth(access_token, *args, **kwargs)
+
+    def get_access_token(self, response: dict[str, Any]) -> str:
+        access_token = super().get_access_token(response)
+        if getattr(self, "_code_exchange_active", False):
+            self._exchanged_access_token = access_token
+        return access_token
+
+    def auth_complete(
+        self, *args: Any, **kwargs: Any
+    ) -> UserProtocol | ResponseT_co | None:
+        self._code_exchange_active = True
+        try:
+            return super().auth_complete(*args, **kwargs)
+        finally:
+            self._code_exchange_active = False
+            self._exchanged_access_token = None
 
 
 class GoogleOAuth(BaseGoogleAuth[ResponseT_co], BaseOAuth1[ResponseT_co]):
