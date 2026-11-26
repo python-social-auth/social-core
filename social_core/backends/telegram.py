@@ -25,12 +25,24 @@ class TelegramAuth(BaseAuth[ResponseT_co]):
     ID_KEY = "id"
 
     def verify_data(self, response) -> None:
+        # An empty token would derive the HMAC key from a public constant.
         bot_token = self.setting("BOT_TOKEN")
-        if bot_token is None:
+        if (
+            bot_token is None
+            or bot_token == ""
+            or (isinstance(bot_token, str) and not bot_token.strip())
+        ):
             raise AuthConfigurationError(
                 self,
                 parameter="SOCIAL_AUTH_TELEGRAM_BOT_TOKEN",
                 code="missing_setting",
+                stage="callback",
+            )
+        if not isinstance(bot_token, str) or bot_token != bot_token.strip():
+            raise AuthConfigurationError(
+                self,
+                parameter="SOCIAL_AUTH_TELEGRAM_BOT_TOKEN",
+                code="invalid_setting",
                 stage="callback",
             )
 
