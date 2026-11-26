@@ -55,6 +55,14 @@ class PipelineRequestDataTest(unittest.TestCase):
             self.assertEqual(self.strategy.request_data(), {})
         self.assertEqual(self.strategy.request_data(), {"field": "current"})
 
+    def test_context_marks_partial_pipeline_resume(self) -> None:
+        self.assertFalse(self.strategy.is_partial_pipeline_resume())
+        with self.strategy.pipeline_request_data({}):
+            self.assertTrue(self.strategy.is_partial_pipeline_resume())
+        with self.strategy.pipeline_request_data(None):
+            self.assertFalse(self.strategy.is_partial_pipeline_resume())
+        self.assertFalse(self.strategy.is_partial_pipeline_resume())
+
     def test_context_flattens_multivalue_data(self) -> None:
         class MultiValueDict(dict):
             def dict(self):

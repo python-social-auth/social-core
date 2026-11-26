@@ -40,6 +40,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   Existing fallback associations with conflicting NameID evidence require
   operator repair; evidence-free legacy fallback keys retain their prior
   compatibility behavior.
+- Email validation codes now require a confirmed partial-pipeline resume;
+  a fresh callback or a different partial cannot consume the code.
 - Enforce requested OIDC authentication context and age against validated ID
   token claims, and require a signed, non-future PAPE authentication time when
   OpenID maximum age is configured. This includes OIDC strength values sent
