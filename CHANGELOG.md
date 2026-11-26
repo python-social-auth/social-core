@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Security
 
+- Validate Shopify authorization hosts, preserve OAuth query parameter
+  boundaries, reject unsafe OpenID destinations including browser-normalized
+  backslashes and controls, and sanitize SAML logout redirects.
 - Prevent provider details from updating private, special, or local account
   activation fields; Bitbucket Data Center no longer forwards provider account
   status as local profile data.

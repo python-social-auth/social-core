@@ -21,7 +21,7 @@ from typing import (
     overload,
 )
 from urllib.parse import parse_qs as battery_parse_qs
-from urllib.parse import unquote, urlencode, urlparse, urlunparse
+from urllib.parse import urlencode, urlparse, urlunparse
 
 import requests
 
@@ -59,6 +59,9 @@ PARTIAL_TOKEN_PENDING_CONFIRMATION_SESSION_NAME = (
     "partial_pipeline_pending_confirmation"
 )
 PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME = "allow_external_resume"
+
+# RFC 3986 query characters, excluding parameter delimiters.
+QUERY_SAFE_CHARACTERS = "/?:@!$'()*+,=%"
 
 ResponseT = TypeVar("ResponseT")
 
@@ -124,9 +127,12 @@ def url_add_parameters(
         fragments = list(urlparse(url))
         value = parse_qs(fragments[4])
         value.update(params)
-        fragments[4] = urlencode(value)
-        if _unquote_query:
-            fragments[4] = unquote(fragments[4])
+        # Leave the permitted query characters unescaped instead of unquoting
+        # the encoded query, which would turn delimiters inside of the values
+        # into real ones.
+        fragments[4] = urlencode(
+            value, safe=QUERY_SAFE_CHARACTERS if _unquote_query else ""
+        )
         url = urlunparse(fragments)
     return url
 
@@ -142,6 +148,11 @@ def setting_name(*names: str) -> str:
 def normalize_redirect_schemes(schemes: Collection[str]) -> set[str]:
     """URI schemes are case-insensitive, and urlparse lowercases them."""
     return {scheme.lower() for scheme in schemes}
+
+
+def has_unsafe_url_characters(url: str) -> bool:
+    """Reject characters whose browser interpretation can differ from Python's."""
+    return "\\" in url or any(unicodedata.category(char)[0] == "C" for char in url)
 
 
 def sanitize_redirect(
@@ -165,8 +176,7 @@ def sanitize_redirect(
         not redirect_to
         or not isinstance(redirect_to, str)
         or redirect_to.startswith("///")
-        or "\\" in redirect_to
-        or any(unicodedata.category(char)[0] == "C" for char in redirect_to)
+        or has_unsafe_url_characters(redirect_to)
     ):
         return None
 

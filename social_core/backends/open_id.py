@@ -28,11 +28,18 @@ from social_core.exceptions import (
     ErrorStage,
 )
 from social_core.store import InvalidOpenIdSession, OpenIdSessionWrapper
-from social_core.utils import constant_time_compare, url_add_parameters
+from social_core.utils import (
+    DEFAULT_REDIRECT_SCHEMES,
+    constant_time_compare,
+    has_unsafe_url_characters,
+    url_add_parameters,
+)
 
 from .base import BaseAuth
 
 if TYPE_CHECKING:
+    from collections.abc import Collection
+
     from social_core.store import OpenIdStore
 
 # OpenID configuration
@@ -74,8 +81,10 @@ class OpenIdAuth(BaseAuth[ResponseT_co]):
         return self.URL is not None
 
     @staticmethod
-    def _is_https_url(url: object) -> bool:
-        if not isinstance(url, str) or not url:
+    def _is_web_url(
+        url: object, schemes: Collection[str] = DEFAULT_REDIRECT_SCHEMES
+    ) -> bool:
+        if not isinstance(url, str) or not url or has_unsafe_url_characters(url):
             return False
         try:
             parsed = urlsplit(url)
@@ -83,12 +92,16 @@ class OpenIdAuth(BaseAuth[ResponseT_co]):
         except ValueError:
             return False
         return (
-            parsed.scheme == "https"
+            parsed.scheme in schemes
             and parsed.hostname is not None
             and parsed.username is None
             and parsed.password is None
             and (port is None or port > 0)
         )
+
+    @classmethod
+    def _is_https_url(cls, url: object) -> bool:
+        return cls._is_web_url(url, ("https",))
 
     def _validate_provider_url(self, url: object) -> None:
         if not self._is_https_url(url):
@@ -108,7 +121,18 @@ class OpenIdAuth(BaseAuth[ResponseT_co]):
                 code="malformed_response",
                 stage="begin",
             )
-        if not self._is_https_url(endpoint_url):
+        # The browser is sent to this endpoint by redirect or by the
+        # auto-submitted form, so it must be an absolute HTTP(S) URL.
+        if not self._is_web_url(endpoint_url):
+            raise AuthProviderError(
+                self,
+                "OpenID discovery returned an invalid provider endpoint",
+                code="malformed_response",
+                stage="begin",
+            )
+        if self.requires_openid_provider_binding() and not self._is_https_url(
+            endpoint_url
+        ):
             raise AuthProviderError(
                 self,
                 "OpenID discovery returned an insecure provider endpoint",
@@ -704,13 +728,12 @@ class OpenIdAuth(BaseAuth[ResponseT_co]):
             self._consumer = None
             consumer = self.consumer()
         request = consumer.begin(url_add_parameters(provider_url, params))
-        if self.requires_openid_provider_binding():
-            try:
-                self._validate_discovered_provider_endpoint(request.endpoint.server_url)
-            except AuthProviderError:
-                self.strategy.session_set(SESSION_NAME, {})
-                self._consumer = None
-                raise
+        try:
+            self._validate_discovered_provider_endpoint(request.endpoint.server_url)
+        except AuthProviderError:
+            self.strategy.session_set(SESSION_NAME, {})
+            self._consumer = None
+            raise
         self.strategy.openid_session_dict(SESSION_NAME)[_BACKEND_SESSION_KEY] = (
             self.name
         )

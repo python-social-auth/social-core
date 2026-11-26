@@ -11,6 +11,7 @@ from base64 import b64encode
 from copy import deepcopy
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
+from urllib.parse import urlsplit
 
 from social_core.exceptions import (
     AuthConfigurationError,
@@ -797,3 +798,50 @@ class SAMLProtocolTest(BaseBackendTest):
                     else:
                         self.assertTrue(errors)
                         delete.assert_not_called()
+
+    def test_incoming_logout_request_relay_state_redirect(self):
+        # python3-saml redirects to RelayState when the IdP has no SLO endpoint.
+        del self.idps["idp"]["slo_url"]
+        for relay_state, settings, host in (
+            ("/after", {}, "myapp.com"),
+            ("http://myapp.com/after", {}, "myapp.com"),
+            ("//attacker.example/after", {}, "myapp.com"),
+            ("https://attacker.example/after", {}, None),
+            (
+                "https://partner.example/after",
+                {"SOCIAL_AUTH_ALLOWED_REDIRECT_HOSTS": ["partner.example"]},
+                "partner.example",
+            ),
+            (
+                "https://attacker.example/after",
+                {"SOCIAL_AUTH_SANITIZE_REDIRECTS": False},
+                "attacker.example",
+            ),
+        ):
+            for idp_name in ("idp", "other"):
+                with self.subTest(relay_state=relay_state, idp=idp_name, **settings):
+                    self.strategy.set_settings(
+                        {
+                            "SOCIAL_AUTH_ALLOWED_REDIRECT_HOSTS": [],
+                            "SOCIAL_AUTH_SANITIZE_REDIRECTS": True,
+                            **settings,
+                        }
+                    )
+                    query = saml.redirect_query(
+                        saml.logout("LogoutRequest"),
+                        kind="SAMLRequest",
+                        relay_state=relay_state,
+                    )
+                    self.strategy.request_data().clear()
+                    self.strategy.set_request_data(query, self.backend)
+                    delete = Mock()
+                    url, errors = self.backend.process_logout(idp_name, delete)
+                    self.assertEqual(errors, [])
+                    delete.assert_called_once_with()
+                    if idp_name == "other":
+                        # The reply goes to the configured SLO endpoint.
+                        self.assertTrue(url.startswith(f"{saml.SLO}?"))
+                    elif host is None:
+                        self.assertIsNone(url)
+                    else:
+                        self.assertEqual(urlsplit(url).netloc, host)

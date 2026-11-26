@@ -1,3 +1,6 @@
+# Keep this shared module cohesive for protocol regression review.
+# Redirect regressions share the existing utility fixtures.
+# pylint: disable=too-many-lines
 import base64
 import unittest
 from typing import TYPE_CHECKING, cast
@@ -23,6 +26,7 @@ from social_core.utils import (
     partial_pipeline_result,
     sanitize_redirect,
     slugify,
+    url_add_parameters,
     user_is_active,
     user_is_authenticated,
 )
@@ -394,6 +398,40 @@ class SlugifyTest(unittest.TestCase):
         self.assertEqual(slugify("FooBar"), "foobar")
         self.assertEqual(slugify("Foo Bar"), "foo-bar")
         self.assertEqual(slugify("Foo (Bar)"), "foo-bar")
+
+
+class UrlAddParametersTest(unittest.TestCase):
+    url = "https://provider.example/authorize?foo=bar"
+
+    def test_quoted_query(self) -> None:
+        self.assertEqual(
+            url_add_parameters(self.url, {"redirect_uri": "https://myapp.com/a b"}),
+            f"{self.url}&redirect_uri=https%3A%2F%2Fmyapp.com%2Fa+b",
+        )
+
+    def test_unquoted_query(self) -> None:
+        self.assertEqual(
+            url_add_parameters(
+                self.url,
+                {
+                    "redirect_uri": "https://myapp.com/complete/?a=b",
+                    "scope": "user:email read+write name%20email a b",
+                },
+                True,
+            ),
+            f"{self.url}&redirect_uri=https://myapp.com/complete/?a=b"
+            "&scope=user:email+read+write+name%20email+a+b",
+        )
+
+    def test_unquoted_query_keeps_delimiters_quoted(self) -> None:
+        self.assertEqual(
+            url_add_parameters(
+                self.url,
+                {"client_id": "a&redirect_uri=x;state=y#\r\n\u00e9", "state": "z"},
+                True,
+            ),
+            f"{self.url}&client_id=a%26redirect_uri=x%3Bstate=y%23%0D%0A%C3%A9&state=z",
+        )
 
 
 class BuildAbsoluteURITest(unittest.TestCase):
