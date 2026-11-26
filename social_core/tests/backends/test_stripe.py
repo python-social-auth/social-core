@@ -1,12 +1,18 @@
 import json
+from unittest.mock import Mock
 
 import requests
 import responses
 
-from .oauth import BaseAuthUrlTestMixin, OAuth2Test
+from social_core.actions import do_auth, do_complete
+from social_core.exceptions import AuthSessionError
+from social_core.tests.models import TestUserSocialAuth, User
+from social_core.utils import get_querystring
+
+from .base import BaseBackendTest
 
 
-class StripeOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
+class StripeOAuth2Test(BaseBackendTest):
     backend_path = "social_core.backends.stripe.StripeOAuth2"
     account_data_url = "https://api.stripe.com/v1/account"
     access_token_body = json.dumps(
@@ -36,15 +42,47 @@ class StripeOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
 
     def setUp(self) -> None:
         super().setUp()
+        self.strategy.set_settings(self.extra_settings())
         responses.add(
             responses.GET, self.account_data_url, status=200, body=self.user_data_body
         )
 
-    def test_login(self) -> None:
-        self.do_login()
+    def extra_settings(self) -> dict[str, str | list[str]]:
+        return {
+            "SOCIAL_AUTH_STRIPE_KEY": "a-key",
+            "SOCIAL_AUTH_STRIPE_SECRET": "a-secret-key",
+            "SOCIAL_AUTH_LOGIN_REDIRECT_URL": "/done",
+        }
 
-    def test_partial_pipeline(self) -> None:
-        self.do_partial_pipeline()
+    def test_login(self) -> None:
+        with self.assertRaises(AuthSessionError):
+            do_auth(self.backend)
+
+    def test_association_requires_initiating_user(self) -> None:
+        user = User("owner")
+        state = get_querystring(do_auth(self.backend, user=user).url)["state"]
+        self.strategy.set_request_data({"code": "foobar", "state": state}, self.backend)
+        with self.assertRaises(AuthSessionError):
+            do_complete(self.backend, login=Mock(), user=User("other"))
+        self.assertIsNone(TestUserSocialAuth.get_social_auth("stripe", "acct_foobar"))
+
+    def test_association_for_initiating_user(self) -> None:
+        user = User("owner")
+        state = get_querystring(do_auth(self.backend, user=user).url)["state"]
+        self.strategy.set_request_data({"code": "foobar", "state": state}, self.backend)
+        responses.add(
+            responses.POST,
+            self.backend.access_token_url(),
+            status=200,
+            body=self.access_token_body,
+            content_type="application/json",
+        )
+        self.assertEqual(
+            do_complete(self.backend, login=Mock(), user=user).url, "/done"
+        )
+        social = TestUserSocialAuth.get_social_auth("stripe", "acct_foobar")
+        self.assertIsNotNone(social)
+        self.assertIs(social.user, user)
 
     def test_get_user_details(self) -> None:
         response = requests.get(self.account_data_url, timeout=1)

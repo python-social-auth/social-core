@@ -1013,11 +1013,17 @@ class OpenIdConnectAuth(OIDCDiscoveryMixin[ResponseT_co], BaseOAuth2PKCE[Respons
 
     def get_stored_user_id_keys(self, id_key: str) -> tuple[str, ...]:
         """Older OIDC backends stored the subject under the alias ``id``."""
-        return (
-            ("sub", "id")
-            if id_key == "sub"
-            else super().get_stored_user_id_keys(id_key)
-        )
+        keys = super().get_stored_user_id_keys(id_key)
+        return tuple(dict.fromkeys(("sub", "id", *keys))) if id_key == "sub" else keys
+
+    def get_nested_stored_user_ids(
+        self, extra_data: dict[str, Any], id_key: str
+    ) -> tuple[object, ...]:
+        """The refresh continuity context keeps the validated subject since 5.1.0."""
+        context = extra_data.get(_ID_TOKEN_CONTEXT_KEY)
+        if id_key == "sub" and isinstance(context, dict) and "sub" in context:
+            return (context["sub"],)
+        return super().get_nested_stored_user_ids(extra_data, id_key)
 
     def get_user_id(self, details, response):
         id_key = self.id_key()

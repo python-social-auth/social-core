@@ -1,3 +1,5 @@
+# Shared backend request, policy, and pipeline hooks remain in this base class.
+# pylint: disable=too-many-lines
 from __future__ import annotations
 
 import base64
@@ -485,16 +487,17 @@ class BaseAuth(Generic[ResponseT_co]):
             # store the last time authentication took place
             "auth_time": int(time.time())
         }
-        extra_data_entries: (
-            list[str] | list[str | tuple[str, str] | tuple[str, str, bool]]
-        ) = []
-        if self.GET_ALL_EXTRA_DATA or self.setting("GET_ALL_EXTRA_DATA", False):
-            extra_data_entries = list(response.keys())
-        else:
-            extra_data_entries = (self.EXTRA_DATA or []) + cast(
+        extra_data_entries: list[str | tuple[str, str] | tuple[str, str, bool]] = [
+            *(self.EXTRA_DATA or []),
+            *cast(
                 "list[str | tuple[str, str] | tuple[str, str, bool]]",
                 self.setting("EXTRA_DATA", []),
-            )
+            ),
+        ]
+        if self.GET_ALL_EXTRA_DATA or self.setting("GET_ALL_EXTRA_DATA", False):
+            # Store the whole response in addition to the declared entries,
+            # which backends read back by alias; declared entries win.
+            extra_data_entries = [*response.keys(), *extra_data_entries]
         for entry in extra_data_entries:
             if isinstance(entry, list):
                 entry = tuple(cast("list[str]", entry))
@@ -666,9 +669,37 @@ class BaseAuth(Generic[ResponseT_co]):
         """Find a backend-specific legacy association with verified evidence."""
         return None
 
+    def validate_social_auth(self, social: UserMixin, response: dict[str, Any]) -> None:
+        """Reject a stored association that this response must not use.
+
+        The pipeline calls this on every association it looks up, before it
+        adopts the association's user, migrates it, or updates its data.
+        """
+
     def get_stored_user_id_keys(self, id_key: str) -> tuple[str, ...]:
-        """Return stored evidence fields, including backend-specific aliases."""
-        return (id_key,)
+        """Return stored identifier fields and configured storage aliases."""
+        keys = [id_key]
+        keys.extend(
+            entry[1]
+            for entry in (
+                *(self.EXTRA_DATA or []),
+                *(self.setting("EXTRA_DATA", []) or []),
+            )
+            if isinstance(entry, (list, tuple))
+            and len(entry) in {2, 3}
+            and entry[0] == id_key
+        )
+        return tuple(dict.fromkeys(keys))
+
+    def get_nested_stored_user_ids(
+        self, extra_data: dict[str, Any], id_key: str
+    ) -> tuple[object, ...]:
+        """Return identifiers an earlier login stored inside other fields.
+
+        They cannot prove ownership, but one that differs from the
+        authenticating identifier is conflicting evidence.
+        """
+        return ()
 
     def allow_unverified_legacy_uid_migration(
         self, old_id_key: str, id_key: str

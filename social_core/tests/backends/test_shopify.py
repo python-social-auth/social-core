@@ -1,12 +1,19 @@
 import time
-from typing import TYPE_CHECKING, cast
-from unittest.mock import patch
+from typing import TYPE_CHECKING, Any, cast
+from unittest.mock import Mock, patch
 
 import requests
 import responses
 import shopify
 
-from social_core.exceptions import AuthInputError, AuthResponseError, AuthSessionError
+from social_core.actions import do_auth, do_complete
+from social_core.exceptions import (
+    AuthAssociationError,
+    AuthInputError,
+    AuthResponseError,
+    AuthSessionError,
+)
+from social_core.tests.models import TestUserSocialAuth, User
 from social_core.utils import (
     PARTIAL_TOKEN_SESSION_NAME,
     get_querystring,
@@ -17,7 +24,6 @@ from .base import BaseBackendTest
 
 if TYPE_CHECKING:
     from social_core.strategy import HttpResponseProtocol
-    from social_core.tests.models import User
 
 SHOP = "example.myshopify.com"
 ACCESS_TOKEN = "shopify-access-token"
@@ -27,7 +33,6 @@ SECRET = "a-secret-key"
 
 class ShopifyOAuth2Test(BaseBackendTest):
     backend_path = "social_core.backends.shopify.ShopifyOAuth2"
-    expected_username = "example"
 
     def setUp(self) -> None:
         super().setUp()
@@ -38,6 +43,7 @@ class ShopifyOAuth2Test(BaseBackendTest):
             "SOCIAL_AUTH_SHOPIFY_KEY": KEY,
             "SOCIAL_AUTH_SHOPIFY_SECRET": SECRET,
             "SOCIAL_AUTH_SHOPIFY_SCOPE": ["read_products", "read_customers"],
+            "SOCIAL_AUTH_LOGIN_REDIRECT_URL": "/done",
         }
 
     def signed_callback_data(self, state: str | None) -> dict[str, str]:
@@ -53,8 +59,15 @@ class ShopifyOAuth2Test(BaseBackendTest):
         data["hmac"] = shopify.Session.calculate_hmac(data)
         return data
 
-    def do_start(self):
-        start_url = self.backend.start().url
+    def start_for_user(self, user: User) -> str:
+        return get_querystring(do_auth(self.backend, user=user).url)["state"]
+
+    def prepare_callback(self, user: User) -> None:
+        state = self.start_for_user(user)
+        self.strategy.set_request_data(self.signed_callback_data(state), self.backend)
+
+    def complete_through_redirect(self, user: User):
+        start_url = do_auth(self.backend, user=user).url
         state = get_querystring(start_url)["state"]
         target_data = self.signed_callback_data(state)
         target_url = url_add_parameters(
@@ -73,10 +86,11 @@ class ShopifyOAuth2Test(BaseBackendTest):
         self.assertEqual(response.url, target_url)
         self.assertEqual(response.text, "foobar")
         self.strategy.set_request_data(target_data, self.backend)
-        return self.backend.complete()
+        return do_complete(self.backend, login=Mock(), user=user)
 
     def test_auth_url_contains_state_parameter(self) -> None:
-        start_url = self.backend.start().url
+        user = User("existing")
+        start_url = do_auth(self.backend, user=user).url
         query = get_querystring(start_url)
         state = query.get("state")
 
@@ -85,29 +99,42 @@ class ShopifyOAuth2Test(BaseBackendTest):
         self.assertEqual(query["client_id"], "a-key")
         self.assertEqual(query["scope"], "read_products,read_customers")
         self.assertEqual(query["redirect_uri"], "http://myapp.com")
-        transaction = self.strategy.session_get(self.backend.transaction_key(state))
-        assert isinstance(transaction, dict)
-        self.assertEqual(
-            state,
-            transaction["state"],
-        )
+        context = self.strategy.session_get("shopify_state")
+        assert isinstance(context, dict)
+        self.assertEqual(context["state"], state)
+        self.assertEqual(context["user_id"], str(user.id))
 
     def test_auth_url_requires_shop(self) -> None:
         self.strategy.remove_from_request_data("shop")
         with self.assertRaises(AuthInputError):
+            do_auth(self.backend, user=User("existing"))
+
+    def test_start_requires_authenticated_user(self) -> None:
+        with self.assertRaises(AuthSessionError):
+            do_auth(self.backend)
+        anonymous = User("anonymous")
+        cast(Any, anonymous).is_authenticated = False
+        with self.assertRaises(AuthSessionError):
+            do_auth(self.backend, user=anonymous)
+        self.assertIsNone(self.strategy.session_get("shopify_state"))
+
+    def test_direct_start_requires_prepared_context(self) -> None:
+        with self.assertRaises(AuthSessionError):
             self.backend.start()
 
     def test_auth_url_normalizes_shop(self) -> None:
+        user = User("existing")
         for shop in ("example", "https://Example.myshopify.com/", "example.org"):
             with self.subTest(shop=shop):
                 self.strategy.set_request_data({"shop": shop}, self.backend)
                 self.assertTrue(
-                    self.backend.start().url.startswith(
+                    do_auth(self.backend, user=user).url.startswith(
                         f"https://{SHOP}/admin/oauth/authorize?"
                     )
                 )
 
     def test_auth_url_rejects_invalid_shop(self) -> None:
+        user = User("existing")
         for shop in (
             "evil%2eexample\\",
             "3232235777\\",
@@ -121,53 +148,100 @@ class ShopifyOAuth2Test(BaseBackendTest):
             with self.subTest(shop=shop):
                 self.strategy.set_request_data({"shop": shop}, self.backend)
                 with self.assertRaises(AuthInputError) as caught:
-                    self.backend.start()
+                    do_auth(self.backend, user=user)
                 self.assertEqual(caught.exception.code, "invalid_parameter")
                 self.assertEqual(caught.exception.parameter, "shop")
                 self.assertEqual(caught.exception.stage, "begin")
 
-    def test_auth_url_creates_distinct_states_for_concurrent_starts(self) -> None:
-        first_url = self.backend.start().url
-        first_state = get_querystring(first_url)["state"]
-
-        second_url = self.backend.start().url
-        second_state = get_querystring(second_url)["state"]
-
+    def test_new_start_replaces_previous_state(self) -> None:
+        user = User("existing")
+        first_state = self.start_for_user(user)
+        second_state = self.start_for_user(user)
         self.assertNotEqual(first_state, second_state)
 
         self.strategy.set_request_data(
             self.signed_callback_data(first_state), self.backend
         )
-        with patch.object(shopify.Session, "request_token", return_value=ACCESS_TOKEN):
-            self.backend.complete()
-
-        self.strategy.set_request_data(
-            self.signed_callback_data(second_state), self.backend
-        )
-        with patch.object(shopify.Session, "request_token", return_value=ACCESS_TOKEN):
-            self.backend.complete()
+        with self.assertRaises(AuthSessionError):
+            self.backend.complete(user=user)
 
     def test_complete_rejects_missing_state_parameter(self) -> None:
-        self.backend.start()
+        user = User("existing")
+        self.start_for_user(user)
         self.strategy.set_request_data(self.signed_callback_data(None), self.backend)
 
         with self.assertRaises(AuthInputError):
-            self.backend.complete()
+            self.backend.complete(user=user)
 
     def test_complete_rejects_mismatched_state_parameter(self) -> None:
-        self.backend.start()
+        user = User("existing")
+        self.start_for_user(user)
         self.strategy.set_request_data(
             self.signed_callback_data("invalid-state"), self.backend
         )
 
         with self.assertRaises(AuthSessionError):
+            self.backend.complete(user=user)
+
+    def test_complete_rejects_logged_out_or_different_user(self) -> None:
+        user = User("existing")
+        for current_user in (None, User("other")):
+            with self.subTest(user=current_user):
+                self.prepare_callback(user)
+                with (
+                    patch.object(shopify.Session, "request_token") as request_token,
+                    self.assertRaises(AuthSessionError),
+                ):
+                    self.backend.complete(user=current_user)
+                request_token.assert_not_called()
+        self.assertEqual(user.social, [])
+
+    def test_association(self) -> None:
+        user = User("existing")
+        self.prepare_callback(user)
+        login = Mock()
+        with patch.object(shopify.Session, "request_token", return_value=ACCESS_TOKEN):
+            do_complete(self.backend, login=login, user=user)
+
+        login.assert_not_called()
+        self.assertEqual(len(User.cache), 1)
+        self.assertEqual(user.username, "existing")
+        social = TestUserSocialAuth.get_social_auth("shopify", SHOP)
+        assert social is not None
+        self.assertIs(social.user, user)
+        self.assertEqual(social.extra_data["access_token"], ACCESS_TOKEN)
+        self.assertIsNone(self.strategy.session_get("shopify_state"))
+
+    def test_shop_association_cannot_authenticate_another_user(self) -> None:
+        # Everyone who may approve the app on a store presents the same shop.
+        owner = User("owner")
+        social = TestUserSocialAuth.create_social_auth(owner, SHOP, "shopify")
+
+        with self.assertRaises(AuthSessionError):
+            do_auth(self.backend)
+        self.strategy.set_request_data(
+            self.signed_callback_data("forged"), self.backend
+        )
+        with self.assertRaises(AuthSessionError):
             self.backend.complete()
 
-    def test_login_exchanges_token_with_shopify_api(self) -> None:
+        other = User("other")
+        self.prepare_callback(other)
+        with (
+            patch.object(shopify.Session, "request_token", return_value=ACCESS_TOKEN),
+            self.assertRaises(AuthAssociationError),
+        ):
+            self.backend.complete(user=other)
+        self.assertIs(social.user, owner)
+        self.assertEqual(other.social, [])
+
+    def test_association_exchanges_token_with_shopify_api(self) -> None:
+        user = User("existing")
+        self.prepare_callback(user)
         with patch.object(
             shopify.Session, "request_token", return_value=ACCESS_TOKEN
         ) as request_token:
-            self.do_login()
+            self.assertIs(self.backend.complete(user=user), user)
 
         request_token.assert_called_once()
         token_data = cast("dict[str, str]", request_token.call_args.args[0])
@@ -176,7 +250,8 @@ class ShopifyOAuth2Test(BaseBackendTest):
         self.assertEqual(token_data["state"], self.backend.data["state"])
 
     def test_invalid_callback_signature_is_not_cancellation(self) -> None:
-        state = self.backend.get_or_create_state()
+        user = User("existing")
+        state = self.start_for_user(user)
         data = self.signed_callback_data(state)
         data["hmac"] = "invalid"
         self.strategy.set_request_data(data, self.backend)
@@ -184,14 +259,15 @@ class ShopifyOAuth2Test(BaseBackendTest):
             patch.object(self.strategy, "authenticate") as authenticate,
             self.assertRaises(AuthResponseError) as caught,
         ):
-            self.backend.complete()
+            self.backend.complete(user=user)
         self.assertEqual(caught.exception.code, "invalid_signature")
         self.assertEqual(caught.exception.stage, "callback")
         self.assertEqual(caught.exception.recovery, "contact_administrator")
         authenticate.assert_not_called()
 
     def test_complete_rejects_invalid_shop(self) -> None:
-        data = self.signed_callback_data(self.backend.get_or_create_state())
+        user = User("existing")
+        data = self.signed_callback_data(self.start_for_user(user))
         data["shop"] = "evil%2eexample\\"
         data["hmac"] = shopify.Session.calculate_hmac(data)
         self.strategy.set_request_data(data, self.backend)
@@ -199,14 +275,15 @@ class ShopifyOAuth2Test(BaseBackendTest):
             patch.object(self.strategy, "authenticate") as authenticate,
             self.assertRaises(AuthInputError) as caught,
         ):
-            self.backend.complete()
+            self.backend.complete(user=user)
         self.assertEqual(caught.exception.code, "invalid_parameter")
         self.assertEqual(caught.exception.parameter, "shop")
         self.assertEqual(caught.exception.stage, "callback")
         authenticate.assert_not_called()
 
     def test_sdk_callback_validation_failure_is_invalid_input(self) -> None:
-        state = self.backend.get_or_create_state()
+        user = User("existing")
+        state = self.start_for_user(user)
         self.strategy.set_request_data(self.signed_callback_data(state), self.backend)
         cause = shopify.ValidationException("private validation details")
         with (
@@ -216,7 +293,7 @@ class ShopifyOAuth2Test(BaseBackendTest):
         ):
             # Validation reached Session construction after a valid signature.
             session.validate_hmac.return_value = True
-            self.backend.complete()
+            self.backend.complete(user=user)
         self.assertEqual(caught.exception.code, "invalid_parameter")
         self.assertEqual(caught.exception.stage, "callback")
         self.assertIs(caught.exception.__cause__, cause)
@@ -234,20 +311,13 @@ class ShopifyOAuth2Test(BaseBackendTest):
         self.assertEqual(caught.exception.stage, "callback")
         self.assertIsInstance(caught.exception.__cause__, shopify.ValidationException)
 
-    def test_login(self) -> None:
-        with patch.object(shopify.Session, "request_token", return_value=ACCESS_TOKEN):
-            self.do_login()
-
-    def test_partial_pipeline(self) -> None:
-        with patch.object(shopify.Session, "request_token", return_value=ACCESS_TOKEN):
-            self.do_partial_pipeline()
-
     def test_partial_pipeline_with_new_requests(self) -> None:
         self.pipeline_settings()
+        existing = User("existing")
         with patch.object(
             shopify.Session, "request_token", autospec=True, return_value=ACCESS_TOKEN
         ) as request_token:
-            result = self.do_start()
+            result = self.complete_through_redirect(existing)
             for step, value, request_data in (
                 ("password", "foobar", {}),
                 ("slug", "foo-bar", {"shop": "other.myshopify.com"}),
@@ -261,6 +331,7 @@ class ShopifyOAuth2Test(BaseBackendTest):
                 result = self.resume_partial_with_new_request(token, request_data)
 
         user = cast("User", result)
+        self.assertIs(user, existing)
         self.assertEqual(user.social[0].extra_data["shop"], SHOP)
         self.assertEqual(user.social[0].extra_data["access_token"], ACCESS_TOKEN)
         self.assertEqual(user.password, "foobar")

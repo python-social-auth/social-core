@@ -1,5 +1,6 @@
 import json
 from typing import cast
+from urllib.parse import parse_qs, urlsplit
 
 import responses
 
@@ -12,6 +13,10 @@ from .oauth import OAuth2Test
 class VendOAuth2Test(OAuth2Test):
     backend_path = "social_core.backends.vend.VendOAuth2"
     expected_username = "victim_shop_a"
+
+    def test_authorization_requests_current_user_scope(self) -> None:
+        url = self.backend.auth_url()
+        self.assertEqual(parse_qs(urlsplit(url).query)["scope"], ["users:read"])
 
     def vend_login(
         self,
@@ -27,16 +32,14 @@ class VendOAuth2Test(OAuth2Test):
                 "refresh_token": f"{domain_prefix}-refresh-token",
             }
         )
-        self.user_data_url = f"https://{domain_prefix}.vendhq.com/api/users"
+        self.user_data_url = f"https://{domain_prefix}.vendhq.com/api/2.0/user"
         self.user_data_body = json.dumps(
             {
-                "users": [
-                    {
-                        "id": vend_id,
-                        "username": username,
-                        "email": email,
-                    }
-                ]
+                "data": {
+                    "id": vend_id,
+                    "username": username,
+                    "email": email,
+                }
             }
         )
         return cast("User", self.do_start())
@@ -53,7 +56,28 @@ class VendOAuth2Test(OAuth2Test):
 
         request_urls = [call.request.url for call in responses.calls]
         self.assertIn("https://shop-a.vendhq.com/api/1.0/token", request_urls)
-        self.assertIn("https://shop-a.vendhq.com/api/users", request_urls)
+        self.assertIn("https://shop-a.vendhq.com/api/2.0/user", request_urls)
+        self.assertNotIn("https://shop-a.vendhq.com/api/users", request_urls)
+
+    def test_users_of_same_shop_create_separate_associations(self) -> None:
+        owner = self.vend_login("shop-a", "owner_shop_a", "owner@example.com")
+        cashier = self.vend_login(
+            "shop-a", "cashier_shop_a", "cashier@example.com", vend_id=8
+        )
+
+        self.assertIsNot(cashier, owner)
+        self.assertEqual(cashier.username, "cashier_shop_a")
+        self.assertEqual(len(User.cache), 2)
+        self.assertEqual(owner.social[0].uid, "shop-a:7")
+        self.assertEqual(cashier.social[0].uid, "shop-a:8")
+        self.assertIs(
+            TestUserSocialAuth.get_social_auth("vend", "shop-a:7").user,
+            owner,
+        )
+        self.assertIs(
+            TestUserSocialAuth.get_social_auth("vend", "shop-a:8").user,
+            cashier,
+        )
 
     def test_same_numeric_id_from_different_shops_creates_new_association(self) -> None:
         victim = self.vend_login("shop-a", "victim_shop_a", "victim@example.com")

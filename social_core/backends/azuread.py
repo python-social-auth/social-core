@@ -226,6 +226,28 @@ class AzureADOAuth2(BaseOAuth2PKCE[ResponseT_co]):
         """Return the configured stable user identifier."""
         return self.get_user_id_from_sources(details, response)
 
+    def get_nested_stored_user_ids(
+        self, extra_data: dict[str, Any], id_key: str
+    ) -> tuple[object, ...]:
+        """Return the identifier from the ID token an earlier login stored."""
+        id_token = extra_data.get("id_token")
+        if not isinstance(id_token, str) or not id_token:
+            return ()
+        try:
+            claims = self.get_unverified_claims(id_token)
+        except AuthResponseError:
+            return ()
+        # ``sub`` is pairwise, so only a token issued to this client compares.
+        audience = claims.get("aud")
+        client_id = self.setting("KEY")
+        if isinstance(audience, list):
+            matching_audience = client_id in audience
+        else:
+            matching_audience = audience == client_id
+        if not matching_audience or id_key not in claims:
+            return ()
+        return (claims[id_key],)
+
     def get_user_groups(self, response) -> list[str] | None:
         key = configured_group_key(self)
         if key is None:

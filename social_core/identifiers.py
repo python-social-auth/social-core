@@ -2,6 +2,8 @@
 
 # social-core 5.2.0 did not store the new identifier as a usable scalar for
 # these backends. Do not extend this list for future or configured transitions.
+# A copy kept inside another stored field does not replace this allowance, but
+# BaseAuth.get_nested_stored_user_ids() lets a mismatching one stop migration.
 # Values are (backend class, historical key, current key).
 UNVERIFIED_LEGACY_TRANSITIONS: dict[str, tuple[str, str, str]] = {
     "arcgis": ("social_core.backends.arcgis.ArcGISOAuth2", "username", "id"),

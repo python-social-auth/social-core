@@ -44,7 +44,11 @@ def social_names(backend: BaseAuth[object], details, *args, **kwargs):
 
 def social_uid(backend: BaseAuth[object], details, response, *args, **kwargs):
     raw_uid = backend.get_user_id(details, response)
-    if raw_uid is None or raw_uid == "":
+    if (
+        raw_uid is None
+        or raw_uid == ""
+        or isinstance(raw_uid, (bool, dict, list, tuple, set))
+    ):
         raise AuthResponseError(
             backend,
             claim=backend.id_key(),
@@ -74,6 +78,15 @@ def auth_allowed(backend: BaseAuth[object], details, response, *args, **kwargs) 
 def _legacy_social_auth(
     backend, storage, provider, uid, id_key, legacy_identifiers, legacy_uids
 ):
+    # Releases before 6.1.1 stored a missing identifier as the shared UID
+    # "None". Such a row cannot be attributed to a provider account, including
+    # one whose historical identifier spells that value.
+    legacy_identifiers = [
+        (old_key, old_uid)
+        for old_key, old_uid in legacy_identifiers
+        if str(old_uid) != "None"
+    ]
+    legacy_uids = [old_uid for old_uid in legacy_uids if str(old_uid) != "None"]
     # Empty-key candidates cover integrations and rows not yet backfilled.
     lookups = [("", uid, "", False)]
     for old_key, old_uid in legacy_identifiers:
@@ -114,11 +127,20 @@ def _legacy_social_auth(
     if not matches:
         return None, None
     social = matches[0]
+    evidence: list[tuple[str | None, object]] = [
+        (key, social.extra_data[key])
+        for key in backend.get_stored_user_id_keys(id_key)
+        if key in social.extra_data
+    ]
+    # Storage only revalidates top-level fields, so nested copies cannot prove
+    # ownership on their own, but they still must not conflict.
+    evidence.extend(
+        (None, value)
+        for value in backend.get_nested_stored_user_ids(social.extra_data, id_key)
+    )
     evidence_key = None
-    for key in backend.get_stored_user_id_keys(id_key):
-        if key not in social.extra_data:
-            continue
-        if not identifier_matches(social.extra_data[key], uid):
+    for key, value in evidence:
+        if not identifier_matches(value, uid):
             raise AuthAssociationError(
                 backend,
                 "Stored social-auth identifier evidence conflicts",
@@ -184,13 +206,16 @@ def social_user(
     storage = backend.strategy.storage.user
     uid = str(uid)
     social = storage.get_social_auth(provider, uid, id_key=id_key)
-    if social is None:
+    if social is not None:
+        backend.validate_social_auth(social, response or {})
+    else:
         social, evidence_key = _legacy_social_auth(
             backend, storage, provider, uid, id_key, legacy_identifiers, legacy_uids
         )
         if social is None and response is not None:
             social = backend.get_legacy_social_auth(uid, id_key, response, user=user)
         if social is not None:
+            backend.validate_social_auth(social, response or {})
             if user and social.user != user:
                 raise AuthAssociationError(
                     backend, code="identity_in_use", stage="pipeline"
@@ -313,5 +338,6 @@ def load_extra_data(
         backend.name, uid
     )
     if social:
+        backend.validate_social_auth(social, response)
         extra_data = backend.extra_data(user, uid, response, details, kwargs)
         social.set_extra_data(extra_data)

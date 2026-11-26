@@ -125,10 +125,11 @@ documentation.
   these iframe flows accept only an identity already associated with that user;
   anonymous launches can still accept a valid replay. Applications requiring
   stronger binding must supply it.
-- **Mutable-identifier backends:** Drip, Last.fm, and Mixcloud are
-  association-only and must not independently create or authenticate a local
-  user. EmailAuth and UsernameAuth rely on application credential and validation
-  policy rather than independently proving a remote identity.
+- **Mutable or shared-identifier backends:** Drip, Last.fm, LiveJournal,
+  Mixcloud, Shopify, Stripe, and Twilio Connect are association-only and must
+  not independently create or authenticate a local user. EmailAuth and
+  UsernameAuth rely on application credential and validation policy rather
+  than independently proving a remote identity.
 - **Twilio Connect association:** Twilio is association-only and binds its
   callback to the initiating authenticated local user, but the callback
   ``AccountSid`` is not cryptographic proof that the user owns the Twilio

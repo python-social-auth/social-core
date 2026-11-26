@@ -61,6 +61,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   and rejects unsafe Steam and
   LiveJournal identities before accepting callbacks. Legacy HTTP LiveJournal
   identities require matching delegation from the journal's HTTPS document.
+- Restrict Shopify, Stripe, and LiveJournal to user-bound association; use the
+  authorizing Vend user and reject mismatched Bitbucket Data Center profiles.
+- Request Vend's ``users:read`` scope by default so new authorizations can
+  access the current user endpoint; existing grants may need reauthorization.
+- Reject conflicting stored identifiers, including aliases and nested token
+  claims, before legacy migration; recheck EVE owner evidence on the selected
+  association, reject structured provider IDs, and preserve declared extra-data
+  fields with all-data storage.
+- Shopify, Stripe, and LiveJournal can no longer sign users in anonymously;
+  applications using them for login need another sign-in and account recovery
+  route.
 
 ### Added
 

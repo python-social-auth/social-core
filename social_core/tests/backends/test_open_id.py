@@ -1,5 +1,5 @@
 # Keep this shared module cohesive for protocol regression review.
-# OpenID policy, flow, PAPE, and discovery regressions share one fixture.
+# OpenID policy, flow, PAPE, discovery, and identity regressions share one fixture.
 # pylint: disable=too-many-lines
 from __future__ import annotations
 
@@ -242,7 +242,7 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
         self.assertEqual(normalized["first_name"], "Prince")
         self.assertIsNone(normalized["last_name"])
 
-    def start_partial(self, response, *, early=True):
+    def start_partial(self, response, *, early=True, user: User | None = None):
         self.pipeline_settings()
         self.set_openid_context(response.endpoint)
         if early:
@@ -252,7 +252,7 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
             self.strategy.set_settings({"SOCIAL_AUTH_PIPELINE": pipeline})
         with patch.object(self.backend, "consumer") as consumer:
             consumer.return_value.complete.return_value = response
-            result = self.backend.complete()
+            result = self.backend.complete(user=user)
         consumer.return_value.complete.assert_called_once()
         return result
 
@@ -372,10 +372,12 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
         self.assertEqual(user.email, "user@example.com")
         self.assertNotIn("department", user.social[0].extra_data)
 
-    def test_livejournal_identity_username_survives_partial(self) -> None:
+    def test_livejournal_association_survives_partial(self) -> None:
         endpoint = "https://www.livejournal.com/openid/server.bml"
         response = self.verified_response(profile=False, server_url=endpoint)
         self.backend = LiveJournalOpenId(self.strategy, redirect_uri=self.complete_url)
+        existing = User("existing")
+        self.backend.prepare_auth(existing)
         # The strategy only authenticates with configured backend classes.
         self.strategy.set_settings(
             {
@@ -393,11 +395,12 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
         self.strategy.openid_session_dict("openid")[BACKEND_SESSION_KEY] = (
             self.backend.name
         )
-        result = self.start_partial(response)
+        result = self.start_partial(response, user=existing)
 
         user = self.finish_partial(result)
 
-        self.assertEqual(user.username, "foobar")
+        self.assertIs(user, existing)
+        self.assertEqual(user.username, "existing")
         self.assertEqual(user.social[0].uid, IDENTITY)
 
     def test_missing_or_malformed_snapshot_requires_restart(self) -> None:
@@ -514,6 +517,62 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
         with assert_auth_error(self, AuthSessionError, "session_context_missing"):
             self.backend.validate_state()
         self.assertEqual(self.backend.data["redirect_state"], state)
+
+    def test_association_only_state_is_bound_to_user(self) -> None:
+        response = self.verified_response()
+        user = User("existing")
+        for current_user, code in (
+            (None, "session_context_missing"),
+            (User("other"), "user_mismatch"),
+            (user, None),
+        ):
+            with (
+                self.subTest(user=current_user),
+                patch.object(self.backend, "ASSOCIATION_ONLY", True),
+                patch.object(
+                    self.backend, "_complete_generic_response", return_value=response
+                ),
+                patch.object(self.strategy, "authenticate") as authenticate,
+            ):
+                self.backend.prepare_auth(user)
+                context = self.strategy.session_get("openid_state")
+                assert isinstance(context, dict)
+                self.set_openid_context(response.endpoint)
+                self.strategy.set_request_data({"openid.mode": "id_res"}, self.backend)
+                # The prepared user-bound state is reused rather than replaced.
+                self.assertEqual(self.strategy.session_get("openid_state"), context)
+                self.assertEqual(self.backend.data["redirect_state"], context["state"])
+                if code:
+                    with assert_auth_error(self, AuthSessionError, code):
+                        self.backend.complete(user=current_user)
+                    authenticate.assert_not_called()
+                    self.assertEqual(self.strategy.session_get("openid_state"), context)
+                else:
+                    self.backend.complete(user=current_user)
+                    authenticate.assert_called_once()
+                    self.assertIsNone(self.strategy.session_get("openid_state"))
+
+    def test_association_only_callback_requires_prepared_state(self) -> None:
+        response = self.verified_response()
+        user = User("existing")
+        with patch.object(self.backend, "ASSOCIATION_ONLY", True):
+            with assert_auth_error(self, AuthSessionError, "session_context_missing"):
+                self.backend.create_state()
+            self.backend.prepare_auth(user)
+            self.set_openid_context(response.endpoint)
+            self.strategy.set_request_data(
+                {"openid.mode": "id_res", "redirect_state": "attacker-state"},
+                self.backend,
+            )
+            with (
+                patch.object(
+                    self.backend, "_complete_generic_response", return_value=response
+                ),
+                patch.object(self.strategy, "authenticate") as authenticate,
+                assert_auth_error(self, AuthSessionError, "state_mismatch"),
+            ):
+                self.backend.complete(user=user)
+            authenticate.assert_not_called()
 
     def test_generic_callback_requires_matching_backend(self) -> None:
         response = self.verified_response()

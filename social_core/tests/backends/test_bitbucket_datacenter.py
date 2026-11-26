@@ -3,6 +3,8 @@ from abc import ABC
 
 import responses
 
+from social_core.exceptions import AuthResponseError
+
 from .oauth import (
     OAuth2PkcePlainTest,
     OAuth2PkceS256Test,
@@ -121,6 +123,29 @@ class BitbucketDataCenterOAuth2Mixin(OAuth2Test, ABC):
         self.assertNotIn("uid", details)
         self.assertNotIn("type", details)
         self.assertNotIn("active", details)
+
+    def test_login_accepts_url_encoded_username_header(self) -> None:
+        # Bitbucket percent-encodes the header; the profile carries the raw name
+        self.application_properties_headers = {"x-ausername": "erlich%2Dbachman"}
+
+        user = self.do_login()
+
+        self.assertEqual(user.social[0].uid, "1")
+
+    def test_login_rejects_other_user_profile(self) -> None:
+        # The token owner's name is the slug of another user, whose profile
+        # `GET /users/{userSlug}` returns instead of the token owner's
+        assert self.user_data_body is not None
+        user_data = json.loads(self.user_data_body)
+        user_data["name"] = "erlich@bachman"
+        self.user_data_body = json.dumps(user_data)
+
+        with self.assertRaises(AuthResponseError) as caught:
+            self.do_login()
+
+        self.assertEqual(caught.exception.code, "invalid_claim")
+        self.assertEqual(caught.exception.claim, "name")
+        self.assertEqual(caught.exception.stage, "user_info")
 
     def test_refresh_token(self) -> None:
         _, social = self.do_refresh_token()

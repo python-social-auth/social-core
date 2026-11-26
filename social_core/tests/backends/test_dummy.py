@@ -318,4 +318,5 @@ class AllExtraDataTest(DummyOAuth2Test):
         user = self.do_login()
         social = user.social[0]
         self.assertIn("not_normally_in_extra_data", social.extra_data)
-        self.assertEqual(len(social.extra_data), 10)  # Includes auth_time.
+        self.assertIn("expires", social.extra_data)
+        self.assertEqual(len(social.extra_data), 11)  # Includes auth_time.

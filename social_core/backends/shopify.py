@@ -1,5 +1,5 @@
 """
-Shopify OAuth2 backend, docs at:
+Shopify OAuth2 association backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/shopify.html
 """
 
@@ -21,10 +21,11 @@ if TYPE_CHECKING:
 
 
 class ShopifyOAuth2(BaseOAuth2[ResponseT_co]):
-    """Shopify OAuth2 authentication backend"""
+    """Shopify OAuth2 association backend"""
 
     name = "shopify"
     title = "Shopify"
+    ASSOCIATION_ONLY = True
     ID_KEY = "shop"
     EXTRA_DATA = [("shop", "shop"), ("website", "website"), ("expires", "expires")]
     REDIRECT_STATE = False
@@ -104,8 +105,8 @@ class ShopifyOAuth2(BaseOAuth2[ResponseT_co]):
     @handle_http_errors
     def auth_complete(self, *args, **kwargs) -> UserProtocol | ResponseT_co | None:
         """Completes login process, must return user instance"""
+        self.validate_association_state(self.get_request_state(), kwargs.get("user"))
         self.process_error(self.data)
-        self.validate_state()
         access_token = None
         key, secret = self.get_key_and_secret()
         try:
@@ -135,6 +136,7 @@ class ShopifyOAuth2(BaseOAuth2[ResponseT_co]):
         )
 
     def do_auth(self, access_token, shop_url, website, *args, **kwargs):
+        self._bind_association_user(kwargs)
         kwargs.update(
             {
                 "backend": self,

@@ -1,5 +1,5 @@
 """
-LiveJournal OpenId backend, docs at:
+LiveJournal OpenId association backend, docs at:
     https://python-social-auth.readthedocs.io/en/latest/backends/livejournal.html
 """
 
@@ -72,10 +72,11 @@ class _LiveJournalGenericConsumer(_HTTPSDiscoveryGenericConsumer):
 
 
 class LiveJournalOpenId(OpenIdAuth[ResponseT_co]):
-    """LiveJournal OpenID authentication backend"""
+    """Associate a LiveJournal journal with an authenticated local user."""
 
     name = "livejournal"
     title = "LiveJournal"
+    ASSOCIATION_ONLY = True
     # Discovery starts at the journal, which its owner can redirect to another
     # site. Only LiveJournal's own OpenID server may complete a login, and only
     # for an identity on LiveJournal.
