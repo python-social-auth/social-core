@@ -1,17 +1,18 @@
 # Keep this shared module cohesive for protocol regression review.
-# OpenID policy regressions share one protocol fixture.
+# OpenID policy and PAPE regressions share one protocol fixture.
 # pylint: disable=too-many-lines
 from __future__ import annotations
 
 import copy
+import time
 from types import SimpleNamespace
 from typing import TYPE_CHECKING, cast
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 from urllib.parse import urlencode
 
 from openid.consumer.consumer import CancelResponse, FailureResponse, SuccessResponse
 from openid.consumer.discover import OpenIDServiceEndpoint
-from openid.extensions import ax, sreg
+from openid.extensions import ax, pape, sreg
 from openid.message import OPENID1_NS, OPENID2_NS, Message
 
 from social_core.backends.belgiumeid import BelgiumEIDOpenId
@@ -77,6 +78,8 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
         local_id=None,
         return_to=None,
         namespace=OPENID2_NS,
+        pape_auth_time: int | None = None,
+        signed_pape=True,
     ):
         endpoint = OpenIDServiceEndpoint()
         endpoint.claimed_id = claimed_id
@@ -103,10 +106,17 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
                 )
             attributes.addValue(DEPARTMENT, "Engineering")
             attributes.toMessage(message)
+        if pape_auth_time is not None:
+            pape.Response(
+                auth_time=time.strftime(
+                    "%Y-%m-%dT%H:%M:%SZ", time.gmtime(pape_auth_time)
+                )
+            ).toMessage(message)
         signed_fields = [
             key
             for key in message.toPostArgs()
-            if signed_ax or not key.startswith("openid.ax.")
+            if (signed_ax or not key.startswith("openid.ax."))
+            and (signed_pape or not key.startswith("openid.pape."))
         ]
         return SuccessResponse(endpoint, message, signed_fields)
 
@@ -559,6 +569,180 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
             self.backend.complete()
         authenticate.assert_called_once()
         self.assertEqual(self.strategy.session_get("openid"), {})
+
+    def test_pape_max_auth_age_requires_recent_signed_auth_time(self) -> None:
+        self.strategy.set_settings({"SOCIAL_AUTH_OPENID_PAPE_MAX_AUTH_AGE": "300"})
+        requested_at = int(time.time()) - 600
+        cases = (
+            (None, True, "missing_claim"),
+            (requested_at, False, "missing_claim"),
+            (requested_at - 301, True, "response_expired"),
+            (requested_at - 300, True, None),
+            (requested_at + 500, True, None),
+        )
+        for pape_auth_time, signed_pape, code in cases:
+            with self.subTest(pape_auth_time=pape_auth_time, signed_pape=signed_pape):
+                response = self.verified_response(
+                    pape_auth_time=pape_auth_time, signed_pape=signed_pape
+                )
+                self.set_openid_context(response.endpoint)
+                self.strategy.session_set("openid_pape_requested_at", requested_at)
+                self.strategy.set_request_data({"openid.mode": "id_res"}, self.backend)
+                with (
+                    patch.object(
+                        self.backend,
+                        "_complete_generic_response",
+                        return_value=response,
+                    ),
+                    patch.object(self.strategy, "authenticate") as authenticate,
+                ):
+                    if code is None:
+                        self.backend.complete()
+                        authenticate.assert_called_once()
+                    else:
+                        with assert_auth_error(self, AuthResponseError, code):
+                            self.backend.complete()
+                        authenticate.assert_not_called()
+                self.assertIsNone(self.strategy.session_get("openid_pape_requested_at"))
+
+    def test_pape_max_auth_age_without_request_time_uses_now(self) -> None:
+        self.strategy.set_settings({"SOCIAL_AUTH_OPENID_PAPE_MAX_AUTH_AGE": 300})
+        now = int(time.time())
+        for auth_time, code in (
+            (now - 600, "response_expired"),
+            (now - 60, None),
+            (now + 1, None),
+            (now + 2, "response_not_yet_valid"),
+        ):
+            with self.subTest(auth_time=auth_time):
+                response = self.verified_response(pape_auth_time=auth_time)
+                self.set_openid_context(response.endpoint)
+                self.strategy.set_request_data({"openid.mode": "id_res"}, self.backend)
+                with (
+                    patch("social_core.backends.open_id._pape_now", return_value=now),
+                    patch.object(
+                        self.backend,
+                        "_complete_generic_response",
+                        return_value=response,
+                    ),
+                    patch.object(self.strategy, "authenticate") as authenticate,
+                ):
+                    if code is None:
+                        self.backend.complete()
+                        authenticate.assert_called_once()
+                    else:
+                        with assert_auth_error(self, AuthResponseError, code):
+                            self.backend.complete()
+                        authenticate.assert_not_called()
+
+    def test_pape_zero_max_auth_age_accepts_request_time_only(self) -> None:
+        self.strategy.set_settings({"SOCIAL_AUTH_OPENID_PAPE_MAX_AUTH_AGE": 0})
+        now = int(time.time())
+        for auth_time, code in ((now, None), (now - 2, "response_expired")):
+            with self.subTest(auth_time=auth_time):
+                response = self.verified_response(pape_auth_time=auth_time)
+                self.set_openid_context(response.endpoint)
+                self.strategy.set_request_data({"openid.mode": "id_res"}, self.backend)
+                with (
+                    patch("social_core.backends.open_id._pape_now", return_value=now),
+                    patch.object(
+                        self.backend,
+                        "_complete_generic_response",
+                        return_value=response,
+                    ),
+                    patch.object(self.strategy, "authenticate") as authenticate,
+                ):
+                    if code is None:
+                        self.backend.complete()
+                        authenticate.assert_called_once()
+                    else:
+                        with assert_auth_error(self, AuthResponseError, code):
+                            self.backend.complete()
+                        authenticate.assert_not_called()
+
+    def test_pape_future_auth_time_uses_configured_leeway(self) -> None:
+        now = int(time.time())
+        self.strategy.set_settings(
+            {
+                "SOCIAL_AUTH_OPENID_PAPE_MAX_AUTH_AGE": 300,
+                "SOCIAL_AUTH_OPENID_PAPE_AUTH_TIME_LEEWAY": 10,
+            }
+        )
+        for auth_time, code in ((now + 5, None), (now + 20, "response_not_yet_valid")):
+            with self.subTest(auth_time=auth_time):
+                response = self.verified_response(pape_auth_time=auth_time)
+                self.strategy.session_set("openid_pape_requested_at", now)
+                if code is None:
+                    with patch(
+                        "social_core.backends.open_id._pape_now", return_value=now
+                    ):
+                        self.backend.validate_pape_auth_time(response)
+                else:
+                    with (
+                        patch(
+                            "social_core.backends.open_id._pape_now", return_value=now
+                        ),
+                        assert_auth_error(self, AuthResponseError, code),
+                    ):
+                        self.backend.validate_pape_auth_time(response)
+
+    def test_pape_rejects_malformed_auth_time_and_invalid_leeway(self) -> None:
+        now = int(time.time())
+        response = self.verified_response(pape_auth_time=now)
+        self.strategy.set_settings({"SOCIAL_AUTH_OPENID_PAPE_MAX_AUTH_AGE": 300})
+        pape.Response(auth_time="2026-99-99T00:00:00Z").toMessage(response.message)
+        self.strategy.session_set("openid_pape_requested_at", now)
+        with assert_auth_error(self, AuthResponseError, "invalid_claim"):
+            self.backend.validate_pape_auth_time(response)
+
+        response = self.verified_response(pape_auth_time=now)
+        for leeway in (-1, True, "invalid"):
+            with self.subTest(leeway=leeway):
+                self.strategy.set_settings(
+                    {"SOCIAL_AUTH_OPENID_PAPE_AUTH_TIME_LEEWAY": leeway}
+                )
+                self.strategy.session_set("openid_pape_requested_at", now)
+                with assert_auth_error(self, AuthConfigurationError, "invalid_setting"):
+                    self.backend.validate_pape_auth_time(response)
+
+    def test_invalid_pape_max_auth_age_fails_closed(self) -> None:
+        for value in ("invalid", -1, True):
+            with self.subTest(value=value):
+                self.strategy.set_settings(
+                    {"SOCIAL_AUTH_OPENID_PAPE_MAX_AUTH_AGE": value}
+                )
+                with assert_auth_error(self, AuthConfigurationError, "invalid_setting"):
+                    self.backend.pape_max_auth_age()
+
+    def test_openstack_family_requests_pape_when_max_age_enabled(self) -> None:
+        self.strategy.set_settings({"SOCIAL_AUTH_OPENID_PAPE_MAX_AUTH_AGE": 30})
+        for backend_class in (OpenStackOpenId, OpenInfraOpenId):
+            with self.subTest(backend=backend_class.name):
+                backend = backend_class(self.strategy)
+                request = Mock()
+                with (
+                    patch.object(backend, "openid_request", return_value=request),
+                    patch("social_core.backends.open_id._pape_now", return_value=1000),
+                ):
+                    backend.setup_request()
+                self.assertEqual(
+                    self.strategy.session_get(f"{backend.name}_pape_requested_at"),
+                    1000,
+                )
+                self.assertEqual(request.addExtension.call_count, 2)
+
+    def test_pape_auth_time_is_ignored_without_max_auth_age(self) -> None:
+        response = self.verified_response(pape_auth_time=int(time.time()) - 86400)
+        self.set_openid_context(response.endpoint)
+        self.strategy.set_request_data({"openid.mode": "id_res"}, self.backend)
+        with (
+            patch.object(
+                self.backend, "_complete_generic_response", return_value=response
+            ),
+            patch.object(self.strategy, "authenticate") as authenticate,
+        ):
+            self.backend.complete()
+        authenticate.assert_called_once()
 
     def test_generic_callback_does_not_use_unsigned_session_id(self) -> None:
         response = self.verified_response()
