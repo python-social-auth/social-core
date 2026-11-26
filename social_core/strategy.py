@@ -349,6 +349,15 @@ class BaseStrategy(Generic[ResponseT_co]):
         finally:
             self._pipeline_request_data.reset(token)
 
+    def is_partial_pipeline_resume(self) -> bool:
+        """Return whether a saved partial pipeline is being continued.
+
+        Only BaseAuth.continue_pipeline() scopes replayed request data, after
+        partial_pipeline_result() has checked session ownership or external
+        resume confirmation, so steps can tell a resume from a fresh request.
+        """
+        return self._pipeline_request_data.get() is not None
+
     def get_request_data(self, merge: bool = True) -> dict[str, Any]:
         """Return data from the current framework request (POST or GET)."""
         raise NotImplementedError("Implement in subclass")

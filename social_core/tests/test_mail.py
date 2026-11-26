@@ -1,9 +1,11 @@
 import unittest
 from datetime import UTC, datetime, timedelta, timezone
+from hashlib import sha256
 from typing import Protocol, cast
 from unittest.mock import Mock, patch
 from zoneinfo import ZoneInfo
 
+from social_core.exceptions import AuthConfigurationError, AuthCredentialError
 from social_core.pipeline.mail import mail_validation
 from social_core.utils import (
     PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME,
@@ -138,6 +140,7 @@ def call_partial_step(
 class MailValidationTest(unittest.TestCase):
     def setUp(self) -> None:
         TestPartial.reset_cache()
+        TestCode.reset_cache()
 
     def test_mail_validation_partial_allows_external_resume(self) -> None:
         strategy = TestStrategy(TestStorage)
@@ -149,6 +152,7 @@ class MailValidationTest(unittest.TestCase):
         backend.REQUIRES_EMAIL_VALIDATION = True
 
         with patch.object(strategy, "send_email_validation") as send_email_validation:
+            send_email_validation.return_value.code = "issued-code"
             response = call_partial_step(
                 mail_validation_wrapper,
                 strategy,
@@ -166,6 +170,34 @@ class MailValidationTest(unittest.TestCase):
         assert partial is not None
         self.assertTrue(partial.data[PARTIAL_PIPELINE_ALLOW_EXTERNAL_RESUME])
         send_email_validation.assert_called_once_with(backend, "foo@example.com", token)
+
+    def test_mail_validation_rejects_code_without_usable_value(self) -> None:
+        wrapper = cast("PartialStepWrapper", mail_validation)
+        for code in (None, ""):
+            with self.subTest(code=code):
+                strategy = TestStrategy(TestStorage)
+                backend = Mock()
+                backend.name = "email"
+                backend.strategy = strategy
+                backend.REQUIRES_EMAIL_VALIDATION = True
+                with (
+                    patch.object(
+                        strategy,
+                        "send_email_validation",
+                        return_value=Mock(code=code),
+                    ),
+                    self.assertRaises(AuthConfigurationError) as error,
+                ):
+                    call_partial_step(
+                        wrapper,
+                        strategy,
+                        backend,
+                        0,
+                        details={"email": "foo@example.com"},
+                        is_new=True,
+                    )
+                self.assertEqual(error.exception.parameter, "EMAIL_VALIDATION_FUNCTION")
+                self.assertIsNone(strategy.session_get("email_validation_address"))
 
     def test_mail_validation_uses_partial_request_data(self) -> None:
         strategy = TestStrategy(TestStorage)
@@ -186,7 +218,110 @@ class MailValidationTest(unittest.TestCase):
                 0,
                 details={"email": "foo@example.com"},
                 is_new=True,
+                email_validation_code_hash=sha256(b"123456").hexdigest(),
             )
 
         self.assertEqual(response, {})
         validate.assert_called_once_with("foo@example.com", "123456")
+
+    def test_code_is_bound_to_its_partial(self) -> None:
+        strategy = TestStrategy(TestStorage)
+        strategy.set_settings({"SOCIAL_AUTH_EMAIL_VALIDATION_URL": "/validate"})
+        backend = Mock()
+        backend.name = "email"
+        backend.strategy = strategy
+        backend.REQUIRES_EMAIL_VALIDATION = True
+        wrapper = cast("PartialStepWrapper", mail_validation)
+        first = TestCode.make_code("foo@example.com")
+        second = TestCode.make_code("foo@example.com")
+
+        with patch.object(
+            strategy, "send_email_validation", side_effect=[first, second]
+        ):
+            call_partial_step(
+                wrapper,
+                strategy,
+                backend,
+                0,
+                details={"email": first.email},
+                is_new=True,
+            )
+            first_token = cast("str", strategy.session_get(PARTIAL_TOKEN_SESSION_NAME))
+            call_partial_step(
+                wrapper,
+                strategy,
+                backend,
+                0,
+                details={"email": second.email},
+                is_new=True,
+            )
+            second_token = cast("str", strategy.session_get(PARTIAL_TOKEN_SESSION_NAME))
+
+        first_partial = TestPartial.load(first_token)
+        second_partial = TestPartial.load(second_token)
+        assert first_partial is not None and second_partial is not None
+        self.assertNotEqual(
+            first_partial.kwargs["email_validation_code_hash"],
+            second_partial.kwargs["email_validation_code_hash"],
+        )
+        with (
+            strategy.pipeline_request_data({"verification_code": second.code}),
+            self.assertRaises(AuthCredentialError),
+        ):
+            call_partial_step(
+                wrapper,
+                strategy,
+                backend,
+                0,
+                details={"email": first.email},
+                is_new=True,
+                email_validation_code_hash=first_partial.kwargs[
+                    "email_validation_code_hash"
+                ],
+            )
+        self.assertFalse(second.verified)
+        with strategy.pipeline_request_data({"verification_code": second.code}):
+            self.assertEqual(
+                call_partial_step(
+                    wrapper,
+                    strategy,
+                    backend,
+                    0,
+                    details={"email": second.email},
+                    is_new=True,
+                    email_validation_code_hash=second_partial.kwargs[
+                        "email_validation_code_hash"
+                    ],
+                ),
+                {},
+            )
+        self.assertTrue(second.verified)
+
+    def test_mail_validation_rejects_code_outside_partial_resume(self) -> None:
+        strategy = TestStrategy(TestStorage)
+        mail_validation_wrapper = cast("PartialStepWrapper", mail_validation)
+        backend = Mock()
+        backend.name = "email"
+        backend.strategy = strategy
+        backend.REQUIRES_EMAIL_VALIDATION = True
+        strategy.set_request_data(
+            {"email": "foo@example.com", "verification_code": "123456"}, backend
+        )
+
+        with (
+            patch.object(strategy, "validate_email", return_value=True) as validate,
+            patch.object(strategy, "send_email_validation") as send_email_validation,
+            self.assertRaises(AuthCredentialError) as error,
+        ):
+            call_partial_step(
+                mail_validation_wrapper,
+                strategy,
+                backend,
+                0,
+                details={"email": "foo@example.com"},
+                is_new=True,
+            )
+
+        self.assertEqual(error.exception.code, "email_verification_rejected")
+        validate.assert_not_called()
+        send_email_validation.assert_not_called()
