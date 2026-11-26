@@ -1,4 +1,6 @@
-from typing import Any
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
 
 import jwt
 
@@ -7,16 +9,24 @@ from social_core.utils import cache, module_member, user_is_authenticated
 
 from .base import BaseAuth, ResponseT_co
 
-# Cache for discovered backends. Backend classes are generic, so each can be
-# instantiated with a strategy for any response type.
-BACKENDSCACHE: dict[str, type[BaseAuth[Any]]] = {}
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+# Cache for discovered backends, keyed by the AUTHENTICATION_BACKENDS value they
+# were loaded from, so a lookup never returns a backend enabled elsewhere in
+# the process. Backend classes are generic, so each can be instantiated with a
+# strategy for any response type.
+BACKENDSCACHE: dict[tuple[str, ...], dict[str, type[BaseAuth[Any]]]] = {}
 
 
-def load_backends(backends, force_load=False):
+def load_backends(
+    backends: Iterable[str], force_load: bool = False
+) -> dict[str, type[BaseAuth[Any]]]:
     """
     Load backends defined on SOCIAL_AUTH_AUTHENTICATION_BACKENDS, backends will
-    be imported and cached on BACKENDSCACHE. The key in that dict will be the
-    backend name, and the value is the backend class.
+    be imported and cached on BACKENDSCACHE under the given setting value. The
+    key in the returned dict will be the backend name, and the value is the
+    backend class.
 
     Only subclasses of BaseAuth (and sub-classes) are considered backends.
 
@@ -30,37 +40,36 @@ def load_backends(backends, force_load=False):
     A force_load boolean argument is also provided so that get_backend
     below can retry a requested backend that may not yet be discovered.
     """
-    # pylint: disable-next=global-statement
-    global BACKENDSCACHE
-    if force_load:
-        BACKENDSCACHE = {}
-    if not BACKENDSCACHE:
-        for auth_backend in backends:
+    configured = tuple(backends)
+    loaded = None if force_load else BACKENDSCACHE.get(configured)
+    if loaded is None:
+        loaded = {}
+        for auth_backend in configured:
             backend = module_member(auth_backend)
             if issubclass(backend, BaseAuth):
-                BACKENDSCACHE[backend.name] = backend
-    return BACKENDSCACHE
+                loaded[backend.name] = backend
+        BACKENDSCACHE[configured] = loaded
+    return loaded
 
 
-def get_backend(backends, name):
-    """Returns a backend by name. Backends are stored in the BACKENDSCACHE
-    cache dict. If not found, each of the modules referenced in
-    AUTHENTICATION_BACKENDS is imported and checked for a BACKENDS
-    definition. If the named backend is found in the module's BACKENDS
-    definition, it's then stored in the cache for future access.
+def get_backend(backends: Iterable[str], name: str) -> type[BaseAuth[Any]]:
+    """Returns a backend by name. Only the backends referenced in the given
+    AUTHENTICATION_BACKENDS are considered, they are stored in the
+    BACKENDSCACHE cache dict. If not found, each of them is imported again
+    and checked for the named backend, which is then stored in the cache for
+    future access.
     """
-    try:
-        # Cached backend which has previously been discovered
-        return BACKENDSCACHE[name]
-    except KeyError:
+    configured = tuple(backends)
+    loaded = load_backends(configured)
+    if name not in loaded:
         # Reload BACKENDS to ensure a missing backend hasn't been missed
-        load_backends(backends, force_load=True)
-        try:
-            return BACKENDSCACHE[name]
-        except KeyError as error:
-            raise AuthConfigurationError(
-                None, name, code="backend_missing", parameter="backend"
-            ) from error
+        loaded = load_backends(configured, force_load=True)
+    try:
+        return loaded[name]
+    except KeyError as error:
+        raise AuthConfigurationError(
+            None, name, code="backend_missing", parameter="backend"
+        ) from error
 
 
 def user_backends_data(user, backends, storage):

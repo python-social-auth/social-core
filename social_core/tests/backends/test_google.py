@@ -81,6 +81,7 @@ class GoogleOAuth2Test(
     backend_path = "social_core.backends.google.GoogleOAuth2"
 
     user_data_url = "https://www.googleapis.com/oauth2/v3/userinfo"
+    token_info_url = "https://oauth2.googleapis.com/tokeninfo"
     expected_username = "foo"
     access_token_body = json.dumps({"access_token": "foobar", "token_type": "bearer"})
     user_data_body = json.dumps(
@@ -158,6 +159,109 @@ class GoogleOAuth2Test(
             }
         )
         self.do_login()
+
+    def _add_supplied_token_responses(self, token_info: dict[str, object]) -> None:
+        responses.add(responses.GET, self.token_info_url, json=token_info)
+        responses.add(
+            responses.GET,
+            self.user_data_url,
+            body=self.user_data_body,
+            content_type=self.user_data_content_type,
+        )
+
+    def _assert_supplied_token_rejected(
+        self, token_info: dict[str, object], code: str
+    ) -> None:
+        self._add_supplied_token_responses(token_info)
+
+        with self.assertRaises(AuthResponseError) as caught:
+            self.backend.do_auth("foobar")
+
+        self.assertEqual(caught.exception.code, code)
+        self.assertEqual(caught.exception.claim, "aud")
+        self.assertEqual(caught.exception.stage, "token_validation")
+        self.assertEqual(
+            [call.request.url for call in responses.calls],
+            [f"{self.token_info_url}?access_token=foobar"],
+        )
+        self.assertEqual(User.cache, {})
+        self.assertEqual(TestUserSocialAuth.cache, {})
+
+    def test_login_does_not_request_token_info(self) -> None:
+        self.do_login()
+        self.assertFalse(
+            [
+                call
+                for call in responses.calls
+                if cast("str", call.request.url).startswith(self.token_info_url)
+            ]
+        )
+
+    def test_supplied_access_token_for_configured_client(self) -> None:
+        self._add_supplied_token_responses({"aud": "a-key", "azp": "a-key"})
+
+        user = self.backend.do_auth("foobar")
+
+        self.assertEqual(user.username, self.expected_username)
+        self.assertEqual(
+            [call.request.url for call in responses.calls],
+            [f"{self.token_info_url}?access_token=foobar", self.user_data_url],
+        )
+
+    def test_supplied_access_token_for_configured_audience(self) -> None:
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_GOOGLE_OAUTH2_AUDIENCE": ["a-key", "a-mobile-key"]}
+        )
+        self._add_supplied_token_responses({"aud": "a-mobile-key"})
+
+        user = self.backend.do_auth("foobar")
+
+        self.assertEqual(user.username, self.expected_username)
+
+    def test_supplied_access_token_for_another_client(self) -> None:
+        self._assert_supplied_token_rejected({"aud": "another-key"}, "invalid_claim")
+
+    def test_supplied_response_cannot_bypass_audience_check(self) -> None:
+        self._add_supplied_token_responses({"aud": "another-key"})
+        with self.assertRaises(AuthResponseError) as caught:
+            self.backend.do_auth("foobar", response={"access_token": "foobar"})
+        self.assertEqual(caught.exception.code, "invalid_claim")
+        self.assertEqual(
+            [call.request.url for call in responses.calls],
+            [f"{self.token_info_url}?access_token=foobar"],
+        )
+
+    def test_supplied_access_token_outside_configured_audience(self) -> None:
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_GOOGLE_OAUTH2_AUDIENCE": "a-mobile-key"}
+        )
+        self._assert_supplied_token_rejected({"aud": "a-key"}, "invalid_claim")
+
+    def test_supplied_access_token_without_audience(self) -> None:
+        self._assert_supplied_token_rejected({"sub": "1"}, "missing_claim")
+
+    def test_supplied_access_token_with_malformed_audience(self) -> None:
+        self._assert_supplied_token_rejected({"aud": ["a-key"]}, "invalid_claim")
+
+    def test_invalid_audience_setting_rejects_before_provider_request(self) -> None:
+        self.strategy.set_settings({"SOCIAL_AUTH_GOOGLE_OAUTH2_AUDIENCE": []})
+        with self.assertRaises(AuthConfigurationError) as caught:
+            self.backend.do_auth("foobar")
+        self.assertEqual(caught.exception.parameter, "AUDIENCE")
+        self.assertEqual(len(responses.calls), 0)
+
+    def test_exchanged_token_exemption_is_consumed_once(self) -> None:
+        # Exercise the one-use provenance marker directly.
+        # pylint: disable=protected-access
+        self._add_supplied_token_responses({"aud": "another-key"})
+        self.backend._code_exchange_active = True  # ruff: ignore[private-member-access]
+        self.backend._exchanged_access_token = "foobar"  # ruff: ignore[private-member-access]
+        self.assertEqual(
+            self.backend.do_auth("foobar").username, self.expected_username
+        )
+        with self.assertRaises(AuthResponseError) as caught:
+            self.backend.do_auth("foobar")
+        self.assertEqual(caught.exception.claim, "aud")
 
 
 class GoogleOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
