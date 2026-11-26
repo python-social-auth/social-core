@@ -40,6 +40,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   Existing fallback associations with conflicting NameID evidence require
   operator repair; evidence-free legacy fallback keys retain their prior
   compatibility behavior.
+- Enforce requested OIDC authentication context and age against validated ID
+  token claims, and require a signed, non-future PAPE authentication time when
+  OpenID maximum age is configured. This includes OIDC strength values sent
+  through authorization extra arguments; missing or mismatched signed claims
+  now reject login. ``OPENID_PAPE_AUTH_TIME_LEEWAY`` defaults to one second.
 
 ### Added
 

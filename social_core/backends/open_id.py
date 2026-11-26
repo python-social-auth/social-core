@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import time
+from calendar import timegm
 from typing import TYPE_CHECKING, Any, cast
 from urllib.parse import parse_qsl, urldefrag, urlencode, urlsplit, urlunsplit
 
@@ -63,6 +65,13 @@ SESSION_NAME = "openid"
 _VERIFIED_RESPONSE_KEY = "_openid_verified_response"
 _BACKEND_SESSION_KEY = "_social_auth_backend"
 _LEGACY_SESSION_ID_FIELD = "psa_session_id"
+# RFC 3339 UTC timestamp used by the PAPE auth_time response field.
+_PAPE_AUTH_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+
+
+def _pape_now() -> int:
+    """Read the PAPE clock through a private, testable binding."""
+    return int(time.time())
 
 
 class OpenIdAuth(BaseAuth[ResponseT_co]):
@@ -649,6 +658,7 @@ class OpenIdAuth(BaseAuth[ResponseT_co]):
             initiated_endpoint = self._expected_openid_endpoint()
             self._validate_completed_generic_provider(response, initiated_endpoint)
         self.validate_state()
+        self.validate_pape_auth_time(response)
         self._clear_openid_context()
         # Retain both the verified message and its signed fields so extension
         # data keeps the same trust checks after a JSON-serialized partial.
@@ -692,15 +702,18 @@ class OpenIdAuth(BaseAuth[ResponseT_co]):
             )
         request.addExtension(fetch_request)
 
-        # Add PAPE Extension for if configured
+        self.add_pape_request(request)
+        return request
+
+    def add_pape_request(self, request: AuthRequest) -> None:
+        """Attach the configured PAPE request and remember when it was sent."""
         preferred_policies = self.setting("OPENID_PAPE_PREFERRED_AUTH_POLICIES")
         preferred_level_types = self.setting("OPENID_PAPE_PREFERRED_AUTH_LEVEL_TYPES")
-        max_age = self.setting("OPENID_PAPE_MAX_AUTH_AGE")
+        max_age = self.pape_max_auth_age()
         if max_age is not None:
-            try:
-                max_age = int(max_age)
-            except (ValueError, TypeError):
-                max_age = None
+            # max_auth_age counts back from this request; the callback
+            # compares the signed auth_time against that moment.
+            self.strategy.session_set(f"{self.name}_pape_requested_at", _pape_now())
 
         if max_age is not None or preferred_policies or preferred_level_types:
             pape_request = pape.Request(
@@ -709,7 +722,89 @@ class OpenIdAuth(BaseAuth[ResponseT_co]):
                 preferred_auth_level_types=preferred_level_types,
             )
             request.addExtension(pape_request)
-        return request
+
+    def pape_max_auth_age(self) -> int | None:
+        """Return the configured PAPE max_auth_age in seconds, if any."""
+        max_age = self.setting("OPENID_PAPE_MAX_AUTH_AGE")
+        if max_age is None:
+            return None
+        try:
+            parsed = int(max_age)
+        except (ValueError, TypeError) as error:
+            raise AuthConfigurationError(
+                self,
+                code="invalid_setting",
+                parameter="OPENID_PAPE_MAX_AUTH_AGE",
+                stage="begin",
+            ) from error
+        if isinstance(max_age, bool) or parsed < 0:
+            raise AuthConfigurationError(
+                self,
+                code="invalid_setting",
+                parameter="OPENID_PAPE_MAX_AUTH_AGE",
+                stage="begin",
+            )
+        return parsed
+
+    def validate_pape_auth_time(self, response: SuccessResponse) -> None:
+        """Require a signed PAPE auth_time within OPENID_PAPE_MAX_AUTH_AGE.
+
+        The authentication request reaches the provider through the browser,
+        which can drop or alter max_auth_age, and a provider may ignore it,
+        so the provider's signed answer has to show the requirement was met.
+        """
+        requested_at = self.strategy.session_pop(f"{self.name}_pape_requested_at")
+        max_age = self.pape_max_auth_age()
+        if max_age is None:
+            return
+        # fromSuccessResponse() only reads signed PAPE fields.
+        pape_response = cast("Any", pape.Response).fromSuccessResponse(response)
+        auth_time = pape_response.auth_time if pape_response else None
+        if not auth_time:
+            raise AuthResponseError(
+                self,
+                "Missing PAPE response: auth_time",
+                claim="auth_time",
+                code="missing_claim",
+                stage="callback",
+            )
+        try:
+            authenticated_at = timegm(time.strptime(auth_time, _PAPE_AUTH_TIME_FORMAT))
+        except ValueError as error:
+            raise AuthResponseError(
+                self,
+                "Incorrect PAPE response: auth_time",
+                claim="auth_time",
+                code="invalid_claim",
+                stage="callback",
+            ) from error
+        if not isinstance(requested_at, int):
+            # The request was made without the setting; fail safe on now.
+            requested_at = _pape_now()
+        leeway = self.setting("OPENID_PAPE_AUTH_TIME_LEEWAY", 1)
+        if not isinstance(leeway, int) or isinstance(leeway, bool) or leeway < 0:
+            raise AuthConfigurationError(
+                self,
+                code="invalid_setting",
+                parameter="OPENID_PAPE_AUTH_TIME_LEEWAY",
+                stage="callback",
+            )
+        if authenticated_at > _pape_now() + leeway:
+            raise AuthResponseError(
+                self,
+                "Incorrect PAPE response: auth_time",
+                claim="auth_time",
+                code="response_not_yet_valid",
+                stage="callback",
+            )
+        if requested_at - authenticated_at > max_age:
+            raise AuthResponseError(
+                self,
+                "Incorrect PAPE response: auth_time",
+                claim="auth_time",
+                code="response_expired",
+                stage="callback",
+            )
 
     def get_consumer_store(self) -> OpenIdStore | None:
         return self.strategy.openid_store()

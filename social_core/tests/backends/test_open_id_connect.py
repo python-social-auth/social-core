@@ -1,5 +1,5 @@
 # Keep this shared module cohesive for protocol regression review.
-# OIDC policy regressions share one token fixture.
+# OIDC policy and freshness regressions share one token fixture.
 # pylint: disable=too-many-lines
 from __future__ import annotations
 
@@ -18,9 +18,10 @@ from social_core.exceptions import (
     AuthConfigurationError,
     AuthCredentialError,
     AuthResponseError,
+    AuthSessionError,
 )
 from social_core.tests.exception_helpers import assert_auth_error
-from social_core.tests.models import TestStorage
+from social_core.tests.models import TestStorage, User
 from social_core.tests.strategy import TestStrategy
 from social_core.utils import get_querystring, module_member, parse_qs
 
@@ -503,6 +504,106 @@ class BaseOpenIdConnectTest(
 
         self.assert_refresh_requires_reauthentication(social)
 
+    def test_max_age_requires_signed_recent_auth_time(self) -> None:
+        self.strategy.set_settings({"SOCIAL_AUTH_OIDC_MAX_AGE": 0})
+        requested_at = int(dt.datetime.now(dt.UTC).timestamp())
+        with patch.object(
+            self.backend, "_oauth2_transaction", {"timestamp": requested_at}
+        ):
+            self.backend.validate_max_age({"auth_time": requested_at})
+            with assert_auth_error(self, AuthResponseError, "missing_claim"):
+                self.backend.validate_max_age({})
+            with assert_auth_error(self, AuthResponseError, "response_expired"):
+                self.backend.validate_max_age({"auth_time": requested_at - 30})
+        with (
+            patch.object(self.backend, "_oauth2_transaction", None),
+            assert_auth_error(self, AuthSessionError, "session_context_missing"),
+        ):
+            self.backend.validate_max_age({"auth_time": requested_at})
+
+    def test_extra_arguments_strength_is_enforced(self) -> None:
+        self.strategy.set_settings(
+            {
+                "SOCIAL_AUTH_OIDC_AUTH_EXTRA_ARGUMENTS": {
+                    "max_age": "0",
+                    "acr_values": "strong",
+                }
+            }
+        )
+        url = self.backend.auth_url()
+        state = get_querystring(url)["state"]
+        transaction = self.strategy.session_get(self.backend.transaction_key(state))
+        assert isinstance(transaction, dict)
+        self.assertEqual(transaction["oidc_requested_max_age"], 0)
+        self.assertEqual(transaction["oidc_requested_acr_values"], "strong")
+        with patch.object(self.backend, "_oauth2_transaction", transaction):
+            self.backend.validate_acr({"acr": "strong"})
+            with assert_auth_error(self, AuthResponseError, "invalid_claim"):
+                self.backend.validate_acr({"acr": "weak"})
+            self.backend.validate_max_age({"auth_time": transaction["timestamp"]})
+            with assert_auth_error(self, AuthResponseError, "response_expired"):
+                self.backend.validate_max_age(
+                    {"auth_time": transaction["timestamp"] - 30}
+                )
+
+    def test_auth_url_rejects_invalid_extra_strength_parameters(self) -> None:
+        for arguments, parameter in (
+            ({"max_age": "invalid"}, "max_age"),
+            ({"max_age": "-1"}, "max_age"),
+            ({"acr_values": "   "}, "acr_values"),
+        ):
+            with self.subTest(arguments=arguments):
+                self.strategy.set_settings(
+                    {"SOCIAL_AUTH_OIDC_AUTH_EXTRA_ARGUMENTS": arguments}
+                )
+                with assert_auth_error(
+                    self, AuthConfigurationError, "invalid_setting"
+                ) as error:
+                    self.backend.auth_url()
+                self.assertEqual(error.exception.parameter, parameter)
+
+    def test_auth_url_rejects_lost_transaction(self) -> None:
+        with (
+            patch.object(self.strategy, "session_get", return_value=None),
+            assert_auth_error(self, AuthSessionError, "session_context_missing"),
+        ):
+            self.backend.auth_url()
+
+    def test_prepare_auth_handles_missing_association_context(self) -> None:
+        self.backend.prepare_auth()
+        with (
+            patch.object(self.backend, "ASSOCIATION_ONLY", True),
+            patch.object(self.strategy, "session_get", return_value=None),
+        ):
+            self.backend.prepare_auth(user=User("owner"))
+
+    def test_association_timestamp_persists_with_copy_on_read_session(self) -> None:
+        session_get = self.strategy.session_get
+
+        def copied_session_get(key, default=None):
+            return copy.deepcopy(session_get(key, default))
+
+        with (
+            patch.object(self.backend, "ASSOCIATION_ONLY", True),
+            patch.object(self.strategy, "session_get", side_effect=copied_session_get),
+        ):
+            self.backend.prepare_auth(user=User("owner"))
+        context = session_get(f"{self.backend.name}_state")
+        assert isinstance(context, dict)
+        self.assertIsInstance(context["timestamp"], int)
+
+    def test_max_age_accepts_fractional_and_rejects_future_auth_time(self) -> None:
+        self.strategy.set_settings({"SOCIAL_AUTH_OIDC_MAX_AGE": 60})
+        requested_at = int(dt.datetime.now(dt.UTC).timestamp())
+        with patch.object(
+            self.backend, "_oauth2_transaction", {"timestamp": requested_at}
+        ):
+            self.backend.validate_max_age({"auth_time": requested_at - 0.5})
+            with assert_auth_error(self, AuthResponseError, "response_not_yet_valid"):
+                self.backend.validate_max_age({"auth_time": requested_at + 30.0})
+            with assert_auth_error(self, AuthResponseError, "response_not_yet_valid"):
+                self.backend.validate_max_age({"auth_time": 10**1000})
+
 
 class ExampleOpenIdConnectAuth(OpenIdConnectAuth):
     name = "example123"
@@ -799,6 +900,7 @@ class ExampleOpenIdConnectAcrValuesTest(OpenIdConnectTest):
     )
 
     expected_username = "cartman"
+    acr = "urn:mace:incommon:iap:silver"
 
     def pre_complete_callback(self, start_url) -> None:
         super().pre_complete_callback(start_url)
@@ -810,12 +912,34 @@ class ExampleOpenIdConnectAcrValuesTest(OpenIdConnectTest):
             content_type="text/json",
         )
 
+    def get_id_token(self, *args, **kwargs):
+        id_token = super().get_id_token(*args, **kwargs)
+        id_token["acr"] = self.acr
+        return id_token
+
     def test_everything_works(self) -> None:
         self.do_login()
 
     def test_acr_values_in_auth_params(self) -> None:
         params = self.backend.auth_params(state=self.backend.get_or_create_state())
         self.assertEqual(params["acr_values"], "urn:mace:incommon:iap:silver")
+
+    def test_any_requested_acr_is_accepted(self) -> None:
+        setting = f"SOCIAL_AUTH_{self.name}_ACR_VALUES"
+        self.strategy.set_settings(
+            {
+                **self.extra_settings(),
+                setting: "urn:mace:incommon:iap:gold urn:mace:incommon:iap:silver",
+            }
+        )
+        self.do_login()
+
+    def test_missing_acr(self) -> None:
+        self.authtoken_raised("invalid_claim", exclude_claims=("acr",))
+
+    def test_unrequested_acr(self) -> None:
+        self.acr = "urn:mace:incommon:iap:bronze"
+        self.authtoken_raised("invalid_claim")
 
 
 class OpenIdConnectWithLoginHint(ExampleOpenIdConnectAuth):
