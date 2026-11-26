@@ -535,6 +535,76 @@ class TestUserDetails(BaseActionTest):
         user_details(self.strategy, details, backend, user)
         self.assertEqual(user.first_name, "Test")
 
+    def test_user_details_ignores_private_attributes(self) -> None:
+        user = User(username="foobar")
+        user_id = user.id
+        planted = {"id": user_id + 1, "username": "admin", "password": "planted"}
+        for settings in (
+            {},
+            {"SOCIAL_AUTH_NO_DEFAULT_PROTECTED_USER_FIELDS": True},
+            {"SOCIAL_AUTH_USER_FIELD_MAPPING": {"state": "__dict__"}},
+        ):
+            self.strategy.set_settings(settings)
+            for details in (
+                {"__dict__": planted},
+                {"state": planted},
+                {"__class__": str},
+                {"_is_active": False},
+            ):
+                with (
+                    self.subTest(settings=settings, details=details),
+                    patch.object(self.strategy.storage.user, "changed") as changed,
+                ):
+                    user_details(self.strategy, details, None, user)
+                    changed.assert_not_called()
+                    self.assertIsInstance(user, User)
+                    self.assertEqual(user.id, user_id)
+                    self.assertEqual(user.username, "foobar")
+                    self.assertIsNone(user.password)
+                    self.assertTrue(user.is_active)
+
+    def test_user_details_protects_active(self) -> None:
+        class DisabledUser(User):
+            active = False
+
+        user = DisabledUser(username="foobar")
+        user_details(self.strategy, {"active": True}, None, user)
+        self.assertFalse(user.active)
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_NO_DEFAULT_PROTECTED_USER_FIELDS": True}
+        )
+        user_details(self.strategy, {"active": True}, None, user)
+        self.assertTrue(user.active)
+
+    def test_user_details_protects_authentication_flag(self) -> None:
+        class LocalUser(User):
+            is_authenticated = False
+
+        user = LocalUser(username="foobar")
+        user_details(self.strategy, {"is_authenticated": True}, None, user)
+        self.assertFalse(user.is_authenticated)
+
+    def test_user_details_protects_local_verification_and_creation(self) -> None:
+        class LocalUser(User):
+            verified = False
+            email_verified = False
+            created_at = "local-timestamp"
+
+        user = LocalUser(username="foobar")
+        user_details(
+            self.strategy,
+            {
+                "verified": True,
+                "email_verified": True,
+                "created_at": "provider-timestamp",
+            },
+            None,
+            user,
+        )
+        self.assertFalse(user.verified)
+        self.assertFalse(user.email_verified)
+        self.assertEqual(user.created_at, "local-timestamp")
+
 
 class TestLowerCaseEmailOverride(BaseActionTest):
     user_data_body = json.dumps(

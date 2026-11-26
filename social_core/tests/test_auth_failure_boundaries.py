@@ -533,6 +533,7 @@ class AuthenticationFailureBoundaryTest(unittest.TestCase):
     def test_telegram_configuration_input_expiry_and_signature_are_distinct(self):
         for settings, data, family, code in (
             ({}, {}, AuthConfigurationError, "missing_setting"),
+            ({"BOT_TOKEN": "   "}, {}, AuthConfigurationError, "missing_setting"),
             ({"BOT_TOKEN": "secret"}, {}, AuthInputError, "missing_parameter"),
             (
                 {"BOT_TOKEN": "secret"},

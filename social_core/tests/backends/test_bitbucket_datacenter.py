@@ -111,6 +111,17 @@ class BitbucketDataCenterOAuth2Mixin(OAuth2Test, ABC):
         self.assertEqual(social.extra_data["expires_in"], 3600)
         self.assertEqual(social.extra_data["refresh_token"], "dummy_refresh_token")
 
+    def test_user_details_omit_account_state(self) -> None:
+        """Bitbucket account state must not reach the local user via details."""
+        assert self.user_data_body is not None
+        details = self.backend.get_user_details(json.loads(self.user_data_body))
+
+        self.assertEqual(details["username"], "erlich-bachman")
+        self.assertEqual(details["email"], "erlich@bachmanity.com")
+        self.assertNotIn("uid", details)
+        self.assertNotIn("type", details)
+        self.assertNotIn("active", details)
+
     def test_refresh_token(self) -> None:
         _, social = self.do_refresh_token()
 

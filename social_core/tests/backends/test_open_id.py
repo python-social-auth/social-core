@@ -932,6 +932,43 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
                 backend.openid_request()
             self.assertEqual(self.strategy.session_get("openid"), {})
 
+    def test_generic_discovery_requires_web_endpoint(self) -> None:
+        self.strategy.set_request_data(
+            {"openid_identifier": "https://example.com/user"}, self.backend
+        )
+        for server_url in (
+            None,
+            "javascript:alert(document.domain)//",
+            "data:text/html,content",
+            "//example.com/openid",
+            "https:openid",
+            "https://user@example.com/openid",
+            "https://[",
+            "https://example.com\\@evil.example/openid",
+            "https://example.com/openid\tunsafe",
+        ):
+            with (
+                self.subTest(server_url=server_url),
+                patch.object(self.backend, "consumer") as consumer,
+                assert_auth_error(self, AuthProviderError, "malformed_response"),
+            ):
+                consumer.return_value.begin.return_value = SimpleNamespace(
+                    endpoint=SimpleNamespace(server_url=server_url)
+                )
+                self.backend.openid_request()
+            self.assertEqual(self.strategy.session_get("openid"), {})
+
+        # The generic backend follows user-selected discovery, so a cleartext
+        # provider endpoint is still accepted.
+        with patch.object(self.backend, "consumer") as consumer:
+            consumer.return_value.begin.return_value = SimpleNamespace(
+                endpoint=SimpleNamespace(server_url="http://example.com/openid")
+            )
+            self.backend.openid_request()
+        self.assertEqual(
+            self.strategy.openid_session_dict("openid")[BACKEND_SESSION_KEY], "openid"
+        )
+
     def test_fixed_provider_requires_secure_configured_url(self) -> None:
         class InsecureOpenId(OpenIdAuth):
             URL = "http://provider.example/openid"

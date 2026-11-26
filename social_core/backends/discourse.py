@@ -6,7 +6,13 @@ from typing import cast
 from urllib.parse import parse_qs, urlencode
 
 from social_core.backends.base import ResponseT_co
-from social_core.exceptions import AuthInputError, AuthResponseError, AuthSessionError
+from social_core.exceptions import (
+    AuthConfigurationError,
+    AuthInputError,
+    AuthResponseError,
+    AuthSessionError,
+    ErrorStage,
+)
 from social_core.groups import read_groups
 from social_core.utils import constant_time_compare, drop_lists
 
@@ -22,10 +28,20 @@ class DiscourseAuth(BaseAuth[ResponseT_co]):
     REQUIRES_USER_ID = True
     EXTRA_DATA = ["external_id", "username", "name", "avatar_url"]
 
+    def get_secret(self, *, stage: ErrorStage) -> str:
+        # An empty secret would sign and verify with a key anyone can compute.
+        secret = self.setting("SECRET")
+        if not secret:
+            raise AuthConfigurationError(
+                self, parameter="SECRET", code="missing_setting", stage=stage
+            )
+        return cast("str", secret)
+
     def auth_url(self) -> str:
         """
         Get the URL to which we must redirect in order to authenticate the user
         """
+        secret = self.get_secret(stage="begin")
         return_url = self.redirect_uri
         nonce = self.strategy.random_string(64)
         self.add_nonce(nonce)
@@ -35,7 +51,7 @@ class DiscourseAuth(BaseAuth[ResponseT_co]):
         base_64_payload = urlsafe_b64encode(payload.encode("utf8")).decode("ascii")
 
         payload_signature = hmac.new(
-            self.setting("SECRET").encode("utf8"),
+            secret.encode("utf8"),
             base_64_payload.encode("utf8"),
             sha256,
         ).hexdigest()
@@ -108,7 +124,9 @@ class DiscourseAuth(BaseAuth[ResponseT_co]):
         sso_signature = request_data.get("sig")
 
         param_signature = hmac.new(
-            self.setting("SECRET").encode("utf8"), sso_params.encode("utf8"), sha256
+            self.get_secret(stage="callback").encode("utf8"),
+            sso_params.encode("utf8"),
+            sha256,
         ).hexdigest()
 
         if not isinstance(sso_signature, str) or not constant_time_compare(

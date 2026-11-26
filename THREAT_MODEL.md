@@ -111,10 +111,13 @@ documentation.
   can accept a valid assertion posted by another party; deployments requiring
   login CSRF protection must keep this option disabled.
 - **Uncorrelated signed flows:** [Telegram](https://python-social-auth.readthedocs.io/en/latest/backends/telegram.html)
-  validates callback HMAC and age; [Facebook Limited Login](https://python-social-auth.readthedocs.io/en/latest/backends/facebook_limited_login.html)
+  validates callback HMAC and age; [Google One Tap](https://python-social-auth.readthedocs.io/en/latest/backends/google.html)
+  validates the ID token and a double-submit CSRF cookie but has no server-held
+  initiation nonce; [Facebook Limited Login](https://python-social-auth.readthedocs.io/en/latest/backends/facebook_limited_login.html)
   validates the provider signature and applicable identity/time claims but does
-  not enforce nonce. Neither supplies initiation, browser-session binding, or
-  single-use protection. [VK](https://python-social-auth.readthedocs.io/en/latest/backends/vk.html)
+  not enforce nonce. Telegram and Facebook Limited Login lack initiation,
+  browser-session binding, and single-use protection.
+  [VK](https://python-social-auth.readthedocs.io/en/latest/backends/vk.html)
   and [Odnoklassniki](https://python-social-auth.readthedocs.io/en/latest/backends/odnoklassnikiru.html)
   iframe launches likewise lack those bindings and an age limit. They validate
   launch signatures and provider identity; Odnoklassniki also confirms the user
@@ -126,6 +129,11 @@ documentation.
   association-only and must not independently create or authenticate a local
   user. EmailAuth and UsernameAuth rely on application credential and validation
   policy rather than independently proving a remote identity.
+- **Twilio Connect association:** Twilio is association-only and binds its
+  callback to the initiating authenticated local user, but the callback
+  ``AccountSid`` is not cryptographic proof that the user owns the Twilio
+  account. Deployments must treat it as a connection label, not an
+  independently verified login identity.
 - **Missing ownership evidence:** Audited built-in legacy identifier transitions
   may accept missing evidence by default, with a first-login race. These
   supported compatibility defaults do not prove continuous ownership. Explicit
