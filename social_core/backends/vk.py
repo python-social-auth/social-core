@@ -340,6 +340,11 @@ class VKIDOAuth2(BaseOAuth2PKCE[ResponseT_co]):
                 )
         return data
 
+    def answers_pending_request(self, data: dict[str, Any]) -> bool:
+        # The state of a payload callback is inside the payload, which is
+        # always a new provider response and never a pipeline resume.
+        return "payload" in data or super().answers_pending_request(data)
+
     def auth_complete(self, *args, **kwargs):
         original_data = self.data
         self.data = self.callback_data()
@@ -535,6 +540,10 @@ class VKAppOAuth2(VKOAuth2[ResponseT_co]):
 
         response[self.id_key()] = profile_user_id
         return response
+
+    def answers_pending_request(self, data: dict[str, Any]) -> bool:
+        # A signed launch is always a new sign-in, never a pipeline resume.
+        return "auth_key" in data or super().answers_pending_request(data)
 
     def auth_complete(self, *args, **kwargs):
         required_params = ("is_app_user", "viewer_id", "access_token", "api_id")

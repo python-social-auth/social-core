@@ -150,6 +150,15 @@ class GithubAppAuth(GithubOAuth2[ResponseT_co]):
     title = "GitHub App"
     icon = "github.svg"
 
+    def answers_pending_request(self, data: dict[str, Any]) -> bool:
+        # Installation callbacks restart OAuth, including when they carry a
+        # state parameter. They never resume a paused pipeline.
+        return (
+            "installation_id" in data
+            or "setup_action" in data
+            or super().answers_pending_request(data)
+        )
+
     def auth_complete(self, *args, **kwargs):
         if not self.get_request_state() and all(
             self.data.get(name) for name in ("code", "installation_id", "setup_action")

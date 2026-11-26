@@ -29,6 +29,10 @@ class TwitterOAuth(BaseOAuth1[ResponseT_co]):
             raise AuthCanceled(self, code="authorization_declined", stage=stage)
         super().process_error(data, stage=stage)
 
+    def answers_pending_request(self, data: dict[str, Any]) -> bool:
+        # A cancelled authorization returns its request token as ``denied``.
+        return "denied" in data or super().answers_pending_request(data)
+
     def get_user_details(self, response):
         """Return user details from Twitter account"""
         fullname = response["name"]

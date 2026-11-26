@@ -517,6 +517,18 @@ class OpenIdAuth(BaseAuth[ResponseT_co]):
         self.strategy.session_set(f"{self.name}_state", state)
         return state
 
+    def answers_pending_request(self, data: dict[str, Any]) -> bool:
+        state = data.get("redirect_state")
+        pending = self.strategy.session_get(f"{self.name}_state")
+        if isinstance(pending, dict):
+            pending = pending.get("state")
+        return (
+            isinstance(state, str)
+            and isinstance(pending, str)
+            and bool(state)
+            and constant_time_compare(state, pending)
+        )
+
     def validate_state(self) -> None:
         """Require the verified return URL's state in the initiating session."""
         request_state = self.data.get("redirect_state")

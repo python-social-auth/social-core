@@ -40,6 +40,10 @@ def partial_prepare(
     **kwargs,
 ) -> PartialMixin:
     storage = strategy.get_storage(stage="pipeline")
+    kwargs.setdefault(
+        backend.association_user_id_key(backend.pipeline_type),
+        None if user is None else str(user.id),
+    )
     kwargs.update(
         {
             "response": kwargs.get("response") or {},
@@ -112,6 +116,21 @@ def partial_load(strategy: BaseStrategy[object], token: str) -> PartialMixin | N
 
         if user:
             kwargs["user"] = storage.user.get_user(user)
+
+        # The saved user was resolved from the saved association by
+        # social_user, which is not repeated on resume. A partial whose
+        # association was disconnected or rebound since is stale and must
+        # not log the former owner in again.
+        if isinstance(social, dict):
+            current_social = kwargs["social"]
+            if current_social is None:
+                return None
+            owner_id = str(current_social.user.id)
+            if owner_id != partial.data.get(PARTIAL_PIPELINE_INITIATING_USER_ID):
+                return None
+            resolved_user = kwargs.get("user")
+            if user and resolved_user is not None and owner_id != str(resolved_user.id):
+                return None
 
         partial.args = [strategy.from_session_value(val) for val in args]
         partial.kwargs = {

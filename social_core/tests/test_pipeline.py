@@ -3,12 +3,18 @@ from __future__ import annotations
 import json
 import unittest
 from datetime import UTC, datetime, timedelta
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Any, cast
 from unittest.mock import Mock, patch
+from uuid import uuid4
 
 from social_core.backends.base import BaseAuth
 from social_core.exceptions import AuthException
 from social_core.pipeline.user import create_user, user_details
+from social_core.pipeline.utils import (
+    PARTIAL_PIPELINE_INITIATING_USER_ID,
+    partial_load,
+)
+from social_core.storage import PartialMixin
 from social_core.utils import PARTIAL_TOKEN_SESSION_NAME, partial_pipeline_result
 
 from .actions.actions import BaseActionTest
@@ -16,7 +22,7 @@ from .models import TestPartial, TestStorage, TestUserSocialAuth, User
 from .strategy import Redirect, TestStrategy
 
 if TYPE_CHECKING:
-    from social_core.storage import PartialMixin, UserMixin
+    from social_core.storage import UserMixin
 
 
 class PipelineResultTest(unittest.TestCase):
@@ -291,23 +297,47 @@ class PartialExpiryTest(unittest.TestCase):
 
     @staticmethod
     def make_partial(age: timedelta, *, backend: str = "facebook") -> TestPartial:
-        partial = cast(
-            "TestPartial", TestPartial.prepare(backend, 0, {"args": [], "kwargs": {}})
-        )
+        partial = TestPartial.prepare(backend, 0, {"args": [], "kwargs": {}})
         partial.timestamp = datetime.now(UTC) - age
+        partial.kwargs["partial_pipeline_timestamp"] = int(
+            partial.timestamp.timestamp()
+        )
         partial.save()
         return partial
 
-    def test_opt_in_preserves_other_strategies(self) -> None:
+    def test_core_strategy_expires_partials_by_default(self) -> None:
         partial = self.make_partial(timedelta(days=8))
-        self.assertIs(TestStrategy(TestStorage).partial_load(partial.token), partial)
-        self.assertIsNone(self.strategy.partial_load(partial.token))
+        self.assertIsNone(TestStrategy(TestStorage).partial_load(partial.token))
         self.assertIsNone(TestPartial.load(partial.token))
 
-    def test_storage_without_expiry_hook_keeps_existing_behavior(self) -> None:
+    def test_storage_without_expiry_hook_fails_closed(self) -> None:
         partial = self.make_partial(timedelta(days=8))
         with patch.object(TestPartial, "is_expired", None):
-            self.assertIs(self.strategy.partial_load(partial.token), partial)
+            self.assertIsNone(self.strategy.partial_load(partial.token))
+        self.assertIsNone(TestPartial.load(partial.token))
+
+    def test_explicitly_disabled_expiry(self) -> None:
+        partial = self.make_partial(timedelta(days=8))
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_PARTIAL_PIPELINE_EXPIRED_THRESHOLD": 0}
+        )
+        self.assertIs(self.strategy.partial_load(partial.token), partial)
+
+    def test_rehalt_keeps_original_creation_time(self) -> None:
+        partial = self.make_partial(timedelta(0))
+        partial.kwargs["partial_pipeline_timestamp"] -= 8 * 24 * 60 * 60
+        rehalted = TestPartial.store(
+            TestPartial.prepare(
+                "facebook",
+                1,
+                {"args": [], "kwargs": partial.kwargs.copy()},
+            )
+        )
+        self.assertEqual(
+            rehalted.kwargs["partial_pipeline_timestamp"],
+            partial.kwargs["partial_pipeline_timestamp"],
+        )
+        self.assertIsNone(self.strategy.partial_load(rehalted.token))
 
     def test_session_owned_expired_partial_is_destroyed_once(self) -> None:
         partial = self.make_partial(timedelta(days=8))
@@ -323,8 +353,8 @@ class PartialExpiryTest(unittest.TestCase):
         partial = self.make_partial(timedelta(seconds=90))
         self.strategy.set_settings(
             {
-                "SOCIAL_AUTH_EMAIL_VALIDATION_EXPIRED_THRESHOLD": 60,
-                "SOCIAL_AUTH_FACEBOOK_EMAIL_VALIDATION_EXPIRED_THRESHOLD": 120,
+                "SOCIAL_AUTH_PARTIAL_PIPELINE_EXPIRED_THRESHOLD": 60,
+                "SOCIAL_AUTH_FACEBOOK_PARTIAL_PIPELINE_EXPIRED_THRESHOLD": 120,
             }
         )
         self.assertIs(self.strategy.partial_load(partial.token), partial)
@@ -345,7 +375,99 @@ class PartialExpiryTest(unittest.TestCase):
             {"SOCIAL_AUTH_PARTIAL_PIPELINE_EXPIRED_THRESHOLD": 60}
         )
         partial.timestamp = None
+        partial.kwargs.pop("partial_pipeline_timestamp")
         self.assertIsNone(self.strategy.partial_load(partial.token))
+
+    def test_partial_expiry_rejects_missing_serialized_timestamp(self) -> None:
+        partial = self.make_partial(timedelta(0))
+        partial.kwargs.pop("partial_pipeline_timestamp")
+        self.assertTrue(PartialMixin.is_expired(partial, 60))
+
+
+class PartialAssociationBindingTest(unittest.TestCase):
+    def setUp(self) -> None:
+        TestPartial.reset_cache()
+        TestUserSocialAuth.reset_cache()
+        self.addCleanup(TestPartial.reset_cache)
+        self.addCleanup(TestUserSocialAuth.reset_cache)
+
+    def test_disconnected_association_cannot_resume(self) -> None:
+        owner = User("owner")
+        TestUserSocialAuth(owner, "github", "external-id")
+        partial = TestPartial.prepare(
+            "github",
+            0,
+            {
+                "args": [],
+                "kwargs": {"social": {"provider": "github", "uid": "external-id"}},
+                PARTIAL_PIPELINE_INITIATING_USER_ID: str(owner.id),
+            },
+        )
+        partial.save()
+        TestUserSocialAuth.reset_cache()
+
+        self.assertIsNone(partial_load(TestStrategy(TestStorage), partial.token))
+
+    def test_saved_user_must_match_current_association_owner(self) -> None:
+        saved_user = User("saved")
+        current_owner = User("current")
+        TestUserSocialAuth(current_owner, "github", "external-id")
+        partial = TestPartial.prepare(
+            "github",
+            0,
+            {
+                "args": [],
+                "kwargs": {
+                    "social": {"provider": "github", "uid": "external-id"},
+                    "user": saved_user.id,
+                },
+                PARTIAL_PIPELINE_INITIATING_USER_ID: str(current_owner.id),
+            },
+        )
+        partial.save()
+
+        self.assertIsNone(partial_load(TestStrategy(TestStorage), partial.token))
+
+    def test_saved_user_matching_current_association_can_resume(self) -> None:
+        owner = User("owner")
+        social = TestUserSocialAuth(owner, "github", "external-id")
+        partial = TestPartial.prepare(
+            "github",
+            0,
+            {
+                "args": [],
+                "kwargs": {
+                    "social": {"provider": "github", "uid": "external-id"},
+                    "user": owner.id,
+                },
+                PARTIAL_PIPELINE_INITIATING_USER_ID: str(owner.id),
+            },
+        )
+        partial.save()
+
+        self.assertIs(partial_load(TestStrategy(TestStorage), partial.token), partial)
+        self.assertIs(partial.kwargs["user"], owner)
+        self.assertIs(partial.kwargs["social"], social)
+
+    def test_uuid_owner_rebind_is_rejected_before_user_restoration(self) -> None:
+        original = User("original")
+        replacement = User("replacement")
+        cast(Any, original).id = uuid4()
+        cast(Any, replacement).id = uuid4()
+        social = TestUserSocialAuth(original, "github", "external-id")
+        partial = TestPartial.prepare(
+            "github",
+            0,
+            {
+                "args": [],
+                "kwargs": {"social": {"provider": "github", "uid": "external-id"}},
+                PARTIAL_PIPELINE_INITIATING_USER_ID: str(original.id),
+            },
+        )
+        partial.save()
+        social.user = replacement
+
+        self.assertIsNone(partial_load(TestStrategy(TestStorage), partial.token))
 
 
 class UserPersistsInPartialPipeline(BaseActionTest):

@@ -22,8 +22,10 @@ from social_core.exceptions import (
     AuthSessionError,
 )
 from social_core.pipeline.social_auth import social_names
+from social_core.pipeline.utils import partial_store
 from social_core.tests.exception_helpers import assert_auth_error
-from social_core.tests.models import User
+from social_core.tests.models import TestPartial, User
+from social_core.utils import PARTIAL_TOKEN_SESSION_NAME, partial_pipeline_data
 
 from .base import BaseBackendTest
 
@@ -227,6 +229,15 @@ class SAMLTest(BaseBackendTest):
 
         with self.assertRaises(AuthInputError):
             self.do_start()
+
+    def test_response_does_not_resume_paused_pipeline(self) -> None:
+        self.addCleanup(TestPartial.reset_cache)
+        partial = partial_store(self.strategy, self.backend, 0, uid="other")
+        self.strategy.session_set(PARTIAL_TOKEN_SESSION_NAME, partial.token)
+        self.strategy.set_request_data({"SAMLResponse": "response"}, self.backend)
+
+        self.assertIsNone(partial_pipeline_data(self.backend))
+        self.assertIsNone(TestPartial.load(partial.token))
 
     def test_authenticated_user_requires_stored_authn_request_id(self) -> None:
         self.strategy.set_request_data(

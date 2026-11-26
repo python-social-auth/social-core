@@ -352,7 +352,15 @@ class TestPartial(PartialMixin, BaseModel):
     cache: dict[str, TestPartial] = {}
     timestamp: datetime | None = None
 
+    @classmethod
+    def prepare(cls, backend: str, next_step: int, data: dict[str, Any]) -> TestPartial:
+        partial = cast("TestPartial", super().prepare(backend, next_step, data))
+        partial.timestamp = datetime.now(UTC)
+        return partial
+
     def is_expired(self, seconds: int) -> bool:
+        if "partial_pipeline_timestamp" in self.kwargs:
+            return super().is_expired(seconds)
         if self.timestamp is None:
             return True
         return datetime.now(UTC) >= self.timestamp + timedelta(seconds=seconds)

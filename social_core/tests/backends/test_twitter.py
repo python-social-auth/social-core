@@ -6,6 +6,19 @@ from .oauth import OAuth1AuthUrlTestMixin, OAuth1Test
 
 class TwitterOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
     backend_path = "social_core.backends.twitter.TwitterOAuth"
+
+    def test_only_pending_oauth1_token_answers_new_callback(self) -> None:
+        name = self.backend.name + self.backend.UNATHORIZED_TOKEN_SUFIX
+        token_key = self.backend.OAUTH_TOKEN_PARAMETER_NAME
+        self.strategy.session_set(
+            name,
+            [{token_key: "different"}, f"{token_key}=also-different"],
+        )
+        self.assertFalse(self.backend.answers_pending_request({token_key: "unrelated"}))
+        self.assertTrue(
+            self.backend.answers_pending_request({token_key: "also-different"})
+        )
+
     user_data_url = "https://api.twitter.com/1.1/account/verify_credentials.json"
     expected_username = "foobar"
     access_token_body = urlencode(

@@ -239,12 +239,36 @@ class BaseAuth(Generic[ResponseT_co]):
             )
         kwargs[key] = str(user.id)
 
+    def _bind_pipeline_user(
+        self, kwargs: dict[str, Any], pipeline_type: str = "authentication"
+    ) -> None:
+        """Save the authenticated initiator before pipeline steps may change user."""
+        if self.ASSOCIATION_ONLY:
+            self._bind_association_user(kwargs, pipeline_type)
+            return
+        user = kwargs.get("user")
+        kwargs.setdefault(
+            self.association_user_id_key(pipeline_type),
+            None if user is None else str(user.id),
+        )
+
     def start(self) -> ResponseT_co:
         if self.ASSOCIATION_ONLY:
             self.get_association_state()
         if self.uses_redirect():
             return self.strategy.redirect(self.auth_url())
         return self.strategy.html(self.auth_html())
+
+    def answers_pending_request(self, data: dict[str, Any]) -> bool:
+        """Return whether data is a new authentication response.
+
+        That is a callback answering a request pending in this session or, for
+        protocols that keep no request in the session, one carrying the
+        provider response itself. Such a callback belongs to a newly started
+        authentication and is completed on its own instead of resuming a
+        paused partial pipeline.
+        """
+        return False
 
     def complete(self, *args, **kwargs) -> ResponseT_co | UserProtocol | None:
         return self.auth_complete(*args, **kwargs)
@@ -339,8 +363,7 @@ class BaseAuth(Generic[ResponseT_co]):
             )
         self.redirect_uri = kwargs.get("redirect_uri") or self.redirect_uri
         self.data = self.strategy.request_data()
-        if self.ASSOCIATION_ONLY:
-            self._bind_association_user(kwargs)
+        self._bind_pipeline_user(kwargs)
         kwargs.setdefault("is_new", False)
         pipeline = self.strategy.get_pipeline(self)
         args, kwargs = self.strategy.clean_authenticate_args(*args, **kwargs)
@@ -364,8 +387,7 @@ class BaseAuth(Generic[ResponseT_co]):
         return user
 
     def disconnect(self, *args, **kwargs) -> dict[str, Any] | ResponseT_co:
-        if self.ASSOCIATION_ONLY:
-            self._bind_association_user(kwargs, "disconnect")
+        self._bind_pipeline_user(kwargs, "disconnect")
         pipeline = self.strategy.get_disconnect_pipeline(self)
         kwargs["name"] = self.name
         kwargs["user_storage"] = self.strategy.storage.user
@@ -750,10 +772,27 @@ class BaseAuth(Generic[ResponseT_co]):
     def validate_partial_pipeline(
         self, partial: PartialMixin, user: UserProtocol | None = None
     ) -> None:
-        """Validate backend-specific requirements before resuming a pipeline."""
+        """Keep an authenticated initiator bound to every resumed pipeline."""
+        key = self.association_user_id_key(partial.pipeline_type)
+        if key not in partial.kwargs:
+            raise AuthSessionError(
+                self,
+                "Pipeline initiator missing",
+                code="session_context_missing",
+                stage="callback",
+            )
+        initiating_user_id = partial.kwargs[key]
+        if initiating_user_id is not None and (
+            user is None or str(user.id) != initiating_user_id
+        ):
+            raise AuthSessionError(
+                self,
+                "Pipeline initiator mismatch",
+                code="user_mismatch",
+                stage="callback",
+            )
         if self.ASSOCIATION_ONLY:
             user = self.require_association_user(user, stage="callback")
-            key = self.association_user_id_key(partial.pipeline_type)
             if partial.kwargs.get(key) != str(user.id):
                 raise AuthSessionError(
                     self,

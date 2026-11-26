@@ -47,6 +47,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   OpenID maximum age is configured. This includes OIDC strength values sent
   through authorization extra arguments; missing or mismatched signed claims
   now reject login. ``OPENID_PAPE_AUTH_TIME_LEEWAY`` defaults to one second.
+- Partial pipelines now expire after seven days by default across strategies;
+  undated partials restart authentication. Saved flows remain bound to their
+  initiating user and provider response, and disconnected associations cannot
+  be restored by resuming an old partial, including with UUID user IDs.
+  OAuth2 callback detection uses the same state value as validation.
+  In-progress partials saved before initiator binding must restart, even when
+  their timestamp is valid. Partial expiry uses its own setting rather than
+  the email-code lifetime.
 
 ### Added
 

@@ -87,6 +87,18 @@ class LastFmAuthTest(BaseBackendTest):
 
         self.assertEqual(len(responses.calls), 0)
 
+    def test_list_valued_state_uses_first_value_consistently(self) -> None:
+        user = User("existing")
+        state = self.start_for_user(user)
+        for values, expected in (([state, "other"], True), ([], False)):
+            with self.subTest(values=values):
+                data = {"token": "foobar", "redirect_state": values}
+                self.strategy.set_request_data(data, self.backend)
+                self.assertEqual(self.backend.answers_pending_request(data), expected)
+                self.assertEqual(
+                    self.backend.get_request_state(), state if expected else None
+                )
+
     def test_complete_rejects_mismatched_state(self) -> None:
         user = User("existing")
         self.start_for_user(user)

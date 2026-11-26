@@ -1,5 +1,5 @@
 # Keep this shared module cohesive for protocol regression review.
-# OpenID policy and PAPE regressions share one protocol fixture.
+# OpenID policy, PAPE, and flow regressions share one protocol fixture.
 # pylint: disable=too-many-lines
 from __future__ import annotations
 
@@ -39,7 +39,7 @@ from social_core.pipeline.social_auth import social_names
 from social_core.store import OpenIdSessionWrapper
 from social_core.tests.exception_helpers import assert_auth_error
 from social_core.tests.models import TestUserSocialAuth, User
-from social_core.utils import PARTIAL_TOKEN_SESSION_NAME
+from social_core.utils import PARTIAL_TOKEN_SESSION_NAME, partial_pipeline_result
 
 from .base import BaseBackendTest
 from .open_id import OpenIdTest
@@ -318,6 +318,37 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
             self.backend.continue_pipeline(partial)
         self.assertEqual(self.backend.data, previous_data)
         self.assertEqual(self.strategy.request_data(), self.strategy.get_request_data())
+
+    def test_pending_association_callback_state_is_recognized(self) -> None:
+        self.strategy.session_set(
+            "livejournal_state", {"state": "new-callback", "user_id": "7"}
+        )
+        backend = LiveJournalOpenId(self.strategy, redirect_uri=self.complete_url)
+        self.assertTrue(
+            backend.answers_pending_request({"redirect_state": "new-callback"})
+        )
+        self.assertFalse(
+            backend.answers_pending_request({"redirect_state": "other-callback"})
+        )
+
+    def test_fresh_livejournal_callback_does_not_resume_saved_partial(self) -> None:
+        backend = LiveJournalOpenId(self.strategy, redirect_uri=self.complete_url)
+        partial = self.strategy.storage.partial.prepare(
+            backend.name, 0, {"args": [], "kwargs": {}}
+        )
+        self.strategy.storage.partial.store(partial)
+        self.assertIsNotNone(self.strategy.storage.partial.load(partial.token))
+        self.strategy.session_set(PARTIAL_TOKEN_SESSION_NAME, partial.token)
+        self.strategy.session_set(
+            "livejournal_state", {"state": "fresh-callback", "user_id": "7"}
+        )
+        self.strategy.set_request_data(
+            {"redirect_state": "fresh-callback", "openid.mode": "id_res"}, backend
+        )
+
+        result = partial_pipeline_result(backend)
+
+        self.assertIsNone(result.partial)
 
     def test_unsigned_extension_data_stays_excluded(self) -> None:
         result = self.start_partial(self.verified_response(signed_ax=False))

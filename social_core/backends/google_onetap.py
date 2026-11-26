@@ -1,3 +1,5 @@
+from typing import Any
+
 from google.auth.transport import requests as transport_requests
 from google.oauth2 import id_token
 
@@ -85,6 +87,10 @@ class GoogleOneTap(BaseGoogleAuth[ResponseT_co], BaseAuth[ResponseT_co]):
 
         self.validate_email_verified(idinfo, stage="token_validation")
         return idinfo
+
+    def answers_pending_request(self, data: dict[str, Any]) -> bool:
+        # A credential is always a new sign-in, never a pipeline resume.
+        return self.CREDENTIAL_KEY in data
 
     def auth_complete(self, *args, **kwargs):
         self.verify_csrf(kwargs["request"])

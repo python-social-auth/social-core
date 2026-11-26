@@ -2,7 +2,7 @@ import hmac
 import time
 from base64 import urlsafe_b64decode, urlsafe_b64encode
 from hashlib import sha256
-from typing import cast
+from typing import Any, cast
 from urllib.parse import parse_qs, urlencode
 
 from social_core.backends.base import ResponseT_co
@@ -108,6 +108,9 @@ class DiscourseAuth(BaseAuth[ResponseT_co]):
             nonce, session_nonce
         ):
             raise AuthSessionError(self, code="state_mismatch", stage="callback")
+
+    def answers_pending_request(self, data: dict[str, Any]) -> bool:
+        return "sso" in data
 
     def auth_complete(self, *args, **kwargs):
         """
