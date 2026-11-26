@@ -11,10 +11,11 @@ from .oauth import BaseOAuth2
 
 
 class StripeOAuth2(BaseOAuth2[ResponseT_co]):
-    """Stripe OAuth2 authentication backend"""
+    """Stripe Connect account association backend."""
 
     name = "stripe"
     title = "Stripe"
+    ASSOCIATION_ONLY = True
     ID_KEY = "stripe_user_id"
     AUTHORIZATION_URL = "https://connect.stripe.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://connect.stripe.com/oauth/token"

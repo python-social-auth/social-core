@@ -56,6 +56,7 @@ from .base import BaseAuth
 if TYPE_CHECKING:
     from collections.abc import Collection
 
+    from social_core.storage import UserProtocol
     from social_core.store import OpenIdStore
 
 # OpenID configuration
@@ -675,6 +676,8 @@ class OpenIdAuth(BaseAuth[ResponseT_co]):
 
     def create_state(self) -> str:
         """Bind the next positive assertion to this browser's OpenID login."""
+        if self.ASSOCIATION_ONLY:
+            return self.get_association_state()
         state = self.strategy.random_string(32)
         self.strategy.session_set(f"{self.name}_state", state)
         return state
@@ -691,9 +694,12 @@ class OpenIdAuth(BaseAuth[ResponseT_co]):
             and constant_time_compare(state, pending)
         )
 
-    def validate_state(self) -> None:
+    def validate_state(self, user: UserProtocol | None = None) -> None:
         """Require the verified return URL's state in the initiating session."""
         request_state = self.data.get("redirect_state")
+        if self.ASSOCIATION_ONLY:
+            self.validate_association_state(request_state, user)
+            return
         if not isinstance(request_state, str) or not request_state:
             raise AuthInputError(
                 self,
@@ -831,7 +837,7 @@ class OpenIdAuth(BaseAuth[ResponseT_co]):
         else:
             initiated_endpoint = self._expected_openid_endpoint()
             self._validate_completed_generic_provider(response, initiated_endpoint)
-        self.validate_state()
+        self.validate_state(kwargs.get("user"))
         self.validate_pape_auth_time(response)
         self._clear_openid_context()
         # Retain both the verified message and its signed fields so extension

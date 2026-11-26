@@ -5,12 +5,15 @@ Documentation at https://eveonline-third-party-documentation.readthedocs.io/en/l
 
 from __future__ import annotations
 
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from social_core.backends.base import ResponseT_co
 from social_core.exceptions import AuthAssociationError, AuthResponseError
 
 from .oauth import BaseOAuth2
+
+if TYPE_CHECKING:
+    from social_core.storage import UserMixin
 
 
 class EVEOnlineOAuth2(BaseOAuth2[ResponseT_co]):
@@ -48,16 +51,25 @@ class EVEOnlineOAuth2(BaseOAuth2[ResponseT_co]):
 
         social = self.strategy.storage.user.get_social_auth(self.name, str(uid))
         if social is not None:
-            # Historical rows without a hash record the next verified owner.
-            stored_owner_hash = social.extra_data.get("owner_hash")
-            if stored_owner_hash and stored_owner_hash != owner_hash:
-                raise AuthAssociationError(
-                    self,
-                    code="identity_in_use",
-                    stage="pipeline",
-                    claim="CharacterOwnerHash",
-                )
+            self.validate_social_auth(social, response)
         return uid
+
+    def validate_social_auth(self, social: UserMixin, response: dict[str, Any]) -> None:
+        """Check the owner of the association selected by the pipeline."""
+        stored_owner_hashes = (
+            social.extra_data.get("owner_hash"),
+            social.extra_data.get("CharacterOwnerHash"),
+        )
+        if any(
+            owner_hash and owner_hash != response.get("CharacterOwnerHash")
+            for owner_hash in stored_owner_hashes
+        ):
+            raise AuthAssociationError(
+                self,
+                code="identity_in_use",
+                stage="pipeline",
+                claim="CharacterOwnerHash",
+            )
 
     def get_user_details(self, response):
         """Return user details from EVE Online account"""

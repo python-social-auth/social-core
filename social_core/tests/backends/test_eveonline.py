@@ -8,6 +8,7 @@ from typing import cast
 import responses
 
 from social_core.exceptions import AuthAssociationError, AuthResponseError
+from social_core.pipeline.social_auth import load_extra_data, social_user
 from social_core.tests.models import TestUserSocialAuth, User
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
@@ -84,6 +85,46 @@ class EVEOnlineOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         self.assertIs(social.user, seller)
         self.assertEqual(social.extra_data["owner_hash"], "seller-hash")
 
+    def test_association_created_after_identifier_step_rejects_transfer(self) -> None:
+        # A paused pipeline resumes with the identifier and response it saved.
+        buyer = self.eve_login("buyer-hash")
+        social = buyer.social[0]
+
+        with self.assertRaises(AuthAssociationError) as caught:
+            social_user(
+                self.backend, "95465499", id_key="CharacterID", response=CHARACTER
+            )
+
+        self.assertEqual(caught.exception.code, "identity_in_use")
+        self.assertEqual(caught.exception.claim, "CharacterOwnerHash")
+        with self.assertRaises(AuthAssociationError):
+            load_extra_data(self.backend, {}, CHARACTER, "95465499")
+        with self.assertRaises(AuthAssociationError):
+            load_extra_data(self.backend, {}, CHARACTER, "95465499", social=social)
+        self.assertIs(social.user, buyer)
+        self.assertEqual(social.extra_data["owner_hash"], "buyer-hash")
+
+    def test_legacy_identifier_association_also_rejects_transfer(self) -> None:
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_EVEONLINE_LEGACY_ID_KEYS": ["CharacterName"]}
+        )
+        seller = User("Traded Pilot")
+        social = TestUserSocialAuth(
+            seller,
+            "eveonline",
+            "Traded Pilot",
+            extra_data={"CharacterID": 95465499, "owner_hash": "seller-hash"},
+            id_key="CharacterName",
+        )
+
+        with self.assertRaises(AuthAssociationError) as caught:
+            self.eve_login("buyer-hash")
+
+        self.assertEqual(caught.exception.code, "identity_in_use")
+        self.assertEqual((social.uid, social.id_key), ("Traded Pilot", "CharacterName"))
+        self.assertIs(social.user, seller)
+        self.assertEqual(social.extra_data["owner_hash"], "seller-hash")
+
     def test_legacy_association_without_hash_records_next_owner(self) -> None:
         seller = User("Traded Pilot")
         social = TestUserSocialAuth(
@@ -96,6 +137,51 @@ class EVEOnlineOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
 
         self.assertIs(self.eve_login(), seller)
         self.assertEqual(social.extra_data["owner_hash"], "seller-hash")
+
+    def test_get_all_extra_data_rejects_transfer(self) -> None:
+        self.strategy.set_settings({"SOCIAL_AUTH_GET_ALL_EXTRA_DATA": True})
+        seller = self.eve_login()
+        social = seller.social[0]
+        self.assertEqual(social.extra_data["owner_hash"], "seller-hash")
+        self.assertEqual(social.extra_data["CharacterOwnerHash"], "seller-hash")
+
+        with self.assertRaises(AuthAssociationError) as caught:
+            self.eve_login("buyer-hash")
+
+        self.assertEqual(caught.exception.code, "identity_in_use")
+        self.assertEqual(social.extra_data["owner_hash"], "seller-hash")
+
+    def test_conflicting_saved_owner_alias_rejects_login(self) -> None:
+        owner = User("Traded Pilot")
+        social = TestUserSocialAuth(
+            owner,
+            "eveonline",
+            "95465499",
+            extra_data={
+                "owner_hash": "buyer-hash",
+                "CharacterOwnerHash": "seller-hash",
+            },
+        )
+        with self.assertRaises(AuthAssociationError) as caught:
+            self.eve_login("buyer-hash")
+        self.assertEqual(caught.exception.code, "identity_in_use")
+        self.assertIs(social.user, owner)
+
+    def test_association_with_raw_owner_hash_rejects_transfer(self) -> None:
+        seller = User("Traded Pilot")
+        social = TestUserSocialAuth(
+            seller,
+            "eveonline",
+            "95465499",
+            extra_data={"CharacterID": 95465499, "CharacterOwnerHash": "seller-hash"},
+            id_key="CharacterID",
+        )
+
+        with self.assertRaises(AuthAssociationError):
+            self.eve_login("buyer-hash")
+
+        self.assertIs(social.user, seller)
+        self.assertEqual(social.extra_data["CharacterOwnerHash"], "seller-hash")
 
     def test_missing_owner_hash_is_rejected_before_association(self) -> None:
         with self.assertRaises(AuthResponseError) as caught:

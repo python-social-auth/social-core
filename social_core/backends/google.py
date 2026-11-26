@@ -52,6 +52,16 @@ class BaseGoogleAuth(BaseAuth[ResponseT_co]):
             return response["id"]
         return super().get_user_id(details, response)
 
+    def allow_unverified_legacy_uid_migration(
+        self, old_id_key: str, id_key: str
+    ) -> bool:
+        """Treat USE_UNIQUE_USER_ID as a configured stable identifier."""
+        # Like a configured ID_KEY, it opted out of email identifiers. Only an
+        # unkeyed row's current UID can be trusted without stored evidence.
+        if old_id_key and self.setting("USE_UNIQUE_USER_ID", False):
+            return bool(self.setting("ALLOW_UNVERIFIED_LEGACY_UID_MIGRATION", False))
+        return super().allow_unverified_legacy_uid_migration(old_id_key, id_key)
+
     def get_user_details(self, response):
         """Return user details from Google API account"""
         email = response.get("email", "")

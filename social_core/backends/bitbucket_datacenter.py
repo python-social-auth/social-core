@@ -5,8 +5,10 @@ Bitbucket Data Center OAuth2 backend, docs at:
 """
 
 from typing import Any
+from urllib.parse import quote, unquote
 
 from social_core.backends.base import ResponseT_co
+from social_core.exceptions import AuthResponseError
 
 from .oauth import BaseOAuth2PKCE
 
@@ -102,9 +104,9 @@ class BitbucketDataCenterOAuth2(BaseOAuth2PKCE[ResponseT_co]):
             headers=headers,
         )
         # ref: https://developer.atlassian.com/server/bitbucket/rest/v815/api-group-system-maintenance/#api-api-latest-users-userslug-get
-        username = response.headers["x-ausername"]
-        return self.get_json(
-            url=f"{self.server_base_rest_api_url}/users/{username}",
+        username = unquote(response.headers["x-ausername"])
+        user_data = self.get_json(
+            url=f"{self.server_base_rest_api_url}/users/{quote(username, safe='')}",
             headers=headers,
             params={
                 "avatarSize": self.setting(
@@ -112,3 +114,12 @@ class BitbucketDataCenterOAuth2(BaseOAuth2PKCE[ResponseT_co]):
                 )  # to force `avatarUrl` in response
             },
         )
+        # The header carries the user's name, but the endpoint is keyed by the
+        # slug and serves any user's profile, so only accept the profile whose
+        # name is the token owner's; otherwise a user whose name equals another
+        # user's slug would be authenticated as that other user.
+        if not isinstance(user_data, dict) or user_data.get("name") != username:
+            raise AuthResponseError(
+                self, code="invalid_claim", claim="name", stage="user_info"
+            )
+        return user_data

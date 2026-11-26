@@ -18,6 +18,7 @@ class VendOAuth2(BaseOAuth2[ResponseT_co]):
     AUTHORIZATION_URL = "https://secure.vendhq.com/connect"
     ACCESS_TOKEN_URL = "https://{0}.vendhq.com/api/1.0/token"
     REDIRECT_STATE = False
+    DEFAULT_SCOPE = ["users:read"]
     EXTRA_DATA = [
         ("refresh_token", "refresh_token"),
         ("domain_prefix", "domain_prefix"),
@@ -100,10 +101,12 @@ class VendOAuth2(BaseOAuth2[ResponseT_co]):
         }
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
-        """Loads user data from service"""
+        """Loads the user the access token was issued to from service"""
         prefix = self.domain_prefix(kwargs.get("response"))
-        url = f"https://{prefix}.vendhq.com/api/users"
+        # Ask for the token's own user rather than the shop's user list, whose
+        # first row is the same for every user of the shop.
+        url = f"https://{prefix}.vendhq.com/api/2.0/user"
         data = self.get_json(url, headers={"Authorization": f"Bearer {access_token}"})
-        if data.get("users"):
-            return dict(data["users"][0], domain_prefix=prefix)
+        if data.get("data"):
+            return dict(data["data"], domain_prefix=prefix)
         return {"domain_prefix": prefix}

@@ -139,6 +139,25 @@ class KeycloakOAuth2(BaseOAuth2PKCE[ResponseT_co]):  # pylint: disable=abstract-
         except jwt.PyJWTError as error:
             raise jwt_error(self, error) from error
 
+    def get_nested_stored_user_ids(
+        self, extra_data: dict[str, Any], id_key: str
+    ) -> tuple[object, ...]:
+        """Return the identifier from the access token an earlier login stored."""
+        access_token = extra_data.get("access_token")
+        if not isinstance(access_token, str) or not access_token:
+            return ()
+        try:
+            claims = jwt.decode(access_token, options={"verify_signature": False})
+        except jwt.PyJWTError:
+            return ()
+        # Only a token issued to this client names a comparable identifier.
+        audience = claims.get("aud")
+        if not isinstance(audience, list):
+            audience = [audience]
+        if self.audience() not in audience or id_key not in claims:
+            return ()
+        return (claims[id_key],)
+
     def get_user_groups(self, response) -> list[str] | None:
         key = configured_group_key(self)
         if key is None:
