@@ -89,6 +89,7 @@ class KeycloakOAuth2(BaseOAuth2PKCE[ResponseT_co]):  # pylint: disable=abstract-
           'https://sso.com/auth/realms/example/protocol/openid-connect/auth'
         SOCIAL_AUTH_KEYCLOAK_ACCESS_TOKEN_URL = \
           'https://sso.com/auth/realms/example/protocol/openid-connect/token'
+        SOCIAL_AUTH_KEYCLOAK_USE_PKCE = True  # optional, enables PKCE
 
     8. The default behaviour is to associate users via username field, but you
        can change the key with e.g.
