@@ -143,6 +143,11 @@ def user_details(
             "email",
             "password",
             "is_active",
+            "is_authenticated",
+            "active",
+            "verified",
+            "email_verified",
+            "created_at",
             "is_staff",
             "is_superuser",
         )
@@ -161,7 +166,15 @@ def user_details(
     for name, value in details.items():
         # Convert to existing user field if mapping exists
         name = field_mapping.get(name, name)
-        if value is None or not hasattr(user, name) or name in protected:
+        # Private and special attributes (__dict__, _state, ...) are not user
+        # fields, but can hold the storage of every field, protected ones
+        # included, so they are never updated from provider data.
+        if (
+            value is None
+            or name.startswith("_")
+            or not hasattr(user, name)
+            or name in protected
+        ):
             continue
 
         current_value = getattr(user, name, None)

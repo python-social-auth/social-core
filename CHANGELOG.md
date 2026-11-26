@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Security
 
+- Prevent provider details from updating private, special, or local account
+  activation fields; Bitbucket Data Center no longer forwards provider account
+  status as local profile data.
 - Reject empty Telegram and Discourse signing secrets and check each
   strategy's enabled backend list even when a backend class is cached.
 - Verify the audience of Google access tokens supplied directly to ``do_auth``;
