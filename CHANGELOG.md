@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Security
+
+- Prevent provider details from updating private, special, or local account
+  activation fields; Bitbucket Data Center no longer forwards provider account
+  status as local profile data.
+
 ### Added
 
 - Gitea backend now fetches secondary emails from `/api/v1/user/emails` and
