@@ -60,7 +60,9 @@ rather than being duplicated here. The companion Django integration lives in
   unusual constraint next to the declaration.
 - Write commit messages using Conventional Commits in the form
   `<type>(<optional scope>): <description>`, using types such as `feat`, `fix`,
-  `docs`, `test`, `refactor`, `ci`, and `chore`.
+  `docs`, `test`, `refactor`, `ci`, and `chore`. Add a concise commit body
+  explaining why the change is needed. For scanner fixes, include applicable
+  finding IDs in the body when available.
 
 ## Documentation and changelog expectations
 
@@ -145,7 +147,8 @@ rather than being duplicated here. The companion Django integration lives in
   than substituting ad-hoc command lines.
 - Run `uv run --all-extras pyright`,
   `uv run --all-extras mypy social_core`, and
-  `uv run --all-extras ty check` for typing changes.
+  `uv run --all-extras ty check` on the final head of every Core pull request
+  branch, even when the change does not alter type annotations.
 - Run Pylint with the CI-equivalent environment and command:
   `uv run --no-sync pylint social_core/`.
 - Tests that exercise optional dependencies should use the matching project
@@ -156,3 +159,7 @@ rather than being duplicated here. The companion Django integration lives in
   [social-auth-app-django](https://github.com/python-social-auth/social-app-django),
   run or update the relevant companion tests as well, following that
   repository's `AGENTS.md`.
+- After amending or rebasing a review branch, rerun checks affected by the
+  change. Before calling a pushed branch ready, inspect CI for its latest head
+  and report local results separately from CI results. Identify queued, failed,
+  or blocked checks explicitly; do not describe them as passed.

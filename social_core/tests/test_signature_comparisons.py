@@ -9,7 +9,11 @@ from unittest.mock import patch
 from social_core.backends.discourse import DiscourseAuth
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 from social_core.backends.telegram import TelegramAuth
-from social_core.exceptions import AuthInputError, AuthResponseError
+from social_core.exceptions import (
+    AuthConfigurationError,
+    AuthInputError,
+    AuthResponseError,
+)
 from social_core.tests.models import TestStorage
 from social_core.tests.strategy import TestStrategy
 
@@ -52,6 +56,50 @@ class SignatureComparisonTest(unittest.TestCase):
         TelegramAuth(self.strategy).verify_data(
             {"auth_date": auth_date, "id": "42", "hash": signature}
         )
+
+    def test_telegram_requires_bot_token(self):
+        auth_date = int(time.time())
+        # Anyone can compute the key derived from an empty token.
+        signature = hmac.new(
+            hashlib.sha256(b"").digest(),
+            f"auth_date={auth_date}\nid=42".encode(),
+            hashlib.sha256,
+        ).hexdigest()
+        for name, settings in (
+            ("unset", {}),
+            ("none", {"SOCIAL_AUTH_TELEGRAM_BOT_TOKEN": None}),
+            ("empty", {"SOCIAL_AUTH_TELEGRAM_BOT_TOKEN": ""}),
+        ):
+            strategy = TestStrategy(TestStorage)
+            strategy.set_settings(settings)
+            backend = TelegramAuth(strategy)
+            backend.data = {"auth_date": auth_date, "id": "42", "hash": signature}
+            with (
+                self.subTest(name=name),
+                patch.object(strategy, "authenticate") as authenticate,
+                self.assertRaises(AuthConfigurationError) as caught,
+            ):
+                backend.auth_complete()
+            self.assertEqual(caught.exception.code, "missing_setting")
+            self.assertEqual(caught.exception.stage, "callback")
+            self.assertEqual(
+                caught.exception.parameter, "SOCIAL_AUTH_TELEGRAM_BOT_TOKEN"
+            )
+            authenticate.assert_not_called()
+
+    def test_telegram_rejects_padded_or_non_string_bot_token(self):
+        for bot_token in ("secret\n", " secret", 123):
+            with self.subTest(bot_token=bot_token):
+                self.strategy.set_settings(
+                    {"SOCIAL_AUTH_TELEGRAM_BOT_TOKEN": bot_token}
+                )
+                backend = TelegramAuth(self.strategy)
+                with self.assertRaises(AuthConfigurationError) as caught:
+                    backend.verify_data({})
+                self.assertEqual(caught.exception.code, "invalid_setting")
+                self.assertEqual(
+                    caught.exception.parameter, "SOCIAL_AUTH_TELEGRAM_BOT_TOKEN"
+                )
 
     def test_telegram_line_feed_cannot_change_signed_fields(self):
         self.strategy.set_settings({"SOCIAL_AUTH_TELEGRAM_BOT_TOKEN": "secret"})

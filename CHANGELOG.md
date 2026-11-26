@@ -12,6 +12,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Prevent provider details from updating private, special, or local account
   activation fields; Bitbucket Data Center no longer forwards provider account
   status as local profile data.
+- Reject empty Telegram and Discourse signing secrets and check each
+  strategy's enabled backend list even when a backend class is cached.
+- Verify the audience of Google access tokens supplied directly to ``do_auth``;
+  use ``AUDIENCE`` to replace the accepted client IDs (including the backend's
+  own ``KEY`` if it should remain accepted), and reject
+  tokens whose audience does not match;
+  document Twilio Connect's association-only ownership limit and Google One
+  Tap's uncorrelated signed flow.
 
 ### Added
 
@@ -20,6 +28,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   address is marked primary; otherwise the `/api/v1/user` email is kept. This
   covers Codeberg and other Gitea/Forgejo instances that set
   `SOCIAL_AUTH_GITEA_API_URL`.
+- Keycloak backend supports opt-in PKCE (S256) with
+  `SOCIAL_AUTH_KEYCLOAK_USE_PKCE = True`.
 
 ### Changed
 
