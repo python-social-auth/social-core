@@ -322,6 +322,9 @@ class SAMLTest(BaseBackendTest):
             def get_nameid(self):
                 return "name-id"
 
+            def get_nameid_format(self):
+                return None
+
             def get_session_index(self):
                 return "session-index"
 
@@ -374,6 +377,9 @@ class SAMLTest(BaseBackendTest):
 
             def get_nameid(self):
                 return "name-id"
+
+            def get_nameid_format(self):
+                return None
 
             def get_session_index(self):
                 return "session-index"
@@ -428,6 +434,9 @@ class SAMLTest(BaseBackendTest):
 
             def get_nameid(self):
                 return "name-id"
+
+            def get_nameid_format(self):
+                return None
 
             def get_session_index(self):
                 return "session-index"

@@ -658,12 +658,14 @@ class ConfigurableIdKeyTest(TestCase):
             self.skipTest("python3-saml is not installed")
         idp = Mock()
         idp.name = "idp"
+        idp.conf = {}
         idp.get_user_permanent_id.return_value = "permanent-id"
+        idp.get_persistent_name_id.return_value = None
         backend.get_idp = Mock(return_value=idp)
 
         self.assertEqual(
             backend.get_user_id(
                 {}, {"idp_name": "idp", "attributes": {"custom_id": "ignored"}}
             ),
-            "idp:permanent-id",
+            "idp:fallback:cGVybWFuZW50LWlk",
         )
