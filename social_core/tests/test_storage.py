@@ -80,7 +80,7 @@ class BrokenUserTests(unittest.TestCase):
             with (
                 self.subTest(payload=payload),
                 patch.object(social, "get_backend_instance", return_value=backend),
-                patch("requests.request", return_value=response),
+                patch("requests.Session.request", return_value=response),
                 patch.object(
                     social, "set_extra_data", wraps=social.set_extra_data
                 ) as set_extra_data,
@@ -200,7 +200,7 @@ class UserMixinRefreshTokenTests(unittest.TestCase):
                             patch(
                                 "social_core.storage.datetime", wraps=datetime
                             ) as clock,
-                            patch("requests.request") as request,
+                            patch("requests.Session.request") as request,
                             patch.object(self.social, "save") as save,
                         ):
                             clock.now.return_value = now
@@ -236,7 +236,7 @@ class UserMixinRefreshTokenTests(unittest.TestCase):
             with (
                 self.subTest(data=data),
                 patch.object(self.social, "get_backend_instance", return_value=backend),
-                patch("requests.request") as request,
+                patch("requests.Session.request") as request,
                 patch.object(self.social, "save") as save,
             ):
                 self.social.refresh_token(self.strategy)
@@ -252,7 +252,7 @@ class UserMixinRefreshTokenTests(unittest.TestCase):
                 "get_backend_instance",
                 return_value=BaseAuth(self.strategy),
             ),
-            patch("requests.request") as request,
+            patch("requests.Session.request") as request,
         ):
             self.social.refresh_token(self.strategy)
         request.assert_not_called()
@@ -265,7 +265,7 @@ class UserMixinRefreshTokenTests(unittest.TestCase):
                 "get_backend_instance",
                 return_value=BaseOAuth2(self.strategy),
             ),
-            patch("requests.request") as request,
+            patch("requests.Session.request") as request,
             self.assertRaises(AuthResponseError) as caught,
         ):
             self.social.refresh_token(self.strategy)

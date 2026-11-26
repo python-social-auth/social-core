@@ -1,22 +1,36 @@
+# OpenID discovery and callbacks share the same protocol state and checks.
+# pylint: disable=too-many-lines
 from __future__ import annotations
 
 import time
 from calendar import timegm
 from typing import TYPE_CHECKING, Any, cast
+from urllib.error import URLError
 from urllib.parse import parse_qsl, urldefrag, urlencode, urlsplit, urlunsplit
+from urllib.request import HTTPRedirectHandler, build_opener
 
+from openid import fetchers
 from openid.consumer.consumer import (
     CANCEL,
     FAILURE,
     SUCCESS,
     AuthRequest,
     Consumer,
+    GenericConsumer,
     SuccessResponse,
 )
-from openid.consumer.discover import DiscoveryFailure, OpenIDServiceEndpoint
+from openid.consumer.discover import (
+    DiscoveryFailure,
+    OpenIDServiceEndpoint,
+    getOPOrUserServices,
+    normalizeURL,
+)
 from openid.extensions import ax, pape, sreg
 from openid.fetchers import HTTPFetchingError
 from openid.message import OPENID2_NS, OPENID_NS, Message
+from openid.yadis.constants import YADIS_ACCEPT_HEADER
+from openid.yadis.discover import DiscoveryResult, whereIsYadis
+from openid.yadis.etxrd import XRDSError
 
 from social_core.backends.base import ResponseT_co
 from social_core.exceptions import (
@@ -72,6 +86,154 @@ _PAPE_AUTH_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 def _pape_now() -> int:
     """Read the PAPE clock through a private, testable binding."""
     return int(time.time())
+
+
+def _is_https_url(url: object) -> bool:
+    if not isinstance(url, str) or not url or has_unsafe_url_characters(url):
+        return False
+    try:
+        parsed = urlsplit(url)
+        port = parsed.port
+    except ValueError:
+        return False
+    return (
+        parsed.scheme == "https"
+        and parsed.hostname is not None
+        and parsed.username is None
+        and parsed.password is None
+        and (port is None or port > 0)
+    )
+
+
+class _InsecureDiscovery(DiscoveryFailure):
+    """Discovery of an HTTPS identifier left HTTPS."""
+
+
+class _InsecureRedirect(URLError):
+    """An OpenID discovery redirect tried to leave HTTPS."""
+
+
+class _HTTPSRedirectHandler(HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        # urllib follows redirects inside the fetcher, before its caller can
+        # inspect final_url. Reject the destination before urllib sends it.
+        if not _is_https_url(newurl):
+            raise _InsecureRedirect("OpenID discovery refers to an insecure URL")
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+class _HTTPSDiscoveryFetcher(fetchers.Urllib2Fetcher):
+    def __init__(self) -> None:
+        # Construct the opener per fetch so environment proxy settings are
+        # resolved for the current request, as with urllib's default opener.
+        self.urlopen = cast("Any", build_opener(_HTTPSRedirectHandler()).open)
+
+
+class _HTTPSCurlFetcher(fetchers.CurlHTTPFetcher):
+    def _checkURL(self, url: str) -> bool:
+        if not _is_https_url(url):
+            raise _InsecureRedirect("OpenID discovery refers to an insecure URL")
+        return super()._checkURL(url)
+
+
+def _fetch_over_https(url: str, headers: dict[str, str] | None = None) -> Any:
+    if not _is_https_url(url):
+        raise _InsecureDiscovery("OpenID discovery refers to an insecure URL", None)
+    try:
+        current_fetcher = fetchers.getDefaultFetcher()
+        while isinstance(current_fetcher, fetchers.ExceptionWrappingFetcher):
+            current_fetcher = current_fetcher.fetcher
+        if isinstance(current_fetcher, fetchers.HTTPLib2Fetcher):
+            # httplib2 follows redirects internally without a per-hop guard.
+            raise _InsecureDiscovery(
+                "OpenID discovery fetcher cannot enforce HTTPS redirects", None
+            )
+        if isinstance(current_fetcher, fetchers.Urllib2Fetcher):
+            secure_fetcher = _HTTPSDiscoveryFetcher()
+        elif isinstance(current_fetcher, fetchers.CurlHTTPFetcher):
+            secure_fetcher = _HTTPSCurlFetcher()
+        else:
+            # Custom fetchers are application-supplied transport boundaries.
+            secure_fetcher = None
+        response = (
+            fetchers.ExceptionWrappingFetcher(secure_fetcher).fetch(
+                url, headers=headers
+            )
+            if secure_fetcher is not None
+            else fetchers.fetch(url, headers=headers)
+        )
+    except HTTPFetchingError as error:
+        if isinstance(error.why, _InsecureRedirect):
+            raise _InsecureDiscovery(
+                "OpenID discovery refers to an insecure URL", None
+            ) from error
+        raise DiscoveryFailure("OpenID discovery request failed", None) from error
+    except _InsecureRedirect as error:
+        raise _InsecureDiscovery(
+            "OpenID discovery refers to an insecure URL", None
+        ) from error
+    if not _is_https_url(response.final_url):
+        raise _InsecureDiscovery(
+            "OpenID discovery was redirected to an insecure URL", response
+        )
+    if response.status not in {200, 206}:
+        raise DiscoveryFailure(
+            f"OpenID discovery got HTTP status {response.status!r}", response
+        )
+    return response
+
+
+def _discover_over_https(identifier: str) -> tuple[str, list[OpenIDServiceEndpoint]]:
+    """Discover the services of an HTTPS identifier without leaving HTTPS.
+
+    python3-openid follows redirects and the Yadis location of the identifier's
+    page to ``http://`` URLs. The document found there names the provider and
+    the local identifier it has to sign, so whoever can alter a cleartext
+    response would choose who vouches for the HTTPS identifier. This is
+    ``openid.consumer.discover.discoverURI`` with every fetch required to start
+    and end at an HTTPS URL. Identifiers that are not HTTPS URLs are discovered
+    as before.
+    """
+    if urlsplit(identifier).scheme != "https":
+        raise _InsecureDiscovery("Fixed OpenID discovery requires HTTPS", None)
+
+    endpoint_type = cast("Any", OpenIDServiceEndpoint)
+    url = normalizeURL(identifier)
+    result = DiscoveryResult(url)
+    response = _fetch_over_https(url, {"Accept": YADIS_ACCEPT_HEADER})
+    result.normalized_uri = response.final_url
+    result.content_type = response.headers.get("content-type")
+    result.xrds_uri = whereIsYadis(response)
+    if result.xrds_uri and result.usedYadisLocation():
+        response = _fetch_over_https(result.xrds_uri)
+        # A fetcher reports where redirects ended, not the hops in between,
+        # and a redirected document still speaks for the same identifier.
+        if response.final_url != result.xrds_uri:
+            raise _InsecureDiscovery("OpenID XRDS document was redirected", response)
+        result.content_type = response.headers.get("content-type")
+
+    try:
+        services = endpoint_type.fromXRDS(result.normalized_uri, response.body)
+    except XRDSError:
+        services = []
+    if not services:
+        if result.isXRDS():
+            # Not an OpenID XRDS document: read the page itself as HTML.
+            page = _fetch_over_https(url)
+            services = endpoint_type.fromHTML(page.final_url, page.body)
+            return normalizeURL(page.final_url), services
+        services = endpoint_type.fromHTML(result.normalized_uri, response.body)
+    return normalizeURL(result.normalized_uri), cast(
+        "list[OpenIDServiceEndpoint]", getOPOrUserServices(services)
+    )
+
+
+class _HTTPSDiscoveryGenericConsumer(GenericConsumer):
+    _discover = staticmethod(_discover_over_https)
+
+
+class _HTTPSDiscoveryConsumer(Consumer):
+    _discover = staticmethod(_discover_over_https)
 
 
 class OpenIdAuth(BaseAuth[ResponseT_co]):
@@ -828,7 +990,12 @@ class OpenIdAuth(BaseAuth[ResponseT_co]):
         return self._consumer
 
     def create_consumer(self, store=None):
-        return Consumer(self.strategy.openid_session_dict(SESSION_NAME), store)
+        session = self.strategy.openid_session_dict(SESSION_NAME)
+        if self.requires_openid_provider_binding():
+            return _HTTPSDiscoveryConsumer(
+                session, store, _HTTPSDiscoveryGenericConsumer
+            )
+        return Consumer(session, store)
 
     def uses_redirect(self):
         """Return true if openid request will be handled with redirect or
@@ -840,11 +1007,21 @@ class OpenIdAuth(BaseAuth[ResponseT_co]):
         self, provider_url: str, params: dict[str, str] | None
     ) -> AuthRequest:
         try:
-            consumer = self.consumer()
+            session = self.strategy.openid_session_dict(SESSION_NAME)
+            same_backend = session.get(_BACKEND_SESSION_KEY) == self.name
         except InvalidOpenIdSession:
-            self.strategy.session_set(SESSION_NAME, {})
+            same_backend = False
+        if not same_backend:
+            # Discovery stores the endpoint as it goes and can fail half-way,
+            # so drop another backend's context and claim the session before
+            # it starts. The consumer persists its own copy of the session,
+            # so it must be recreated from the claimed one.
+            self.strategy.session_set(SESSION_NAME, {_BACKEND_SESSION_KEY: self.name})
             self._consumer = None
-            consumer = self.consumer()
+        consumer = self.consumer()
+        if self.requires_openid_provider_binding():
+            # Previously saved services may have been discovered over HTTP.
+            consumer.session.pop(OpenIdSessionWrapper.manager_key, None)
         request = consumer.begin(url_add_parameters(provider_url, params))
         try:
             self._validate_discovered_provider_endpoint(request.endpoint.server_url)
@@ -868,7 +1045,9 @@ class OpenIdAuth(BaseAuth[ResponseT_co]):
             raise AuthProviderError(
                 self,
                 f"OpenID discovery error: {err}",
-                code="http_error",
+                code="tls_error"
+                if isinstance(err, _InsecureDiscovery)
+                else "http_error",
                 stage="begin",
             ) from err
 

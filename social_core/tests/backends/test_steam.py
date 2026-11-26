@@ -256,3 +256,44 @@ class SteamOpenIdFakeSteamIdTest(SteamOpenIdTest):
         self._login_setup(user_url="https://fakesteamcommunity.com/openid/123")
         with assert_auth_error(self, AuthResponseError, "invalid_claim"):
             self.do_partial_pipeline()
+
+
+class SteamOpenIdForeignClaimedIdTest(SteamOpenIdTest):
+    """An unsigned callback must not make the consumer fetch its claimed ID.
+
+    No discovery response is registered for the claimed URL, so the test
+    fetcher fails the test if the callback reaches the OpenID consumer.
+    """
+
+    server_response = urlencode(
+        {
+            **dict(parse_qsl(SteamOpenIdTest.server_response)),
+            "openid.claimed_id": "http://127.0.0.1:8080/admin/restart",
+            "openid.identity": "http://127.0.0.1:8080/admin/restart",
+        }
+    )
+
+    def _login_setup(self, user_url=None) -> None:
+        self.strategy.set_settings({"SOCIAL_AUTH_STEAM_API_KEY": "123abc"})
+
+    def test_login(self) -> None:
+        self._login_setup()
+        with assert_auth_error(self, AuthResponseError, "invalid_claim"):
+            self.do_login()
+
+    def test_partial_pipeline(self) -> None:
+        self._login_setup()
+        with assert_auth_error(self, AuthResponseError, "invalid_claim"):
+            self.do_partial_pipeline()
+
+
+class SteamOpenIdOpenId1ResponseTest(SteamOpenIdForeignClaimedIdTest):
+    """OpenID 1 responses take the claimed ID from return_to; Steam is 2.0 only."""
+
+    server_response = urlencode(
+        {
+            key: value
+            for key, value in parse_qsl(SteamOpenIdTest.server_response)
+            if key != "openid.ns"
+        }
+    )
