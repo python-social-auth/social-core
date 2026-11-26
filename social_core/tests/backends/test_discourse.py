@@ -8,6 +8,7 @@ import requests
 import responses
 
 from social_core.exceptions import (
+    AuthConfigurationError,
     AuthException,
     AuthInputError,
     AuthResponseError,
@@ -177,6 +178,35 @@ class DiscourseTest(BaseBackendTest):
         with self.assertRaises(AuthSessionError) as caught:
             self.backend.complete()
         self.assertEqual(caught.exception.code, "session_context_missing")
+
+    def test_start_and_complete_require_secret(self) -> None:
+        payload = urlencode({"nonce": "nonce", "external_id": "42"})
+        sso = b64encode(payload.encode()).decode()
+        # Anyone can compute a signature made with an empty secret.
+        sig = hmac.new(b"", sso.encode(), hashlib.sha256).hexdigest()
+        for name, settings in (
+            ("unset", {}),
+            ("none", {"SECRET": None}),
+            ("empty", {"SECRET": ""}),
+        ):
+            self.strategy.set_settings({"SERVER_URL": "http://example.com", **settings})
+            self.strategy.session_set("discourse_nonce", "nonce")
+            self.backend.add_nonce("nonce")
+            self.strategy.set_request_data({"sso": sso, "sig": sig}, self.backend)
+            for stage, operation in (
+                ("callback", self.backend.complete),
+                ("begin", self.backend.start),
+            ):
+                with (
+                    self.subTest(name=name, stage=stage),
+                    patch.object(self.strategy, "authenticate") as authenticate,
+                    self.assertRaises(AuthConfigurationError) as caught,
+                ):
+                    operation()
+                self.assertEqual(caught.exception.code, "missing_setting")
+                self.assertEqual(caught.exception.stage, stage)
+                self.assertEqual(caught.exception.parameter, "SECRET")
+                authenticate.assert_not_called()
 
     def test_login(self) -> None:
         """

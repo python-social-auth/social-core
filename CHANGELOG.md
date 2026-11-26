@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Security
+
+- Reject empty Telegram and Discourse signing secrets and check each
+  strategy's enabled backend list even when a backend class is cached.
+
 ### Added
 
 - Gitea backend now fetches secondary emails from `/api/v1/user/emails` and
