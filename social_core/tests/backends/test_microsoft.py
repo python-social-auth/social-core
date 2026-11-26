@@ -88,3 +88,47 @@ class MicrosoftOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         )
         user.social_user.extra_data["auth_time"] = int(time.time()) - 7200
         self.assertEqual(self.backend.get_auth_token(user.id), "foobar-new-token")
+
+    def test_user_details_mail_in_upn_domain(self) -> None:
+        details = self.backend.get_user_details(
+            {
+                "userPrincipalName": "asmith@corp.example",
+                "mail": "Alice.Smith@Corp.example",
+            }
+        )
+        self.assertEqual(details["username"], "asmith")
+        self.assertEqual(details["email"], "Alice.Smith@Corp.example")
+
+    def test_user_details_mail_outside_upn_domain(self) -> None:
+        details = self.backend.get_user_details(
+            {
+                "userPrincipalName": "mallory@mallorylab.onmicrosoft.com",
+                "mail": "ceo@corp.example",
+            }
+        )
+        self.assertEqual(details["username"], "mallory")
+        self.assertEqual(details["email"], "mallory@mallorylab.onmicrosoft.com")
+
+    def test_user_details_mail_in_lookalike_domain(self) -> None:
+        details = self.backend.get_user_details(
+            {
+                "userPrincipalName": "mallory@corp.example",
+                "mail": "ceo@notcorp.example",
+            }
+        )
+        self.assertEqual(details["email"], "mallory@corp.example")
+
+    def test_user_details_without_mail(self) -> None:
+        details = self.backend.get_user_details(
+            {"userPrincipalName": "alice@corp.example", "mail": None}
+        )
+        self.assertEqual(details["email"], "alice@corp.example")
+
+    def test_user_details_guest(self) -> None:
+        details = self.backend.get_user_details(
+            {
+                "userPrincipalName": "ceo_corp.example#EXT#@mallorylab.onmicrosoft.com",
+                "mail": "ceo@corp.example",
+            }
+        )
+        self.assertIsNone(details["email"])

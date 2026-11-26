@@ -47,6 +47,14 @@ class KakaoOAuth2(BaseOAuth2[ResponseT_co]):
             "last_name": nickname[0] if nickname else None,
         }
 
+    def get_email_verified(self, response: Any) -> bool:
+        """Return whether the Kakao account address is valid and verified"""
+        kakao_account = response.get("kakao_account") or {}
+        return (
+            kakao_account.get("is_email_valid") is True
+            and kakao_account.get("is_email_verified") is True
+        )
+
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         return self.get_json(

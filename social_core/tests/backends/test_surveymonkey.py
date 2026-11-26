@@ -1,9 +1,19 @@
 import json
 
-from .oauth import BaseAuthUrlTestMixin, OAuth2StateTestMixin, OAuth2Test
+from .oauth import (
+    BaseAuthUrlTestMixin,
+    OAuth2StateTestMixin,
+    OAuth2Test,
+    VerifiedEmailWhitelistTestMixin,
+)
 
 
-class SurveyMonkeyOAuth2Test(OAuth2Test, OAuth2StateTestMixin, BaseAuthUrlTestMixin):
+class SurveyMonkeyOAuth2Test(
+    OAuth2Test,
+    OAuth2StateTestMixin,
+    BaseAuthUrlTestMixin,
+    VerifiedEmailWhitelistTestMixin,
+):
     backend_path = "social_core.backends.surveymonkey.SurveyMonkeyOAuth2"
     user_data_url = "https://api.surveymonkey.com/v3/users/me"
     expected_username = "ada"

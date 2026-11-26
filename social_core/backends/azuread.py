@@ -33,6 +33,7 @@ import os
 from pathlib import Path
 from typing import Any, cast
 from urllib.parse import urlsplit
+from uuid import UUID
 
 import jwt
 
@@ -40,6 +41,7 @@ from social_core.backends.base import ResponseT_co
 from social_core.backends.utils import jwt_error, load_oidc_config
 from social_core.exceptions import (
     AuthConfigurationError,
+    AuthPolicyError,
     AuthResponseError,
     ErrorStage,
     SocialAuthBaseException,
@@ -228,12 +230,91 @@ class AzureADOAuth2(BaseOAuth2PKCE[ResponseT_co]):
         key = configured_group_key(self)
         if key is None:
             return None
+        if not self.group_tenant_trusted(response):
+            # An untrusted tenant cannot provide an authoritative empty
+            # membership snapshot for synchronization either.
+            raise AuthPolicyError(
+                self, code="authentication_disallowed", stage="pipeline"
+            )
         return read_groups(
             self,
             response,
             key,
             missing_as_empty=self.setting("GROUPS_MISSING_AS_EMPTY", False),
         )
+
+    def tenant_uuids(self, setting_name: str) -> set[UUID] | None:
+        """Parse the tenant GUIDs trusted for a local authorization policy."""
+        tenant_ids = self.setting(setting_name)
+        if tenant_ids is None:
+            return None
+        if isinstance(tenant_ids, (list, tuple, set)) and all(
+            isinstance(tenant_id, str) for tenant_id in tenant_ids
+        ):
+            try:
+                return {UUID(tenant_id) for tenant_id in tenant_ids}
+            except ValueError:
+                pass
+        raise AuthConfigurationError(
+            self,
+            code="invalid_setting",
+            parameter=setting_name,
+            stage="pipeline",
+        )
+
+    def group_tenant_uuids(self) -> set[UUID] | None:
+        """Return the tenants whose membership assignments are honored."""
+        return self.tenant_uuids("GROUPS_TENANT_IDS")
+
+    def auth_allowed(self, response: dict[str, Any], details: dict[str, Any]) -> bool:
+        """Do not authorize an email asserted by an arbitrary Entra tenant."""
+        if (
+            self.setting("WHITELISTED_EMAILS", [])
+            or self.setting("WHITELISTED_DOMAINS", [])
+        ) and self.accepts_any_tenant():
+            trusted = self.tenant_uuids("EMAIL_TENANT_IDS")
+            if trusted is None:
+                raise AuthConfigurationError(
+                    self,
+                    code="missing_setting",
+                    parameter="EMAIL_TENANT_IDS",
+                    stage="pipeline",
+                )
+            tenant_id = response.get("tid")
+            try:
+                allowed = isinstance(tenant_id, str) and UUID(tenant_id) in trusted
+            except ValueError:
+                allowed = False
+            if not allowed:
+                raise AuthPolicyError(
+                    self, code="authentication_disallowed", stage="pipeline"
+                )
+        return super().auth_allowed(response, details)
+
+    def group_tenant_trusted(self, response) -> bool:
+        """Return whether memberships assigned by the token's tenant are honored.
+
+        Each tenant assigns its own roles and groups, so an authority accepting
+        any tenant needs the tenants whose assignments carry local authority.
+        """
+        tenant_uuids = self.group_tenant_uuids()
+        if tenant_uuids is None:
+            if (
+                self.setting("GROUPS_ALLOW_ANY_TENANT", False) is True
+                or not self.accepts_any_tenant()
+            ):
+                return True
+            raise AuthConfigurationError(
+                self,
+                code="missing_setting",
+                parameter="GROUPS_TENANT_IDS",
+                stage="pipeline",
+            )
+        tenant_id = response.get("tid")
+        try:
+            return isinstance(tenant_id, str) and UUID(tenant_id) in tenant_uuids
+        except ValueError:
+            return False
 
     def get_user_details(self, response):
         """Return user details from Azure AD account"""
@@ -295,6 +376,15 @@ class AzureADOAuth2(BaseOAuth2PKCE[ResponseT_co]):
                 self, claim="issuer", code="missing_claim", stage="token_validation"
             )
         return self.resolve_tenant_issuer(issuer, claims, "tid")
+
+    def accepts_any_tenant(self) -> bool:
+        """Return whether the accepted issuer follows the token's own tenant."""
+        issuer = self.openid_configuration().get("issuer")
+        return (
+            not isinstance(issuer, str)
+            or "{tenantid}" in issuer
+            or "{tenantId}" in issuer
+        )
 
     def get_id_token_key(self, id_token: str) -> dict[str, Any]:
         try:

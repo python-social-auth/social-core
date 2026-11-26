@@ -689,6 +689,18 @@ class NFDIOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
         self.backend.ALLOWED_ENTITLEMENTS = ["baz"]
         self.assertEqual(self.backend.entitlement_allowed(["foo"]), False)
 
+    def test_entitlements_single_string(self) -> None:
+        self.backend.ALLOWED_ENTITLEMENTS = ["foo"]
+        self.assertEqual(self.backend.entitlement_allowed("foo"), True)
+        self.assertEqual(self.backend.entitlement_allowed("foobar"), False)
+        self.assertEqual(self.backend.entitlement_allowed("barfoo"), False)
+
+    def test_entitlements_invalid_type(self) -> None:
+        self.backend.ALLOWED_ENTITLEMENTS = ["foo"]
+        self.assertEqual(self.backend.entitlement_allowed({"foo": "bar"}), False)
+        self.assertEqual(self.backend.entitlement_allowed(None), False)
+        self.assertEqual(self.backend.entitlement_allowed(("foo",)), False)
+
     def test_get_user_details(self) -> None:
         assert self.user_data_body is not None
         testdata = self.backend.get_user_details(json.loads(self.user_data_body))

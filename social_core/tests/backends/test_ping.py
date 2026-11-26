@@ -83,3 +83,46 @@ class PingOpenIdConnectTest(BaseBackendTest):
 
         self.assertEqual(context.exception.code, "invalid_claim")
         self.assertEqual(context.exception.stage, "refresh")
+
+    def test_get_user_details_custom_email_key(self) -> None:
+        self.strategy.set_settings({"SOCIAL_AUTH_PING_EMAIL_KEY": "work_email"})
+
+        details = self.backend.get_user_details(
+            {
+                "preferred_username": "user",
+                "email": "user@self.example",
+                "work_email": "user@corp.example",
+                "name": "Full Name",
+                "given_name": "Full",
+                "family_name": "Name",
+            }
+        )
+
+        self.assertEqual(
+            details,
+            {
+                "username": "user",
+                "email": "user@corp.example",
+                "fullname": None,
+                "first_name": "Full",
+                "last_name": "Name",
+            },
+        )
+
+    def test_whitelisted_domains_use_custom_email_key(self) -> None:
+        self.strategy.set_settings(
+            {
+                "SOCIAL_AUTH_PING_EMAIL_KEY": "work_email",
+                "SOCIAL_AUTH_PING_WHITELISTED_DOMAINS": ["corp.example"],
+            }
+        )
+        response = {
+            "preferred_username": "user",
+            "email": "user@corp.example",
+            "work_email": "user@other.example",
+        }
+
+        details = self.backend.get_user_details(response)
+
+        self.assertEqual(details["email"], "user@other.example")
+        self.assertFalse(self.backend.auth_allowed(response, details))

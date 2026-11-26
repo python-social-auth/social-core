@@ -7,7 +7,7 @@ the minor implementation differences between the Apereo CAS OIDC server
 implementation and the standard OIDC implementation in Python Social Auth.
 """
 
-from typing import Any, cast
+from typing import Any
 
 from social_core.backends.base import ResponseT_co
 from social_core.groups import read_groups
@@ -57,21 +57,21 @@ class CASOpenIdConnectAuth(OpenIdConnectAuth[ResponseT_co]):
     def get_user_details(self, response):
         username_key = self.setting("USERNAME_KEY", self.USERNAME_KEY)
         self.log_debug("username_key: %s", username_key)
-        attributes = cast("dict", self.user_data(response.get("access_token")))
-        return {
-            "username": attributes.get(username_key),
-            "email": attributes.get("email"),
-            "fullname": attributes.get("name"),
-            "first_name": attributes.get("given_name"),
-            "last_name": attributes.get("family_name"),
-        }
+        return super().get_user_details(response)
 
     def get_user_groups(self, response) -> list[str] | None:
         # Existing CAS allow lists do not require a new extraction setting.
-        if not (
-            self.setting("GROUPS_ENABLED", False)
-            or self.setting("ALLOW_GROUPS", [])
-            or self.setting("GROUPS_MAP", {})
-        ):
+        extract = bool(
+            self.setting("GROUPS_ENABLED", False) or self.setting("GROUPS_MAP", {})
+        )
+        if not (extract or self.setting("ALLOW_GROUPS", [])):
             return None
-        return read_groups(self, response, "groups", missing_as_empty=True)
+        # An allow list alone refuses a user without the claim either way. Any
+        # other consumer must not take a missing claim for an empty membership
+        # list: the user can drop the scope releasing it from the request.
+        return read_groups(
+            self,
+            response,
+            "groups",
+            missing_as_empty=self.setting("GROUPS_MISSING_AS_EMPTY", not extract),
+        )

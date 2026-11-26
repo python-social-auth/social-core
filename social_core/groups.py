@@ -11,6 +11,10 @@ from social_core.utils import module_member
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
+# Entra sends this SAML attribute instead of the group attribute, whatever name
+# the latter was given, for a user in more groups than fit in an assertion.
+SAML_GROUP_OVERAGE_ATTRIBUTE = "http://schemas.microsoft.com/claims/groups.link"
+
 
 def configured_group_key(backend: BaseAuth[object]) -> str | None:
     """Validate the configured literal claim name before accessing claims."""
@@ -26,19 +30,23 @@ def check_group_overage(
     backend: BaseAuth[object], response: Mapping[str, Any], key: str
 ) -> None:
     """Never use an incomplete Entra group claim as an authoritative list."""
-    if key != "groups":
-        return
     claim_names = response.get("_claim_names", {})
     if not isinstance(claim_names, dict):
         raise AuthResponseError(
             backend, code="invalid_claim", claim="_claim_names", stage="user_info"
         )
-    if "hasgroups" in response or "groups" in claim_names:
+    # The markers are matched to the selected claim, so that application roles
+    # sent next to a group overage stay usable.
+    if (
+        key in claim_names
+        or (key == "groups" and "hasgroups" in response)
+        or (key not in response and SAML_GROUP_OVERAGE_ATTRIBUTE in response)
+    ):
         raise AuthResponseError(
             backend,
             "Group membership exceeds the token limit",
             code="invalid_claim",
-            claim="groups",
+            claim=key,
             stage="user_info",
         )
 

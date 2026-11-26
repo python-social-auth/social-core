@@ -1,3 +1,6 @@
+# Keep this shared module cohesive for protocol regression review.
+# OpenID policy regressions share one protocol fixture.
+# pylint: disable=too-many-lines
 from __future__ import annotations
 
 import copy
@@ -26,6 +29,7 @@ from social_core.exceptions import (
     AuthCanceled,
     AuthConfigurationError,
     AuthInputError,
+    AuthPolicyError,
     AuthProviderError,
     AuthResponseError,
     AuthSessionError,
@@ -939,6 +943,56 @@ class OpenIdPartialTest(BaseBackendTest[OpenIdAuth]):
         ):
             backend.openid_request()
         consumer.assert_not_called()
+
+    def test_selected_provider_email_cannot_satisfy_allowlists(self) -> None:
+        details = {"email": "user@example.com"}
+        fixed_backends = (
+            UbuntuOpenId(self.strategy),
+            LiveJournalOpenId(self.strategy),
+        )
+        self.assertTrue(self.backend.auth_allowed(None, details))
+        for name, value in (
+            ("WHITELISTED_EMAILS", ["user@example.com"]),
+            ("WHITELISTED_DOMAINS", ["example.com"]),
+        ):
+            with self.subTest(setting=name):
+                self.strategy.set_settings({f"SOCIAL_AUTH_{name}": value})
+                self.assertFalse(self.backend.auth_allowed(None, details))
+                for backend in fixed_backends:
+                    self.assertTrue(backend.auth_allowed(None, details))
+                self.strategy.set_settings({f"SOCIAL_AUTH_{name}": []})
+        self.assertEqual(details, {"email": "user@example.com"})
+
+    def test_selected_provider_login_denied_with_domain_allowlist(self) -> None:
+        self.strategy.set_settings({"SOCIAL_AUTH_WHITELISTED_DOMAINS": ["example.com"]})
+        response = self.verified_response()
+        self.set_openid_context(response.endpoint)
+        self.strategy.set_request_data({"openid.mode": "id_res"}, self.backend)
+        with (
+            patch.object(
+                self.backend, "_complete_generic_response", return_value=response
+            ),
+            assert_auth_error(self, AuthPolicyError, "authentication_disallowed"),
+        ):
+            self.backend.complete()
+        self.assertEqual(User.cache, {})
+
+    def test_fixed_provider_login_allowed_with_domain_allowlist(self) -> None:
+        self.strategy.set_settings(
+            {
+                "SOCIAL_AUTH_AUTHENTICATION_BACKENDS": (
+                    "social_core.backends.ubuntu.UbuntuOpenId",
+                ),
+                "SOCIAL_AUTH_WHITELISTED_DOMAINS": ["example.com"],
+            }
+        )
+        endpoint = "https://login.ubuntu.com/+openid"
+        backend = self.bound_backend(expected_endpoint=endpoint)
+        response = self.verified_response(server_url=endpoint)
+        with patch.object(backend, "consumer") as consumer:
+            consumer.return_value.complete.return_value = response
+            user = backend.complete()
+        self.assertEqual(cast("User", user).email, "user@example.com")
 
 
 class UbuntuForeignProviderTest(OpenIdTest):

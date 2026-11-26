@@ -29,6 +29,10 @@ class SurveyMonkeyOAuth2(BaseOAuth2[ResponseT_co]):
         response["name"] = f"{response['first_name']} {response['last_name']}"
         return response
 
+    def get_email_verified(self, response: Any) -> bool:
+        """Return whether the SurveyMonkey account address was verified"""
+        return response.get("email_verified") is True
+
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data information from service"""
         base_url = kwargs["response"]["access_url"]

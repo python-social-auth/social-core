@@ -37,23 +37,16 @@ class HelmholtzOpenIdConnect(OpenIdConnectAuth[ResponseT_co]):
     ALLOWED_ENTITLEMENTS: list[str] = []
     ENTITLEMENT_KEY = "eduperson_entitlement"
 
-    def get_user_details(self, response):
-        username_key = self.setting("USERNAME_KEY", default=self.USERNAME_KEY)
-        fullname = response.get("name")
-        first_name = response.get("given_name")
-        last_name = response.get("family_name")
-        return {
-            "username": response.get(username_key),
-            "email": response.get("email"),
-            "fullname": fullname,
-            "first_name": first_name,
-            "last_name": last_name,
-        }
-
     def entitlement_allowed(self, user_entitlements):
         allowed = True
         allowed_ent = self.setting("ALLOWED_ENTITLEMENTS", self.ALLOWED_ENTITLEMENTS)
         if allowed_ent:
+            # A single entitlement may arrive as a plain string; compare whole
+            # values only, never substrings or keys of another claim type.
+            if isinstance(user_entitlements, str):
+                user_entitlements = [user_entitlements]
+            elif not isinstance(user_entitlements, list):
+                user_entitlements = []
             allowed = any(e in user_entitlements for e in allowed_ent)
         return allowed
 

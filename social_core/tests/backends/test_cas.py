@@ -1,4 +1,5 @@
 import json
+from unittest.mock import patch
 
 import responses
 
@@ -71,6 +72,14 @@ class CASOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
 
     def test_everything_works(self) -> None:
         self.do_login()
+
+    def test_email_and_verification_use_one_userinfo_snapshot(self) -> None:
+        response = {"email": "first@example.net", "email_verified": False}
+        with patch.object(self.backend, "user_data") as fetch:
+            details = self.backend.get_user_details(response)
+        fetch.assert_not_called()
+        self.assertEqual(details["email"], "first@example.net")
+        self.assertIs(self.backend.get_email_verified(response), False)
 
     def test_scalar_groups_do_not_block_login_without_group_handling(self) -> None:
         self.strategy.set_settings({"SOCIAL_AUTH_CAS_ALLOW_GROUPS": []})

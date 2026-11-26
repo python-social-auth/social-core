@@ -31,6 +31,10 @@ class DropboxOAuth2V2(BaseOAuth2[ResponseT_co]):
             "last_name": name.get("surname"),
         }
 
+    def get_email_verified(self, response: Any) -> bool:
+        """Return whether the address on the Dropbox account was verified"""
+        return response.get("email_verified") is True
+
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         return self.get_json(

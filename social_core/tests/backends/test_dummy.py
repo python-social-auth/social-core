@@ -26,6 +26,12 @@ MALFORMED_EMAILS = (
     "foo@",
     "Foo <foo@bar.com>",
     "foo\n@bar.com",
+    "foo@bar.com ",
+    "foo(comment)@bar.com",
+    "foo@bar.com(comment)",
+    "=?utf-8?q?foo?= @bar.com",
+    "=?utf-8?q?foo@baz.com,foo?= @bar.com",
+    "foo@=?utf-8?q?bar.com?=",
 )
 
 
@@ -56,6 +62,11 @@ class DummyOAuth2(BaseOAuth2):
 
 class Dummy2OAuth2(DummyOAuth2):
     GET_ALL_EXTRA_DATA = True
+
+
+class DummyVerifiedEmailOAuth2(DummyOAuth2):
+    def get_email_verified(self, response: Any) -> bool | None:
+        return response.get("email_verified")
 
 
 class DummyOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
@@ -219,6 +230,53 @@ class WhitelistDomainsTest(DummyOAuth2Test):
 
 
 DELTA = dt.timedelta(days=1)
+
+
+class WhitelistVerifiedEmailTest(DummyOAuth2Test):
+    backend_path = "social_core.tests.backends.test_dummy.DummyVerifiedEmailOAuth2"
+
+    def test_verified_email_states(self) -> None:
+        details = {"email": "foo@bar.com"}
+        whitelists: tuple[dict[str, list[str]], ...] = (
+            {"SOCIAL_AUTH_WHITELISTED_EMAILS": ["foo@bar.com"]},
+            {"SOCIAL_AUTH_WHITELISTED_DOMAINS": ["bar.com"]},
+        )
+        for whitelist in whitelists:
+            self.strategy.set_settings(whitelist)
+            for email_verified, allowed in ((True, True), (None, True), (False, False)):
+                with self.subTest(whitelist=whitelist, email_verified=email_verified):
+                    response = {"email_verified": email_verified}
+                    self.assertEqual(
+                        self.backend.auth_allowed(response, details), allowed
+                    )
+            self.strategy.set_settings({key: [] for key in whitelist})
+
+    def test_verified_email_still_requires_match(self) -> None:
+        self.strategy.set_settings({"SOCIAL_AUTH_WHITELISTED_DOMAINS": ["bar2.com"]})
+        response = {"email_verified": True}
+        self.assertFalse(self.backend.auth_allowed(response, {"email": "foo@bar.com"}))
+
+    def test_unverified_email_without_whitelist(self) -> None:
+        response = {"email_verified": False}
+        self.assertTrue(self.backend.auth_allowed(response, {"email": "foo@bar.com"}))
+
+    def test_login_with_unverified_email(self) -> None:
+        self.strategy.set_settings({"SOCIAL_AUTH_WHITELISTED_DOMAINS": ["bar.com"]})
+        self.user_data_body = json.dumps(
+            {
+                "id": 1,
+                "username": "foobar",
+                "email": "foo@bar.com",
+                "email_verified": False,
+            }
+        )
+
+        with self.assertRaises(AuthPolicyError) as caught:
+            self.do_login()
+
+        self.assertEqual(caught.exception.code, "authentication_disallowed")
+        self.assertEqual(caught.exception.stage, "pipeline")
+        self.assertFalse(User.cache)
 
 
 class ExpirationTimeTest(DummyOAuth2Test):

@@ -17,9 +17,13 @@ class EventbriteOAuth2(BaseOAuth2[ResponseT_co]):
     STATE_PARAMETER = True
     REDIRECT_STATE = False
 
+    def get_primary_email(self, response) -> dict[str, Any]:
+        """Return the primary address entry of an Eventbrite metadata response"""
+        return next(iter(filter(itemgetter("primary"), response["emails"])))
+
     def get_user_details(self, response):
         """Return user details from an Eventbrite metadata response"""
-        email = next(iter(filter(itemgetter("primary"), response["emails"])))["email"]
+        email = self.get_primary_email(response)["email"]
 
         return {
             "username": email,
@@ -27,6 +31,10 @@ class EventbriteOAuth2(BaseOAuth2[ResponseT_co]):
             "first_name": response["first_name"],
             "last_name": response["last_name"],
         }
+
+    def get_email_verified(self, response: Any) -> bool:
+        """Return whether the primary Eventbrite address was verified"""
+        return self.get_primary_email(response).get("verified") is True
 
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data and datacenter information from service"""

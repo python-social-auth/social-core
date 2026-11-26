@@ -40,6 +40,7 @@ from jwt.algorithms import RSAAlgorithm
 
 from social_core.exceptions import (
     AuthConfigurationError,
+    AuthPolicyError,
     AuthResponseError,
 )
 
@@ -63,6 +64,7 @@ class AzureADOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin, AzureOAuth2TestMixin):
     ISSUER_TEMPLATE = "https://sts.windows.net/{tenantid}/"
     KEY_ISSUER = ISSUER_TEMPLATE
     TENANT_ID = "727406ac-7068-48fa-92b9-c2d67211bc50"
+    OTHER_TENANT_ID = "00000000-0000-0000-0000-000000000000"
     TOKEN_VERSION = "1.0"
 
     backend_path = "social_core.backends.azuread.AzureADOAuth2"
@@ -199,6 +201,152 @@ class AzureADOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin, AzureOAuth2TestMixin):
         with self.assertRaises(AuthResponseError):
             self.do_start()
 
+    def configure(self, **settings: object) -> None:
+        self.strategy.set_settings(
+            {
+                f"SOCIAL_AUTH_{self.name}_{name}": value
+                for name, value in settings.items()
+            }
+        )
+
+    def test_groups_require_named_tenants_on_multi_tenant_authority(self) -> None:
+        value: object
+        self.configure(GROUPS_KEY="roles")
+        response = {"tid": self.OTHER_TENANT_ID, "roles": ["staff"]}
+        for value in (False, "true", 1):
+            self.configure(GROUPS_ALLOW_ANY_TENANT=value)
+            with (
+                self.subTest(value=value),
+                self.assertRaises(AuthConfigurationError) as caught,
+            ):
+                self.backend.get_user_groups(response)
+            self.assertEqual(caught.exception.code, "missing_setting")
+            self.assertEqual(caught.exception.parameter, "GROUPS_TENANT_IDS")
+            self.assertEqual(caught.exception.stage, "pipeline")
+        self.configure(GROUPS_ALLOW_ANY_TENANT=True)
+        self.assertEqual(self.backend.get_user_groups(response), ["staff"])
+
+    def test_email_allowlist_requires_trusted_tenant_on_common_authority(self) -> None:
+        if not self.backend.accepts_any_tenant():
+            self.skipTest("This backend pins the token to one tenant")
+        self.configure(WHITELISTED_DOMAINS=["example.org"])
+        details = {"email": "member@example.org"}
+        with self.assertRaises(AuthConfigurationError) as caught:
+            self.backend.auth_allowed({"tid": self.TENANT_ID}, details)
+        self.assertEqual(caught.exception.parameter, "EMAIL_TENANT_IDS")
+        self.assertEqual(caught.exception.stage, "pipeline")
+
+        self.configure(EMAIL_TENANT_IDS=[self.TENANT_ID])
+        self.assertTrue(self.backend.auth_allowed({"tid": self.TENANT_ID}, details))
+        with self.assertRaises(AuthPolicyError):
+            self.backend.auth_allowed({"tid": self.OTHER_TENANT_ID}, details)
+
+    def test_email_allowlist_rejects_untrusted_signed_tenant(self) -> None:
+        if (
+            not self.backend.accepts_any_tenant()
+            or "MissingCredentials" in type(self).__name__
+        ):
+            self.skipTest("This backend pins the tenant or cannot exchange a token")
+        self.configure(
+            WHITELISTED_EMAILS=["member@example.org"],
+            EMAIL_TENANT_IDS=[self.TENANT_ID],
+        )
+        self.access_token_body = self.build_access_token_body(
+            iss=self.ISSUER.replace(self.TENANT_ID, self.OTHER_TENANT_ID),
+            tid=self.OTHER_TENANT_ID,
+            email="member@example.org",
+        )
+        with self.assertRaises(AuthPolicyError):
+            self.do_start()
+
+    def test_email_allowlist_needs_no_tenant_list_for_pinned_authority(self) -> None:
+        self.configure(
+            AUTHORITY_URL=f"https://login.microsoftonline.com/{self.TENANT_ID}",
+            WHITELISTED_DOMAINS=["example.org"],
+        )
+        responses.add(
+            responses.GET,
+            self.backend.openid_configuration_url(),
+            json={"issuer": self.ISSUER, "jwks_uri": self.JWKS_URL},
+        )
+        self.assertTrue(
+            self.backend.auth_allowed(
+                {"tid": self.TENANT_ID}, {"email": "member@example.org"}
+            )
+        )
+
+    def test_groups_need_no_named_tenants_on_tenant_authority(self) -> None:
+        self.configure(
+            AUTHORITY_URL=f"https://login.microsoftonline.com/{self.TENANT_ID}",
+            GROUPS_KEY="roles",
+        )
+        responses.add(
+            responses.GET,
+            self.backend.openid_configuration_url(),
+            json={"issuer": self.ISSUER, "jwks_uri": self.JWKS_URL},
+        )
+        self.assertEqual(self.backend.get_user_groups({"roles": ["staff"]}), ["staff"])
+
+    def test_groups_honor_named_tenants_only(self) -> None:
+        tenant_id: object
+        self.configure(
+            GROUPS_KEY="roles",
+            GROUPS_TENANT_IDS=[self.TENANT_ID.upper()],
+            GROUPS_ALLOW_ANY_TENANT=True,
+            ALLOW_GROUPS=["staff"],
+        )
+        response: dict[str, object] = {"tid": self.TENANT_ID, "roles": ["staff"]}
+        self.assertEqual(self.backend.get_user_groups(response), ["staff"])
+        self.assertTrue(self.backend.auth_allowed(response, {}))
+        for tenant_id in (self.OTHER_TENANT_ID, "contoso.example", "", None, 1):
+            response = {"tid": tenant_id, "roles": ["staff"]}
+            with self.subTest(tenant_id=tenant_id):
+                with self.assertRaises(AuthPolicyError):
+                    self.backend.get_user_groups(response)
+                with self.assertRaises(AuthPolicyError):
+                    self.backend.auth_allowed(response, {})
+        with self.assertRaises(AuthPolicyError):
+            self.backend.get_user_groups({"roles": ["staff"]})
+
+    def test_invalid_group_tenants_are_a_configuration_error(self) -> None:
+        value: object
+        self.configure(GROUPS_KEY="roles", GROUPS_ALLOW_ANY_TENANT=True)
+        response = {"tid": self.TENANT_ID, "roles": ["staff"]}
+        for value in ("*", self.TENANT_ID, {}, [1], [None], ["contoso.example"]):
+            self.configure(GROUPS_TENANT_IDS=value)
+            with (
+                self.subTest(value=value),
+                self.assertRaises(AuthConfigurationError) as caught,
+            ):
+                self.backend.get_user_groups(response)
+            self.assertEqual(caught.exception.code, "invalid_setting")
+            self.assertEqual(caught.exception.parameter, "GROUPS_TENANT_IDS")
+            self.assertEqual(caught.exception.stage, "pipeline")
+
+    def test_login_refuses_groups_assigned_by_other_tenant(self) -> None:
+        self.configure(
+            GROUPS_KEY="roles",
+            GROUPS_TENANT_IDS=[self.TENANT_ID],
+            ALLOW_GROUPS=["staff"],
+        )
+        self.access_token_body = self.build_access_token_body(
+            iss=self.ISSUER.replace(self.TENANT_ID, self.OTHER_TENANT_ID),
+            tid=self.OTHER_TENANT_ID,
+            roles=["staff"],
+        )
+
+        with self.assertRaises(AuthPolicyError):
+            self.do_start()
+
+    def test_untrusted_tenant_cannot_clear_synchronized_groups(self) -> None:
+        self.configure(
+            GROUPS_KEY="roles",
+            GROUPS_TENANT_IDS=[self.TENANT_ID],
+            GROUPS_MAP={"staff": ["Staff"]},
+        )
+        with self.assertRaises(AuthPolicyError):
+            self.backend.get_user_groups({"tid": self.OTHER_TENANT_ID, "roles": []})
+
     def test_openid_configuration_and_jwks_cache_shared_by_url(self) -> None:
         cast("Any", self.backend.get_openid_configuration).invalidate()
         cast("Any", self.backend.get_jwks_keys_for_uri).invalidate()
@@ -258,6 +406,28 @@ class AzureADTenantOAuth2Test(AzureADOAuth2Test):
         with self.assertRaises(AuthResponseError):
             self.do_start()
 
+    def test_groups_require_named_tenants_on_multi_tenant_authority(self) -> None:
+        # The configured GUID tenant is the only one whose tokens are accepted.
+        self.configure(GROUPS_KEY="roles")
+        self.assertEqual(self.backend.get_user_groups({"roles": ["staff"]}), ["staff"])
+
+        self.configure(TENANT_ID="common")
+        responses.add(
+            responses.GET,
+            self.backend.openid_configuration_url(),
+            json={"issuer": self.ISSUER_TEMPLATE, "jwks_uri": self.JWKS_URL},
+        )
+        super().test_groups_require_named_tenants_on_multi_tenant_authority()
+
+    def test_login_refuses_groups_assigned_by_other_tenant(self) -> None:
+        self.configure(TENANT_ID="common")
+        responses.add(
+            responses.GET,
+            self.backend.openid_configuration_url(),
+            json={"issuer": self.ISSUER_TEMPLATE, "jwks_uri": self.JWKS_URL},
+        )
+        super().test_login_refuses_groups_assigned_by_other_tenant()
+
     def test_authority_override_preserves_configured_tenant_restriction(self) -> None:
         configuration = self.backend.openid_configuration()
         self.strategy.set_settings(
@@ -269,6 +439,52 @@ class AzureADTenantOAuth2Test(AzureADOAuth2Test):
             responses.GET, self.backend.openid_configuration_url(), json=configuration
         )
         self.test_login_rejects_wrong_configured_tenant_id()
+
+    def test_authority_override_rejects_unverifiable_tenant_domain(self) -> None:
+        configuration = self.backend.openid_configuration()
+        self.strategy.set_settings(
+            {
+                f"SOCIAL_AUTH_{self.name}_AUTHORITY_URL": "https://login.microsoftonline.com/organizations",
+                f"SOCIAL_AUTH_{self.name}_TENANT_ID": "contoso.onmicrosoft.com",
+            }
+        )
+        responses.add(
+            responses.GET, self.backend.openid_configuration_url(), json=configuration
+        )
+
+        with self.assertRaises(AuthConfigurationError) as caught:
+            self.do_start()
+        self.assertEqual(caught.exception.code, "invalid_setting")
+        self.assertEqual(caught.exception.parameter, "TENANT_ID")
+
+    def test_login_with_tenant_domain_and_tenant_issuer(self) -> None:
+        self.strategy.set_settings(
+            {f"SOCIAL_AUTH_{self.name}_TENANT_ID": "contoso.onmicrosoft.com"}
+        )
+        responses.add(
+            responses.GET,
+            self.backend.openid_configuration_url(),
+            json={"issuer": self.ISSUER, "jwks_uri": self.JWKS_URL},
+        )
+        self.do_login()
+
+    def test_login_with_tenant_domain_rejects_other_tenant_issuer(self) -> None:
+        other_tenant_id = "00000000-0000-0000-0000-000000000000"
+        self.strategy.set_settings(
+            {f"SOCIAL_AUTH_{self.name}_TENANT_ID": "contoso.onmicrosoft.com"}
+        )
+        responses.add(
+            responses.GET,
+            self.backend.openid_configuration_url(),
+            json={"issuer": self.ISSUER, "jwks_uri": self.JWKS_URL},
+        )
+        self.access_token_body = self.build_access_token_body(
+            iss=self.issuer_for_tenant(other_tenant_id),
+            tid=other_tenant_id,
+        )
+
+        with self.assertRaises(AuthResponseError):
+            self.do_start()
 
 
 class AzureADV2TenantOAuth2Test(AzureADTenantOAuth2Test):
@@ -529,3 +745,7 @@ class AzureADOAuth2MissingCredentialsTest(AzureADOAuth2Test):
     def test_login_rejects_invalid_id_token_tenant_id(self) -> None:
         with self.assertRaises(AuthConfigurationError):
             super().test_login_rejects_invalid_id_token_tenant_id()
+
+    def test_login_refuses_groups_assigned_by_other_tenant(self) -> None:
+        with self.assertRaises(AuthConfigurationError):
+            super().test_login_refuses_groups_assigned_by_other_tenant()

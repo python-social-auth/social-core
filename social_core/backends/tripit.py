@@ -40,6 +40,10 @@ class TripItOAuth(BaseOAuth1[ResponseT_co]):
             "last_name": last_name,
         }
 
+    def get_email_verified(self, response: Any) -> bool:
+        """Return whether the TripIt profile address was confirmed"""
+        return response.get("email_confirmed") is True
+
     def user_data(self, access_token: dict, *args, **kwargs) -> dict[str, Any] | None:
         """Return user data provided"""
         content: str = self.oauth_request(
@@ -49,12 +53,16 @@ class TripItOAuth(BaseOAuth1[ResponseT_co]):
         profiles = dom.getElementsByTagName("Profile")
         public_display_names = dom.getElementsByTagName("public_display_name")
         screen_names = dom.getElementsByTagName("screen_name")
-        primary_email = cast(
-            "Element", dom.getElementsByTagName("is_primary")[0].parentNode
-        ).getElementsByTagName("address")
+        primary = cast("Element", dom.getElementsByTagName("is_primary")[0].parentNode)
+        primary_email = primary.getElementsByTagName("address")
+        is_confirmed = primary.getElementsByTagName("is_confirmed")
         return {
             "id": profiles[0].getAttribute("ref"),
             "name": public_display_names[0].childNodes[0].nodeValue,
             "screen_name": screen_names[0].childNodes[0].nodeValue,
             "email": primary_email[0].childNodes[0].nodeValue,
+            "email_confirmed": any(
+                node.firstChild is not None and node.firstChild.nodeValue == "true"
+                for node in is_confirmed
+            ),
         }

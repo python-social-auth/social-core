@@ -186,3 +186,19 @@ class MediaWikiTest(BaseBackendTest):
 
         self.assertEqual(details["sub"], "stable-subject")
         self.assertEqual(email_details["email"], "user@example.com")
+
+    def test_whitelist_requires_confirmed_email(self) -> None:
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_MEDIAWIKI_WHITELISTED_DOMAINS": ["example.com"]}
+        )
+        identity = {"username": "user", "sub": 1, "email": "user@example.com"}
+        cases: tuple[tuple[dict[str, object], bool], ...] = (
+            ({"confirmed_email": True}, True),
+            ({"confirmed_email": False}, False),
+            ({}, False),
+        )
+        for claims, allowed in cases:
+            with self.subTest(claims=claims):
+                response = {**identity, **claims}
+                details = self.backend.get_user_details(response)
+                self.assertEqual(self.backend.auth_allowed(response, details), allowed)

@@ -85,12 +85,13 @@ class GitLabOAuth2(BaseOAuth2[ResponseT_co]):
                 parameter="GROUPS_IDENTIFIER",
                 stage="user_info",
             )
+        authorization = f"Bearer {access_token}"
         groups = []
         page = 1
         while True:
             result = self.request(
                 self.api_url("/api/v4/groups"),
-                headers={"Authorization": f"Bearer {access_token}"},
+                headers={"Authorization": authorization},
                 params={
                     "all_available": "false",
                     "min_access_level": 5,
@@ -101,6 +102,16 @@ class GitLabOAuth2(BaseOAuth2[ResponseT_co]):
                 },
                 stage="user_info",
             )
+            # Requests drops the Authorization header when a redirect leaves
+            # the host of API_URL, and GitLab answers an anonymous request with
+            # the public groups instead of the memberships of the user.
+            if result.request.headers.get("Authorization") != authorization:
+                raise AuthResponseError(
+                    self,
+                    "Group listing was not requested as the authenticated user",
+                    code="malformed_response",
+                    stage="user_info",
+                )
             try:
                 entries = result.json()
             except ValueError as error:

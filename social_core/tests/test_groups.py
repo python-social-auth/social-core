@@ -143,14 +143,21 @@ class GroupsTest(TestCase):
             WHITELISTED_DOMAINS=["example.com"],
         )
         self.assertTrue(
-            self.backend.auth_allowed({"groups": ["b"]}, {"email": "user@example.com"})
-        )
-        self.assertFalse(
-            self.backend.auth_allowed({"groups": []}, {"email": "user@example.com"})
+            self.backend.auth_allowed(
+                {"groups": ["b"], "email_verified": True},
+                {"email": "user@example.com"},
+            )
         )
         self.assertFalse(
             self.backend.auth_allowed(
-                {"groups": ["a"]}, {"email": "user@elsewhere.com"}
+                {"groups": [], "email_verified": True},
+                {"email": "user@example.com"},
+            )
+        )
+        self.assertFalse(
+            self.backend.auth_allowed(
+                {"groups": ["a"], "email_verified": True},
+                {"email": "user@elsewhere.com"},
             )
         )
         self.configure(GROUPS_KEY=None)
@@ -163,6 +170,33 @@ class GroupsTest(TestCase):
         self.assertTrue(backend.auth_allowed({"groups": ["users"]}, {}))
         self.assertFalse(backend.auth_allowed({}, {}))
         self.assertEqual(backend.get_user_groups({}), [])
+
+    def test_cas_missing_claim_is_not_an_empty_membership(self) -> None:
+        for setting, value, allow_groups in (
+            ("GROUPS_MAP", {"users": ["Users"]}, []),
+            ("GROUPS_MAP", {"users": ["Users"]}, ["users"]),
+            ("GROUPS_ENABLED", True, []),
+            ("GROUPS_ENABLED", True, ["users"]),
+        ):
+            strategy = TestStrategy(TestStorage)
+            backend = CASOpenIdConnectAuth(strategy)
+            strategy.set_settings(
+                {
+                    "SOCIAL_AUTH_CAS_ALLOW_GROUPS": allow_groups,
+                    f"SOCIAL_AUTH_CAS_{setting}": value,
+                }
+            )
+            with self.subTest(setting=setting, allow_groups=allow_groups):
+                self.assertEqual(backend.get_user_groups({"groups": []}), [])
+                with self.assertRaises(AuthResponseError) as caught:
+                    backend.get_user_groups({})
+                self.assertEqual(caught.exception.code, "missing_claim")
+                if allow_groups:
+                    with self.assertRaises(AuthResponseError):
+                        backend.auth_allowed({}, {})
+                strategy.set_settings({"SOCIAL_AUTH_CAS_GROUPS_MISSING_AS_EMPTY": True})
+                self.assertEqual(backend.get_user_groups({}), [])
+                self.assertEqual(backend.auth_allowed({}, {}), not allow_groups)
 
     def test_invalid_allow_list_is_a_configuration_error(self) -> None:
         value: object
@@ -208,6 +242,7 @@ class GroupsTest(TestCase):
             {
                 "SOCIAL_AUTH_AZUREAD_OAUTH2_GROUPS_KEY": "groups",
                 "SOCIAL_AUTH_AZUREAD_OAUTH2_GROUPS_MISSING_AS_EMPTY": True,
+                "SOCIAL_AUTH_AZUREAD_OAUTH2_GROUPS_ALLOW_ANY_TENANT": True,
             }
         )
         for response in (
@@ -241,6 +276,16 @@ class GroupsTest(TestCase):
                 self.backend.get_user_groups({"_claim_names": value})
             self.assertEqual(caught.exception.code, "invalid_claim")
             self.assertEqual(caught.exception.claim, "_claim_names")
+
+    def test_distributed_claim_with_configured_name_is_not_empty(self) -> None:
+        self.configure(GROUPS_KEY="roles", GROUPS_MISSING_AS_EMPTY=True)
+        with self.assertRaises(AuthResponseError) as caught:
+            self.backend.get_user_groups({"_claim_names": {"roles": "src1"}})
+        self.assertEqual(caught.exception.code, "invalid_claim")
+        self.assertEqual(caught.exception.claim, "roles")
+        self.assertEqual(
+            self.backend.get_user_groups({"_claim_names": {"groups": "src1"}}), []
+        )
 
     def test_oidc_userinfo_overage_prevents_synchronization(self) -> None:
         backend = OpenIdConnectAuth(self.strategy)

@@ -24,10 +24,9 @@ class LifeScienceOpenIdConnect(OpenIdConnectAuth[ResponseT_co]):
     VALIDATE_AT_HASH: bool = False
 
     def get_user_details(self, response):
-        username_key = self.setting("USERNAME_KEY", default=self.USERNAME_KEY)
         return {
-            "username": response.get(username_key),
-            "email": response.get("email"),
+            "username": response.get(self.setting("USERNAME_KEY", self.USERNAME_KEY)),
+            "email": response.get(self.setting("EMAIL_KEY", self.EMAIL_KEY)),
             "fullname": response.get("name"),
             "first_name": response.get("given_name"),
             "last_name": response.get("family_name"),

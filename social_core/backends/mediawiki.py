@@ -6,7 +6,7 @@ MediaWiki OAuth1 backend, docs at:
 import re
 import time
 from math import isfinite
-from typing import cast
+from typing import Any, cast
 from urllib.parse import parse_qs, urlencode, urlparse
 
 import jwt
@@ -255,6 +255,10 @@ class MediaWiki(BaseOAuth1[ResponseT_co]):
                 )
             details[id_key] = user_id
         return details
+
+    def get_email_verified(self, response: Any) -> bool:
+        """Return whether the wiki account address was confirmed"""
+        return response.get("confirmed_email") is True
 
     def get_user_id(self, details, response):
         """

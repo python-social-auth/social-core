@@ -171,3 +171,32 @@ class HelmholtzOpenIdConnectTest(OpenIdConnectTest, BaseAuthUrlTestMixin):
             ),
             False,
         )
+
+    def test_entitlements_single_string(self) -> None:
+        self.backend.ALLOWED_ENTITLEMENTS = [
+            "urn:geant:helmholtz.de:group:HIFIS#login.helmholtz.de"
+        ]
+        self.assertEqual(
+            self.backend.entitlement_allowed(
+                "urn:geant:helmholtz.de:group:HIFIS#login.helmholtz.de"
+            ),
+            True,
+        )
+        self.assertEqual(
+            self.backend.entitlement_allowed(
+                "urn:geant:helmholtz.de:group:HIFIS#login.helmholtz.de:extra"
+            ),
+            False,
+        )
+
+    def test_entitlements_invalid_type(self) -> None:
+        self.backend.ALLOWED_ENTITLEMENTS = [
+            "urn:geant:helmholtz.de:group:HIFIS#login.helmholtz.de"
+        ]
+        self.assertEqual(
+            self.backend.entitlement_allowed(
+                {"urn:geant:helmholtz.de:group:HIFIS#login.helmholtz.de": True}
+            ),
+            False,
+        )
+        self.assertEqual(self.backend.entitlement_allowed(None), False)

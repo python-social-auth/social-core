@@ -45,6 +45,11 @@ class TwitchOpenIdConnect(OpenIdConnectAuth[ResponseT_co]):
             "last_name": None,
         }
 
+    def get_email_verified(self, response: Any) -> bool:
+        """Return whether Twitch verified the address in the ID token"""
+        id_token = self.id_token or {}
+        return id_token.get("email_verified") is True
+
 
 class TwitchOAuth2(BaseOAuth2[ResponseT_co]):
     """Twitch OAuth authentication backend"""

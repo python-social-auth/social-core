@@ -183,6 +183,52 @@ class GitLabOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
         with self.assertRaises(AuthProviderError):
             self.backend.user_data("token")
 
+    def test_group_listing_redirected_without_authorization_is_rejected(self) -> None:
+        # A redirect to another host makes requests drop the Authorization
+        # header, and GitLab lists every public group to an anonymous caller.
+        self.strategy.set_settings({"SOCIAL_AUTH_GITLAB_GROUPS_ENABLED": True})
+        responses.add(responses.GET, self.user_data_url, json={"id": 123456})
+        responses.add(
+            responses.GET,
+            "https://gitlab.com/api/v4/groups",
+            status=308,
+            headers={"Location": "https://git.example.com/api/v4/groups"},
+        )
+        responses.add(
+            responses.GET,
+            "https://git.example.com/api/v4/groups",
+            json=[{"id": 1, "full_path": "public/group"}],
+        )
+
+        with self.assertRaises(AuthResponseError) as caught:
+            self.backend.user_data("token")
+        self.assertEqual(caught.exception.code, "malformed_response")
+        self.assertEqual(caught.exception.stage, "user_info")
+        self.assertNotIn("Authorization", responses.calls[-1].request.headers)
+
+    def test_group_listing_redirected_with_authorization_is_accepted(self) -> None:
+        self.strategy.set_settings({"SOCIAL_AUTH_GITLAB_GROUPS_ENABLED": True})
+        responses.add(responses.GET, self.user_data_url, json={"id": 123456})
+        responses.add(
+            responses.GET,
+            "https://gitlab.com/api/v4/groups",
+            status=308,
+            headers={"Location": "https://gitlab.com/gitlab/api/v4/groups"},
+        )
+        responses.add(
+            responses.GET,
+            "https://gitlab.com/gitlab/api/v4/groups",
+            json=[{"id": 1, "full_path": "org/team"}],
+        )
+
+        self.assertEqual(
+            self.backend.get_user_groups(self.backend.user_data("token")),
+            ["org/team"],
+        )
+        self.assertEqual(
+            responses.calls[-1].request.headers["Authorization"], "Bearer token"
+        )
+
     def test_malformed_group_responses_and_pagination(self) -> None:
         for payload, headers in (
             ({}, {}),

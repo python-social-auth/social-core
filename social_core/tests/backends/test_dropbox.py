@@ -2,10 +2,12 @@ import json
 
 from social_core.pipeline.social_auth import social_uid
 
-from .oauth import BaseAuthUrlTestMixin, OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test, VerifiedEmailWhitelistTestMixin
 
 
-class DropboxOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
+class DropboxOAuth2Test(
+    OAuth2Test, BaseAuthUrlTestMixin, VerifiedEmailWhitelistTestMixin
+):
     backend_path = "social_core.backends.dropbox.DropboxOAuth2V2"
     user_data_url = "https://api.dropboxapi.com/2/users/get_current_account"
     user_data_url_post = True

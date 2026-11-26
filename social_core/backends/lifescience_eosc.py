@@ -24,14 +24,7 @@ class LifeScienceEoscOpenIdConnect(OpenIdConnectAuth[ResponseT_co]):
     VALIDATE_AT_HASH: bool = False
 
     def get_user_details(self, response):
-        username_key = self.setting("USERNAME_KEY", default=self.USERNAME_KEY)
-        fullname = response.get("name")
-        first_name = None
-        last_name = None
-        return {
-            "username": response.get(username_key),
-            "email": response.get("email"),
-            "fullname": fullname,
-            "first_name": first_name,
-            "last_name": last_name,
-        }
+        details = super().get_user_details(response)
+        details["first_name"] = None
+        details["last_name"] = None
+        return details

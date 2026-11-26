@@ -1,6 +1,7 @@
 import json
 
-from social_core.exceptions import AuthResponseError
+from social_core.exceptions import AuthPolicyError, AuthResponseError
+from social_core.tests.models import User
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 from .open_id_connect import OpenIdConnectTest
@@ -12,6 +13,7 @@ class TwitchOpenIdConnectTest(OpenIdConnectTest):
     user_data_body = json.dumps({"sub": "1234"})
     issuer = "https://id.twitch.tv/oauth2"
     expected_username = "test_user1"
+    email_claims: dict[str, object] = {"email": "example@reply.com"}
     openid_config_body = json.dumps(
         {
             "authorization_endpoint": "https://id.twitch.tv/oauth2/authorize",
@@ -59,7 +61,7 @@ class TwitchOpenIdConnectTest(OpenIdConnectTest):
         return {
             **super().get_id_token(*args, **kwargs),
             "preferred_username": self.expected_username,
-            "email": "example@reply.com",
+            **self.email_claims,
         }
 
     def test_partial_pipeline(self) -> None:
@@ -77,6 +79,35 @@ class TwitchOpenIdConnectTest(OpenIdConnectTest):
             self.assertEqual(caught.exception.code, "missing_claim")
             self.assertEqual(caught.exception.claim, "id_token")
             self.assertEqual(caught.exception.stage, "user_info")
+
+    def test_login_with_verified_email_and_whitelist(self) -> None:
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_TWITCH_WHITELISTED_DOMAINS": ["reply.com"]}
+        )
+        self.email_claims = {"email": "example@reply.com", "email_verified": True}
+        self.do_login()
+
+    def test_login_with_unverified_email_denied_with_whitelist(self) -> None:
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_TWITCH_WHITELISTED_DOMAINS": ["reply.com"]}
+        )
+        self.email_claims = {"email": "example@reply.com", "email_verified": False}
+
+        with self.assertRaises(AuthPolicyError):
+            self.do_login()
+
+        self.assertFalse(User.cache)
+
+    def test_login_without_email_verified_denied_with_whitelist(self) -> None:
+        # The claims are requested through the browser, which may drop them
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_TWITCH_WHITELISTED_DOMAINS": ["reply.com"]}
+        )
+
+        with self.assertRaises(AuthPolicyError):
+            self.do_login()
+
+        self.assertFalse(User.cache)
 
 
 class TwitchOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):

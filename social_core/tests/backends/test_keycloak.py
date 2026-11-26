@@ -130,6 +130,21 @@ class KeycloakOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
     def test_login(self) -> None:
         self.do_login()
 
+    def test_email_allowlist_requires_verified_keycloak_claim(self) -> None:
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_KEYCLOAK_WHITELISTED_DOMAINS": ["example.com"]}
+        )
+        details = {"email": "john.doe@example.com"}
+        for response in (
+            {"email_verified": False},
+            {},
+            {"email_verified": None},
+            {"email_verified": "true"},
+        ):
+            with self.subTest(response=response):
+                self.assertFalse(self.backend.auth_allowed(response, details))
+        self.assertTrue(self.backend.auth_allowed({"email_verified": True}, details))
+
     def test_invalid_signature_raises_auth_token_error(self) -> None:
         header, payload, _signature = _encode(_PAYLOAD).split(".")
 

@@ -32,11 +32,11 @@ for verifying JWT tokens.
 
 from __future__ import annotations
 
-from typing import Any, cast
+from typing import Any
 from uuid import UUID
 
 from social_core.backends.base import ResponseT_co
-from social_core.exceptions import AuthResponseError
+from social_core.exceptions import AuthConfigurationError, AuthResponseError
 
 from .azuread import AzureADOAuth2
 
@@ -49,10 +49,17 @@ class AzureADTenantOAuth2(AzureADOAuth2[ResponseT_co]):
     LEGACY_ID_KEYS: tuple[str, ...] = ()
     OPENID_CONFIGURATION_URL = "{base_url}/.well-known/openid-configuration{appid}"
     JWKS_URL = "{base_url}/discovery/keys{appid}"
+    # TENANT_ID values that select an authority without naming a tenant.
+    MULTI_TENANT_ALIASES = ("common", "organizations", "consumers")
 
     @property
     def tenant_id(self) -> str:
-        return cast("str", self.setting("TENANT_ID", "common"))
+        value = self.setting("TENANT_ID", "common")
+        if not isinstance(value, str) or not value:
+            raise AuthConfigurationError(
+                self, code="invalid_setting", parameter="TENANT_ID", stage="begin"
+            )
+        return value
 
     def get_openid_configuration_url_format(self) -> dict[str, str]:
         return {**super().get_openid_configuration_url_format(), "appid": self._appid()}
@@ -69,11 +76,52 @@ class AzureADTenantOAuth2(AzureADOAuth2[ResponseT_co]):
         self.validate_configured_tenant(claims)
         return super().get_id_token_issuer(claims)
 
+    def accepts_any_tenant(self) -> bool:
+        # validate_configured_tenant() pins a GUID tenant on every authority.
+        try:
+            UUID(self.tenant_id)
+        except (TypeError, ValueError):
+            return super().accepts_any_tenant()
+        return False
+
     def validate_configured_tenant(self, claims: dict[str, Any]) -> None:
         configured_tenant_id = self.tenant_id
         try:
             configured_tenant_uuid = UUID(configured_tenant_id)
-        except (TypeError, ValueError):
+        except (TypeError, ValueError) as error:
+            if (
+                isinstance(configured_tenant_id, str)
+                and configured_tenant_id.lower() in self.MULTI_TENANT_ALIASES
+            ):
+                return
+            authority = self.configured_authority_url()
+            if (
+                authority is not None
+                and authority.rsplit("/", 1)[-1].lower() != configured_tenant_id.lower()
+            ):
+                raise AuthConfigurationError(
+                    self,
+                    "AUTHORITY_URL must select the configured tenant domain",
+                    code="invalid_setting",
+                    parameter="TENANT_ID",
+                    stage="token_validation",
+                ) from error
+            # A tenant domain name cannot be compared with ``tid``. It only
+            # restricts sign-in while discovery is pinned to that tenant and
+            # publishes its concrete issuer; a multi-tenant authority publishes
+            # a ``{tenantid}`` template that is filled from the token itself.
+            issuer = self.openid_configuration().get("issuer")
+            if isinstance(issuer, str) and (
+                "{tenantid}" in issuer or "{tenantId}" in issuer
+            ):
+                raise AuthConfigurationError(
+                    self,
+                    "TENANT_ID must be a tenant GUID when the authority "
+                    "serves more than one tenant",
+                    code="invalid_setting",
+                    parameter="TENANT_ID",
+                    stage="token_validation",
+                ) from None
             return
 
         tenant_id = claims.get("tid")

@@ -102,14 +102,6 @@ class PingOpenIdConnect(OpenIdConnectAuth[ResponseT_co]):
         return claims
 
     def get_user_details(self, response):
-        username_key = self.setting("USERNAME_KEY", default=self.USERNAME_KEY)
-        fullname = None
-        first_name = response.get("given_name")
-        last_name = response.get("family_name")
-        return {
-            "username": response.get(username_key),
-            "email": response.get("email"),
-            "fullname": fullname,
-            "first_name": first_name,
-            "last_name": last_name,
-        }
+        details = super().get_user_details(response)
+        details["fullname"] = None
+        return details

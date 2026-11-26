@@ -29,6 +29,10 @@ class DiscordOAuth2(BaseOAuth2[ResponseT_co]):
             "email": response.get("email") or "",
         }
 
+    def get_email_verified(self, response: Any) -> bool:
+        """Return whether the address on the Discord account was verified"""
+        return response.get("verified") is True
+
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         url = f"https://{self.HOSTNAME}/api/users/@me"
         auth_header = {"Authorization": f"Bearer {access_token}"}
