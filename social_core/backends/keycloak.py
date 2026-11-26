@@ -3,12 +3,12 @@ from typing import Any, cast
 import jwt
 
 from social_core.backends.base import ResponseT_co
-from social_core.backends.oauth import BaseOAuth2
+from social_core.backends.oauth import BaseOAuth2PKCE
 from social_core.backends.utils import jwt_error
 from social_core.groups import configured_group_key, read_groups
 
 
-class KeycloakOAuth2(BaseOAuth2[ResponseT_co]):  # pylint: disable=abstract-method
+class KeycloakOAuth2(BaseOAuth2PKCE[ResponseT_co]):  # pylint: disable=abstract-method
     """Keycloak OAuth2 authentication backend
 
     This backend has been tested working with a standard Keycloak installation,
@@ -102,6 +102,8 @@ class KeycloakOAuth2(BaseOAuth2[ResponseT_co]):  # pylint: disable=abstract-meth
 
     name = "keycloak"
     title = "Keycloak"
+    # Opt-in, like OpenIdConnectAuth: SOCIAL_AUTH_KEYCLOAK_USE_PKCE = True
+    DEFAULT_USE_PKCE = False
     ID_KEY = "sub"
     LEGACY_ID_KEYS = ("username",)
     MUTABLE_ID_KEYS = ("username", "preferred_username", "email")
