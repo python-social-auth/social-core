@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Security
+
+- Verify the audience of Google access tokens supplied directly to ``do_auth``;
+  use ``AUDIENCE`` to replace the accepted client IDs (including the backend's
+  own ``KEY`` if it should remain accepted), and reject
+  tokens whose audience does not match;
+  document Twilio Connect's association-only ownership limit and Google One
+  Tap's uncorrelated signed flow.
+
 ### Added
 
 - Gitea backend now fetches secondary emails from `/api/v1/user/emails` and
