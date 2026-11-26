@@ -59,6 +59,47 @@ class SAMLGroupTest(BaseBackendTest):
         with self.assertRaises(AuthResponseError):
             self.backend.get_user_groups({"idp_name": "first", "attributes": {}})
 
+    def test_group_overage_is_not_an_empty_membership_list(self) -> None:
+        overage = {
+            "http://schemas.microsoft.com/claims/groups.link": [
+                "https://graph.windows.net/tenant/users/id/getMemberObjects"
+            ]
+        }
+        for key in (
+            "groups",
+            "http://schemas.microsoft.com/ws/2008/06/identity/claims/groups",
+        ):
+            self.strategy.set_settings(
+                {
+                    "SOCIAL_AUTH_SAML_ENABLED_IDPS": {
+                        "entra": {"attr_groups": key, "groups_missing_as_empty": True}
+                    }
+                }
+            )
+            with self.subTest(key=key):
+                with self.assertRaises(AuthResponseError) as caught:
+                    self.backend.get_user_groups(
+                        {"idp_name": "entra", "attributes": overage}
+                    )
+                self.assertEqual(caught.exception.code, "invalid_claim")
+                self.assertEqual(caught.exception.claim, key)
+                self.assertEqual(
+                    self.backend.get_user_groups(
+                        {"idp_name": "entra", "attributes": {}}
+                    ),
+                    [],
+                )
+                # A selected attribute that was sent is not the omitted one.
+                self.assertEqual(
+                    self.backend.get_user_groups(
+                        {
+                            "idp_name": "entra",
+                            "attributes": {**overage, key: ["reviewer"]},
+                        }
+                    ),
+                    ["reviewer"],
+                )
+
     def test_dynamic_idp_mapping_claims_ownership(self) -> None:
         self.strategy.set_settings(
             {

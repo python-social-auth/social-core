@@ -1,9 +1,11 @@
 import json
 
-from .oauth import BaseAuthUrlTestMixin, OAuth2Test
+from .oauth import BaseAuthUrlTestMixin, OAuth2Test, VerifiedEmailWhitelistTestMixin
 
 
-class YahooOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
+class YahooOAuth2Test(
+    OAuth2Test, BaseAuthUrlTestMixin, VerifiedEmailWhitelistTestMixin
+):
     backend_path = "social_core.backends.yahoo.YahooOAuth2"
     user_data_url = "https://api.login.yahoo.com/openid/v1/userinfo"
     expected_username = "j.doe"

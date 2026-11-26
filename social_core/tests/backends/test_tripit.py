@@ -1,5 +1,8 @@
 from urllib.parse import urlencode
 
+from social_core.exceptions import AuthPolicyError
+from social_core.tests.models import User
+
 from .oauth import OAuth1AuthUrlTestMixin, OAuth1Test
 
 
@@ -61,6 +64,26 @@ class TripitOAuth1Test(OAuth1Test, OAuth1AuthUrlTestMixin):
 
     def test_partial_pipeline(self) -> None:
         self.do_partial_pipeline()
+
+    def test_login_with_confirmed_email_and_whitelist(self) -> None:
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_TRIPIT_WHITELISTED_DOMAINS": ["gmail.com"]}
+        )
+        self.do_login()
+
+    def test_login_with_unconfirmed_email_denied_with_whitelist(self) -> None:
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_TRIPIT_WHITELISTED_DOMAINS": ["gmail.com"]}
+        )
+        assert self.user_data_body is not None
+        self.user_data_body = self.user_data_body.replace(
+            "<is_confirmed>true</is_confirmed>", "<is_confirmed>false</is_confirmed>"
+        )
+
+        with self.assertRaises(AuthPolicyError):
+            self.do_login()
+
+        self.assertFalse(User.cache)
 
 
 class TripitOAuth1UsernameAlternativesTest(TripitOAuth1Test):

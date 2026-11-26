@@ -445,6 +445,17 @@ class OpenIdAuth(BaseAuth[ResponseT_co]):
         )
         return values
 
+    def auth_allowed(self, response: Any, details: dict[str, Any]) -> bool:
+        """Return True if the user should be allowed to authenticate.
+
+        A provider selected by the visitor vouches only for its own
+        identifiers, so the address it asserts cannot satisfy
+        WHITELISTED_EMAILS or WHITELISTED_DOMAINS.
+        """
+        if not self.requires_openid_provider_binding():
+            details = {**details, "email": ""}
+        return super().auth_allowed(response, details)
+
     def extra_data(
         self,
         user,

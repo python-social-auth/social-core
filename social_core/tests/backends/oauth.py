@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+import json
 import time
-from typing import Generic, TypeVar, cast
+from typing import Any, Generic, TypeVar, cast
 from unittest.mock import patch
 from urllib.parse import urlparse
 
@@ -12,6 +13,7 @@ from social_core.backends.oauth import BaseOAuth1, BaseOAuth2, OAuthAuth
 from social_core.exceptions import (
     AuthConfigurationError,
     AuthInputError,
+    AuthPolicyError,
     AuthSessionError,
 )
 from social_core.tests.models import User
@@ -98,6 +100,41 @@ class BaseOAuthTest(BaseBackendTest[OAuthBackendT], Generic[OAuthBackendT]):
         )
         self.pre_complete_callback(start_url)
         return self.backend.complete()
+
+
+class VerifiedEmailWhitelistTestMixin:
+    """E-mail allowlists require an address the provider reports as verified."""
+
+    whitelisted_email = "foobar@example.com"
+
+    def user_data_with_email(self, *, verified: bool) -> dict[str, Any]:
+        case = cast("BaseOAuthTest", self)
+        assert case.user_data_body is not None
+        return {
+            **json.loads(case.user_data_body),
+            "email": self.whitelisted_email,
+            "email_verified": verified,
+        }
+
+    def do_whitelisted_login(self, *, verified: bool) -> None:
+        case = cast("BaseOAuthTest", self)
+        case.strategy.set_settings(
+            {f"SOCIAL_AUTH_{case.name}_WHITELISTED_EMAILS": [self.whitelisted_email]}
+        )
+        case.user_data_body = json.dumps(self.user_data_with_email(verified=verified))
+        case.do_login()
+
+    def test_login_with_verified_email_and_whitelist(self) -> None:
+        self.do_whitelisted_login(verified=True)
+
+    def test_login_with_unverified_email_denied_with_whitelist(self) -> None:
+        case = cast("BaseOAuthTest", self)
+        with case.assertRaises(AuthPolicyError) as caught:
+            self.do_whitelisted_login(verified=False)
+
+        case.assertEqual(caught.exception.code, "authentication_disallowed")
+        case.assertEqual(caught.exception.stage, "pipeline")
+        case.assertFalse(User.cache)
 
 
 BaseOAuth1BackendT = TypeVar("BaseOAuth1BackendT", bound=BaseOAuth1)

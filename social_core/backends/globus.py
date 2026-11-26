@@ -21,14 +21,10 @@ class GlobusOpenIdConnect(OpenIdConnectAuth[ResponseT_co]):
     ]
 
     def get_user_details(self, response):
-        username_key = self.setting("USERNAME_KEY", default=self.USERNAME_KEY)
-        fullname = response.get("name")
-        first_name = None
-        last_name = None
         return {
-            "username": response.get(username_key),
-            "email": response.get("email"),
-            "fullname": fullname,
-            "first_name": first_name,
-            "last_name": last_name,
+            "username": response.get(self.setting("USERNAME_KEY", self.USERNAME_KEY)),
+            "email": response.get(self.setting("EMAIL_KEY", self.EMAIL_KEY)),
+            "fullname": response.get("name"),
+            "first_name": None,
+            "last_name": None,
         }

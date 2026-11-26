@@ -36,6 +36,10 @@ class SalesforceOAuth2(BaseOAuth2[ResponseT_co]):
             "fullname": response.get("display_name"),
         }
 
+    def get_email_verified(self, response: Any) -> bool:
+        """Return whether the user confirmed the address set on the account"""
+        return response.get("email_verified") is True
+
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         user_id_url = kwargs["response"]["id"]

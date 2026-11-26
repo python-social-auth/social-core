@@ -159,3 +159,7 @@ class KeycloakOAuth2(BaseOAuth2PKCE[ResponseT_co]):  # pylint: disable=abstract-
             "first_name": response.get("given_name"),
             "last_name": response.get("family_name"),
         }
+
+    def get_email_verified(self, response: dict[str, Any]) -> bool | None:
+        """Keycloak's email verification claim is required for allowlists."""
+        return response.get("email_verified") is True

@@ -327,3 +327,15 @@ class EGICheckinOpenIdConnectTest(
     def test_entitlements_not_allowed(self) -> None:
         self.backend.ALLOWED_ENTITLEMENTS = ["baz"]
         self.assertEqual(self.backend.entitlement_allowed(["foo"]), False)
+
+    def test_entitlements_single_string(self) -> None:
+        self.backend.ALLOWED_ENTITLEMENTS = ["foo"]
+        self.assertEqual(self.backend.entitlement_allowed("foo"), True)
+        self.assertEqual(self.backend.entitlement_allowed("foobar"), False)
+        self.assertEqual(self.backend.entitlement_allowed("barfoo"), False)
+
+    def test_entitlements_invalid_type(self) -> None:
+        self.backend.ALLOWED_ENTITLEMENTS = ["foo"]
+        self.assertEqual(self.backend.entitlement_allowed({"foo": "bar"}), False)
+        self.assertEqual(self.backend.entitlement_allowed(None), False)
+        self.assertEqual(self.backend.entitlement_allowed(("foo",)), False)

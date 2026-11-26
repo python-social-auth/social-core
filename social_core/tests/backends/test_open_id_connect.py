@@ -1,8 +1,12 @@
+# Keep this shared module cohesive for protocol regression review.
+# OIDC policy regressions share one token fixture.
+# pylint: disable=too-many-lines
 from __future__ import annotations
 
 import copy
 import datetime as dt
 import json
+import unittest
 from typing import Protocol, cast
 from unittest.mock import patch
 
@@ -16,7 +20,9 @@ from social_core.exceptions import (
     AuthResponseError,
 )
 from social_core.tests.exception_helpers import assert_auth_error
-from social_core.utils import get_querystring, parse_qs
+from social_core.tests.models import TestStorage
+from social_core.tests.strategy import TestStrategy
+from social_core.utils import get_querystring, module_member, parse_qs
 
 from .oauth import BaseAuthUrlTestMixin
 from .open_id_connect import (
@@ -996,3 +1002,113 @@ class ExampleOpenIdConnectInvalidParamsTest(OpenIdConnectTest):
                 }
             )
             self.backend.auth_params(state=self.backend.get_or_create_state())
+
+
+class OpenIdConnectSubclassEmailKeyTest(unittest.TestCase):
+    backend_paths = (
+        "social_core.backends.cas.CASOpenIdConnectAuth",
+        "social_core.backends.cesid.CesidOpenIdConnect",
+        "social_core.backends.egi_checkin.EGICheckinOpenIdConnect",
+        "social_core.backends.einfracz.EInfraCZOpenIdConnect",
+        "social_core.backends.elixir.ElixirOpenIdConnect",
+        "social_core.backends.globus.GlobusOpenIdConnect",
+        "social_core.backends.helmholtz.HelmholtzOpenIdConnect",
+        "social_core.backends.lifescience.LifeScienceOpenIdConnect",
+        "social_core.backends.lifescience_eosc.LifeScienceEoscOpenIdConnect",
+        "social_core.backends.nfdi.NFDIOpenIdConnect",
+        "social_core.backends.ping.PingOpenIdConnect",
+    )
+
+    def test_get_user_details_custom_email_key(self) -> None:
+        claims = {"email": "user@self.example", "work_email": "user@corp.example"}
+        for backend_path in self.backend_paths:
+            with self.subTest(backend=backend_path):
+                strategy = TestStrategy(TestStorage)
+                strategy.set_settings({"SOCIAL_AUTH_EMAIL_KEY": "work_email"})
+                backend = module_member(backend_path)(strategy)
+
+                with patch.object(backend, "user_data", return_value=claims):
+                    details = backend.get_user_details(
+                        {**claims, "access_token": "token"}
+                    )
+
+                self.assertEqual(details["email"], "user@corp.example")
+
+    def test_response_only_subclasses_do_not_fill_missing_profile_fields(self) -> None:
+        for backend_path in (
+            "social_core.backends.cesid.CesidOpenIdConnect",
+            "social_core.backends.einfracz.EInfraCZOpenIdConnect",
+            "social_core.backends.elixir.ElixirOpenIdConnect",
+            "social_core.backends.globus.GlobusOpenIdConnect",
+            "social_core.backends.lifescience.LifeScienceOpenIdConnect",
+        ):
+            with self.subTest(backend=backend_path):
+                backend = module_member(backend_path)(TestStrategy(TestStorage))
+                backend.id_token = {
+                    "email": "token@example.org",
+                    "name": "Token Name",
+                    "preferred_username": "token-name",
+                }
+                details = backend.get_user_details({"sub": "subject"})
+                self.assertIsNone(details["email"])
+                self.assertIsNone(details["fullname"])
+                self.assertIsNone(details["username"])
+
+
+class OpenIdConnectEmailVerificationTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.strategy = TestStrategy(TestStorage)
+        self.strategy.set_settings({"SOCIAL_AUTH_WHITELISTED_DOMAINS": ["example.org"]})
+        self.backend = OpenIdConnectAuth(self.strategy)
+
+    def allowed(self, response: dict[str, object]) -> bool:
+        return self.backend.auth_allowed(
+            response, self.backend.get_user_details(response)
+        )
+
+    def test_allowlist_accepts_quoted_pair_local_part(self) -> None:
+        self.backend.id_token = None
+        self.assertTrue(self.allowed({"email": '"foo\\ bar"@example.org'}))
+
+    def test_userinfo_marker_follows_userinfo_email(self) -> None:
+        self.backend.id_token = {"email": "member@example.org", "email_verified": True}
+        self.assertFalse(
+            self.allowed({"email": "member@example.org", "email_verified": False})
+        )
+        self.assertTrue(
+            self.allowed({"email": "member@example.org", "email_verified": True})
+        )
+
+    def test_id_token_marker_follows_id_token_email(self) -> None:
+        self.backend.id_token = {"email": "member@example.org", "email_verified": False}
+        self.assertFalse(self.allowed({"email_verified": True}))
+        self.backend.id_token["email_verified"] = True
+        self.assertTrue(self.allowed({"email_verified": False}))
+
+    def test_custom_email_uses_only_configured_marker(self) -> None:
+        self.strategy.set_settings(
+            {
+                "SOCIAL_AUTH_WHITELISTED_DOMAINS": ["example.org"],
+                "SOCIAL_AUTH_EMAIL_KEY": "work_email",
+                "SOCIAL_AUTH_EMAIL_VERIFIED_KEY": "work_email_verified",
+            }
+        )
+        self.assertFalse(
+            self.allowed(
+                {
+                    "work_email": "member@example.org",
+                    "email_verified": True,
+                    "work_email_verified": False,
+                }
+            )
+        )
+        self.assertTrue(
+            self.allowed(
+                {
+                    "work_email": "member@example.org",
+                    "email_verified": False,
+                    "work_email_verified": True,
+                }
+            )
+        )
+        self.assertTrue(self.allowed({"work_email": "member@example.org"}))

@@ -45,7 +45,7 @@ class MicrosoftOAuth2(BaseOAuth2[ResponseT_co]):
 
     def get_user_details(self, response):
         """Return user details from Microsoft online account"""
-        email = response.get("mail")
+        mail = response.get("mail")
         username = response.get("userPrincipalName")
 
         if not username:
@@ -53,8 +53,17 @@ class MicrosoftOAuth2(BaseOAuth2[ResponseT_co]):
                 self, claim="userPrincipalName", code="missing_claim", stage="user_info"
             )
 
+        email = None
         if "@" in username:
-            if not email:
+            # The userPrincipalName domain must be verified by the tenant,
+            # while "mail" is a contact attribute any tenant administrator can
+            # set to an arbitrary address. Only report "mail" when it lies in
+            # the verified domain; otherwise use the sign-in name itself.
+            # Guest names ("...#EXT#@tenant") are not e-mail addresses.
+            domain = username.rsplit("@", 1)[1].lower()
+            if isinstance(mail, str) and mail.lower().endswith(f"@{domain}"):
+                email = mail
+            elif "#EXT#" not in username.upper():
                 email = username
             username = username.split("@", 1)[0]
 

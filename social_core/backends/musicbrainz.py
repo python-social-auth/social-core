@@ -29,6 +29,10 @@ class MusicBrainzOAuth2(BaseOAuth2[ResponseT_co]):
             "first_name": response.get("sub"),
         }
 
+    def get_email_verified(self, response: Any) -> bool:
+        """Return whether the MusicBrainz account address was verified"""
+        return response.get("email_verified") is True
+
     def user_data(self, access_token: str, *args, **kwargs) -> dict[str, Any] | None:
         """Loads user data from service"""
         return self.get_json(

@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Security
 
+- Require trusted tenant IDs for Azure email allowlists on multi-tenant
+  authorities, preventing another tenant from asserting an allowed address.
+- Enforce Azure tenant and group provenance, exact entitlement membership,
+  complete group claims, and authenticated GitLab group listings before policy
+  or synchronization decisions.
+- Require provider-confirmed email where supported for email allowlists, reject
+  ambiguous email syntax and user-selected OpenID email claims, and honor
+  configured OIDC email fields and their matching verification markers from
+  the same CAS UserInfo snapshot.
 - Validate Shopify authorization hosts, preserve OAuth query parameter
   boundaries, reject unsafe OpenID destinations including browser-normalized
   backslashes and controls, and sanitize SAML logout redirects.

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import inspect
+import re
 import time
 import warnings
 from contextlib import contextmanager
@@ -485,8 +486,17 @@ class BaseAuth(Generic[ResponseT_co]):
                 allowed = bool(
                     address.username
                     and address.domain
+                    and re.sub(r"\\([ -~])", r"\1", email)
+                    in (
+                        f"{address.username}@{address.domain}",
+                        f'"{address.username}"@{address.domain}',
+                    )
                     and (email in emails or address.domain in domains)
                 )
+            # An address the provider reports as unverified says nothing about
+            # who is signing in, so it cannot satisfy an allowlist.
+            if allowed and self.get_email_verified(response) is False:
+                allowed = False
         allow_groups = self.get_group_setting("ALLOW_GROUPS", response, [])
         if not isinstance(allow_groups, (list, tuple, set)) or any(
             not isinstance(group, str) or not group for group in allow_groups
@@ -507,6 +517,11 @@ class BaseAuth(Generic[ResponseT_co]):
                 )
             allowed = allowed and bool(set(groups).intersection(allow_groups))
         return allowed
+
+    def get_email_verified(self, response: Any) -> bool | None:
+        """Return whether the provider verified the e-mail address, or None
+        when the provider does not report it."""
+        return None
 
     def get_user_groups(self, response) -> list[str] | None:
         """Return normalized external memberships, or None when disabled."""

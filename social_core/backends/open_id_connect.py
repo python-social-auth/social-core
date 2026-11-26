@@ -1,3 +1,6 @@
+# Keep this shared module cohesive for protocol regression review.
+# OIDC claim provenance remains in the shared backend contract.
+# pylint: disable=too-many-lines
 from __future__ import annotations
 
 import base64
@@ -930,6 +933,27 @@ class OpenIdConnectAuth(OIDCDiscoveryMixin[ResponseT_co], BaseOAuth2PKCE[Respons
             "first_name": get_value(first_name_key),
             "last_name": get_value(last_name_key),
         }
+
+    def get_email_verified(self, response: dict[str, Any]) -> bool | None:
+        """Read verification from the source of the selected email claim."""
+        email_key = self.setting("EMAIL_KEY", self.EMAIL_KEY)
+        marker_key = self.setting(
+            "EMAIL_VERIFIED_KEY", "email_verified" if email_key == "email" else None
+        )
+        if marker_key is None:
+            return None
+        if not isinstance(marker_key, str) or not marker_key:
+            raise AuthConfigurationError(
+                self,
+                code="invalid_setting",
+                parameter="EMAIL_VERIFIED_KEY",
+                stage="pipeline",
+            )
+        source = response if email_key in response else self.id_token
+        if not isinstance(source, dict):
+            return None
+        marker = source.get(marker_key)
+        return None if marker is None else marker is True
 
     def validate_at_hash(self, claims, access_token, key):
         """
