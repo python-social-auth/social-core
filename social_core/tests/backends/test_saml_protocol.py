@@ -1,3 +1,6 @@
+# Keep this shared module cohesive for protocol regression review.
+# SAML protocol regressions share one signed-response fixture.
+# pylint: disable=too-many-lines
 """SAML wire-level compatibility tests for the social-core backend.
 
 This is not a complete SAML toolkit conformance suite. In particular, the
@@ -14,6 +17,7 @@ from unittest.mock import Mock, patch
 from urllib.parse import urlsplit
 
 from social_core.exceptions import (
+    AuthAssociationError,
     AuthConfigurationError,
     AuthInputError,
     AuthPolicyError,
@@ -282,7 +286,9 @@ class SAMLProtocolTest(BaseBackendTest):
         attrs = saml.find(node, ".//saml:AttributeStatement")
         attrs.getparent().remove(attrs)
         result = self.complete(saml.signed_response(node))
-        self.assertEqual(self.backend.get_user_id({}, result), "idp:stable-name-id")
+        self.assertEqual(
+            self.backend.get_user_id({}, result), "idp:persistent:c3RhYmxlLW5hbWUtaWQ"
+        )
 
     def test_attribute_values_and_duplicate_names(self):
         node = saml.response(
@@ -327,6 +333,73 @@ class SAMLProtocolTest(BaseBackendTest):
         result = self.complete(saml.signed_response(node))
         self.assertEqual(result["attributes"]["name_id"], "stable-name-id")
 
+    def name_id_response(self, name_id_format: str | None, *, encrypted=False):
+        self.strategy.session_set(self.key, "request-id")
+        node = saml.response(attributes={"username": ["alice"]})
+        name_id = saml.find(node, ".//saml:NameID")
+        if name_id_format is None:
+            del name_id.attrib["Format"]
+        else:
+            name_id.set("Format", name_id_format)
+        if encrypted:
+            saml.encrypt(name_id)
+        return saml.signed_response(node)
+
+    def test_name_id_format_matches_requested(self):
+        # The default unspecified request leaves the choice to the IdP
+        for name_id_format in (saml.PERSISTENT, saml.TRANSIENT, None):
+            self.complete(self.name_id_response(name_id_format))
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_SAML_SP_EXTRA": {"NameIDFormat": saml.PERSISTENT}}
+        )
+        result = self.complete(self.name_id_response(saml.PERSISTENT))
+        self.assertEqual(
+            self.backend.get_user_id({}, result), "idp:persistent:c3RhYmxlLW5hbWUtaWQ"
+        )
+        # NameIDPolicy in an unsigned AuthnRequest can be changed by the browser
+        for name_id_format in (saml.TRANSIENT, saml.UNSPECIFIED, None):
+            with self.subTest(name_id_format=name_id_format):
+                self.rejected(self.name_id_response(name_id_format))
+        with self.assertRaises(AuthResponseError) as caught:
+            self.backend.complete()
+        self.assertEqual(caught.exception.code, "invalid_claim")
+        self.assertEqual(caught.exception.claim, "NameID")
+        self.assertEqual(self.strategy.session_get(self.key), "request-id")
+
+    def test_name_id_format_idp_override(self):
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_SAML_SP_EXTRA": {"NameIDFormat": saml.PERSISTENT}}
+        )
+        conf = self.idps["idp"]
+        conf["name_id_format"] = saml.UNSPECIFIED
+        self.complete(self.name_id_response(saml.UNSPECIFIED))
+        self.complete(self.name_id_response(None))
+        self.rejected(self.name_id_response(saml.PERSISTENT))
+        conf["name_id_format"] = None
+        for name_id_format in (saml.PERSISTENT, saml.TRANSIENT, None):
+            self.complete(self.name_id_response(name_id_format))
+
+    def test_name_id_format_without_requested_format(self):
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_SAML_SP_EXTRA": {"NameIDFormat": saml.PERSISTENT}}
+        )
+        # The encrypted format is requested instead of the configured one
+        self.security(wantNameIdEncrypted=True)
+        self.complete(self.name_id_response(saml.TRANSIENT, encrypted=True))
+        conf = self.idps["idp"]
+        conf["name_id_format"] = saml.PERSISTENT
+        self.complete(self.name_id_response(saml.PERSISTENT, encrypted=True))
+        self.rejected(self.name_id_response(saml.TRANSIENT, encrypted=True))
+        del conf["name_id_format"]
+        # There is no format to check without NameID
+        self.security(wantNameId=False)
+        self.strategy.session_set(self.key, "request-id")
+        node = saml.response()
+        name_id = saml.find(node, ".//saml:NameID")
+        name_id.getparent().remove(name_id)
+        result = self.complete(saml.signed_response(node))
+        self.assertIsNone(result["attributes"]["name_id"])
+
     def test_wrong_key_and_corrupt_ciphertext(self):
         for corrupt in (False, True):
             with self.subTest(corrupt=corrupt):
@@ -368,6 +441,34 @@ class SAMLProtocolTest(BaseBackendTest):
                 self.complete(stripped)
                 self.assertIsNone(self.strategy.session_get(self.key))
                 self.rejected(stripped, exception=AuthSessionError)
+
+    def test_added_unsigned_in_response_to_is_not_correlated(self):
+        # Adding the envelope attribute to an unsolicited response whose
+        # assertion alone is signed must not satisfy request correlation.
+        for encrypted in (False, True):
+            with self.subTest(encrypted=encrypted):
+                node = saml.signed_response(saml.response(None))
+                if encrypted:
+                    saml.encrypt(saml.find(node, "saml:Assertion"))
+                node.set("InResponseTo", "request-id")
+                self.rejected(node, exception=AuthSessionError)
+                self.rejected(node, user=User("existing"), exception=AuthSessionError)
+                self.assertEqual(self.strategy.session_get(self.key), "request-id")
+
+    def test_signed_envelope_in_response_to_is_correlated(self):
+        # A signed response covers the envelope attribute, so it is trusted
+        # even when SubjectConfirmationData carries no copy of it.
+        node = saml.response()
+        data = saml.find(node, ".//saml:SubjectConfirmationData")
+        del data.attrib["InResponseTo"]
+        for encrypted in (False, True):
+            with self.subTest(encrypted=encrypted):
+                signed = deepcopy(node)
+                if encrypted:
+                    saml.encrypt(saml.find(signed, "saml:Assertion"))
+                self.strategy.session_set(self.key, "request-id")
+                self.complete(saml.signed_response(signed, signed="response"))
+                self.assertIsNone(self.strategy.session_get(self.key))
 
     def test_stripped_in_response_to_checks_all_bearer_confirmations(self):
         for invalid_confirmation in ("non-bearer", "missing-data", "expired"):
@@ -545,7 +646,9 @@ class SAMLProtocolTest(BaseBackendTest):
         del self.idps["other"]
         result = self.complete(saml.signed_response(), relay_state=None)
         self.assertEqual(result["idp_name"], "idp")
-        self.assertEqual(self.backend.get_user_id({}, result), "idp:stable-uid")
+        self.assertEqual(
+            self.backend.get_user_id({}, result), "idp:persistent:c3RhYmxlLW5hbWUtaWQ"
+        )
 
     def test_invalid_relay_state(self):
         for relay in (
@@ -569,13 +672,213 @@ class SAMLProtocolTest(BaseBackendTest):
     def test_pipeline_preserves_existing_identity_and_logout_data(self):
         self.post(saml.signed_response())
         user = self.backend.complete()
-        association = TestUserSocialAuth.get_social_auth("saml", "idp:stable-uid")
-        self.assertEqual(association.uid, "idp:stable-uid")
+        association = TestUserSocialAuth.get_social_auth(
+            "saml", "idp:persistent:c3RhYmxlLW5hbWUtaWQ"
+        )
+        self.assertEqual(association.uid, "idp:persistent:c3RhYmxlLW5hbWUtaWQ")
         self.assertEqual(association.extra_data["name_id"], "stable-name-id")
         self.assertEqual(association.extra_data["session_index"], "session-index")
         self.strategy.session_set(self.key, "request-id")
         self.post(saml.signed_response())
         self.assertEqual(self.backend.complete().id, user.id)
+
+    def test_non_persistent_name_id_uses_fallback_namespace(self):
+        for name_id_format in (saml.TRANSIENT, saml.UNSPECIFIED, None):
+            with self.subTest(name_id_format=name_id_format):
+                node = saml.response()
+                name_id = saml.find(node, ".//saml:NameID")
+                if name_id_format is None:
+                    del name_id.attrib["Format"]
+                else:
+                    name_id.set("Format", name_id_format)
+                self.strategy.session_set(self.key, "request-id")
+                result = self.complete(saml.signed_response(node))
+                self.assertEqual(result["attributes"]["name_id_format"], name_id_format)
+                self.assertEqual(
+                    self.backend.get_user_id({}, result),
+                    "idp:fallback:c3RhYmxlLXVpZA",
+                )
+
+    def test_fallback_does_not_select_persistent_association(self):
+        owner = User("previous")
+        TestUserSocialAuth(
+            owner,
+            "saml",
+            "idp:stable-uid",
+            extra_data={"name_id": "previous", "name_id_format": saml.PERSISTENT},
+        )
+        node = saml.response()
+        saml.find(node, ".//saml:NameID").set("Format", saml.TRANSIENT)
+        self.strategy.session_set(self.key, "request-id")
+        result = self.complete(saml.signed_response(node))
+        with self.assertRaises(AuthAssociationError):
+            self.backend.get_user_id({}, result)
+
+    def test_fallback_value_matching_persistent_key_suffix_is_separate(self):
+        node = saml.response()
+        saml.find(node, ".//saml:NameID").set("Format", saml.TRANSIENT)
+        saml.find(
+            node, f".//saml:Attribute[@Name='{saml.UID}']/saml:AttributeValue"
+        ).text = "persistent:c3RhYmxlLXVpZA"
+        self.strategy.session_set(self.key, "request-id")
+        result = self.complete(saml.signed_response(node))
+        self.assertNotEqual(
+            self.backend.get_user_id({}, result), "idp:persistent:c3RhYmxlLXVpZA"
+        )
+
+    def test_reserved_legacy_fallback_key_requires_recovery(self):
+        owner = User("previous")
+        TestUserSocialAuth(
+            owner,
+            "saml",
+            "idp:persistent:c3RhYmxlLXVpZA",
+            extra_data={"name_id": "stable-uid", "name_id_format": saml.PERSISTENT},
+        )
+        node = saml.response()
+        saml.find(node, ".//saml:NameID").set("Format", saml.TRANSIENT)
+        saml.find(
+            node, f".//saml:Attribute[@Name='{saml.UID}']/saml:AttributeValue"
+        ).text = "persistent:c3RhYmxlLXVpZA"
+        self.strategy.session_set(self.key, "request-id")
+        result = self.complete(saml.signed_response(node))
+        with self.assertRaises(AuthAssociationError):
+            self.backend.get_user_id({}, result)
+
+    def test_matching_legacy_fallback_keeps_original_key(self):
+        owner = User("previous")
+        TestUserSocialAuth(owner, "saml", "idp:stable-uid", extra_data={})
+        node = saml.response()
+        saml.find(node, ".//saml:NameID").set("Format", saml.TRANSIENT)
+        self.strategy.session_set(self.key, "request-id")
+        result = self.complete(saml.signed_response(node))
+        self.assertEqual(self.backend.get_user_id({}, result), "idp:stable-uid")
+
+    def test_configured_identifier_cannot_select_persistent_association(self):
+        self.idps["idp"]["attr_user_permanent_id"] = saml.UID
+        owner = User("previous")
+        TestUserSocialAuth(
+            owner,
+            "saml",
+            "idp:stable-uid",
+            extra_data={"saml_identifier_kind": "persistent"},
+        )
+        result = self.complete(saml.signed_response())
+        with self.assertRaises(AuthAssociationError):
+            self.backend.get_user_id({}, result)
+
+    def test_configured_permanent_id_wins_over_persistent_name_id(self):
+        self.idps["idp"]["attr_user_permanent_id"] = saml.UID
+        result = self.complete(saml.signed_response())
+        self.assertEqual(self.backend.get_user_id({}, result), "idp:stable-uid")
+        self.assertIsNone(
+            self.backend.get_legacy_social_auth("idp:stable-name-id", "", result)
+        )
+
+    def test_login_name_association_migrates_to_matching_name_id(self):
+        owner = User("alice", email="previous@example.com")
+        legacy = TestUserSocialAuth(
+            owner,
+            "saml",
+            "idp:stable-uid",
+            extra_data={"name_id": "stable-name-id", "session_index": "old"},
+        )
+        self.post(saml.signed_response())
+        self.assertIs(self.backend.complete(), owner)
+        self.assertEqual(legacy.uid, "idp:persistent:c3RhYmxlLW5hbWUtaWQ")
+        self.assertEqual(legacy.extra_data["session_index"], "session-index")
+        self.assertEqual(len(User.cache), 1)
+
+    def test_reassigned_login_name_gets_separate_user(self):
+        owner = User("alice", email="previous@example.com")
+        legacy = TestUserSocialAuth(
+            owner,
+            "saml",
+            "idp:stable-uid",
+            extra_data={"name_id": "previous-holder", "session_index": "old"},
+        )
+        self.post(saml.signed_response())
+        user = self.backend.complete()
+        self.assertIsNot(user, owner)
+        self.assertEqual(legacy.uid, "idp:stable-uid")
+        self.assertEqual(legacy.extra_data["name_id"], "previous-holder")
+        self.assertEqual(user.social[0].uid, "idp:persistent:c3RhYmxlLW5hbWUtaWQ")
+
+    def test_persistent_name_id_does_not_select_legacy_login_name(self):
+        owner = User("previous", email="previous@example.com")
+        legacy = TestUserSocialAuth(
+            owner,
+            "saml",
+            "idp:stable-name-id",
+            extra_data={"name_id": "previous-holder"},
+        )
+        self.post(saml.signed_response())
+        user = self.backend.complete()
+        self.assertIsNot(user, owner)
+        self.assertEqual(legacy.uid, "idp:stable-name-id")
+        self.assertEqual(user.social[0].uid, "idp:persistent:c3RhYmxlLW5hbWUtaWQ")
+
+    def test_namespaced_association_requires_matching_name_id_evidence(self):
+        owner = User("previous", email="previous@example.com")
+        existing = TestUserSocialAuth(
+            owner,
+            "saml",
+            "idp:persistent:c3RhYmxlLW5hbWUtaWQ",
+            extra_data={
+                "name_id": "previous-holder",
+                "name_id_format": saml.PERSISTENT,
+            },
+        )
+        self.post(saml.signed_response())
+        with self.assertRaises(AuthAssociationError) as caught:
+            self.backend.complete()
+        self.assertEqual(caught.exception.code, "identifier_migration_conflict")
+        self.assertIs(existing.user, owner)
+
+    def test_login_name_association_without_name_id_requires_recovery(self):
+        owner = User("alice", email="previous@example.com")
+        legacy = TestUserSocialAuth(
+            owner, "saml", "idp:stable-uid", extra_data={"session_index": "old"}
+        )
+        self.post(saml.signed_response())
+        with self.assertRaises(AuthAssociationError) as caught:
+            self.backend.complete()
+        self.assertEqual(caught.exception.code, "identifier_migration_conflict")
+        self.assertEqual(legacy.uid, "idp:stable-uid")
+        self.assertEqual(len(User.cache), 1)
+        # Even an authenticated owner needs matching saved NameID evidence.
+        self.strategy.session_set(self.key, "request-id")
+        self.post(saml.signed_response())
+        with self.assertRaises(AuthAssociationError):
+            self.backend.complete(user=owner)
+        self.assertEqual(legacy.uid, "idp:stable-uid")
+
+    def test_nonpersistent_legacy_name_id_cannot_migrate(self):
+        owner = User("alice", email="previous@example.com")
+        legacy = TestUserSocialAuth(
+            owner,
+            "saml",
+            "idp:stable-uid",
+            extra_data={
+                "name_id": "stable-name-id",
+                "name_id_format": saml.TRANSIENT,
+            },
+        )
+        self.post(saml.signed_response())
+        with self.assertRaises(AuthAssociationError) as caught:
+            self.backend.complete()
+        self.assertEqual(caught.exception.code, "identifier_migration_conflict")
+        self.assertEqual(legacy.uid, "idp:stable-uid")
+
+    def test_legacy_lookup_rejects_another_identity_context(self):
+        owner = User("alice", email="previous@example.com")
+        legacy = TestUserSocialAuth(
+            owner, "saml", "idp:stable-uid", extra_data={"name_id": "stable-name-id"}
+        )
+        result = self.complete(saml.signed_response())
+        for uid in ("idp:stable-uid", "other:stable-name-id", "idp:other"):
+            with self.subTest(uid=uid):
+                self.assertIsNone(self.backend.get_legacy_social_auth(uid, "", result))
+                self.assertEqual(legacy.uid, "idp:stable-uid")
 
     def test_attribute_mapping(self):
         provider = self.backend.get_idp("idp")
@@ -621,10 +924,14 @@ class SAMLProtocolTest(BaseBackendTest):
 
     def test_idp_names_keep_identical_subjects_distinct(self):
         result = self.complete(saml.signed_response())
-        self.assertEqual(self.backend.get_user_id({}, result), "idp:stable-uid")
+        self.assertEqual(
+            self.backend.get_user_id({}, result), "idp:persistent:c3RhYmxlLW5hbWUtaWQ"
+        )
         self.strategy.session_set("saml_other_authn_request_id", "request-id")
         result = self.complete(saml.signed_response(), relay_state="other")
-        self.assertEqual(self.backend.get_user_id({}, result), "other:stable-uid")
+        self.assertEqual(
+            self.backend.get_user_id({}, result), "other:persistent:c3RhYmxlLW5hbWUtaWQ"
+        )
 
     def test_entitlement_hook_blocks_authentication(self):
         self.post(saml.signed_response())

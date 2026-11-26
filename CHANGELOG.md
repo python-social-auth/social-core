@@ -32,6 +32,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   tokens whose audience does not match;
   document Twilio Connect's association-only ownership limit and Google One
   Tap's uncorrelated signed flow.
+- Prefer a persistent SAML NameID over a mutable login name, migrating legacy
+  associations only with matching saved identity evidence. Namespace persistent
+  NameIDs and new fallback identifiers to avoid cross-format collisions while
+  retaining checked legacy fallback keys. Check configured
+  NameID formats and accept request IDs only from signed response fields.
+  Existing fallback associations with conflicting NameID evidence require
+  operator repair; evidence-free legacy fallback keys retain their prior
+  compatibility behavior.
 
 ### Added
 

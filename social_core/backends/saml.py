@@ -1,3 +1,6 @@
+# Keep this shared module cohesive for protocol regression review.
+# SAML request and identity validation share one backend contract.
+# pylint: disable=too-many-lines
 """
 Backend for SAML 2.0 support
 
@@ -11,9 +14,10 @@ Terminology:
 from __future__ import annotations
 
 import json
+from base64 import urlsafe_b64encode
 from html import escape
 from secrets import token_urlsafe
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 # lxml exposes this exception from its C extension.
 # pylint: disable-next=no-name-in-module
@@ -29,6 +33,7 @@ from xmlsec import Error as XMLSecError
 
 from social_core.backends.base import ResponseT_co
 from social_core.exceptions import (
+    AuthAssociationError,
     AuthConfigurationError,
     AuthInputError,
     AuthResponseError,
@@ -36,6 +41,7 @@ from social_core.exceptions import (
     ErrorStage,
 )
 from social_core.groups import read_groups
+from social_core.identifiers import identifier_matches
 from social_core.utils import (
     constant_time_compare,
     get_allowed_redirect_schemes,
@@ -44,6 +50,9 @@ from social_core.utils import (
 )
 
 from .base import BaseAuth
+
+if TYPE_CHECKING:
+    from social_core.storage import UserMixin, UserProtocol
 
 # Helpful constants:
 OID_COMMON_NAME = "urn:oid:2.5.4.3"
@@ -98,6 +107,9 @@ USERNAME_FIELDS = (
     "username",
 )
 
+# Defaults used when the IdP does not send a persistent NameID. The login
+# name can be renamed or handed to another person, so such IdPs should set
+# attr_user_permanent_id to an attribute that is never reassigned.
 PERSISTENT_FIELDS = (
     OID_USERID,
     "name_id",
@@ -138,11 +150,16 @@ class SAMLIdentityProvider:
         The most important method: Get a permanent, unique identifier
         for this user from the attributes supplied by the IdP.
 
-        If you want to use the NameID, it's available via
-        attributes['name_id']
+        By default this is the NameID when the IdP sends it in the
+        persistent format, the one identifier SAML defines as never being
+        reassigned to another person, and otherwise the first of
+        PERSISTENT_FIELDS present. Set attr_user_permanent_id to select an
+        attribute explicitly; the NameID is available as 'name_id'.
         """
         setting = "attr_user_permanent_id"
-        uid = self.get_attr(attributes, setting, PERSISTENT_FIELDS)
+        uid = self.get_persistent_name_id(attributes)
+        if setting in self.conf or uid is None:
+            uid = self.get_attr(attributes, setting, PERSISTENT_FIELDS)
         if not uid:
             raise AuthResponseError(
                 self.backend,
@@ -151,6 +168,35 @@ class SAMLIdentityProvider:
                 stage="user_info",
             )
         return uid
+
+    def get_persistent_name_id(
+        self, attributes: dict[str, str | list[str] | None]
+    ) -> str | None:
+        """Get the NameID if the IdP sent it in the persistent format."""
+        name_id = attributes.get("name_id")
+        if (
+            isinstance(name_id, str)
+            and name_id
+            and attributes.get("name_id_format")
+            == OneLogin_Saml2_Constants.NAMEID_PERSISTENT
+        ):
+            return name_id
+        return None
+
+    def get_legacy_user_permanent_id(
+        self, attributes: dict[str, str | list[str] | None]
+    ) -> str | None:
+        """
+        Get the identifier earlier versions selected by default for this
+        user, if it differs from the one get_user_permanent_id selects now.
+        """
+        setting = "attr_user_permanent_id"
+        if setting in self.conf or self.get_persistent_name_id(attributes) is None:
+            return None
+        legacy_uid = self.get_attr(attributes, setting, PERSISTENT_FIELDS)
+        if not legacy_uid:
+            return None
+        return legacy_uid
 
     # Attributes processing:
     def get_user_details(
@@ -310,6 +356,11 @@ class SAMLAuth(BaseAuth[ResponseT_co]):
         }
     }
 
+    Users are identified by the NameID when the IdP sends it in the
+    persistent format. For other IdPs set "attr_user_permanent_id" to an
+    attribute that is never reassigned to another person; the default falls
+    back to the login name, which may be reassigned.
+
     Optional settings:
     SOCIAL_AUTH_SAML_SP_EXTRA = {}
     SOCIAL_AUTH_SAML_SECURITY_CONFIG = {}
@@ -422,19 +473,23 @@ class SAMLAuth(BaseAuth[ResponseT_co]):
         """Return ``InResponseTo`` values from a response validated by ``auth``.
 
         When only the assertion is signed, ``samlp:Response/@InResponseTo`` is
-        outside the signature and can be stripped in transit. Fall back to the
-        signed copies in bearer ``SubjectConfirmationData`` elements, since
+        outside the signature and can be stripped, added or rewritten in
+        transit. Use it only when the response element itself is signed, since
+        python3-saml validates every ``ds:Signature`` it finds; otherwise use
+        the signed copies in bearer ``SubjectConfirmationData`` elements, since
         python3-saml accepts any usable bearer confirmation.
         """
         get_in_response_to = getattr(auth, "get_last_response_in_response_to", None)
         in_response_to = get_in_response_to() if get_in_response_to else None
-        if in_response_to:
-            return (cast("str", in_response_to),)
         get_response_xml = getattr(auth, "get_last_response_xml", None)
         response_xml = get_response_xml() if get_response_xml else None
         if not response_xml:
-            return ()
+            return (cast("str", in_response_to),) if in_response_to else ()
         document = OneLogin_Saml2_XML.to_etree(response_xml)
+        if in_response_to and OneLogin_Saml2_XML.query(
+            document, OneLogin_Saml2_Utils.RESPONSE_SIGNATURE_XPATH
+        ):
+            return (cast("str", in_response_to),)
         confirmations = OneLogin_Saml2_XML.query(
             document,
             "/samlp:Response/saml:Assertion/saml:Subject/saml:SubjectConfirmation",
@@ -556,6 +611,49 @@ class SAMLAuth(BaseAuth[ResponseT_co]):
             return True
         self._process_response(auth)
         return self._validate_processed_response_request_id(auth, request_id, kwargs)
+
+    def _expected_name_id_format(self, idp: SAMLIdentityProvider) -> str | None:
+        """Return the NameID ``Format`` the IdP has to use, None if any."""
+        if "name_id_format" in idp.conf:
+            # Explicit choice for an IdP that does not follow the requested
+            # format, None disables the check.
+            return idp.conf["name_id_format"]
+        config = self.generate_saml_config(idp)
+        if cast("dict", config["security"]).get("wantNameIdEncrypted"):
+            # The toolkit then requests the encrypted format and the IdP
+            # chooses the format of the enclosed identifier.
+            return None
+        requested = cast("dict", config["sp"]).get("NameIDFormat")
+        if requested == OneLogin_Saml2_Constants.NAMEID_UNSPECIFIED:
+            # The IdP is free to choose the format.
+            return None
+        return requested
+
+    def _check_name_id_format(
+        self, idp: SAMLIdentityProvider, auth: OneLogin_Saml2_Auth
+    ) -> None:
+        """Reject a NameID in another format than the one expected from the IdP.
+
+        The format is requested in ``NameIDPolicy`` of the AuthnRequest, which
+        the browser can alter unless the IdP requires signed requests. Values
+        of different formats are not comparable, so a validly signed NameID in
+        an unexpected format must not be used as the identifier.
+        """
+        expected = self._expected_name_id_format(idp)
+        if expected is None or auth.get_nameid() is None:
+            return
+        # A NameID without Format is unspecified.
+        name_id_format = (
+            auth.get_nameid_format() or OneLogin_Saml2_Constants.NAMEID_UNSPECIFIED
+        )
+        if name_id_format != expected:
+            raise AuthResponseError(
+                self,
+                "SAML login failed: unexpected NameID Format",
+                claim="NameID",
+                code="invalid_claim",
+                stage="callback",
+            )
 
     def get_idp(self, idp_name: str | None) -> SAMLIdentityProvider:
         """Given the name of an IdP, get a SAMLIdentityProvider instance"""
@@ -733,8 +831,134 @@ class SAMLAuth(BaseAuth[ResponseT_co]):
         rather than the generic configurable ID_KEY.
         """
         idp = self.get_idp(response["idp_name"])
-        uid = idp.get_user_permanent_id(response["attributes"])
-        return f"{idp.name}:{uid}"
+        attributes = response["attributes"]
+        uid = idp.get_user_permanent_id(attributes)
+        if "attr_user_permanent_id" in idp.conf:
+            storage_uid = f"{idp.name}:{uid}"
+            existing = self.strategy.storage.user.get_social_auth(
+                self.name, storage_uid, id_key=self.id_key()
+            )
+            if existing is not None and (
+                existing.extra_data.get("saml_identifier_kind")
+                not in (None, "configured")
+                or existing.extra_data.get("saml_identifier_value", uid) != uid
+                or (
+                    uid.startswith(("persistent:", "fallback:"))
+                    and existing.extra_data.get("saml_identifier_kind") is None
+                )
+            ):
+                raise AuthAssociationError(
+                    self,
+                    "Stored SAML identifier type conflicts",
+                    code="identifier_migration_conflict",
+                    stage="pipeline",
+                )
+            return storage_uid
+        encoded = urlsafe_b64encode(uid.encode()).decode().rstrip("=")
+        persistent = idp.get_persistent_name_id(attributes) is not None
+        kind = "persistent" if persistent else "fallback"
+        storage_uid = f"{idp.name}:{kind}:{encoded}"
+        existing = self.strategy.storage.user.get_social_auth(
+            self.name, storage_uid, id_key=self.id_key()
+        )
+        if existing is not None:
+            saved = existing.extra_data
+            saved_kind = saved.get("saml_identifier_kind")
+            kind_conflicts = (
+                saved_kind != kind if saved_kind is not None else not persistent
+            )
+            value_conflicts = saved.get("saml_identifier_value", uid) != uid
+            name_id_conflicts = persistent and (
+                saved.get("name_id") != uid
+                or saved.get("name_id_format")
+                != OneLogin_Saml2_Constants.NAMEID_PERSISTENT
+            )
+            if any((kind_conflicts, value_conflicts, name_id_conflicts)):
+                raise AuthAssociationError(
+                    self,
+                    "Stored SAML NameID evidence conflicts",
+                    code="identifier_migration_conflict",
+                    stage="pipeline",
+                )
+        if not persistent and existing is None:
+            # Keep old fallback rows at their original key. A saved NameID
+            # from another assertion cannot identify the current holder.
+            legacy_uid = f"{idp.name}:{uid}"
+            legacy = self.strategy.storage.user.get_social_auth(
+                self.name, legacy_uid, id_key=self.id_key()
+            )
+            if legacy is not None:
+                saved = legacy.extra_data
+                if (
+                    uid.startswith(("persistent:", "fallback:"))
+                    or saved.get("saml_identifier_kind") not in (None, "fallback")
+                    or saved.get("name_id_format")
+                    == OneLogin_Saml2_Constants.NAMEID_PERSISTENT
+                ):
+                    raise AuthAssociationError(
+                        self,
+                        "Stored SAML identifier type conflicts",
+                        code="identifier_migration_conflict",
+                        stage="pipeline",
+                    )
+                saved_name_id = saved.get("name_id")
+                if (
+                    saved_name_id is None
+                    or saved.get("name_id_format") is not None
+                    or identifier_matches(saved_name_id, attributes.get("name_id"))
+                ):
+                    return legacy_uid
+        return storage_uid
+
+    def get_legacy_social_auth(
+        self,
+        uid: str,
+        id_key: str,
+        response: dict[str, Any],
+        user: UserProtocol | None = None,
+    ) -> UserMixin | None:
+        """
+        Find the association a previous version keyed on the login name for
+        a user now identified by their persistent NameID.
+        """
+        idp = self.get_idp(response["idp_name"])
+        attributes = response["attributes"]
+        legacy_uid = idp.get_legacy_user_permanent_id(attributes)
+        if not legacy_uid or uid != self.get_user_id({}, response):
+            return None
+        storage = self.strategy.storage.user
+        legacy = storage.get_social_auth(
+            self.name, f"{idp.name}:{legacy_uid}", id_key=id_key
+        )
+        if legacy is None:
+            return None
+        # The NameID saved by the last login through the association is the
+        # evidence of who held the login name then.
+        saved = legacy.extra_data
+        if (
+            saved.get("saml_identifier_kind") not in (None, "persistent")
+            or saved.get("saml_identifier_value", uid) != uid
+            or saved.get("name_id_format")
+            not in (None, OneLogin_Saml2_Constants.NAMEID_PERSISTENT)
+        ):
+            raise AuthAssociationError(
+                self,
+                "Stored SAML identifier type conflicts",
+                code="identifier_migration_conflict",
+                stage="pipeline",
+            )
+        saved_name_id = saved.get("name_id")
+        if not isinstance(saved_name_id, str) or not saved_name_id:
+            raise AuthAssociationError(
+                self,
+                "Stored SAML NameID is missing; use account recovery",
+                code="identifier_migration_conflict",
+                stage="pipeline",
+            )
+        if not identifier_matches(saved_name_id, attributes["name_id"]):
+            # The login name has a new holder, this is a different person.
+            return None
+        return legacy
 
     def parse_relay_state(self, relay_state_str: str) -> dict:
         """Parse RelayState JSON or simple string into a dict"""
@@ -800,10 +1024,12 @@ class SAMLAuth(BaseAuth[ResponseT_co]):
             kwargs,
             response_in_response_to,
         )
+        self._check_name_id_format(idp, auth)
         if request_id_validated:
             self.strategy.session_pop(request_id_key)
         attributes = auth.get_attributes()
         attributes["name_id"] = auth.get_nameid()
+        attributes["name_id_format"] = auth.get_nameid_format()
         self._check_entitlements(idp, attributes)
         if next_url:
             # The do_complete action expects the "next" URL to be in
@@ -830,6 +1056,18 @@ class SAMLAuth(BaseAuth[ResponseT_co]):
         )
         extra_data["session_index"] = response["session_index"]
         extra_data["name_id"] = response["attributes"]["name_id"]
+        extra_data["name_id_format"] = response["attributes"].get("name_id_format")
+        idp = self.get_idp(response["idp_name"])
+        extra_data["saml_identifier_kind"] = (
+            "configured"
+            if "attr_user_permanent_id" in idp.conf
+            else "persistent"
+            if idp.get_persistent_name_id(response["attributes"])
+            else "fallback"
+        )
+        extra_data["saml_identifier_value"] = idp.get_user_permanent_id(
+            response["attributes"]
+        )
         return extra_data
 
     def request_logout(self, idp_name, social_auth, return_to=None):

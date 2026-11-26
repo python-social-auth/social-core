@@ -144,6 +144,9 @@ documentation.
   [EVE Online](https://python-social-auth.readthedocs.io/en/latest/backends/eveonline.html)
   similarly accepts the next valid owner hash for an association lacking one;
   a transfer before that backfill cannot be detected. Later changes fail closed.
+- **SAML fallback identifiers:** Pre-existing fallback rows without saved NameID
+  evidence keep their login-identifier keys; reassignment before a later
+  assertion cannot be detected.
 
 ## Limits and downstream responsibilities
 
