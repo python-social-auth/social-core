@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Security
+
+- Validate Shopify authorization hosts, preserve OAuth query parameter
+  boundaries, reject unsafe OpenID destinations including browser-normalized
+  backslashes and controls, and sanitize SAML logout redirects.
+
 ### Added
 
 - Gitea backend now fetches secondary emails from `/api/v1/user/emails` and

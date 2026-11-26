@@ -36,7 +36,12 @@ from social_core.exceptions import (
     ErrorStage,
 )
 from social_core.groups import read_groups
-from social_core.utils import constant_time_compare, user_is_authenticated
+from social_core.utils import (
+    constant_time_compare,
+    get_allowed_redirect_schemes,
+    sanitize_redirect,
+    user_is_authenticated,
+)
 
 from .base import BaseAuth
 
@@ -841,6 +846,22 @@ class SAMLAuth(BaseAuth[ResponseT_co]):
         auth = self._get_saml_auth(idp, stage="disconnect")
         url = auth.process_slo(delete_session_cb=delete_session_cb)
         errors = auth.get_errors()
+        if (
+            url
+            and auth.get_slo_response_url() is None
+            and self.setting("SANITIZE_REDIRECTS", True)
+        ):
+            # Without an IdP SLO endpoint python3-saml answers a LogoutRequest
+            # by redirecting to its RelayState, which is chosen by the sender
+            # and must pass the redirect allowlist like any other request value.
+            url = sanitize_redirect(
+                [
+                    *cast("list[str]", self.setting("ALLOWED_REDIRECT_HOSTS", [])),
+                    self.strategy.request_host(),
+                ],
+                url,
+                get_allowed_redirect_schemes(self),
+            )
         return url, errors
 
     def _check_entitlements(self, idp, attributes) -> None:

@@ -97,6 +97,35 @@ class ShopifyOAuth2Test(BaseBackendTest):
         with self.assertRaises(AuthInputError):
             self.backend.start()
 
+    def test_auth_url_normalizes_shop(self) -> None:
+        for shop in ("example", "https://Example.myshopify.com/", "example.org"):
+            with self.subTest(shop=shop):
+                self.strategy.set_request_data({"shop": shop}, self.backend)
+                self.assertTrue(
+                    self.backend.start().url.startswith(
+                        f"https://{SHOP}/admin/oauth/authorize?"
+                    )
+                )
+
+    def test_auth_url_rejects_invalid_shop(self) -> None:
+        for shop in (
+            "evil%2eexample\\",
+            "3232235777\\",
+            "exam ple",
+            "exam_ple",
+            "-example",
+            "[::1]",
+            "[",
+            ".",
+        ):
+            with self.subTest(shop=shop):
+                self.strategy.set_request_data({"shop": shop}, self.backend)
+                with self.assertRaises(AuthInputError) as caught:
+                    self.backend.start()
+                self.assertEqual(caught.exception.code, "invalid_parameter")
+                self.assertEqual(caught.exception.parameter, "shop")
+                self.assertEqual(caught.exception.stage, "begin")
+
     def test_auth_url_creates_distinct_states_for_concurrent_starts(self) -> None:
         first_url = self.backend.start().url
         first_state = get_querystring(first_url)["state"]
@@ -159,6 +188,21 @@ class ShopifyOAuth2Test(BaseBackendTest):
         self.assertEqual(caught.exception.code, "invalid_signature")
         self.assertEqual(caught.exception.stage, "callback")
         self.assertEqual(caught.exception.recovery, "contact_administrator")
+        authenticate.assert_not_called()
+
+    def test_complete_rejects_invalid_shop(self) -> None:
+        data = self.signed_callback_data(self.backend.get_or_create_state())
+        data["shop"] = "evil%2eexample\\"
+        data["hmac"] = shopify.Session.calculate_hmac(data)
+        self.strategy.set_request_data(data, self.backend)
+        with (
+            patch.object(self.strategy, "authenticate") as authenticate,
+            self.assertRaises(AuthInputError) as caught,
+        ):
+            self.backend.complete()
+        self.assertEqual(caught.exception.code, "invalid_parameter")
+        self.assertEqual(caught.exception.parameter, "shop")
+        self.assertEqual(caught.exception.stage, "callback")
         authenticate.assert_not_called()
 
     def test_sdk_callback_validation_failure_is_invalid_input(self) -> None:

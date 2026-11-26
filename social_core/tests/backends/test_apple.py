@@ -2,13 +2,14 @@ import json
 from time import time
 from typing import TYPE_CHECKING, cast
 from unittest.mock import patch
+from urllib.parse import urlparse
 
 import jwt
 import responses
 from jwt.algorithms import RSAAlgorithm
 
 from social_core.exceptions import AuthResponseError
-from social_core.utils import PARTIAL_TOKEN_SESSION_NAME
+from social_core.utils import PARTIAL_TOKEN_SESSION_NAME, parse_qs
 
 from .oauth import BaseAuthUrlTestMixin, OAuth2Test
 from .test_azuread_b2c import RSA_PRIVATE_JWT_KEY, RSA_PUBLIC_JWT_KEY
@@ -85,6 +86,22 @@ class AppleIdTest(OAuth2Test, BaseAuthUrlTestMixin):
             body=json.dumps({"keys": [RSA_PUBLIC_JWT_KEY]}),
             content_type="application/json",
         )
+
+    def test_auth_url_keeps_request_client_id_in_its_parameter(self) -> None:
+        client_id = "evil&redirect_uri=https://evil.example/cb&response_type=x#"
+        self.strategy.set_request_data({"client_id": client_id}, self.backend)
+
+        url = urlparse(self.backend.auth_url())
+        query = parse_qs(url.query)
+
+        self.assertEqual(url.fragment, "")
+        self.assertEqual(query["client_id"], client_id)
+        self.assertEqual(query["redirect_uri"], self.backend.get_redirect_uri())
+        self.assertEqual(query["response_type"], "code")
+        self.assertIsNotNone(
+            self.strategy.session_get(self.backend.transaction_key(query["state"]))
+        )
+        self.assertIn("&scope=name%20email", url.query)
 
     def test_login(self) -> None:
         with patch(
