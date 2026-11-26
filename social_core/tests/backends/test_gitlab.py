@@ -317,3 +317,25 @@ class GitLabCustomDomainOAuth2Test(OAuth2Test, BaseAuthUrlTestMixin):
             {"SOCIAL_AUTH_GITLAB_API_URL": "https://example.com"}
         )
         self.do_partial_pipeline()
+
+    def test_login_refuses_token_redirect_to_cleartext(self) -> None:
+        self.strategy.set_settings(
+            {"SOCIAL_AUTH_GITLAB_API_URL": "https://example.com"}
+        )
+        responses.add(
+            responses.POST,
+            "https://example.com/oauth/token",
+            status=308,
+            headers={"Location": "http://example.com/oauth/token"},
+        )
+        responses.add(
+            responses.POST,
+            "http://example.com/oauth/token",
+            body=self.access_token_body,
+            content_type="application/json",
+        )
+        with self.assertRaises(AuthProviderError) as caught:
+            self.do_login()
+        self.assertEqual(caught.exception.code, "tls_error")
+        self.assertEqual(caught.exception.stage, "token_exchange")
+        responses.assert_call_count("http://example.com/oauth/token", 0)

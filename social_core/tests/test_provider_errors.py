@@ -202,7 +202,10 @@ class ProviderErrorTest(unittest.TestCase):
             (requests.ReadTimeout(), "timeout", "retry_later"),
             (requests.ConnectionError(), "connection_failed", "retry_later"),
         ):
-            with self.subTest(code=code), patch("requests.request", side_effect=cause):
+            with (
+                self.subTest(code=code),
+                patch("requests.Session.request", side_effect=cause),
+            ):
                 with self.assertRaises(AuthProviderError) as caught:
                     self.backend.request("https://example.com", stage="refresh")
                 self.assertEqual(caught.exception.code, code)
@@ -230,7 +233,7 @@ class ProviderErrorTest(unittest.TestCase):
                 cause = exception("private provider URL")
                 with (
                     self.subTest(exception=exception, stage=stage),
-                    patch("requests.request", side_effect=cause),
+                    patch("requests.Session.request", side_effect=cause),
                     self.assertRaises(AuthProviderError) as caught,
                 ):
                     self.backend.request("https://example.com", stage=stage)
@@ -246,7 +249,7 @@ class ProviderErrorTest(unittest.TestCase):
     def test_http_errors_from_request_keep_status_classification(self):
         cause = requests.HTTPError(response=self.response(503))
         with (
-            patch("requests.request", side_effect=cause),
+            patch("requests.Session.request", side_effect=cause),
             self.assertRaises(AuthProviderError) as caught,
         ):
             self.backend.request("https://example.com", stage="begin")
@@ -264,7 +267,7 @@ class ProviderErrorTest(unittest.TestCase):
             )
             with (
                 self.subTest(status=status),
-                patch("requests.request", return_value=response),
+                patch("requests.Session.request", return_value=response),
                 patch.object(backend.strategy, "authenticate") as authenticate,
                 self.assertRaises(AuthProviderError) as caught,
             ):
@@ -274,14 +277,14 @@ class ProviderErrorTest(unittest.TestCase):
             self.assertEqual(caught.exception.recovery, "retry_later")
             authenticate.assert_not_called()
         with (
-            patch("requests.request", side_effect=requests.ReadTimeout()),
+            patch("requests.Session.request", side_effect=requests.ReadTimeout()),
             self.assertRaises(AuthProviderError) as caught,
         ):
             backend.user_data("token")
         self.assertEqual(caught.exception.code, "timeout")
         response = self.response(200)
         with (
-            patch("requests.request", return_value=response),
+            patch("requests.Session.request", return_value=response),
             self.assertRaises(AuthResponseError) as malformed,
         ):
             backend.user_data("token")
@@ -303,7 +306,7 @@ class ProviderErrorTest(unittest.TestCase):
                     backend, "get_key_and_secret", return_value=("key", "secret")
                 ),
                 patch(
-                    "requests.request",
+                    "requests.Session.request",
                     side_effect=transport_cause,
                     return_value=response,
                 ),
@@ -357,7 +360,7 @@ class ProviderErrorTest(unittest.TestCase):
                         operation=operation, transport_failure=transport_failure
                     ),
                     patch(
-                        "requests.request",
+                        "requests.Session.request",
                         return_value=response,
                         side_effect=cause if transport_failure else None,
                     ),
@@ -396,7 +399,7 @@ class ProviderErrorTest(unittest.TestCase):
             response = self.response(200, payload)
             with (
                 self.subTest(provider_code=provider_code),
-                patch("requests.request", return_value=response),
+                patch("requests.Session.request", return_value=response),
                 patch.object(strategy, "authenticate") as authenticate,
                 self.assertRaises(AuthProviderError) as caught,
             ):
@@ -428,7 +431,9 @@ class ProviderErrorTest(unittest.TestCase):
             )
             with (
                 self.subTest(payload=payload),
-                patch("requests.request", return_value=self.response(200, payload)),
+                patch(
+                    "requests.Session.request", return_value=self.response(200, payload)
+                ),
                 patch.object(strategy, "authenticate") as authenticate,
                 self.assertRaises(AuthResponseError) as caught,
             ):
@@ -576,7 +581,7 @@ class ProviderErrorTest(unittest.TestCase):
         backend.get_openid_configuration.invalidate(backend, backend.oidc_config_url())
         cause = requests.ReadTimeout("Read timed out. (read timeout=5.0)")
         with (
-            patch("requests.request", side_effect=cause) as request,
+            patch("requests.Session.request", side_effect=cause) as request,
             patch.object(strategy, "redirect") as redirect,
             patch.object(strategy, "authenticate") as authenticate,
             self.assertRaises(AuthProviderError) as caught,
@@ -615,7 +620,7 @@ class ProviderErrorTest(unittest.TestCase):
                 response.raise_for_status.side_effect = cause
                 with (
                     self.subTest(stage=stage, status=status),
-                    patch("requests.request", return_value=response),
+                    patch("requests.Session.request", return_value=response),
                     self.assertRaises(AuthProviderError) as caught,
                 ):
                     operation()
@@ -645,7 +650,7 @@ class ProviderErrorTest(unittest.TestCase):
             )
             with (
                 self.subTest(payload=payload),
-                patch("requests.request", return_value=response),
+                patch("requests.Session.request", return_value=response),
                 self.assertRaises(AuthProviderError) as caught,
             ):
                 backend.user_data("token")
@@ -763,7 +768,7 @@ class ProviderErrorTest(unittest.TestCase):
         response = self.response(200)
         response.raise_for_status.return_value = None
         with (
-            patch("requests.request", return_value=response),
+            patch("requests.Session.request", return_value=response),
             self.assertRaises(AuthResponseError) as caught,
         ):
             self.backend.get_json("https://example.com", stage="token_validation")
@@ -792,7 +797,11 @@ class ProviderErrorTest(unittest.TestCase):
             for cause in (requests.ConnectTimeout(), None):
                 with (
                     self.subTest(stage=stage, cause=cause),
-                    patch("requests.request", side_effect=cause, return_value=response),
+                    patch(
+                        "requests.Session.request",
+                        side_effect=cause,
+                        return_value=response,
+                    ),
                     self.assertRaises(AuthProviderError) as caught,
                 ):
                     operation()
@@ -865,7 +874,7 @@ class ProviderErrorTest(unittest.TestCase):
         response = self.response(503)
         response.raise_for_status.side_effect = requests.HTTPError(response=response)
         with (
-            patch("requests.request", return_value=response),
+            patch("requests.Session.request", return_value=response),
             patch.object(backend.strategy, "authenticate") as authenticate,
             self.assertRaises(AuthProviderError) as caught,
         ):
@@ -886,7 +895,7 @@ class ProviderErrorTest(unittest.TestCase):
                 )
             with (
                 self.subTest(status=status),
-                patch("requests.request", return_value=response),
+                patch("requests.Session.request", return_value=response),
                 self.assertRaises(AuthCredentialError) as caught,
             ):
                 backend.refresh_token("refresh", device_id="device")
@@ -957,7 +966,7 @@ class ProviderErrorTest(unittest.TestCase):
             response = self.response(200, payload)
             with (
                 self.subTest(provider_code=provider_code),
-                patch("requests.request", return_value=response),
+                patch("requests.Session.request", return_value=response),
                 patch.object(backend.strategy, "authenticate") as authenticate,
                 self.assertRaises(family) as caught,
             ):

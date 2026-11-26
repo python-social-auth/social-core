@@ -7,6 +7,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from openid.message import OPENID2_NS
+
 from social_core.backends.base import ResponseT_co
 from social_core.exceptions import AuthResponseError
 
@@ -22,6 +24,26 @@ class SteamOpenId(OpenIdAuth[ResponseT_co]):
     name = "steam"
     title = "Steam"
     URL = "https://steamcommunity.com/openid"
+
+    def auth_complete(self, *args, **kwargs):
+        # The OpenID consumer runs discovery on the claimed identifier before
+        # it verifies the signature, so refuse identifiers outside Steam's
+        # namespace (and OpenID 1 responses, which take it from return_to).
+        if self.data.get("openid.mode") == "id_res":
+            claimed_id = self.data.get("openid.claimed_id")
+            if (
+                self.data.get("openid.ns") != OPENID2_NS
+                or not isinstance(claimed_id, str)
+                or not claimed_id.startswith(f"{self.URL}/")
+            ):
+                raise AuthResponseError(
+                    self,
+                    "Openid identifier mismatch",
+                    claim="claimed_id",
+                    code="invalid_claim",
+                    stage="callback",
+                )
+        return super().auth_complete(*args, **kwargs)
 
     def get_user_id(self, details, response):
         """Return the validated Steam ID from the asserted OpenID URL.

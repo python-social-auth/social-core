@@ -10,6 +10,7 @@ from contextvars import ContextVar
 from email.errors import HeaderParseError
 from email.headerregistry import Address
 from typing import TYPE_CHECKING, Any, Generic, Literal, TypeAlias, TypeVar, cast
+from urllib.parse import urlsplit
 
 import requests
 
@@ -45,7 +46,7 @@ HttpResponseProtocol: TypeAlias = _HttpResponseProtocol
 if TYPE_CHECKING:
     from collections.abc import Generator, Mapping
 
-    from requests import Response
+    from requests import PreparedRequest, Request, Response
     from requests.auth import AuthBase
 
     from social_core.storage import (
@@ -58,6 +59,45 @@ if TYPE_CHECKING:
 
 
 ResponseT_co = TypeVar("ResponseT_co", covariant=True)
+
+
+class SecureRedirectSession(requests.Session):
+    """Requests session which does not follow a redirect out of HTTPS.
+
+    Requests follows a redirect from ``https://`` to any other scheme and,
+    for 307 and 308, repeats the body there. Certificate verification covers
+    only the encrypted hops, so the client secret, code or access token would
+    be sent in cleartext and whoever answers would be taken for the provider.
+    """
+
+    @contextmanager
+    def _without_netrc(self) -> Generator[None, None, None]:
+        # Requests consults .netrc in these two methods. Keep environment
+        # proxy and CA settings available for the rest of the request.
+        trust_env, self.trust_env = self.trust_env, False
+        try:
+            yield
+        finally:
+            self.trust_env = trust_env
+
+    def prepare_request(self, request: Request) -> PreparedRequest:
+        with self._without_netrc():
+            return super().prepare_request(request)
+
+    def rebuild_auth(
+        self, prepared_request: PreparedRequest, response: Response
+    ) -> None:
+        # Requests calls this for every redirect it follows, once the next
+        # request is resolved and before it is sent.
+        if (
+            urlsplit(response.url).scheme == "https"
+            and urlsplit(prepared_request.url).scheme != "https"
+        ):
+            raise requests.exceptions.SSLError(
+                "Refusing redirect from HTTPS to an insecure URL", response=response
+            )
+        with self._without_netrc():
+            super().rebuild_auth(prepared_request, response)
 
 
 class BaseAuth(Generic[ResponseT_co]):
@@ -856,18 +896,19 @@ class BaseAuth(Generic[ResponseT_co]):
             headers["User-Agent"] = self.setting("USER_AGENT") or user_agent()
 
         try:
-            response = requests.request(
-                method,
-                url,
-                headers=headers,
-                data=data,
-                json=json,
-                auth=auth,
-                params=params,
-                timeout=timeout,
-                proxies=proxies,
-                verify=verify,
-            )
+            with SecureRedirectSession() as session:
+                response = session.request(
+                    method,
+                    url,
+                    headers=headers,
+                    data=data,
+                    json=json,
+                    auth=auth,
+                    params=params,
+                    timeout=timeout,
+                    proxies=proxies,
+                    verify=verify,
+                )
         except requests.exceptions.SSLError as error:
             redact_request_error(error, request_url=url)
             raise AuthProviderError(self, code="tls_error", stage=stage) from error

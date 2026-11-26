@@ -130,7 +130,7 @@ class AuthenticationFailureBoundaryTest(unittest.TestCase):
             cause = requests.ReadTimeout("private diagnostic")
             with (
                 self.subTest(stage=stage),
-                patch("requests.request", side_effect=cause),
+                patch("requests.Session.request", side_effect=cause),
                 self.assertRaises(AuthProviderError) as caught,
             ):
                 operation()
@@ -967,7 +967,7 @@ class AuthenticationFailureBoundaryTest(unittest.TestCase):
         ):
             with (
                 self.subTest(cause=cause),
-                patch("requests.request", side_effect=cause),
+                patch("requests.Session.request", side_effect=cause),
                 self.assertRaises(AuthConfigurationError) as caught,
             ):
                 backend.request("invalid", stage="begin")

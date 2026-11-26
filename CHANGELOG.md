@@ -55,6 +55,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   In-progress partials saved before initiator binding must restart, even when
   their timestamp is valid. Partial expiry uses its own setting rather than
   the email-code lifetime.
+- Prevent provider requests from following HTTPS to HTTP redirects or using
+  ambient `.netrc` credentials. Fixed-provider OpenID discovery now requires
+  HTTPS across urllib and curl fetchers, binds session state before discovery,
+  and rejects unsafe Steam and
+  LiveJournal identities before accepting callbacks. Legacy HTTP LiveJournal
+  identities require matching delegation from the journal's HTTPS document.
 
 ### Added
 

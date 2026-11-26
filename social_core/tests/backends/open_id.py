@@ -45,12 +45,13 @@ class OpenIdTestFetcher(fetchers.HTTPFetcher):
         status: int = 200,
         body: str = "",
         content_type: str | None = None,
+        final_url: str | None = None,
     ) -> None:
         headers = {}
         if content_type:
             headers["content-type"] = content_type
         response = HTTPResponse(
-            final_url=url,
+            final_url=url if final_url is None else final_url,
             status=status,
             headers=headers,
             body=body,
@@ -131,6 +132,7 @@ class OpenIdTest(BaseBackendTest):
         status: int = 200,
         body: str = "",
         content_type: str | None = None,
+        final_url: str | None = None,
     ) -> None:
         self.openid_fetcher.add_response(
             method,
@@ -138,6 +140,7 @@ class OpenIdTest(BaseBackendTest):
             status=status,
             body=body,
             content_type=content_type,
+            final_url=final_url,
         )
 
     def do_start(self):

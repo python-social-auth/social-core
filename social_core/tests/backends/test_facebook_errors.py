@@ -71,7 +71,7 @@ class FacebookProviderErrorTest(unittest.TestCase):
                             patch.object(
                                 backend.strategy, "authenticate"
                             ) as authenticate,
-                            patch("requests.request", return_value=response),
+                            patch("requests.Session.request", return_value=response),
                             self.assertRaises(AuthProviderError) as caught,
                         ):
                             operation()
@@ -106,7 +106,7 @@ class FacebookProviderErrorTest(unittest.TestCase):
             response.raise_for_status.side_effect = cause
             with (
                 self.subTest(status=status, payload=payload),
-                patch("requests.request", return_value=response),
+                patch("requests.Session.request", return_value=response),
                 self.assertRaises(AuthProviderError) as caught,
             ):
                 backend.request(backend.USER_DATA_URL)

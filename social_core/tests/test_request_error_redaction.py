@@ -56,7 +56,7 @@ class RequestErrorRedactionTest(unittest.TestCase):
             cause = exception(f"Request failed for url: {url}")
             with (
                 self.subTest(exception=exception),
-                patch("requests.request", side_effect=cause),
+                patch("requests.Session.request", side_effect=cause),
                 self.assertRaises(family) as caught,
             ):
                 self.backend.request(url, stage="token_exchange")
@@ -168,7 +168,7 @@ class RequestErrorRedactionTest(unittest.TestCase):
         cause.__context__ = retry
         transport.__context__ = cause
         with (
-            patch("requests.request", side_effect=cause),
+            patch("requests.Session.request", side_effect=cause),
             self.assertRaises(AuthProviderError) as caught,
         ):
             self.backend.request(
