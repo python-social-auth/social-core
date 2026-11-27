@@ -7,25 +7,42 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [7.3.0](https://github.com/python-social-auth/social-core/releases/tag/7.3.0) - 2026-11-27
+
 ### Security
 
 - Require trusted tenant IDs for Azure email allowlists on multi-tenant
   authorities, preventing another tenant from asserting an allowed address.
-- Enforce Azure tenant and group provenance, exact entitlement membership,
-  complete group claims, and authenticated GitLab group listings before policy
-  or synchronization decisions.
-- Require provider-confirmed email where supported for email allowlists, reject
-  ambiguous email syntax and user-selected OpenID email claims, and honor
-  configured OIDC email fields and their matching verification markers from
-  the same CAS UserInfo snapshot.
+- Enforce domain-form Azure `TENANT_ID` restrictions by requiring discovery
+  pinned to the configured tenant with a concrete issuer.
+  [GHSA-j6mx-m7x9-vf3r](https://github.com/python-social-auth/social-core/security/advisories/GHSA-j6mx-m7x9-vf3r)
+- Validate the tenant provenance of Azure `ALLOW_GROUPS` claims. Require exact
+  entitlement membership, complete group claims, and authenticated GitLab
+  group listings before policy or synchronization decisions.
+  [GHSA-j7mp-vxx6-vj7p](https://github.com/python-social-auth/social-core/security/advisories/GHSA-j7mp-vxx6-vj7p)
+- Require provider-confirmed email where supported for email allowlists and
+  reject ambiguous email syntax. Accept Microsoft Graph contact addresses only
+  within the verified sign-in domain.
+  [GHSA-qggj-7g45-h888](https://github.com/python-social-auth/social-core/security/advisories/GHSA-qggj-7g45-h888)
+  [GHSA-3vrg-2xfw-8mhx](https://github.com/python-social-auth/social-core/security/advisories/GHSA-3vrg-2xfw-8mhx)
+- Reject user-selected OpenID email claims for allowlist checks.
+  [GHSA-p44f-m45x-5jgv](https://github.com/python-social-auth/social-core/security/advisories/GHSA-p44f-m45x-5jgv)
+- Honor the configured OIDC `EMAIL_KEY` in allowlist checks and read the selected
+  CAS email and its verification marker from the same UserInfo snapshot.
+  [GHSA-xp3g-9j9g-432j](https://github.com/python-social-auth/social-core/security/advisories/GHSA-xp3g-9j9g-432j)
 - Validate Shopify authorization hosts, preserve OAuth query parameter
-  boundaries, reject unsafe OpenID destinations including browser-normalized
-  backslashes and controls, and sanitize SAML logout redirects.
+  boundaries, and sanitize SAML logout redirects.
+- Validate OpenID redirect and form destinations, rejecting unsafe URLs
+  including browser-normalized backslashes and controls.
+  [GHSA-hjv8-29vw-3xrr](https://github.com/python-social-auth/social-core/security/advisories/GHSA-hjv8-29vw-3xrr)
 - Prevent provider details from updating private, special, or local account
   activation fields; Bitbucket Data Center no longer forwards provider account
   status as local profile data.
-- Reject empty Telegram and Discourse signing secrets and check each
-  strategy's enabled backend list even when a backend class is cached.
+  [GHSA-pfx2-5j97-jjxj](https://github.com/python-social-auth/social-core/security/advisories/GHSA-pfx2-5j97-jjxj)
+- Reject empty Telegram and Discourse signing secrets.
+  [GHSA-v2r4-wqw2-5562](https://github.com/python-social-auth/social-core/security/advisories/GHSA-v2r4-wqw2-5562)
+  [GHSA-2c63-crpq-2pr2](https://github.com/python-social-auth/social-core/security/advisories/GHSA-2c63-crpq-2pr2)
+- Check each strategy's enabled backend list even when a backend class is cached.
 - Verify the audience of Google access tokens supplied directly to ``do_auth``;
   use ``AUDIENCE`` to replace the accepted client IDs (including the backend's
   own ``KEY`` if it should remain accepted), and reject
@@ -35,43 +52,58 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Prefer a persistent SAML NameID over a mutable login name, migrating legacy
   associations only with matching saved identity evidence. Namespace persistent
   NameIDs and new fallback identifiers to avoid cross-format collisions while
-  retaining checked legacy fallback keys. Check configured
-  NameID formats and accept request IDs only from signed response fields.
+  retaining checked legacy fallback keys. Check configured NameID formats.
   Existing fallback associations with conflicting NameID evidence require
   operator repair; evidence-free legacy fallback keys retain their prior
   compatibility behavior.
+- Accept SAML request IDs only from signed response fields.
+  [GHSA-p8gw-m738-g88g](https://github.com/python-social-auth/social-core/security/advisories/GHSA-p8gw-m738-g88g)
 - Email validation codes now require a confirmed partial-pipeline resume;
   a fresh callback or a different partial cannot consume the code.
+  [GHSA-fqx9-5q37-vf2h](https://github.com/python-social-auth/social-core/security/advisories/GHSA-fqx9-5q37-vf2h)
 - Enforce requested OIDC authentication context and age against validated ID
-  token claims, and require a signed, non-future PAPE authentication time when
-  OpenID maximum age is configured. This includes OIDC strength values sent
-  through authorization extra arguments; missing or mismatched signed claims
-  now reject login. ``OPENID_PAPE_AUTH_TIME_LEEWAY`` defaults to one second.
+  token claims, including values sent through authorization extra arguments.
+  Missing or mismatched signed claims now reject login.
+  [GHSA-r2gr-xq75-34h2](https://github.com/python-social-auth/social-core/security/advisories/GHSA-r2gr-xq75-34h2)
+- Require a signed PAPE authentication time within the requested OpenID
+  maximum age. `OPENID_PAPE_AUTH_TIME_LEEWAY` defaults to one second and bounds
+  how far in the future the authentication time can be.
+  [GHSA-335g-jfr7-jff5](https://github.com/python-social-auth/social-core/security/advisories/GHSA-335g-jfr7-jff5)
 - Partial pipelines now expire after seven days by default across strategies;
   undated partials restart authentication. Saved flows remain bound to their
   initiating user and provider response, and disconnected associations cannot
   be restored by resuming an old partial, including with UUID user IDs.
   OAuth2 callback detection uses the same state value as validation.
   In-progress partials saved before initiator binding must restart, even when
-  their timestamp is valid. Partial expiry uses its own setting rather than
-  the email-code lifetime.
-- Prevent provider requests from following HTTPS to HTTP redirects or using
-  ambient `.netrc` credentials. Fixed-provider OpenID discovery now requires
-  HTTPS across urllib and curl fetchers, binds session state before discovery,
-  and rejects unsafe Steam and
-  LiveJournal identities before accepting callbacks. Legacy HTTP LiveJournal
-  identities require matching delegation from the journal's HTTPS document.
-- Restrict Shopify, Stripe, and LiveJournal to user-bound association; use the
-  authorizing Vend user and reject mismatched Bitbucket Data Center profiles.
+  their timestamp is valid. Partial expiry uses a dedicated setting.
+  [GHSA-3cc9-56x4-7j4m](https://github.com/python-social-auth/social-core/security/advisories/GHSA-3cc9-56x4-7j4m)
+- Block HTTPS-to-HTTP redirects in shared provider requests.
+  [GHSA-fv92-mxfc-54hf](https://github.com/python-social-auth/social-core/security/advisories/GHSA-fv92-mxfc-54hf)
+- Prevent provider requests from using ambient `.netrc` credentials.
+  [GHSA-gxrw-q9g6-24x2](https://github.com/python-social-auth/social-core/security/advisories/GHSA-gxrw-q9g6-24x2)
+- Require HTTPS at every fixed-provider OpenID discovery hop in urllib and curl
+  and reject unsafe Steam identities before accepting callbacks.
+  [GHSA-grmr-jgg4-4994](https://github.com/python-social-auth/social-core/security/advisories/GHSA-grmr-jgg4-4994)
+- Bind OpenID session state before discovery so failed generic OpenID starts
+  cannot affect a fixed-provider flow.
+  [GHSA-xp6r-wxh2-xjhh](https://github.com/python-social-auth/social-core/security/advisories/GHSA-xp6r-wxh2-xjhh)
+- Validate LiveJournal callback identities against the journal's HTTPS
+  discovery document and require matching delegation for legacy HTTP identities.
+  [GHSA-p3w5-fmxq-9m4r](https://github.com/python-social-auth/social-core/security/advisories/GHSA-p3w5-fmxq-9m4r)
+- Restrict Shopify, Stripe, and LiveJournal to user-bound association.
+  Applications using them for login need another sign-in and account recovery
+  route.
+  [GHSA-w2x9-r6m7-3484](https://github.com/python-social-auth/social-core/security/advisories/GHSA-w2x9-r6m7-3484)
+  [GHSA-m2mv-gv4m-hvm9](https://github.com/python-social-auth/social-core/security/advisories/GHSA-m2mv-gv4m-hvm9)
+- Use the authorizing Vend user for identity binding.
+  [GHSA-6758-wpq5-c656](https://github.com/python-social-auth/social-core/security/advisories/GHSA-6758-wpq5-c656)
+- Reject mismatched Bitbucket Data Center profiles.
 - Request Vend's ``users:read`` scope by default so new authorizations can
   access the current user endpoint; existing grants may need reauthorization.
 - Reject conflicting stored identifiers, including aliases and nested token
   claims, before legacy migration; recheck EVE owner evidence on the selected
   association, reject structured provider IDs, and preserve declared extra-data
   fields with all-data storage.
-- Shopify, Stripe, and LiveJournal can no longer sign users in anonymously;
-  applications using them for login need another sign-in and account recovery
-  route.
 
 ### Added
 
@@ -87,6 +119,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Add OpenID Connect debug diagnostics for missing or unreadable signing keys,
   signature mismatches, and signing algorithms rejected by the allowlist.
+- Allow `google-auth` 2.63.x in the `google-onetap` extra.
 
 ### Fixed
 
