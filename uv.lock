@@ -1966,7 +1966,7 @@ wheels = [
 
 [[package]]
 name = "social-auth-core"
-version = "7.2.0"
+version = "7.3.0"
 source = { editable = "." }
 dependencies = [
     { name = "cryptography" },
